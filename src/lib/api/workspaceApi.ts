@@ -45,17 +45,20 @@ export async function getPersonalWorkspace(): Promise<Workspace | null> {
     throw new Error('User not authenticated');
   }
 
-  // Get personal workspace using a join in a single query
+  // Query from workspace table and join with workspace_member
   const { data, error } = await supabase
-    .from('workspace_member')
-    .select('workspace(*)')
-    .eq('user_id', user.id)
-    .eq('workspace.type', 'personal')
+    .from('workspace')
+    .select(`
+      *,
+      workspace_member!inner(user_id)
+    `)
+    .eq('type', 'personal')
+    .eq('workspace_member.user_id', user.id)
     .single();
 
   if (error) throw error;
 
-  return data?.workspace[0] as Workspace | null;
+  return data as Workspace | null;
 }
 
 export async function getWorkspace(id: number): Promise<Workspace> {
