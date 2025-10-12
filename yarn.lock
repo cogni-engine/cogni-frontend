@@ -1585,6 +1585,7 @@ __metadata:
     ai: "npm:^5.0.68"
     eslint: "npm:^9"
     eslint-config-next: "npm:15.5.4"
+    lucide-react: "npm:^0.545.0"
     next: "npm:15.5.4"
     react: "npm:19.1.0"
     react-dom: "npm:19.1.0"
@@ -3098,6 +3099,15 @@ __metadata:
   bin:
     loose-envify: cli.js
   checksum: 10c0/655d110220983c1a4b9c0c679a2e8016d4b67f6e9c7b5435ff5979ecdb20d0813f4dec0a08674fcbdd4846a3f07edbb50a36811fd37930b94aaa0d9daceb017e
+  languageName: node
+  linkType: hard
+
+"lucide-react@npm:^0.545.0":
+  version: 0.545.0
+  resolution: "lucide-react@npm:0.545.0"
+  peerDependencies:
+    react: ^16.5.1 || ^17.0.0 || ^18.0.0 || ^19.0.0
+  checksum: 10c0/942622c8e5d113e6fc6f66407703dc06474cf1a36ee9998b9f562f2e64737ea098c0db5a4e5ba2a8eb14abecb9da05be4584e9400c4a192ba5b2781f21928c21
   languageName: node
   linkType: hard
 

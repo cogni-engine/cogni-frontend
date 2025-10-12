@@ -51,8 +51,8 @@ export function useWorkspace(id: number | null) {
 
 // Mutation helpers
 export function useWorkspaceMutations() {
-  const create = async (title: string, type?: 'group' | 'personal') => {
-    const workspace = await createWorkspace(title, type);
+  const create = async (title: string) => {
+    const workspace = await createWorkspace(title);
     mutate(WORKSPACES_KEY); // Revalidate list
     return workspace;
   };
