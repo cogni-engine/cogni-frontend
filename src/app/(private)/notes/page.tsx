@@ -1,20 +1,17 @@
+"use client";
+
 import NoteList from "@/components/notes/NoteList";
+import { useNotes, formatDate } from "@/hooks/useNotes";
 
 export default function NotesPage() {
-  const notes = [
-    {
-      id: "1",
-      title: "Memo",
-      date: "2025/07/16",
-      preview: "リレーショナルデータベース...",
-    },
-    {
-      id: "2",
-      title: "Journal",
-      date: "2025/05/03",
-      preview: "UI library / Bash / V0...",
-    },
-  ];
+  const { notes, loading, error, searchNotes } = useNotes();
+
+  const formattedNotes = notes.map(note => ({
+    id: note.id.toString(),
+    title: note.title,
+    date: formatDate(note.updated_at),
+    preview: note.preview,
+  }));
 
   return (
     <div className="flex flex-col h-full bg-gradient-to-br from-slate-950 via-black to-slate-950 text-gray-100 p-4 md:p-6 relative overflow-hidden">
@@ -28,8 +25,23 @@ export default function NotesPage() {
       </div>
 
       <div className="relative z-10">
-        <h1 className="text-2xl font-bold text-white mb-6 bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">All Notes</h1>
-        <NoteList notes={notes} />
+        <h1 className="text-2xl font-bold mb-6 bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">All Notes</h1>
+        
+        {loading && (
+          <div className="flex justify-center items-center py-12">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
+          </div>
+        )}
+        
+        {error && (
+          <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-4 text-red-300">
+            {error}
+          </div>
+        )}
+        
+        {!loading && !error && (
+          <NoteList notes={formattedNotes} onSearch={searchNotes} />
+        )}
       </div>
     </div>
   );

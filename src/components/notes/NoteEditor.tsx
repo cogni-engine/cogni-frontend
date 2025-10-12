@@ -1,19 +1,62 @@
 "use client";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useNote } from "@/hooks/useNotes";
 
-export default function NoteEditor() {
+export default function NoteEditor({ noteId }: { noteId: string }) {
   const router = useRouter();
-  const [title, setTitle] = useState("Memo");
-  const [content, setContent] = useState(
-    "リレーショナルデータベース\n\nUI library\n\nBash\n\nV0\n\nclear"
-  );
+  const id = noteId === 'new' ? 'new' : parseInt(noteId, 10);
+  const { note, loading, error, saveNote } = useNote(id);
+  
+  const [title, setTitle] = useState("");
+  const [content, setContent] = useState("");
+  const [saving, setSaving] = useState(false);
 
-  const handleSave = () => {
-    console.log("Saved:", { title, content });
-    // 🔜 Supabaseに保存（update）
-    router.push("/notes");
+  // Load note data when available
+  useEffect(() => {
+    if (note) {
+      setTitle(note.title);
+      setContent(note.content);
+    }
+  }, [note]);
+
+  const handleSave = async () => {
+    try {
+      setSaving(true);
+      await saveNote(title, content);
+      router.push("/notes");
+    } catch (err) {
+      console.error("Failed to save note:", err);
+      alert("Failed to save note. Please try again.");
+    } finally {
+      setSaving(false);
+    }
   };
+
+  if (loading) {
+    return (
+      <div className="flex flex-col h-full bg-gradient-to-br from-slate-950 via-black to-slate-950 text-gray-100 items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white"></div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex flex-col h-full bg-gradient-to-br from-slate-950 via-black to-slate-950 text-gray-100 items-center justify-center p-6">
+        <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-6 text-red-300 max-w-md">
+          <h2 className="font-bold mb-2">Error</h2>
+          <p>{error}</p>
+          <button 
+            onClick={() => router.push("/notes")}
+            className="mt-4 px-4 py-2 bg-white/10 rounded-lg hover:bg-white/20 transition"
+          >
+            Back to Notes
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col h-full bg-gradient-to-br from-slate-950 via-black to-slate-950 text-gray-100 relative overflow-hidden">
@@ -41,12 +84,17 @@ export default function NoteEditor() {
         
         {/* 保存ボタン - 丸く浮き出る */}
         <button 
-          onClick={handleSave} 
-          className="w-10 h-10 rounded-full bg-white/15 backdrop-blur-md border border-white/25 text-white hover:bg-white/20 hover:scale-110 transition-all shadow-[0_8px_24px_rgba(0,0,0,0.3)] flex items-center justify-center"
+          onClick={handleSave}
+          disabled={saving}
+          className="w-10 h-10 rounded-full bg-white/15 backdrop-blur-md border border-white/25 text-white hover:bg-white/20 hover:scale-110 transition-all shadow-[0_8px_24px_rgba(0,0,0,0.3)] flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <polyline points="20 6 9 17 4 12"></polyline>
-          </svg>
+          {saving ? (
+            <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+          ) : (
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+          )}
         </button>
       </header>
 
