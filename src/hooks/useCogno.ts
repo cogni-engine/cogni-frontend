@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback, useEffect, useRef } from 'react';
-import { AIMessage, TimerState } from '@/types/chat';
+import { AIMessage } from '@/types/chat';
 
 const API_BASE_URL = 'http://0.0.0.0:8000';
 
@@ -9,11 +9,9 @@ export function useCogno(threadId: number | null) {
   const [messages, setMessages] = useState<AIMessage[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [activeTimer, setActiveTimer] = useState<TimerState | null>(null);
-  const [remainingSeconds, setRemainingSeconds] = useState<number | null>(null);
   const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
-  // メッセージ一覧取得
+  // メッセージ一覧取得（初回読み込み用）
   const fetchMessages = useCallback(async (tid: number) => {
     try {
       setError(null);
@@ -27,34 +25,49 @@ export function useCogno(threadId: number | null) {
     }
   }, []);
 
-  // タイマーポーリング
-  const pollTimer = useCallback(async (tid: number) => {
+  // 新規メッセージをポーリング（増分取得）
+  const pollNewMessages = useCallback(async (tid: number) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/cogno/timers/poll?thread_id=${tid}`);
+      const lastMessageId = messages.length > 0 ? messages[messages.length - 1].id : 0;
+      
+      const response = await fetch(
+        `${API_BASE_URL}/api/cogno/messages/${tid}?since=${lastMessageId}`
+      );
+      
       if (!response.ok) return;
-      
       const data = await response.json();
+      const newMessages: AIMessage[] = data.messages || [];
       
-      if (data.timer_ended) {
-        // タイマー終了 - メッセージを再取得
-        setActiveTimer(null);
-        setRemainingSeconds(null);
-        await fetchMessages(tid);
-      } else if (data.timer) {
-        // タイマーアクティブ
-        setActiveTimer(data.timer);
-        setRemainingSeconds(data.remaining_seconds || null);
-      } else {
-        // タイマーなし
-        setActiveTimer(null);
-        setRemainingSeconds(null);
-      }
+      if (newMessages.length === 0) return;
+      
+      // 重複チェック: 既存メッセージと重複しないもののみ追加
+      const existingIds = new Set(messages.map(msg => msg.id));
+      const uniqueNewMessages = newMessages.filter(msg => !existingIds.has(msg.id));
+      
+      if (uniqueNewMessages.length === 0) return;
+      
+      console.log(`Polling: Found ${uniqueNewMessages.length} new unique messages (${newMessages.length} total, ${newMessages.length - uniqueNewMessages.length} duplicates filtered)`);
+      
+      // 新規メッセージを追加（さらに重複チェック）
+      setMessages(prev => {
+        const existingIds = new Set(prev.map(msg => msg.id));
+        const trulyUniqueMessages = uniqueNewMessages.filter(msg => !existingIds.has(msg.id));
+        
+        if (trulyUniqueMessages.length === 0) {
+          console.log('No truly unique messages after final check');
+          return prev;
+        }
+        
+        console.log(`Adding ${trulyUniqueMessages.length} truly unique messages`);
+        return [...prev, ...trulyUniqueMessages];
+      });
+      // Timer処理は不要 - MessageItemが担当
     } catch (err) {
-      console.error('Error polling timer:', err);
+      console.error('Error polling new messages:', err);
     }
-  }, [fetchMessages]);
+  }, [messages]);
 
-  // タイマーポーリングの開始/停止
+  // 統一Polling: 1秒ごとに新規メッセージをチェック
   useEffect(() => {
     if (!threadId) {
       if (pollingIntervalRef.current) {
@@ -65,12 +78,12 @@ export function useCogno(threadId: number | null) {
     }
 
     // 初回ポーリング
-    pollTimer(threadId);
+    pollNewMessages(threadId);
 
-    // 3秒ごとにポーリング
+    // 1秒ごとにポーリング
     pollingIntervalRef.current = setInterval(() => {
-      pollTimer(threadId);
-    }, 3000);
+      pollNewMessages(threadId);
+    }, 1000);
 
     return () => {
       if (pollingIntervalRef.current) {
@@ -78,7 +91,7 @@ export function useCogno(threadId: number | null) {
         pollingIntervalRef.current = null;
       }
     };
-  }, [threadId, pollTimer]);
+  }, [threadId, pollNewMessages]);
 
   // メッセージ送信（ストリーミング）
   const sendMessage = useCallback(async (content: string) => {
@@ -157,8 +170,10 @@ export function useCogno(threadId: number | null) {
         }
       }
 
-      // ストリーム完了後、確定したメッセージを再取得
+      // ★重要: Stream完了後、DB保存済みの確定メッセージを取得
+      // これでmeta.timer付きの確定メッセージに置き換わる
       await fetchMessages(threadId);
+      console.log('Stream completed. Fetched saved messages with meta.timer.');
 
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'An error occurred';
@@ -172,7 +187,7 @@ export function useCogno(threadId: number | null) {
     }
   }, [threadId, fetchMessages]);
 
-  // タイマー開始
+  // タイマー開始（手動開始用 - 通常は使われない）
   const startTimer = useCallback(async (durationMinutes: number) => {
     if (!threadId) return;
 
@@ -190,18 +205,13 @@ export function useCogno(threadId: number | null) {
 
       if (!response.ok) throw new Error('Failed to start timer');
 
-      const data = await response.json();
-      if (data.success && data.timer) {
-        setActiveTimer(data.timer);
-      }
-
-      // メッセージを再取得してタイマーメッセージを表示
-      await fetchMessages(threadId);
+      // Pollingが自動的にタイマーメッセージを検出
+      console.log('Timer started manually. Polling will detect the timer message.');
     } catch (err) {
       console.error('Error starting timer:', err);
       setError(err instanceof Error ? err.message : 'Failed to start timer');
     }
-  }, [threadId, fetchMessages]);
+  }, [threadId]);
 
   return {
     messages,
@@ -209,9 +219,6 @@ export function useCogno(threadId: number | null) {
     fetchMessages,
     isLoading,
     error,
-    activeTimer,
-    remainingSeconds,
     startTimer,
   };
 }
-

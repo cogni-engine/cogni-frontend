@@ -51,7 +51,7 @@ export default function ThreadSidebar() {
   return (
     <div
       className={`fixed top-0 left-0 h-full bg-white/5 backdrop-blur-xl border-r border-white/10 transition-all duration-300 ease-in-out z-40 ${
-        isThreadSidebarOpen ? 'w-80 translate-x-0' : 'w-0 -translate-x-full'
+        isThreadSidebarOpen ? 'w-60 translate-x-0' : 'w-0 -translate-x-full'
       }`}
     >
       <div className="flex flex-col h-full overflow-hidden">

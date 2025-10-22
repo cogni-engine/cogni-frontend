@@ -5,10 +5,9 @@ import MessageList from "./MessageList";
 
 type ChatContainerProps = {
   messages: Message[] | AIMessage[];
-  remainingSeconds?: number | null;
 };
 
-const ChatContainer = forwardRef<HTMLDivElement, ChatContainerProps>(({ messages, remainingSeconds }, ref) => {
+const ChatContainer = forwardRef<HTMLDivElement, ChatContainerProps>(({ messages }, ref) => {
   return (
     <div className="flex-1 bg-gradient-to-br from-slate-950 via-black to-slate-950 relative overflow-hidden">
       <StarBackground />
@@ -23,7 +22,7 @@ const ChatContainer = forwardRef<HTMLDivElement, ChatContainerProps>(({ messages
           WebkitOverflowScrolling: 'touch'
         }}
       >
-        <MessageList messages={messages} remainingSeconds={remainingSeconds} />
+        <MessageList messages={messages} />
       </div>
     </div>
   );

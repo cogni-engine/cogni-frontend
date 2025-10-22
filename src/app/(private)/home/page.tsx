@@ -15,8 +15,6 @@ export default function HomePage() {
     fetchMessages, 
     isLoading, 
     error,
-    activeTimer,
-    remainingSeconds,
   } = useCogno(selectedThreadId);
   const { isThreadSidebarOpen, messageRefreshTrigger } = useUI();
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -60,7 +58,6 @@ export default function HomePage() {
       <ChatContainer 
         ref={scrollContainerRef} 
         messages={messages}
-        remainingSeconds={remainingSeconds}
       />
       <InputArea 
         messages={messages} 

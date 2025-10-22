@@ -24,8 +24,6 @@ export default function CognoDemoPage() {
     fetchMessages,
     isLoading,
     error,
-    activeTimer,
-    remainingSeconds,
   } = useCogno(threadId);
   
   const { messageRefreshTrigger } = useUI();
@@ -63,17 +61,11 @@ export default function CognoDemoPage() {
         <p className="text-sm text-gray-400">
           Cogni Engine + Conversation AI + Timer System
         </p>
-        {activeTimer && (
-          <div className="mt-2 text-xs text-green-400">
-            ⏱️ タイマー実行中: {Math.floor((remainingSeconds || 0) / 60)}分{(remainingSeconds || 0) % 60}秒
-          </div>
-        )}
       </div>
 
       {/* Chat Container */}
       <ChatContainer 
-        messages={messages} 
-        remainingSeconds={remainingSeconds}
+        messages={messages}
       />
 
       {/* Error Display */}

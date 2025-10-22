@@ -4,10 +4,9 @@ import EmptyState from "./EmptyState";
 
 type MessageListProps = {
   messages: Message[] | AIMessage[];
-  remainingSeconds?: number | null;
 };
 
-export default function MessageList({ messages, remainingSeconds }: MessageListProps) {
+export default function MessageList({ messages }: MessageListProps) {
   if (messages.length === 0) {
     return <EmptyState />;
   }
@@ -15,17 +14,16 @@ export default function MessageList({ messages, remainingSeconds }: MessageListP
   return (
     <>
       {messages.map((message, i) => {
-        const key = 'id' in message && typeof message.id === 'number' ? message.id : i;
+        // より安全なkey生成: ID + インデックスで一意性を保証
+        const messageId = 'id' in message && typeof message.id === 'number' ? message.id : `temp-${i}`;
+        const key = `${messageId}-${i}`;
         
         return (
           <div 
             key={key} 
             data-message-index={i}
           >
-            <MessageItem 
-              message={message} 
-              remainingSeconds={remainingSeconds}
-            />
+            <MessageItem message={message} />
           </div>
         );
       })}

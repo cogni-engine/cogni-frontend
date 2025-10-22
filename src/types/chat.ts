@@ -24,10 +24,12 @@ export type SuggestionConfig = {
 export type TimerStatus = "active" | "completed" | "cancelled";
 
 export type TimerState = {
-  duration_minutes: number;
+  duration_minutes: number;  // float型に対応
+  duration_seconds?: number;  // 秒単位のTimer用
   started_at: string;
   ends_at: string;
   status: TimerStatus;
+  unit: string;  // "minutes" or "seconds"
   message_id?: number;
 };
 

@@ -5,38 +5,79 @@ import { TimerState } from '@/types/chat';
 
 type TimerDisplayProps = {
   timer: TimerState;
-  remainingSeconds?: number | null;
 };
 
-export const TimerDisplay: React.FC<TimerDisplayProps> = ({ timer, remainingSeconds }) => {
-  const [localRemaining, setLocalRemaining] = useState<number>(remainingSeconds || 0);
+export const TimerDisplay: React.FC<TimerDisplayProps> = ({ timer }) => {
+  const [remainingSeconds, setRemainingSeconds] = useState<number>(0);
+
+  // デバッグ用ログ
+  console.log('TimerDisplay rendered with timer:', timer);
+  console.log('Timer status:', timer.status);
+  console.log('Timer ends_at:', timer.ends_at);
 
   useEffect(() => {
-    if (remainingSeconds !== null && remainingSeconds !== undefined) {
-      setLocalRemaining(remainingSeconds);
-    }
-  }, [remainingSeconds]);
-
-  // ローカルカウントダウン
-  useEffect(() => {
-    if (timer.status !== 'active') return;
-
+    console.log('TimerDisplay useEffect triggered');
+    // 残り時間を計算する関数
+    const calculateRemaining = () => {
+      const endsAt = new Date(timer.ends_at);
+      const now = new Date();
+      
+      // デバッグログ追加
+      console.log('=== Timer Timezone Debug ===');
+      console.log('timer.ends_at (raw):', timer.ends_at);
+      console.log('endsAt (parsed):', endsAt.toISOString());
+      console.log('endsAt (local):', endsAt.toString());
+      console.log('now (UTC):', now.toISOString());
+      console.log('now (local):', now.toString());
+      console.log('endsAt timestamp:', endsAt.getTime());
+      console.log('now timestamp:', now.getTime());
+      console.log('difference (ms):', endsAt.getTime() - now.getTime());
+      
+      const remaining = Math.max(0, Math.floor((endsAt.getTime() - now.getTime()) / 1000));
+      console.log('Calculated remaining seconds:', remaining);
+      console.log('===========================');
+      
+      return remaining;
+    };
+    
+    // 初期値を設定
+    const initialRemaining = calculateRemaining();
+    setRemainingSeconds(initialRemaining);
+    console.log('Initial remaining seconds set to:', initialRemaining);
+    
+    // 1秒ごとに残り時間を更新
     const interval = setInterval(() => {
-      setLocalRemaining(prev => Math.max(0, prev - 1));
+      const remaining = calculateRemaining();
+      setRemainingSeconds(remaining);
+      
+      // 0になったらインターバルをクリア
+      if (remaining === 0) {
+        clearInterval(interval);
+      }
     }, 1000);
-
+    
     return () => clearInterval(interval);
-  }, [timer.status]);
+  }, [timer]); // timer全体に依存するように変更
 
-  if (timer.status !== 'active') return null;
+  console.log('Current remainingSeconds:', remainingSeconds);
+  console.log('Timer status check:', timer.status === 'completed');
+  console.log('Will render?', !(remainingSeconds === 0 || timer.status === 'completed'));
 
-  const totalSeconds = timer.duration_minutes * 60;
-  const progress = totalSeconds > 0 ? (localRemaining / totalSeconds) * 100 : 0;
+  // 時間切れまたはcompleted → 非表示
+  if (remainingSeconds === 0 || timer.status === 'completed') {
+    console.log('TimerDisplay returning null');
+    return null;
+  }
+
+  const totalSeconds = timer.duration_seconds || (timer.duration_minutes * 60);
+  const progress = totalSeconds > 0 ? (remainingSeconds / totalSeconds) * 100 : 0;
   
   // 残り時間をMM:SS形式に変換（先行ゼロ付き）
-  const minutes = Math.floor(localRemaining / 60);
-  const seconds = localRemaining % 60;
+  const minutes = Math.floor(remainingSeconds / 60);
+  const seconds = remainingSeconds % 60;
   const timeDisplay = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+
+  console.log('TimerDisplay rendering with timeDisplay:', timeDisplay);
 
   return (
     <div className="flex justify-start items-center my-6 px-2">
@@ -65,4 +106,3 @@ export const TimerDisplay: React.FC<TimerDisplayProps> = ({ timer, remainingSeco
     </div>
   );
 }
-
