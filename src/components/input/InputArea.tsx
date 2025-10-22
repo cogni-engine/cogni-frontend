@@ -1,18 +1,15 @@
 "use client";
 
-import { useState } from "react";
-import { Message } from "@/types/chat";
-import HistoryToggle from "./HistoryToggle";
-import HistoryPanel from "./HistoryPanel";
+import { Message, AIMessage } from "@/types/chat";
 import DynamicInput from "./modes/DynamicInput";
 
 type InputAreaProps = {
-  messages: Message[];
+  messages: Message[] | AIMessage[];
   onSend: (content: string) => void;
+  isLoading?: boolean;
 };
 
-export default function InputArea({ messages, onSend }: InputAreaProps) {
-  const [isHistoryExpanded, setIsHistoryExpanded] = useState(false);
+export default function InputArea({ messages, onSend, isLoading = false }: InputAreaProps) {
 
   // 最新のAIメッセージに基づいて動的に選択肢を生成
   const getCurrentSuggestions = () => {
@@ -36,25 +33,15 @@ export default function InputArea({ messages, onSend }: InputAreaProps) {
   const config = getCurrentSuggestions();
 
   return (
-    <div className="border-t border-white/10 bg-white/3 backdrop-blur-md relative z-10 rounded-t-3xl">
-      {/* 履歴パネル */}
-      {messages.filter(m => m.role === "user").length > 0 && (
-        <>
-          <HistoryToggle 
-            isExpanded={isHistoryExpanded} 
-            onToggle={() => setIsHistoryExpanded(!isHistoryExpanded)} 
-          />
-          <HistoryPanel messages={messages} isExpanded={isHistoryExpanded} />
-        </>
-      )}
-
+    <div className="border-t border-white/10 bg-gradient-to-br from-slate-950/50 via-black/50 to-slate-950/50 backdrop-blur-md relative z-10 rounded-t-3xl">
       {/* 入力UI */}
-      <div className="px-4 md:px-6 pb-4 md:pb-6 pt-1">
+      <div className="px-4 md:px-6 pb-4 md:pb-6 pt-4">
         <DynamicInput
           suggestions={config.suggestions}
           inputPlaceholder={config.placeholder}
           onSuggestionClick={onSend}
           onFreeTextSubmit={onSend}
+          isLoading={isLoading}
         />
       </div>
     </div>

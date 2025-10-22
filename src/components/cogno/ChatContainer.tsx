@@ -1,21 +1,35 @@
-import { Message } from "@/types/chat";
+import { Message, AIMessage } from "@/types/chat";
+import { forwardRef } from "react";
 import StarBackground from "./StarBackground";
 import MessageList from "./MessageList";
 
 type ChatContainerProps = {
-  messages: Message[];
+  messages: Message[] | AIMessage[];
+  remainingSeconds?: number | null;
 };
 
-export default function ChatContainer({ messages }: ChatContainerProps) {
+const ChatContainer = forwardRef<HTMLDivElement, ChatContainerProps>(({ messages, remainingSeconds }, ref) => {
   return (
     <div className="flex-1 bg-gradient-to-br from-slate-950 via-black to-slate-950 relative overflow-hidden">
       <StarBackground />
       
-      {/* AI応答エリア - 画面全体を占有 */}
-      <div className="h-full overflow-y-auto relative z-10 p-6 md:p-8 space-y-6">
-        <MessageList messages={messages} />
+      {/* メッセージエリア - GPU最適化 */}
+      <div 
+        ref={ref}
+        className="h-full overflow-y-auto relative z-10 p-6 md:p-8 space-y-6 scroll-smooth"
+        style={{
+          willChange: 'scroll-position',
+          transform: 'translateZ(0)',
+          WebkitOverflowScrolling: 'touch'
+        }}
+      >
+        <MessageList messages={messages} remainingSeconds={remainingSeconds} />
       </div>
     </div>
   );
-}
+});
+
+ChatContainer.displayName = 'ChatContainer';
+
+export default ChatContainer;
 

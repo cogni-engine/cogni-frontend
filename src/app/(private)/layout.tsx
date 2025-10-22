@@ -1,7 +1,10 @@
 import React from "react";
 import Header from "@/components/layout/Header";
 import BottomNav from "@/components/layout/BottomNav";
+import ThreadSidebar from "@/components/thread/ThreadSidebar";
+import NotificationPanel from "@/components/notifications/NotificationPanel";
 import { ThreadProvider } from "@/contexts/ThreadContext";
+import { UIProvider } from "@/contexts/UIContext";
 
 export default function DashboardLayout({
   children,
@@ -10,16 +13,27 @@ export default function DashboardLayout({
 }) {
   return (
     <ThreadProvider>
-      <div className="flex flex-col h-screen bg-black text-gray-200">
-        {/* Header */}
-        <Header />
+      <UIProvider>
+        <div className="flex flex-col h-screen bg-black text-gray-200 relative">
+          {/* Thread Sidebar */}
+          <ThreadSidebar />
 
-        {/* Main */}
-        <main className="flex-1 overflow-hidden">{children}</main>
+          {/* Main Layout */}
+          <div className="flex flex-col h-screen">
+            {/* Header */}
+            <Header />
 
-        {/* Bottom Navigation */}
-        <BottomNav />
-      </div>
+            {/* Main */}
+            <main className="flex-1 overflow-hidden">{children}</main>
+
+            {/* Bottom Navigation */}
+            <BottomNav />
+          </div>
+
+          {/* Notification Panel */}
+          <NotificationPanel />
+        </div>
+      </UIProvider>
     </ThreadProvider>
   );
 }

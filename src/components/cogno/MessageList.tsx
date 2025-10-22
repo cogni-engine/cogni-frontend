@@ -1,36 +1,35 @@
-import { Message } from "@/types/chat";
+import { Message, AIMessage } from "@/types/chat";
 import MessageItem from "./MessageItem";
 import EmptyState from "./EmptyState";
 
 type MessageListProps = {
-  messages: Message[];
+  messages: Message[] | AIMessage[];
+  remainingSeconds?: number | null;
 };
 
-export default function MessageList({ messages }: MessageListProps) {
-  const assistantMessages = messages.filter(m => m.role === "assistant");
-  
-  if (assistantMessages.length === 0) {
+export default function MessageList({ messages, remainingSeconds }: MessageListProps) {
+  if (messages.length === 0) {
     return <EmptyState />;
   }
   
   return (
     <>
-      {assistantMessages.map((message, i) => {
-        const isLastMessage = i === assistantMessages.length - 1;
-        const isNotification = isLastMessage && message.content.includes("休学届");
+      {messages.map((message, i) => {
+        const key = 'id' in message && typeof message.id === 'number' ? message.id : i;
         
         return (
-          <div key={i} className="max-w-5xl mx-auto">
-            <MessageItem message={message} isNotification={isNotification} />
-            {/* 区切り線 */}
-            {!isLastMessage && (
-              <div className="mt-6 border-t border-white/10"></div>
-            )}
+          <div 
+            key={key} 
+            data-message-index={i}
+          >
+            <MessageItem 
+              message={message} 
+              remainingSeconds={remainingSeconds}
+            />
           </div>
         );
       })}
-      {/* 最後のメッセージの下に空白スペース */}
-      <div className="h-24"></div>
+      <div className="h-120"></div>
     </>
   );
 }

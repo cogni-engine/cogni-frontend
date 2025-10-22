@@ -9,13 +9,15 @@ type DynamicInputProps = {
   inputPlaceholder?: string;
   onSuggestionClick: (suggestion: string) => void;
   onFreeTextSubmit: (text: string) => void;
+  isLoading?: boolean;
 };
 
 export default function DynamicInput({
   suggestions,
   inputPlaceholder = "他の内容を入力...",
   onSuggestionClick,
-  onFreeTextSubmit
+  onFreeTextSubmit,
+  isLoading = false
 }: DynamicInputProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const inputAreaRef = useRef<HTMLDivElement>(null);
@@ -55,6 +57,7 @@ export default function DynamicInput({
               key={index}
               onClick={() => handleSuggestionClick(suggestion)}
               className="flex-1"
+              disabled={isLoading}
             >
               {suggestion}
             </ActionButton>
@@ -63,14 +66,15 @@ export default function DynamicInput({
           {/* 縮小版入力欄 - 常に最後に配置 */}
           <button
             onClick={() => setIsExpanded(true)}
-            className="flex-1 bg-white/8 backdrop-blur-md text-white/50 px-6 rounded-3xl border border-white/15 hover:bg-white/15 hover:border-white/25 transition-all shadow-[0_20px_40px_rgba(0,0,0,0.4),0_0_0_1px_rgba(255,255,255,0.1)] flex items-center text-left text-sm"
+            disabled={isLoading}
+            className="flex-1 bg-white/8 backdrop-blur-xl text-white/50 px-6 rounded-3xl border border-white/10 hover:border-white/15 hover:bg-white/12 hover:scale-[1.01] transition-all duration-300 shadow-[0_8px_32px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.12)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.25),inset_0_1px_0_rgba(255,255,255,0.18)] flex items-center text-left text-sm disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {inputPlaceholder}
+            {isLoading ? "処理中..." : inputPlaceholder}
           </button>
         </div>
       ) : (
         /* 展開: フリーテキスト入力欄 */
-        <FreeTextInput onSend={handleFreeTextSubmit} />
+        <FreeTextInput onSend={handleFreeTextSubmit} isLoading={isLoading} />
       )}
     </div>
   );
