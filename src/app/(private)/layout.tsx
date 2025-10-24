@@ -1,10 +1,9 @@
-import React from 'react';
-import Header from '@/components/layout/Header';
-import BottomNav from '@/components/layout/BottomNav';
-import ThreadSidebar from '@/components/thread/ThreadSidebar';
-import NotificationPanel from '@/components/notifications/NotificationPanel';
-import { ThreadProvider } from '@/contexts/ThreadContext';
-import { UIProvider } from '@/contexts/UIContext';
+import React from "react";
+import Header from "@/components/layout/Header";
+import BottomNav from "@/components/layout/BottomNav";
+import ThreadSidebar from "@/components/thread/ThreadSidebar";
+import { ThreadProvider } from "@/contexts/ThreadContext";
+import { UIProvider } from "@/contexts/UIContext";
 
 export default function DashboardLayout({
   children,
@@ -29,9 +28,6 @@ export default function DashboardLayout({
             {/* Bottom Navigation */}
             <BottomNav />
           </div>
-
-          {/* Notification Panel */}
-          <NotificationPanel />
         </div>
       </UIProvider>
     </ThreadProvider>

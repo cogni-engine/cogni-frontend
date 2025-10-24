@@ -4,19 +4,16 @@ import { useEffect, useState, useRef } from 'react';
 import { useUI } from '@/contexts/UIContext';
 import { useThreadContext } from '@/contexts/ThreadContext';
 import { createClient } from '@/lib/supabase/browserClient';
-import {
-  getPastDueNotifications,
-  markMultipleNotificationsAsSent,
-  triggerNotification,
-} from '@/lib/api/notificationsApi';
-import type { Notification } from '@/types/notification';
+import { getPastDueNotifications, markMultipleNotificationsAsSent, updateNotificationStatus } from '@/lib/api/notificationsApi';
+import type { Notification, NotificationStatus } from '@/types/notification';
 
-export default function NotificationPanel() {
-  const {
-    isNotificationPanelOpen,
-    closeNotificationPanel,
-    triggerMessageRefresh,
-  } = useUI();
+// propsでsendMessageを受け取る
+type NotificationPanelProps = {
+  sendMessage: (content: string, notificationId?: number) => Promise<void>;
+};
+
+export default function NotificationPanel({ sendMessage }: NotificationPanelProps) {
+  const { isNotificationPanelOpen, closeNotificationPanel } = useUI();
   const { selectedThreadId } = useThreadContext();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(false);
@@ -122,16 +119,14 @@ export default function NotificationPanel() {
     }
 
     try {
-      await triggerNotification(notificationId, selectedThreadId);
-
-      // Trigger message refresh via UIContext (same pattern as timer polling)
-      triggerMessageRefresh();
-
-      // Reload notifications after trigger
-      await loadNotifications();
-
-      // Close panel
+      // 1. パネルを即座に閉じる
       closeNotificationPanel();
+      
+      // 2. HomePageのsendMessageを使って通知メッセージを送信（同じインスタンス）
+      await sendMessage('', notificationId);
+      
+      // 3. 通知をresolvedに更新
+      await updateNotificationStatus(notificationId, 'resolved' as NotificationStatus);
     } catch (error) {
       console.error('Failed to trigger notification:', error);
     }

@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import type { Notification } from '@/types/notification';
 
 interface NotificationItemProps {
@@ -14,16 +15,26 @@ export default function NotificationItem({
   onNotificationClick,
 }: NotificationItemProps) {
   const isScheduled = notification.status === 'scheduled';
-
+  const [isClicked, setIsClicked] = useState(false);
+  
   const handleClick = () => {
     if (onNotificationClick) {
-      onNotificationClick(notification.id);
+      setIsClicked(true);
+      // エフェクト後にクリック処理を実行
+      setTimeout(() => {
+        onNotificationClick(notification.id);
+        setIsClicked(false);
+      }, 150);
     }
   };
 
   return (
-    <div
-      className='p-3 rounded-lg bg-white/5 hover:bg-white/10 transition-colors border border-white/5 cursor-pointer'
+    <div 
+      className={`p-3 rounded-lg bg-white/5 hover:bg-white/10 transition-all duration-150 border border-white/5 cursor-pointer ${
+        isClicked 
+          ? 'bg-white/20 scale-95 shadow-lg shadow-white/20' 
+          : 'hover:scale-[1.02]'
+      }`}
       onClick={handleClick}
     >
       <div className='flex items-start justify-between gap-2'>
