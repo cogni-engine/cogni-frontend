@@ -29,6 +29,8 @@ Configure these secrets in your GitHub repository settings:
 1. **VERCEL_ORG_ID** - Your Vercel organization ID
 2. **VERCEL_TOKEN** - Your Vercel API token
 3. **VERCEL_PROJECT_ID** - Your Vercel project ID
+4. **NEXT_PUBLIC_SUPABASE_URL** - Your Supabase project URL
+5. **NEXT_PUBLIC_SUPABASE_ANON_KEY** - Your Supabase anonymous key
 
 ## Getting Vercel Credentials
 
@@ -37,6 +39,13 @@ Configure these secrets in your GitHub repository settings:
 3. Copy the Project ID from the General tab
 4. Generate an API token from Account Settings > Tokens
 5. Find your Organization ID in the URL or API responses
+
+## Getting Supabase Credentials
+
+1. Go to [Supabase Dashboard](https://supabase.com/dashboard)
+2. Select your project
+3. Navigate to Settings > API
+4. Copy your **Project URL** and **anon/public key**
 
 ## Local Development
 
