@@ -181,7 +181,7 @@ export async function triggerNotification(
   threadId: number
 ): Promise<void> {
   const response = await fetch(
-    'http://0.0.0.0:8000/api/cogno/notification/trigger',
+    `${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://0.0.0.0:8000'}/api/cogno/notification/trigger`,
     {
       method: 'POST',
       headers: {

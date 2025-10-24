@@ -3,7 +3,8 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { AIMessage } from '@/types/chat';
 
-const API_BASE_URL = 'http://0.0.0.0:8000';
+const API_BASE_URL =
+  process.env.NEXT_PUBLIC_API_BASE_URL || 'http://0.0.0.0:8000';
 
 export function useCogno(threadId: number | null) {
   const [messages, setMessages] = useState<AIMessage[]>([]);

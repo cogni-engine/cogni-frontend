@@ -33,17 +33,20 @@ export function useCognoChat() {
     setMessages(prev => [...prev, assistantMessage]);
 
     try {
-      const response = await fetch('http://0.0.0.0:8000/test/stream', {
-        method: 'POST',
-        headers: {
-          accept: 'application/json',
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          prompt: userInput,
-          system_message: 'You are a helpful assistant.',
-        }),
-      });
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://0.0.0.0:8000'}/test/stream`,
+        {
+          method: 'POST',
+          headers: {
+            accept: 'application/json',
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            prompt: userInput,
+            system_message: 'You are a helpful assistant.',
+          }),
+        }
+      );
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);

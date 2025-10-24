@@ -1,6 +1,7 @@
 import { AIMessage } from '@/types/chat';
 
-const API_BASE_URL = 'http://0.0.0.0:8000';
+const API_BASE_URL =
+  process.env.NEXT_PUBLIC_API_BASE_URL || 'http://0.0.0.0:8000';
 
 // メッセージ一覧取得
 export async function getAIMessages(threadId: number): Promise<AIMessage[]> {
