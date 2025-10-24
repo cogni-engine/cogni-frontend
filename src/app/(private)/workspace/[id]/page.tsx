@@ -1,7 +1,7 @@
 'use client';
 
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import NoteList from '@/components/notes/NoteList';
 import { useWorkspaceNotes, formatDate } from '@/hooks/useWorkspaceNotes';
 import { useWorkspaceInvitations } from '@/hooks/useWorkspaceInvitations';
@@ -34,8 +34,7 @@ export default function WorkspacePage() {
     'email'
   );
 
-  const { notes, loading, error, searchNotes, workspace } =
-    useWorkspaceNotes(workspaceId);
+  const { notes, loading, error, workspace } = useWorkspaceNotes(workspaceId);
   const {
     invitations,
     inviteLinks,
@@ -54,14 +53,17 @@ export default function WorkspacePage() {
     }
   }, [searchParams]);
 
-  const handleViewChange = (view: ViewType) => {
-    setCurrentView(view);
-    const newSearchParams = new URLSearchParams(searchParams);
-    newSearchParams.set('view', view);
-    router.push(`/workspace/${workspaceId}?${newSearchParams.toString()}`);
-  };
+  const handleViewChange = useCallback(
+    (view: ViewType) => {
+      setCurrentView(view);
+      const newSearchParams = new URLSearchParams(searchParams);
+      newSearchParams.set('view', view);
+      router.push(`/workspace/${workspaceId}?${newSearchParams.toString()}`);
+    },
+    [searchParams, router, workspaceId]
+  );
 
-  const handleCreateInvitation = async () => {
+  const handleCreateInvitation = useCallback(async () => {
     if (invitationType === 'email' && !inviteEmail.trim()) return;
 
     try {
@@ -78,17 +80,36 @@ export default function WorkspacePage() {
     } catch (error) {
       console.error('Failed to create invitation:', error);
     }
-  };
+  }, [
+    invitationType,
+    inviteEmail,
+    createEmailInvitation,
+    createAnonymousInviteLink,
+  ]);
 
-  const handleDisableInviteLink = async (inviteLinkId: string) => {
-    try {
-      await disableInviteLinkById(inviteLinkId);
-    } catch (error) {
-      console.error('Failed to disable invite link:', error);
-    }
-  };
+  const handleCancelInvitation = useCallback(
+    async (invitationId: string) => {
+      try {
+        await cancelInvitationById(invitationId);
+      } catch (error) {
+        console.error('Failed to cancel invitation:', error);
+      }
+    },
+    [cancelInvitationById]
+  );
 
-  const handleCopyInviteLink = async (token: string) => {
+  const handleDisableInviteLink = useCallback(
+    async (inviteLinkId: string) => {
+      try {
+        await disableInviteLinkById(inviteLinkId);
+      } catch (error) {
+        console.error('Failed to disable invite link:', error);
+      }
+    },
+    [disableInviteLinkById]
+  );
+
+  const handleCopyInviteLink = useCallback(async (token: string) => {
     try {
       const link = generateInvitationLink(token);
       await navigator.clipboard.writeText(link);
@@ -96,16 +117,18 @@ export default function WorkspacePage() {
     } catch (error) {
       console.error('Failed to copy invite link:', error);
     }
-  };
+  }, []);
 
-  const formattedNotes = notes.map((note: NoteWithParsed) => ({
-    id: note.id.toString(),
-    title: note.title,
-    date: formatDate(note.updated_at),
-    preview: note.preview,
-  }));
+  const formattedNotes = useMemo(() => {
+    return notes.map((note: NoteWithParsed) => ({
+      id: note.id.toString(),
+      title: note.title,
+      date: formatDate(note.updated_at),
+      preview: note.preview,
+    }));
+  }, [notes]);
 
-  const renderContent = () => {
+  const renderContent = useMemo(() => {
     switch (currentView) {
       case 'chat':
         return (
@@ -274,13 +297,22 @@ export default function WorkspacePage() {
               </div>
             )}
 
-            {!loading && !error && (
-              <NoteList notes={formattedNotes} onSearch={searchNotes} />
-            )}
+            {!loading && !error && <NoteList notes={formattedNotes} />}
           </>
         );
     }
-  };
+  }, [
+    currentView,
+    loading,
+    error,
+    formattedNotes,
+    invitationsLoading,
+    invitations,
+    inviteLinks,
+    handleCancelInvitation,
+    handleDisableInviteLink,
+    handleCopyInviteLink,
+  ]);
 
   return (
     <div className='flex flex-col h-full bg-gradient-to-br from-slate-950 via-black to-slate-950 text-gray-100 p-4 md:p-6 relative overflow-hidden'>
@@ -345,7 +377,7 @@ export default function WorkspacePage() {
         </div>
 
         {/* Content */}
-        <div className='flex-1 overflow-hidden'>{renderContent()}</div>
+        <div className='flex-1 overflow-hidden'>{renderContent}</div>
       </div>
 
       {/* Invite Modal */}
