@@ -2,7 +2,7 @@ name: CD
 
 on:
   workflow_run:
-    workflows: ["CI"]
+    workflows: ['CI']
     branches: [main, staging]
     types: [completed]
   workflow_dispatch:
@@ -17,17 +17,17 @@ jobs:
     name: Deploy to Vercel
     runs-on: ubuntu-latest
     if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch' }}
-    
+
     steps:
       - uses: actions/checkout@v4
-      
+
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
-      
+
       - name: Enable Corepack
         run: corepack enable
-      
+
       - name: Cache Yarn dependencies
         uses: actions/cache@v4
         with:
@@ -37,14 +37,14 @@ jobs:
           key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
           restore-keys: |
             ${{ runner.os }}-yarn-
-      
+
       - name: Install dependencies
         run: yarn install --frozen-lockfile
-      
+
       - name: Deploy to Production
         if: github.ref == 'refs/heads/main'
         run: npx vercel --prod --token=${{ env.VERCEL_TOKEN }}
-      
+
       - name: Deploy to Staging
         if: github.ref == 'refs/heads/staging'
         run: npx vercel --target=staging --token=${{ env.VERCEL_TOKEN }}
