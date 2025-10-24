@@ -1,5 +1,5 @@
-import { useRef, useCallback, useEffect } from "react";
-import { Message, AIMessage } from "@/types/chat";
+import { useRef, useCallback, useEffect } from 'react';
+import { Message, AIMessage } from '@/types/chat';
 
 const SCROLL_OFFSET = 25; // ヘッダー高さ + 余白
 
@@ -25,26 +25,29 @@ export function useMessageScroll(messages: Message[] | AIMessage[]) {
     // コンテナ内でのメッセージ要素の相対位置を取得
     const containerRect = container.getBoundingClientRect();
     const elementRect = messageElement.getBoundingClientRect();
-    
+
     // 現在のスクロール位置 + 要素の相対位置 - 調整値
-    const targetScrollTop = container.scrollTop + (elementRect.top - containerRect.top) - SCROLL_OFFSET;
+    const targetScrollTop =
+      container.scrollTop +
+      (elementRect.top - containerRect.top) -
+      SCROLL_OFFSET;
 
     container.scrollTo({
       top: Math.max(0, targetScrollTop),
-      behavior: 'smooth'
+      behavior: 'smooth',
     });
   }, []);
 
   // 新しいAIメッセージが追加されたら自動スクロール
   useEffect(() => {
-    const assistantMessages = messages.filter(m => m.role === "assistant");
+    const assistantMessages = messages.filter(m => m.role === 'assistant');
     const currentCount = assistantMessages.length;
 
     // メッセージが増えた場合のみスクロール
     if (currentCount > prevMessageCountRef.current && currentCount > 0) {
       // 最新メッセージのインデックス
       const latestIndex = currentCount - 1;
-      
+
       // 少し遅延を入れてDOM更新を待つ
       setTimeout(() => {
         scrollToMessage(latestIndex);
@@ -56,7 +59,6 @@ export function useMessageScroll(messages: Message[] | AIMessage[]) {
 
   return {
     scrollContainerRef,
-    scrollToMessage
+    scrollToMessage,
   };
 }
-

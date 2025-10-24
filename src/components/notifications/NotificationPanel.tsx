@@ -1,14 +1,22 @@
-"use client";
+'use client';
 
 import { useEffect, useState, useRef } from 'react';
 import { useUI } from '@/contexts/UIContext';
 import { useThreadContext } from '@/contexts/ThreadContext';
 import { createClient } from '@/lib/supabase/browserClient';
-import { getPastDueNotifications, markMultipleNotificationsAsSent, triggerNotification } from '@/lib/api/notificationsApi';
+import {
+  getPastDueNotifications,
+  markMultipleNotificationsAsSent,
+  triggerNotification,
+} from '@/lib/api/notificationsApi';
 import type { Notification } from '@/types/notification';
 
 export default function NotificationPanel() {
-  const { isNotificationPanelOpen, closeNotificationPanel, triggerMessageRefresh } = useUI();
+  const {
+    isNotificationPanelOpen,
+    closeNotificationPanel,
+    triggerMessageRefresh,
+  } = useUI();
   const { selectedThreadId } = useThreadContext();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(false);
@@ -19,7 +27,9 @@ export default function NotificationPanel() {
   useEffect(() => {
     const getUserId = async () => {
       const supabase = createClient();
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       if (user) {
         setUserId(user.id);
       }
@@ -41,12 +51,12 @@ export default function NotificationPanel() {
 
     const handleClickOutside = (event: MouseEvent) => {
       const target = event.target as HTMLElement;
-      
+
       // Ignore clicks on the notification trigger button
       if (target.closest('[data-notification-trigger="true"]')) {
         return;
       }
-      
+
       // Close if clicked outside the panel
       if (panelRef.current && !panelRef.current.contains(target)) {
         closeNotificationPanel();
@@ -73,11 +83,14 @@ export default function NotificationPanel() {
 
       // Mark scheduled notifications as sent
       const scheduledIds = fetchedNotifications
-        .filter(n => n.status === 'scheduled' && new Date(n.due_date) < new Date())
+        .filter(
+          n => n.status === 'scheduled' && new Date(n.due_date) < new Date()
+        )
         .map(n => n.id);
 
       if (scheduledIds.length > 0) {
-        const updatedNotifications = await markMultipleNotificationsAsSent(scheduledIds);
+        const updatedNotifications =
+          await markMultipleNotificationsAsSent(scheduledIds);
         setNotifications(prev =>
           prev.map(n => {
             const updated = updatedNotifications.find(u => u.id === n.id);
@@ -110,13 +123,13 @@ export default function NotificationPanel() {
 
     try {
       await triggerNotification(notificationId, selectedThreadId);
-      
+
       // Trigger message refresh via UIContext (same pattern as timer polling)
       triggerMessageRefresh();
-      
+
       // Reload notifications after trigger
       await loadNotifications();
-      
+
       // Close panel
       closeNotificationPanel();
     } catch (error) {
@@ -134,42 +147,42 @@ export default function NotificationPanel() {
       }`}
     >
       {/* Header */}
-      <div className="p-4 border-b border-white/10">
-        <h3 className="text-sm font-semibold text-white">Notifications</h3>
+      <div className='p-4 border-b border-white/10'>
+        <h3 className='text-sm font-semibold text-white'>Notifications</h3>
       </div>
 
       {/* Content */}
-      <div className="overflow-y-auto max-h-80 p-3">
+      <div className='overflow-y-auto max-h-80 p-3'>
         {loading ? (
-          <div className="flex justify-center items-center py-8">
-            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white"></div>
+          <div className='flex justify-center items-center py-8'>
+            <div className='animate-spin rounded-full h-6 w-6 border-b-2 border-white'></div>
           </div>
         ) : notifications.length === 0 ? (
-          <div className="text-center py-8">
-            <div className="text-white/40 text-sm mb-2">通知はありません</div>
-            <div className="text-white/30 text-xs">
+          <div className='text-center py-8'>
+            <div className='text-white/40 text-sm mb-2'>通知はありません</div>
+            <div className='text-white/30 text-xs'>
               新しい通知があるとここに表示されます
             </div>
           </div>
         ) : (
-          <div className="space-y-2">
-            {notifications.map((notification) => (
+          <div className='space-y-2'>
+            {notifications.map(notification => (
               <div
                 key={notification.id}
-                className="p-3 rounded-lg bg-white/5 hover:bg-white/10 transition-colors border border-white/5 cursor-pointer"
+                className='p-3 rounded-lg bg-white/5 hover:bg-white/10 transition-colors border border-white/5 cursor-pointer'
                 onClick={() => handleNotificationClick(notification.id)}
               >
-                <div className="flex items-start justify-between gap-2">
-                  <h4 className="text-sm text-white/90 font-medium flex-1 line-clamp-2">
+                <div className='flex items-start justify-between gap-2'>
+                  <h4 className='text-sm text-white/90 font-medium flex-1 line-clamp-2'>
                     {notification.title}
                   </h4>
                   {notification.status === 'scheduled' && (
-                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-300 border border-blue-500/30 whitespace-nowrap">
+                    <span className='text-[10px] px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-300 border border-blue-500/30 whitespace-nowrap'>
                       NEW
                     </span>
                   )}
                 </div>
-                <div className="text-[11px] text-white/40 mt-1">
+                <div className='text-[11px] text-white/40 mt-1'>
                   {formatDate(notification.due_date)}
                 </div>
               </div>
@@ -180,4 +193,3 @@ export default function NotificationPanel() {
     </div>
   );
 }
-

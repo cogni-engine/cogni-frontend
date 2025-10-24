@@ -11,4 +11,3 @@ export interface NoteWithParsed extends Note {
   preview: string;
   content: string;
 }
-

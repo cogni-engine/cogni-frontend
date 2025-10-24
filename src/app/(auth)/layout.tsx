@@ -1,14 +1,18 @@
-'use client'
-'use client'
+'use client';
+'use client';
 
-import React from 'react'
+import React from 'react';
 
-export default function AuthLayout({ children }: { children: React.ReactNode }) {
+export default function AuthLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
-    <div className="min-h-screen w-full flex items-center justify-center bg-black text-white">
-      <div className="w-full max-w-sm sm:max-w-md flex flex-col items-center p-8">
+    <div className='min-h-screen w-full flex items-center justify-center bg-black text-white'>
+      <div className='w-full max-w-sm sm:max-w-md flex flex-col items-center p-8'>
         {children}
       </div>
     </div>
-  )
+  );
 }

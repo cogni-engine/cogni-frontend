@@ -35,9 +35,9 @@ export default function WorkspaceList({
 
   if (workspaces.length === 0) {
     return (
-      <div className="text-center py-12">
-        <div className="text-gray-500 text-lg mb-2">No workspaces yet</div>
-        <div className="text-gray-600 text-sm">
+      <div className='text-center py-12'>
+        <div className='text-gray-500 text-lg mb-2'>No workspaces yet</div>
+        <div className='text-gray-600 text-sm'>
           Create your first workspace to get started
         </div>
       </div>
@@ -45,8 +45,8 @@ export default function WorkspaceList({
   }
 
   return (
-    <div className="flex flex-col gap-4">
-      {workspaces.map((workspace) => (
+    <div className='flex flex-col gap-4'>
+      {workspaces.map(workspace => (
         <WorkspaceCard
           key={workspace.id}
           workspace={workspace}
@@ -73,13 +73,13 @@ function WorkspaceCard({
   isDeleting,
 }: WorkspaceCardProps) {
   return (
-    <div className="bg-white/8 backdrop-blur-md hover:bg-white/12 transition-all rounded-2xl p-5 border border-white/15 shadow-[0_8px_32px_rgba(0,0,0,0.2)] hover:shadow-[0_8px_32px_rgba(0,0,0,0.3)]">
-      <div className="flex items-center justify-between gap-3">
-        <div className="flex-1 min-w-0">
-          <h3 className="text-base font-semibold text-white mb-1 truncate">
+    <div className='bg-white/8 backdrop-blur-md hover:bg-white/12 transition-all rounded-2xl p-5 border border-white/15 shadow-[0_8px_32px_rgba(0,0,0,0.2)] hover:shadow-[0_8px_32px_rgba(0,0,0,0.3)]'>
+      <div className='flex items-center justify-between gap-3'>
+        <div className='flex-1 min-w-0'>
+          <h3 className='text-base font-semibold text-white mb-1 truncate'>
             {workspace.title || 'Untitled Workspace'}
           </h3>
-          <div className="flex items-center gap-2">
+          <div className='flex items-center gap-2'>
             <span
               className={`px-1.5 py-0.5 rounded text-xs font-medium ${
                 workspace.type === 'personal'
@@ -89,30 +89,29 @@ function WorkspaceCard({
             >
               {workspace.type}
             </span>
-            <span className="text-xs text-gray-600">
+            <span className='text-xs text-gray-600'>
               {new Date(workspace.created_at).toLocaleDateString()}
             </span>
           </div>
         </div>
 
-        <div className="flex gap-1.5 shrink-0">
+        <div className='flex gap-1.5 shrink-0'>
           <button
             onClick={() => onEdit(workspace)}
             disabled={isDeleting}
-            className="p-2 bg-gray-950 hover:bg-gray-900 text-white rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className='p-2 bg-gray-950 hover:bg-gray-900 text-white rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed'
           >
-            <PencilIcon className="w-4 h-4" />
+            <PencilIcon className='w-4 h-4' />
           </button>
           <button
             onClick={() => onDelete(workspace.id)}
             disabled={isDeleting}
-            className="p-2 bg-red-600/10 hover:bg-red-600/20 text-red-400 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className='p-2 bg-red-600/10 hover:bg-red-600/20 text-red-400 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed'
           >
-            <TrashIcon className="w-4 h-4" />
+            <TrashIcon className='w-4 h-4' />
           </button>
         </div>
       </div>
     </div>
   );
 }
-

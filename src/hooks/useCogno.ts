@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { AIMessage } from '@/types/chat';
@@ -26,46 +26,58 @@ export function useCogno(threadId: number | null) {
   }, []);
 
   // 新規メッセージをポーリング（増分取得）
-  const pollNewMessages = useCallback(async (tid: number) => {
-    try {
-      const lastMessageId = messages.length > 0 ? messages[messages.length - 1].id : 0;
-      
-      const response = await fetch(
-        `${API_BASE_URL}/api/cogno/messages/${tid}?since=${lastMessageId}`
-      );
-      
-      if (!response.ok) return;
-      const data = await response.json();
-      const newMessages: AIMessage[] = data.messages || [];
-      
-      if (newMessages.length === 0) return;
-      
-      // 重複チェック: 既存メッセージと重複しないもののみ追加
-      const existingIds = new Set(messages.map(msg => msg.id));
-      const uniqueNewMessages = newMessages.filter(msg => !existingIds.has(msg.id));
-      
-      if (uniqueNewMessages.length === 0) return;
-      
-      console.log(`Polling: Found ${uniqueNewMessages.length} new unique messages (${newMessages.length} total, ${newMessages.length - uniqueNewMessages.length} duplicates filtered)`);
-      
-      // 新規メッセージを追加（さらに重複チェック）
-      setMessages(prev => {
-        const existingIds = new Set(prev.map(msg => msg.id));
-        const trulyUniqueMessages = uniqueNewMessages.filter(msg => !existingIds.has(msg.id));
-        
-        if (trulyUniqueMessages.length === 0) {
-          console.log('No truly unique messages after final check');
-          return prev;
-        }
-        
-        console.log(`Adding ${trulyUniqueMessages.length} truly unique messages`);
-        return [...prev, ...trulyUniqueMessages];
-      });
-      // Timer処理は不要 - MessageItemが担当
-    } catch (err) {
-      console.error('Error polling new messages:', err);
-    }
-  }, [messages]);
+  const pollNewMessages = useCallback(
+    async (tid: number) => {
+      try {
+        const lastMessageId =
+          messages.length > 0 ? messages[messages.length - 1].id : 0;
+
+        const response = await fetch(
+          `${API_BASE_URL}/api/cogno/messages/${tid}?since=${lastMessageId}`
+        );
+
+        if (!response.ok) return;
+        const data = await response.json();
+        const newMessages: AIMessage[] = data.messages || [];
+
+        if (newMessages.length === 0) return;
+
+        // 重複チェック: 既存メッセージと重複しないもののみ追加
+        const existingIds = new Set(messages.map(msg => msg.id));
+        const uniqueNewMessages = newMessages.filter(
+          msg => !existingIds.has(msg.id)
+        );
+
+        if (uniqueNewMessages.length === 0) return;
+
+        console.log(
+          `Polling: Found ${uniqueNewMessages.length} new unique messages (${newMessages.length} total, ${newMessages.length - uniqueNewMessages.length} duplicates filtered)`
+        );
+
+        // 新規メッセージを追加（さらに重複チェック）
+        setMessages(prev => {
+          const existingIds = new Set(prev.map(msg => msg.id));
+          const trulyUniqueMessages = uniqueNewMessages.filter(
+            msg => !existingIds.has(msg.id)
+          );
+
+          if (trulyUniqueMessages.length === 0) {
+            console.log('No truly unique messages after final check');
+            return prev;
+          }
+
+          console.log(
+            `Adding ${trulyUniqueMessages.length} truly unique messages`
+          );
+          return [...prev, ...trulyUniqueMessages];
+        });
+        // Timer処理は不要 - MessageItemが担当
+      } catch (err) {
+        console.error('Error polling new messages:', err);
+      }
+    },
+    [messages]
+  );
 
   // 統一Polling: 1秒ごとに新規メッセージをチェック
   useEffect(() => {
@@ -94,124 +106,138 @@ export function useCogno(threadId: number | null) {
   }, [threadId, pollNewMessages]);
 
   // メッセージ送信（ストリーミング）
-  const sendMessage = useCallback(async (content: string) => {
-    if (!threadId || !content.trim()) return;
+  const sendMessage = useCallback(
+    async (content: string) => {
+      if (!threadId || !content.trim()) return;
 
-    setIsLoading(true);
-    setError(null);
+      setIsLoading(true);
+      setError(null);
 
-    // 楽観的UI: 仮のユーザーメッセージとAIメッセージを追加
-    const tempUserMsg: AIMessage = {
-      id: Date.now(),
-      content,
-      thread_id: threadId,
-      role: 'user',
-      created_at: new Date().toISOString(),
-    };
-    
-    const tempAIMsg: AIMessage = {
-      id: Date.now() + 1,
-      content: '',
-      thread_id: threadId,
-      role: 'assistant',
-      created_at: new Date().toISOString(),
-    };
+      // 楽観的UI: 仮のユーザーメッセージとAIメッセージを追加
+      const tempUserMsg: AIMessage = {
+        id: Date.now(),
+        content,
+        thread_id: threadId,
+        role: 'user',
+        created_at: new Date().toISOString(),
+      };
 
-    setMessages(prev => [...prev, tempUserMsg, tempAIMsg]);
+      const tempAIMsg: AIMessage = {
+        id: Date.now() + 1,
+        content: '',
+        thread_id: threadId,
+        role: 'assistant',
+        created_at: new Date().toISOString(),
+      };
 
-    try {
-      const response = await fetch(`${API_BASE_URL}/api/cogno/chat/stream`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          thread_id: threadId,
-          message: content,
-        }),
-      });
+      setMessages(prev => [...prev, tempUserMsg, tempAIMsg]);
 
-      if (!response.ok) throw new Error('Failed to send message');
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/cogno/chat/stream`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            thread_id: threadId,
+            message: content,
+          }),
+        });
 
-      const reader = response.body?.getReader();
-      const decoder = new TextDecoder();
+        if (!response.ok) throw new Error('Failed to send message');
 
-      if (!reader) throw new Error('Response body is null');
+        const reader = response.body?.getReader();
+        const decoder = new TextDecoder();
 
-      let accumulatedContent = '';
-      let buffer = '';
+        if (!reader) throw new Error('Response body is null');
 
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
+        let accumulatedContent = '';
+        let buffer = '';
 
-        const chunk = decoder.decode(value, { stream: true });
-        buffer += chunk;
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
 
-        const lines = buffer.split('\n');
-        buffer = lines.pop() || '';
+          const chunk = decoder.decode(value, { stream: true });
+          buffer += chunk;
 
-        for (const line of lines) {
-          if (line.startsWith('data: ')) {
-            const data = line.slice(6);
-            if (data === '[DONE]') continue;
+          const lines = buffer.split('\n');
+          buffer = lines.pop() || '';
 
-            accumulatedContent += data;
+          for (const line of lines) {
+            if (line.startsWith('data: ')) {
+              const data = line.slice(6);
+              if (data === '[DONE]') continue;
 
-            // ストリーム中の仮AIメッセージを更新
-            setMessages(prev =>
-              prev.map(msg =>
-                msg.id === tempAIMsg.id
-                  ? { ...msg, content: accumulatedContent }
-                  : msg
-              )
-            );
+              accumulatedContent += data;
+
+              // ストリーム中の仮AIメッセージを更新
+              setMessages(prev =>
+                prev.map(msg =>
+                  msg.id === tempAIMsg.id
+                    ? { ...msg, content: accumulatedContent }
+                    : msg
+                )
+              );
+            }
           }
         }
+
+        // ★重要: Stream完了後、DB保存済みの確定メッセージを取得
+        // これでmeta.timer付きの確定メッセージに置き換わる
+        await fetchMessages(threadId);
+        console.log(
+          'Stream completed. Fetched saved messages with meta.timer.'
+        );
+      } catch (err) {
+        const errorMessage =
+          err instanceof Error ? err.message : 'An error occurred';
+        setError(errorMessage);
+        console.error('Error in sendMessage:', err);
+
+        // エラー時は仮メッセージを削除
+        setMessages(prev =>
+          prev.filter(
+            msg => msg.id !== tempUserMsg.id && msg.id !== tempAIMsg.id
+          )
+        );
+      } finally {
+        setIsLoading(false);
       }
-
-      // ★重要: Stream完了後、DB保存済みの確定メッセージを取得
-      // これでmeta.timer付きの確定メッセージに置き換わる
-      await fetchMessages(threadId);
-      console.log('Stream completed. Fetched saved messages with meta.timer.');
-
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'An error occurred';
-      setError(errorMessage);
-      console.error('Error in sendMessage:', err);
-      
-      // エラー時は仮メッセージを削除
-      setMessages(prev => prev.filter(msg => msg.id !== tempUserMsg.id && msg.id !== tempAIMsg.id));
-    } finally {
-      setIsLoading(false);
-    }
-  }, [threadId, fetchMessages]);
+    },
+    [threadId, fetchMessages]
+  );
 
   // タイマー開始（手動開始用 - 通常は使われない）
-  const startTimer = useCallback(async (durationMinutes: number) => {
-    if (!threadId) return;
+  const startTimer = useCallback(
+    async (durationMinutes: number) => {
+      if (!threadId) return;
 
-    try {
-      const response = await fetch(`${API_BASE_URL}/api/cogno/timers/start`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          thread_id: threadId,
-          duration_minutes: durationMinutes,
-        }),
-      });
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/cogno/timers/start`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            thread_id: threadId,
+            duration_minutes: durationMinutes,
+          }),
+        });
 
-      if (!response.ok) throw new Error('Failed to start timer');
+        if (!response.ok) throw new Error('Failed to start timer');
 
-      // Pollingが自動的にタイマーメッセージを検出
-      console.log('Timer started manually. Polling will detect the timer message.');
-    } catch (err) {
-      console.error('Error starting timer:', err);
-      setError(err instanceof Error ? err.message : 'Failed to start timer');
-    }
-  }, [threadId]);
+        // Pollingが自動的にタイマーメッセージを検出
+        console.log(
+          'Timer started manually. Polling will detect the timer message.'
+        );
+      } catch (err) {
+        console.error('Error starting timer:', err);
+        setError(err instanceof Error ? err.message : 'Failed to start timer');
+      }
+    },
+    [threadId]
+  );
 
   return {
     messages,

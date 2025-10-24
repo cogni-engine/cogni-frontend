@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import type { Notification } from '@/types/notification';
 import NotificationItem from './NotificationItem';
@@ -9,12 +9,16 @@ interface NotificationListProps {
   onNotificationClick?: (notificationId: number) => void;
 }
 
-export default function NotificationList({ notifications, formatDate, onNotificationClick }: NotificationListProps) {
+export default function NotificationList({
+  notifications,
+  formatDate,
+  onNotificationClick,
+}: NotificationListProps) {
   return (
-    <div className="flex flex-col gap-[14px]">
-      {notifications.map((notification) => (
-        <NotificationItem 
-          key={notification.id} 
+    <div className='flex flex-col gap-[14px]'>
+      {notifications.map(notification => (
+        <NotificationItem
+          key={notification.id}
           notification={notification}
           formatDate={formatDate}
           onNotificationClick={onNotificationClick}
@@ -23,4 +27,3 @@ export default function NotificationList({ notifications, formatDate, onNotifica
     </div>
   );
 }
-

@@ -1,32 +1,32 @@
 // src/middleware.ts
-import { type NextRequest, NextResponse } from 'next/server'
-import { updateSession } from '@/lib/supabase/middleware'
+import { type NextRequest, NextResponse } from 'next/server';
+import { updateSession } from '@/lib/supabase/middleware';
 
 export async function middleware(request: NextRequest) {
-  const { response, user } = await updateSession(request)
+  const { response, user } = await updateSession(request);
 
   // Define private routes that require authentication
-  const privateRoutes = ['/home', '/notes', '/workspace']
-  const isPrivateRoute = privateRoutes.some(route => 
+  const privateRoutes = ['/home', '/notes', '/workspace'];
+  const isPrivateRoute = privateRoutes.some(route =>
     request.nextUrl.pathname.startsWith(route)
-  )
+  );
 
   // Redirect to login if accessing private route without authentication
   if (!user && isPrivateRoute) {
-    return NextResponse.redirect(new URL('/login', request.url))
+    return NextResponse.redirect(new URL('/login', request.url));
   }
 
   // Redirect to home if authenticated user tries to access auth pages
-  const authRoutes = ['/login', '/register']
-  const isAuthRoute = authRoutes.some(route => 
+  const authRoutes = ['/login', '/register'];
+  const isAuthRoute = authRoutes.some(route =>
     request.nextUrl.pathname.startsWith(route)
-  )
-  
+  );
+
   if (user && isAuthRoute) {
-    return NextResponse.redirect(new URL('/home', request.url))
+    return NextResponse.redirect(new URL('/home', request.url));
   }
 
-  return response
+  return response;
 }
 
 export const config = {
@@ -40,4 +40,4 @@ export const config = {
      */
     '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
   ],
-}
+};

@@ -5,7 +5,12 @@ type ActionButtonProps = {
   disabled?: boolean;
 };
 
-export default function ActionButton({ onClick, children, className = "", disabled = false }: ActionButtonProps) {
+export default function ActionButton({
+  onClick,
+  children,
+  className = '',
+  disabled = false,
+}: ActionButtonProps) {
   return (
     <button
       onClick={onClick}
@@ -16,4 +21,3 @@ export default function ActionButton({ onClick, children, className = "", disabl
     </button>
   );
 }
-

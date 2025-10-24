@@ -1,75 +1,87 @@
-'use client'
+'use client';
 
-import { useState } from 'react'
-import { signIn, signUp, signOut } from '../api/supabaseAuth'
-import { getPersonalWorkspace } from '@/lib/api/workspaceApi'
-import { setCookie, deleteCookie, COOKIE_KEYS } from '@/lib/cookies'
+import { useState } from 'react';
+import { signIn, signUp, signOut } from '../api/supabaseAuth';
+import { getPersonalWorkspace } from '@/lib/api/workspaceApi';
+import { setCookie, deleteCookie, COOKIE_KEYS } from '@/lib/cookies';
 
 export function useAuth() {
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleSignUp = async (email: string, password: string) => {
-    setLoading(true)
-    setError(null)
+    setLoading(true);
+    setError(null);
     try {
       // Sign up the user
-      await signUp(email, password)
-      
+      await signUp(email, password);
+
       // Fetch and store personal workspace ID
       try {
-        const personalWorkspace = await getPersonalWorkspace()
+        const personalWorkspace = await getPersonalWorkspace();
         if (personalWorkspace?.id) {
-          setCookie(COOKIE_KEYS.PERSONAL_WORKSPACE_ID, personalWorkspace.id.toString())
+          setCookie(
+            COOKIE_KEYS.PERSONAL_WORKSPACE_ID,
+            personalWorkspace.id.toString()
+          );
         }
       } catch (workspaceError) {
         // Log the error but don't fail the signup
-        console.error('Failed to fetch personal workspace:', workspaceError)
+        console.error('Failed to fetch personal workspace:', workspaceError);
       }
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'An error occurred during sign up')
+      setError(
+        e instanceof Error ? e.message : 'An error occurred during sign up'
+      );
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const handleSignIn = async (email: string, password: string) => {
-    setLoading(true)
-    setError(null)
+    setLoading(true);
+    setError(null);
     try {
       // Sign in the user
-      await signIn(email, password)
-      
+      await signIn(email, password);
+
       // Fetch and store personal workspace ID
       try {
-        const personalWorkspace = await getPersonalWorkspace()
+        const personalWorkspace = await getPersonalWorkspace();
         if (personalWorkspace?.id) {
-          setCookie(COOKIE_KEYS.PERSONAL_WORKSPACE_ID, personalWorkspace.id.toString())
+          setCookie(
+            COOKIE_KEYS.PERSONAL_WORKSPACE_ID,
+            personalWorkspace.id.toString()
+          );
         }
       } catch (workspaceError) {
         // Log the error but don't fail the login
-        console.error('Failed to fetch personal workspace:', workspaceError)
+        console.error('Failed to fetch personal workspace:', workspaceError);
       }
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'An error occurred during sign in')
+      setError(
+        e instanceof Error ? e.message : 'An error occurred during sign in'
+      );
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const handleSignOut = async () => {
-    setLoading(true)
-    setError(null)
+    setLoading(true);
+    setError(null);
     try {
-      await signOut()
+      await signOut();
       // Clear the personal workspace ID cookie
-      deleteCookie(COOKIE_KEYS.PERSONAL_WORKSPACE_ID)
+      deleteCookie(COOKIE_KEYS.PERSONAL_WORKSPACE_ID);
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'An error occurred during sign out')
+      setError(
+        e instanceof Error ? e.message : 'An error occurred during sign out'
+      );
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
-  return { handleSignUp, handleSignIn, handleSignOut, loading, error }
+  return { handleSignUp, handleSignIn, handleSignOut, loading, error };
 }

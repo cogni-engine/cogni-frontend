@@ -1,11 +1,12 @@
-"use client";
+'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { 
-  getThreads, 
-  getThread, 
-  createThread, 
-  updateThread, 
+import useSWR from 'swr';
+import {
+  getThreads,
+  getThread,
+  createThread,
+  updateThread,
   deleteThread,
 } from '@/lib/api/threadsApi';
 import type { Thread } from '@/types/thread';
@@ -20,7 +21,7 @@ export function useThreads() {
     try {
       setLoading(true);
       setError(null);
-      
+
       const workspaceId = getPersonalWorkspaceId();
       if (!workspaceId) {
         throw new Error('No personal workspace found');
@@ -39,7 +40,7 @@ export function useThreads() {
   const createNewThread = useCallback(async (title: string) => {
     try {
       setError(null);
-      
+
       const workspaceId = getPersonalWorkspaceId();
       if (!workspaceId) {
         throw new Error('No personal workspace found');
@@ -55,24 +56,31 @@ export function useThreads() {
     }
   }, []);
 
-  const updateExistingThread = useCallback(async (id: number, title: string) => {
-    try {
-      setError(null);
-      
-      const updatedThread = await updateThread(id, title);
-      setThreads(prev => prev.map(thread => thread.id === id ? updatedThread : thread));
-      return updatedThread;
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to update thread');
-      console.error('Error updating thread:', err);
-      throw err;
-    }
-  }, []);
+  const updateExistingThread = useCallback(
+    async (id: number, title: string) => {
+      try {
+        setError(null);
+
+        const updatedThread = await updateThread(id, title);
+        setThreads(prev =>
+          prev.map(thread => (thread.id === id ? updatedThread : thread))
+        );
+        return updatedThread;
+      } catch (err) {
+        setError(
+          err instanceof Error ? err.message : 'Failed to update thread'
+        );
+        console.error('Error updating thread:', err);
+        throw err;
+      }
+    },
+    []
+  );
 
   const deleteExistingThread = useCallback(async (id: number) => {
     try {
       setError(null);
-      
+
       await deleteThread(id);
       setThreads(prev => prev.filter(thread => thread.id !== id));
     } catch (err) {
@@ -97,76 +105,73 @@ export function useThreads() {
   };
 }
 
-export function useThread(id: number | 'new') {
+/**
+ * Hook for fetching an existing thread by ID using SWR
+ */
+export function useThread(id: number) {
+  const { data, error, isLoading } = useSWR<Thread | null>(
+    `/threads/${id}`,
+    () => getThread(id),
+    {
+      revalidateOnFocus: false,
+      revalidateOnReconnect: true,
+    }
+  );
+
+  return {
+    thread: data,
+    loading: isLoading,
+    error,
+  };
+}
+
+/**
+ * Hook for creating a new thread
+ */
+export function useNewThread() {
   const [thread, setThread] = useState<Thread | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (id === 'new') {
-      // Creating a new thread
-      setThread({
-        id: 0,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-        title: '',
-        workspace_id: getPersonalWorkspaceId() || 0,
-      });
+    const workspaceId = getPersonalWorkspaceId();
+    if (!workspaceId) {
       setLoading(false);
       return;
     }
 
-    async function fetchThread() {
-      try {
-        setLoading(true);
-        setError(null);
-        
-        const data = await getThread(id);
-        if (!data) {
-          throw new Error('Thread not found');
-        }
-        
-        setThread(data);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to fetch thread');
-        console.error('Error fetching thread:', err);
-      } finally {
-        setLoading(false);
-      }
-    }
+    setThread({
+      id: 0,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+      title: '',
+      workspace_id: workspaceId,
+    });
+    setLoading(false);
+  }, []);
 
-    fetchThread();
-  }, [id]);
-
-  const saveThread = useCallback(async (title: string) => {
-    try {
-      setError(null);
-      
-      if (id === 'new') {
-        const workspaceId = getPersonalWorkspaceId();
-        if (!workspaceId) {
-          throw new Error('No personal workspace found');
-        }
-        const newThread = await createThread(workspaceId, title);
-        setThread(newThread);
-        return newThread;
-      } else {
-        const updatedThread = await updateThread(id, title);
-        setThread(updatedThread);
-        return updatedThread;
-      }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to save thread');
-      console.error('Error saving thread:', err);
-      throw err;
-    }
-  }, [id]);
-
-  return {
-    thread,
-    loading,
-    error,
-    saveThread,
-  };
+  return { thread, loading, error: null };
 }
 
+/**
+ * Hook for thread mutations (create, update, delete)
+ */
+export function useThreadMutations() {
+  const create = useCallback(async (title: string) => {
+    const workspaceId = getPersonalWorkspaceId();
+    if (!workspaceId) throw new Error('No personal workspace found');
+
+    const newThread = await createThread(workspaceId, title);
+    return newThread;
+  }, []);
+
+  const update = useCallback(async (id: number, title: string) => {
+    const updatedThread = await updateThread(id, title);
+    return updatedThread;
+  }, []);
+
+  const remove = useCallback(async (id: number) => {
+    await deleteThread(id);
+  }, []);
+
+  return { create, update, remove };
+}

@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import { createContext, useContext, useState, ReactNode } from 'react';
 
@@ -34,7 +34,7 @@ export function UIProvider({ children }: { children: ReactNode }) {
 
   const closeThreadSidebar = () => setIsThreadSidebarOpen(false);
   const closeNotificationPanel = () => setIsNotificationPanelOpen(false);
-  
+
   const triggerMessageRefresh = () => {
     setMessageRefreshTrigger(prev => prev + 1);
   };
@@ -64,4 +64,3 @@ export function useUI() {
   }
   return context;
 }
-

@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import { useEffect, useRef } from 'react';
 import { useCogno } from '@/hooks/useCogno';
@@ -8,7 +8,7 @@ import InputArea from '@/components/input/InputArea';
 
 /**
  * Cogno Demo Page
- * 
+ *
  * 新しいCognoアーキテクチャのデモページ
  * - cogni_engineによる意思決定（focus_task + timer判定）
  * - conversationによるユーザー会話
@@ -17,15 +17,10 @@ import InputArea from '@/components/input/InputArea';
 export default function CognoDemoPage() {
   // TODO: 実際のthreadIdを取得する（現在は仮のID）
   const threadId = 64; // 実際はURLパラメータやstateから取得
-  
-  const {
-    messages,
-    sendMessage,
-    fetchMessages,
-    isLoading,
-    error,
-  } = useCogno(threadId);
-  
+
+  const { messages, sendMessage, fetchMessages, isLoading, error } =
+    useCogno(threadId);
+
   const { messageRefreshTrigger } = useUI();
 
   const chatEndRef = useRef<HTMLDivElement>(null);
@@ -54,23 +49,21 @@ export default function CognoDemoPage() {
   };
 
   return (
-    <div className="flex flex-col h-screen">
+    <div className='flex flex-col h-screen'>
       {/* Header */}
-      <div className="bg-gradient-to-r from-slate-900 to-slate-800 p-4 border-b border-white/10">
-        <h1 className="text-2xl font-bold text-white">Cogno Demo</h1>
-        <p className="text-sm text-gray-400">
+      <div className='bg-gradient-to-r from-slate-900 to-slate-800 p-4 border-b border-white/10'>
+        <h1 className='text-2xl font-bold text-white'>Cogno Demo</h1>
+        <p className='text-sm text-gray-400'>
           Cogni Engine + Conversation AI + Timer System
         </p>
       </div>
 
       {/* Chat Container */}
-      <ChatContainer 
-        messages={messages}
-      />
+      <ChatContainer messages={messages} />
 
       {/* Error Display */}
       {error && (
-        <div className="bg-red-500/10 border border-red-500/20 text-red-400 px-4 py-2 text-sm">
+        <div className='bg-red-500/10 border border-red-500/20 text-red-400 px-4 py-2 text-sm'>
           {error}
         </div>
       )}
@@ -86,4 +79,3 @@ export default function CognoDemoPage() {
     </div>
   );
 }
-

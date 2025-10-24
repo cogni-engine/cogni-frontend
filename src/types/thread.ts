@@ -5,4 +5,3 @@ export interface Thread {
   title: string;
   workspace_id: number;
 }
-

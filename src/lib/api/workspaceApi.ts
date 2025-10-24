@@ -5,8 +5,10 @@ const supabase = createClient();
 
 export async function getWorkspaces(): Promise<Workspace[]> {
   // Get current user
-  const { data: { user } } = await supabase.auth.getUser();
-  
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
   if (!user) {
     throw new Error('User not authenticated');
   }
@@ -18,7 +20,7 @@ export async function getWorkspaces(): Promise<Workspace[]> {
     .eq('user_id', user.id);
 
   if (memberError) throw memberError;
-  
+
   // If user is not a member of any workspace, return empty array
   if (!memberData || memberData.length === 0) {
     return [];
@@ -39,8 +41,10 @@ export async function getWorkspaces(): Promise<Workspace[]> {
 
 export async function getPersonalWorkspace(): Promise<Workspace | null> {
   // Get current user
-  const { data: { user } } = await supabase.auth.getUser();
-  
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
   if (!user) {
     throw new Error('User not authenticated');
   }
@@ -48,10 +52,12 @@ export async function getPersonalWorkspace(): Promise<Workspace | null> {
   // Query from workspace table and join with workspace_member
   const { data, error } = await supabase
     .from('workspace')
-    .select(`
+    .select(
+      `
       *,
       workspace_member!inner(user_id)
-    `)
+    `
+    )
     .eq('type', 'personal')
     .eq('workspace_member.user_id', user.id)
     .single();
@@ -63,8 +69,10 @@ export async function getPersonalWorkspace(): Promise<Workspace | null> {
 
 export async function getWorkspace(id: number): Promise<Workspace> {
   // Get current user
-  const { data: { user } } = await supabase.auth.getUser();
-  
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
   if (!user) {
     throw new Error('User not authenticated');
   }
@@ -84,28 +92,29 @@ export async function getWorkspace(id: number): Promise<Workspace> {
   // Fetch workspace with notes (avoiding workspace_member to prevent RLS recursion)
   const { data, error } = await supabase
     .from('workspace')
-    .select(`
+    .select(
+      `
       *,
       notes(*)
-    `)
+    `
+    )
     .eq('id', id)
     .single();
 
   if (error) throw error;
-  
+
   return data;
 }
 
 export async function createWorkspace(
-  title: string,
+  title: string
   // type: 'group' | 'personal' = 'group'
 ): Promise<Workspace> {
   // Call the database function that creates workspace and adds user as member
-  const { data, error } = await supabase
-    .rpc('create_workspace_with_member', {
-      p_title: title,
-      // p_type: type
-    });
+  const { data, error } = await supabase.rpc('create_workspace_with_member', {
+    p_title: title,
+    // p_type: type
+  });
 
   if (error) throw error;
 
@@ -140,12 +149,7 @@ export async function updateWorkspace(
 }
 
 export async function deleteWorkspace(id: number): Promise<void> {
-  const { error } = await supabase
-    .from('workspace')
-    .delete()
-    .eq('id', id);
+  const { error } = await supabase.from('workspace').delete().eq('id', id);
 
   if (error) throw error;
 }
-
-

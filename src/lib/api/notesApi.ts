@@ -7,7 +7,10 @@ const supabase = createClient();
  * Parse note text into title and content
  * First line is title, rest is content
  */
-export function parseNoteText(text: string): { title: string; content: string } {
+export function parseNoteText(text: string): {
+  title: string;
+  content: string;
+} {
   const lines = text.split('\n');
   const title = lines[0] || 'Untitled';
   const content = lines.slice(1).join('\n');
@@ -52,7 +55,7 @@ export async function getNote(id: number): Promise<Note | null> {
     }
     throw error;
   }
-  
+
   return data;
 }
 
@@ -65,7 +68,7 @@ export async function createNote(
   content: string
 ): Promise<Note> {
   const text = combineNoteText(title, content);
-  
+
   const { data, error } = await supabase
     .from('notes')
     .insert({
@@ -88,7 +91,7 @@ export async function updateNote(
   content: string
 ): Promise<Note> {
   const text = combineNoteText(title, content);
-  
+
   const { data, error } = await supabase
     .from('notes')
     .update({
@@ -107,10 +110,7 @@ export async function updateNote(
  * Delete a note
  */
 export async function deleteNote(id: number): Promise<void> {
-  const { error } = await supabase
-    .from('notes')
-    .delete()
-    .eq('id', id);
+  const { error } = await supabase.from('notes').delete().eq('id', id);
 
   if (error) throw error;
 }
@@ -136,4 +136,3 @@ export async function searchNotes(
   if (error) throw error;
   return data || [];
 }
-

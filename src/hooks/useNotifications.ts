@@ -1,15 +1,15 @@
-"use client";
+'use client';
 
-import { useState, useEffect, useCallback } from 'react';
-import { 
-  getNotifications, 
+import { useState, useCallback } from 'react';
+import {
+  getNotifications,
   getScheduledNotifications,
   getPastDueNotifications,
   markNotificationAsSent,
   markMultipleNotificationsAsSent,
   updateNotificationStatus,
   deleteNotification,
-  getUnreadNotificationCount
+  getUnreadNotificationCount,
 } from '@/lib/api/notificationsApi';
 import type { Notification, NotificationStatus } from '@/types/notification';
 
@@ -56,7 +56,9 @@ export function useNotifications(userId?: string) {
       setNotifications(data);
     } catch (err) {
       console.error('Failed to fetch notifications:', err);
-      setError(err instanceof Error ? err.message : 'Failed to fetch notifications');
+      setError(
+        err instanceof Error ? err.message : 'Failed to fetch notifications'
+      );
     } finally {
       setLoading(false);
     }
@@ -78,7 +80,11 @@ export function useNotifications(userId?: string) {
       setNotifications(data);
     } catch (err) {
       console.error('Failed to fetch scheduled notifications:', err);
-      setError(err instanceof Error ? err.message : 'Failed to fetch scheduled notifications');
+      setError(
+        err instanceof Error
+          ? err.message
+          : 'Failed to fetch scheduled notifications'
+      );
     } finally {
       setLoading(false);
     }
@@ -100,7 +106,11 @@ export function useNotifications(userId?: string) {
       setNotifications(data);
     } catch (err) {
       console.error('Failed to fetch past due notifications:', err);
-      setError(err instanceof Error ? err.message : 'Failed to fetch past due notifications');
+      setError(
+        err instanceof Error
+          ? err.message
+          : 'Failed to fetch past due notifications'
+      );
     } finally {
       setLoading(false);
     }
@@ -123,38 +133,40 @@ export function useNotifications(userId?: string) {
   /**
    * Mark a notification as sent
    */
-  const markAsSent = useCallback(async (id: number) => {
-    try {
-      const updated = await markNotificationAsSent(id);
-      setNotifications(prev => 
-        prev.map(n => n.id === id ? updated : n)
-      );
-      await fetchUnreadCount();
-    } catch (err) {
-      console.error('Failed to mark notification as sent:', err);
-      throw err;
-    }
-  }, [fetchUnreadCount]);
+  const markAsSent = useCallback(
+    async (id: number) => {
+      try {
+        const updated = await markNotificationAsSent(id);
+        setNotifications(prev => prev.map(n => (n.id === id ? updated : n)));
+        await fetchUnreadCount();
+      } catch (err) {
+        console.error('Failed to mark notification as sent:', err);
+        throw err;
+      }
+    },
+    [fetchUnreadCount]
+  );
 
   /**
    * Mark multiple notifications as sent
    */
-  const markMultipleAsSent = useCallback(async (ids: number[]) => {
-    if (ids.length === 0) return;
+  const markMultipleAsSent = useCallback(
+    async (ids: number[]) => {
+      if (ids.length === 0) return;
 
-    try {
-      const updated = await markMultipleNotificationsAsSent(ids);
-      const updatedMap = new Map(updated.map(n => [n.id, n]));
-      
-      setNotifications(prev => 
-        prev.map(n => updatedMap.get(n.id) || n)
-      );
-      await fetchUnreadCount();
-    } catch (err) {
-      console.error('Failed to mark notifications as sent:', err);
-      throw err;
-    }
-  }, [fetchUnreadCount]);
+      try {
+        const updated = await markMultipleNotificationsAsSent(ids);
+        const updatedMap = new Map(updated.map(n => [n.id, n]));
+
+        setNotifications(prev => prev.map(n => updatedMap.get(n.id) || n));
+        await fetchUnreadCount();
+      } catch (err) {
+        console.error('Failed to mark notifications as sent:', err);
+        throw err;
+      }
+    },
+    [fetchUnreadCount]
+  );
 
   /**
    * Mark all scheduled past-due notifications as sent
@@ -163,7 +175,7 @@ export function useNotifications(userId?: string) {
     const scheduledIds = notifications
       .filter(n => n.status === 'scheduled' && isPastDue(n.due_date))
       .map(n => n.id);
-    
+
     if (scheduledIds.length > 0) {
       await markMultipleAsSent(scheduledIds);
     }
@@ -172,32 +184,36 @@ export function useNotifications(userId?: string) {
   /**
    * Update notification status
    */
-  const updateStatus = useCallback(async (id: number, status: NotificationStatus) => {
-    try {
-      const updated = await updateNotificationStatus(id, status);
-      setNotifications(prev => 
-        prev.map(n => n.id === id ? updated : n)
-      );
-      await fetchUnreadCount();
-    } catch (err) {
-      console.error('Failed to update notification status:', err);
-      throw err;
-    }
-  }, [fetchUnreadCount]);
+  const updateStatus = useCallback(
+    async (id: number, status: NotificationStatus) => {
+      try {
+        const updated = await updateNotificationStatus(id, status);
+        setNotifications(prev => prev.map(n => (n.id === id ? updated : n)));
+        await fetchUnreadCount();
+      } catch (err) {
+        console.error('Failed to update notification status:', err);
+        throw err;
+      }
+    },
+    [fetchUnreadCount]
+  );
 
   /**
    * Delete a notification
    */
-  const deleteNotif = useCallback(async (id: number) => {
-    try {
-      await deleteNotification(id);
-      setNotifications(prev => prev.filter(n => n.id !== id));
-      await fetchUnreadCount();
-    } catch (err) {
-      console.error('Failed to delete notification:', err);
-      throw err;
-    }
-  }, [fetchUnreadCount]);
+  const deleteNotif = useCallback(
+    async (id: number) => {
+      try {
+        await deleteNotification(id);
+        setNotifications(prev => prev.filter(n => n.id !== id));
+        await fetchUnreadCount();
+      } catch (err) {
+        console.error('Failed to delete notification:', err);
+        throw err;
+      }
+    },
+    [fetchUnreadCount]
+  );
 
   /**
    * Initial fetch on mount - REMOVED to prevent infinite loops
@@ -228,4 +244,3 @@ export function useNotifications(userId?: string) {
     isPastDue,
   };
 }
-

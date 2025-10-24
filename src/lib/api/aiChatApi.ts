@@ -4,7 +4,9 @@ const API_BASE_URL = 'http://0.0.0.0:8000';
 
 // メッセージ一覧取得
 export async function getAIMessages(threadId: number): Promise<AIMessage[]> {
-  const response = await fetch(`${API_BASE_URL}/api/ai-chat/messages/${threadId}`);
+  const response = await fetch(
+    `${API_BASE_URL}/api/ai-chat/messages/${threadId}`
+  );
   if (!response.ok) {
     throw new Error(`Failed to fetch messages: ${response.status}`);
   }
@@ -21,11 +23,10 @@ export async function sendAIMessage(threadId: number, message: string) {
     },
     body: JSON.stringify({ thread_id: threadId, message }),
   });
-  
+
   if (!response.ok) {
     throw new Error(`Failed to send message: ${response.status}`);
   }
-  
+
   return response;
 }
-

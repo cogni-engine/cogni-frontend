@@ -7,7 +7,7 @@ export function setCookie(name: string, value: string, days: number = 365) {
 }
 
 export function getCookie(name: string): string | null {
-  const nameEQ = name + "=";
+  const nameEQ = name + '=';
   const ca = document.cookie.split(';');
   for (let i = 0; i < ca.length; i++) {
     let c = ca[i];
@@ -31,4 +31,3 @@ export function getPersonalWorkspaceId(): number | null {
   const id = getCookie(COOKIE_KEYS.PERSONAL_WORKSPACE_ID);
   return id ? parseInt(id, 10) : null;
 }
-

@@ -10,4 +10,3 @@ export interface Notification {
   task_id: number;
   user_id: string;
 }
-

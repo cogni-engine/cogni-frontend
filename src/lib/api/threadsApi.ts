@@ -34,7 +34,7 @@ export async function getThread(id: number): Promise<Thread | null> {
     }
     throw error;
   }
-  
+
   return data;
 }
 
@@ -61,10 +61,7 @@ export async function createThread(
 /**
  * Update an existing thread
  */
-export async function updateThread(
-  id: number,
-  title: string
-): Promise<Thread> {
+export async function updateThread(id: number, title: string): Promise<Thread> {
   const { data, error } = await supabase
     .from('threads')
     .update({
@@ -83,11 +80,7 @@ export async function updateThread(
  * Delete a thread
  */
 export async function deleteThread(id: number): Promise<void> {
-  const { error } = await supabase
-    .from('threads')
-    .delete()
-    .eq('id', id);
+  const { error } = await supabase.from('threads').delete().eq('id', id);
 
   if (error) throw error;
 }
-

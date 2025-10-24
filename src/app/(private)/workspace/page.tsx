@@ -10,7 +10,9 @@ export default function WorkspacePage() {
   const { workspaces, isLoading, error } = useWorkspaces();
   const { create, update, remove } = useWorkspaceMutations();
 
-  const [editingWorkspace, setEditingWorkspace] = useState<Workspace | null>(null);
+  const [editingWorkspace, setEditingWorkspace] = useState<Workspace | null>(
+    null
+  );
 
   const handleEdit = (workspace: Workspace) => {
     setEditingWorkspace(workspace);
@@ -18,7 +20,7 @@ export default function WorkspacePage() {
 
   const handleSubmit = async (id: number | null, title: string) => {
     if (id) {
-      await update(id, { title, type: "group" });
+      await update(id, { title, type: 'group' });
     } else {
       await create(title);
     }
@@ -30,10 +32,12 @@ export default function WorkspacePage() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-black flex items-center justify-center">
-        <div className="text-center">
-          <div className="text-red-400 text-xl mb-2">Failed to load workspaces</div>
-          <div className="text-gray-400 text-sm">
+      <div className='min-h-screen bg-black flex items-center justify-center'>
+        <div className='text-center'>
+          <div className='text-red-400 text-xl mb-2'>
+            Failed to load workspaces
+          </div>
+          <div className='text-gray-400 text-sm'>
             {error instanceof Error ? error.message : 'Unknown error'}
           </div>
         </div>
@@ -42,13 +46,13 @@ export default function WorkspacePage() {
   }
 
   return (
-    <div className="min-h-screen bg-black">
-      <div className="max-w-7xl mx-auto px-4 py-8">
+    <div className='min-h-screen bg-black'>
+      <div className='max-w-7xl mx-auto px-4 py-8'>
         {/* Header */}
-        <div className="flex items-center justify-between mb-8">
+        <div className='flex items-center justify-between mb-8'>
           <div>
-            <h1 className="text-3xl font-bold text-white mb-2">Workspaces</h1>
-            <p className="text-gray-400">
+            <h1 className='text-3xl font-bold text-white mb-2'>Workspaces</h1>
+            <p className='text-gray-400'>
               Manage your workspaces and collaborate with your team
             </p>
           </div>
@@ -62,8 +66,8 @@ export default function WorkspacePage() {
 
         {/* Loading State */}
         {isLoading && (
-          <div className="flex items-center justify-center py-12">
-            <div className="text-gray-400 text-lg">Loading workspaces...</div>
+          <div className='flex items-center justify-center py-12'>
+            <div className='text-gray-400 text-lg'>Loading workspaces...</div>
           </div>
         )}
 
@@ -79,4 +83,3 @@ export default function WorkspacePage() {
     </div>
   );
 }
-

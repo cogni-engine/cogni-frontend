@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import { useState, useCallback } from 'react';
 import { Message } from '@/types/chat';
@@ -18,7 +18,7 @@ export function useCognoChat() {
       content: userInput,
     };
 
-    setMessages((prev) => [...prev, userMessage]);
+    setMessages(prev => [...prev, userMessage]);
     setIsLoading(true);
     setError(null);
 
@@ -30,13 +30,13 @@ export function useCognoChat() {
       content: '',
     };
 
-    setMessages((prev) => [...prev, assistantMessage]);
+    setMessages(prev => [...prev, assistantMessage]);
 
     try {
       const response = await fetch('http://0.0.0.0:8000/test/stream', {
         method: 'POST',
         headers: {
-          'accept': 'application/json',
+          accept: 'application/json',
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
@@ -61,7 +61,7 @@ export function useCognoChat() {
 
       while (true) {
         const { done, value } = await reader.read();
-        
+
         if (done) break;
 
         const chunk = decoder.decode(value, { stream: true });
@@ -74,15 +74,16 @@ export function useCognoChat() {
         for (const line of lines) {
           if (line.startsWith('data: ')) {
             const data = line.slice(6); // Remove "data: " prefix
-            
+
             // Skip special SSE messages
             // if (data === '[DONE]') continue;
-            
+
             try {
               // Try to parse as JSON if it's structured data
               const parsed = JSON.parse(data);
               // Extract content from parsed data (adjust based on your API response structure)
-              const content = parsed.content || parsed.text || parsed.delta || data;
+              const content =
+                parsed.content || parsed.text || parsed.delta || data;
               accumulatedContent += content;
             } catch {
               // If not JSON, use the raw data
@@ -90,8 +91,8 @@ export function useCognoChat() {
             }
 
             // Update the assistant message with accumulated content
-            setMessages((prev) =>
-              prev.map((msg) =>
+            setMessages(prev =>
+              prev.map(msg =>
                 msg.id === assistantMessageId
                   ? { ...msg, content: accumulatedContent }
                   : msg
@@ -100,14 +101,14 @@ export function useCognoChat() {
           }
         }
       }
-
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'An error occurred';
+      const errorMessage =
+        err instanceof Error ? err.message : 'An error occurred';
       setError(errorMessage);
       console.error('Error in sendMessage:', err);
-      
+
       // Remove the empty assistant message on error
-      setMessages((prev) => prev.filter((msg) => msg.id !== assistantMessageId));
+      setMessages(prev => prev.filter(msg => msg.id !== assistantMessageId));
     } finally {
       setIsLoading(false);
     }

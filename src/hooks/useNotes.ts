@@ -1,14 +1,15 @@
-"use client";
+'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { 
-  getNotes, 
-  getNote, 
-  createNote, 
-  updateNote, 
+import useSWR from 'swr';
+import {
+  getNotes,
+  getNote,
+  createNote,
+  updateNote,
   deleteNote,
   searchNotes,
-  parseNoteText
+  parseNoteText,
 } from '@/lib/api/notesApi';
 import type { Note, NoteWithParsed } from '@/types/note';
 import { getPersonalWorkspaceId } from '@/lib/cookies';
@@ -19,7 +20,7 @@ import { getPersonalWorkspaceId } from '@/lib/cookies';
 function parseNote(note: Note): NoteWithParsed {
   const { title, content } = parseNoteText(note.text);
   const preview = content.slice(0, 100) + (content.length > 100 ? '...' : '');
-  
+
   return {
     ...note,
     title,
@@ -33,11 +34,13 @@ function parseNote(note: Note): NoteWithParsed {
  */
 function formatDate(dateString: string): string {
   const date = new Date(dateString);
-  return date.toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-  }).replace(/\//g, '/');
+  return date
+    .toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+    })
+    .replace(/\//g, '/');
 }
 
 export function useNotes() {
@@ -49,7 +52,7 @@ export function useNotes() {
     try {
       setLoading(true);
       setError(null);
-      
+
       const workspaceId = getPersonalWorkspaceId();
       if (!workspaceId) {
         throw new Error('No personal workspace found');
@@ -70,7 +73,7 @@ export function useNotes() {
     try {
       setLoading(true);
       setError(null);
-      
+
       const workspaceId = getPersonalWorkspaceId();
       if (!workspaceId) {
         throw new Error('No personal workspace found');
@@ -90,7 +93,7 @@ export function useNotes() {
   const createNewNote = useCallback(async (title: string, content: string) => {
     try {
       setError(null);
-      
+
       const workspaceId = getPersonalWorkspaceId();
       if (!workspaceId) {
         throw new Error('No personal workspace found');
@@ -107,25 +110,30 @@ export function useNotes() {
     }
   }, []);
 
-  const updateExistingNote = useCallback(async (id: number, title: string, content: string) => {
-    try {
-      setError(null);
-      
-      const updatedNote = await updateNote(id, title, content);
-      const parsedNote = parseNote(updatedNote);
-      setNotes(prev => prev.map(note => note.id === id ? parsedNote : note));
-      return parsedNote;
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to update note');
-      console.error('Error updating note:', err);
-      throw err;
-    }
-  }, []);
+  const updateExistingNote = useCallback(
+    async (id: number, title: string, content: string) => {
+      try {
+        setError(null);
+
+        const updatedNote = await updateNote(id, title, content);
+        const parsedNote = parseNote(updatedNote);
+        setNotes(prev =>
+          prev.map(note => (note.id === id ? parsedNote : note))
+        );
+        return parsedNote;
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to update note');
+        console.error('Error updating note:', err);
+        throw err;
+      }
+    },
+    []
+  );
 
   const deleteExistingNote = useCallback(async (id: number) => {
     try {
       setError(null);
-      
+
       await deleteNote(id);
       setNotes(prev => prev.filter(note => note.id !== id));
     } catch (err) {
@@ -151,83 +159,81 @@ export function useNotes() {
   };
 }
 
-export function useNote(id: number | 'new') {
+/**
+ * Hook for fetching an existing note by ID using SWR
+ */
+export function useNote(id: number) {
+  const { data, error, isLoading } = useSWR<Note | null>(
+    `/notes/${id}`,
+    () => getNote(id),
+    {
+      revalidateOnFocus: false,
+      revalidateOnReconnect: true,
+    }
+  );
+
+  return {
+    note: data ? parseNote(data) : null,
+    loading: isLoading,
+    error,
+  };
+}
+
+/**
+ * Hook for creating a new note
+ */
+export function useNewNote() {
   const [note, setNote] = useState<NoteWithParsed | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (id === 'new') {
-      // Creating a new note
-      setNote({
-        id: 0,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-        text: '',
-        workspace_id: getPersonalWorkspaceId() || 0,
-        title: '',
-        content: '',
-        preview: '',
-      });
+    const workspaceId = getPersonalWorkspaceId();
+    if (!workspaceId) {
       setLoading(false);
       return;
     }
 
-    async function fetchNote() {
-      try {
-        setLoading(true);
-        setError(null);
-        
-        const data = await getNote(id);
-        if (!data) {
-          throw new Error('Note not found');
-        }
-        
-        setNote(parseNote(data));
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to fetch note');
-        console.error('Error fetching note:', err);
-      } finally {
-        setLoading(false);
-      }
-    }
+    setNote({
+      id: 0,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+      text: '',
+      workspace_id: workspaceId,
+      title: '',
+      content: '',
+      preview: '',
+    });
+    setLoading(false);
+  }, []);
 
-    fetchNote();
-  }, [id]);
+  return { note, loading, error: null };
+}
 
-  const saveNote = useCallback(async (title: string, content: string) => {
-    try {
-      setError(null);
-      
-      if (id === 'new') {
-        const workspaceId = getPersonalWorkspaceId();
-        if (!workspaceId) {
-          throw new Error('No personal workspace found');
-        }
-        const newNote = await createNote(workspaceId, title, content);
-        const parsedNote = parseNote(newNote);
-        setNote(parsedNote);
-        return parsedNote;
-      } else {
-        const updatedNote = await updateNote(id, title, content);
-        const parsedNote = parseNote(updatedNote);
-        setNote(parsedNote);
-        return parsedNote;
-      }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to save note');
-      console.error('Error saving note:', err);
-      throw err;
-    }
-  }, [id]);
+/**
+ * Hook for note mutations (create, update, delete)
+ */
+export function useNoteMutations() {
+  const create = useCallback(async (title: string, content: string) => {
+    const workspaceId = getPersonalWorkspaceId();
+    if (!workspaceId) throw new Error('No personal workspace found');
 
-  return {
-    note,
-    loading,
-    error,
-    saveNote,
-  };
+    const newNote = await createNote(workspaceId, title, content);
+    return parseNote(newNote);
+  }, []);
+
+  const update = useCallback(
+    async (id: number, title: string, content: string) => {
+      const updatedNote = await updateNote(id, title, content);
+      return parseNote(updatedNote);
+    },
+    []
+  );
+
+  const remove = useCallback(async (id: number) => {
+    await deleteNote(id);
+  }, []);
+
+  return { create, update, remove };
 }
 
 export { formatDate };
-

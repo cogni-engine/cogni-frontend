@@ -26,5 +26,3 @@ export interface WorkspaceMember {
     user_name: string | null;
   };
 }
-
-

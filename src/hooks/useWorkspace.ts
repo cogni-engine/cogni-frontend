@@ -1,6 +1,6 @@
 'use client';
 
-import useSWR, { mutate} from 'swr';
+import useSWR, { mutate } from 'swr';
 import {
   getWorkspaces,
   getWorkspace,
