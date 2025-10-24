@@ -1,12 +1,12 @@
 'use client';
 
-import { useEffect, useRef } from "react";
-import ChatContainer from "@/components/cogno/ChatContainer";
-import InputArea from "@/components/input/InputArea";
-import NotificationPanel from "@/components/notifications/NotificationPanel";
-import { useCogno } from "@/hooks/useCogno";
-import { useThreadContext } from "@/contexts/ThreadContext";
-import { useUI } from "@/contexts/UIContext";
+import { useEffect, useRef } from 'react';
+import ChatContainer from '@/components/cogno/ChatContainer';
+import InputArea from '@/components/input/InputArea';
+import NotificationPanel from '@/components/notifications/NotificationPanel';
+import { useCogno } from '@/hooks/useCogno';
+import { useThreadContext } from '@/contexts/ThreadContext';
+import { useUI } from '@/contexts/UIContext';
 
 export default function HomePage() {
   const { selectedThreadId } = useThreadContext();
@@ -63,7 +63,7 @@ export default function HomePage() {
       />
       {/* NotificationPanelにsendMessageを渡す */}
       <NotificationPanel sendMessage={sendMessage} />
-      {error && <div className="text-red-500 text-center p-4">{error}</div>}
+      {error && <div className='text-red-500 text-center p-4'>{error}</div>}
     </div>
   );
 }

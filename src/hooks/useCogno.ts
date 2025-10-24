@@ -26,52 +26,40 @@ export function useCogno(threadId: number | null) {
   }, []);
 
   // 統合されたメッセージ送信関数（通常メッセージと通知メッセージの両方を処理）
-  const sendMessage = useCallback(async (content: string, notificationId?: number) => {
-    if (!threadId) return;
+  const sendMessage = useCallback(
+    async (content: string, notificationId?: number) => {
+      if (!threadId) return;
 
       setIsLoading(true);
       setError(null);
 
-    // ユーザーメッセージを追加（通知の場合はスキップ）
-    let tempUserMsg: AIMessage | null = null;
-    if (content.trim()) {
-      tempUserMsg = {
-        id: Date.now(),
-        content,
+      // ユーザーメッセージを追加（通知の場合はスキップ）
+      let tempUserMsg: AIMessage | null = null;
+      if (content.trim()) {
+        tempUserMsg = {
+          id: Date.now(),
+          content,
+          thread_id: threadId,
+          role: 'user',
+          created_at: new Date().toISOString(),
+        };
+      }
+
+      // AIメッセージを追加
+      const tempAIMsg: AIMessage = {
+        id: Date.now() + (tempUserMsg ? 1 : 0),
+        content: '',
         thread_id: threadId,
-        role: 'user',
+        role: 'assistant',
         created_at: new Date().toISOString(),
       };
-    }
 
-    // AIメッセージを追加
-    const tempAIMsg: AIMessage = {
-      id: Date.now() + (tempUserMsg ? 1 : 0),
-      content: '',
-      thread_id: threadId,
-      role: 'assistant',
-      created_at: new Date().toISOString(),
-    };
-
-    // メッセージを追加
-    if (tempUserMsg) {
-      setMessages(prev => [...prev, tempUserMsg!, tempAIMsg]);
-    } else {
-      setMessages(prev => [...prev, tempAIMsg]);
-    }
-
-    try {
-      const response = await fetch(`${API_BASE_URL}/api/cogno/chat/stream`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          thread_id: threadId,
-          message: content,
-          ...(notificationId && { notification_id: notificationId }),
-        }),
-      });
+      // メッセージを追加
+      if (tempUserMsg) {
+        setMessages(prev => [...prev, tempUserMsg!, tempAIMsg]);
+      } else {
+        setMessages(prev => [...prev, tempAIMsg]);
+      }
 
       try {
         const response = await fetch(`${API_BASE_URL}/api/cogno/chat/stream`, {
@@ -82,50 +70,87 @@ export function useCogno(threadId: number | null) {
           body: JSON.stringify({
             thread_id: threadId,
             message: content,
+            ...(notificationId && { notification_id: notificationId }),
           }),
         });
 
-        if (!response.ok) throw new Error('Failed to send message');
+        try {
+          const response = await fetch(
+            `${API_BASE_URL}/api/cogno/chat/stream`,
+            {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                thread_id: threadId,
+                message: content,
+              }),
+            }
+          );
 
-        const reader = response.body?.getReader();
-        const decoder = new TextDecoder();
+          if (!response.ok) throw new Error('Failed to send message');
 
-        if (!reader) throw new Error('Response body is null');
+          const reader = response.body?.getReader();
+          const decoder = new TextDecoder();
 
-        let accumulatedContent = '';
-        let buffer = '';
+          if (!reader) throw new Error('Response body is null');
 
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) break;
+          let accumulatedContent = '';
+          let buffer = '';
 
-          const chunk = decoder.decode(value, { stream: true });
-          buffer += chunk;
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
 
-          const lines = buffer.split('\n');
-          buffer = lines.pop() || '';
+            const chunk = decoder.decode(value, { stream: true });
+            buffer += chunk;
 
-          for (const line of lines) {
-            if (line.startsWith('data: ')) {
-              const data = line.slice(6);
-              if (data === '[DONE]') continue;
+            const lines = buffer.split('\n');
+            buffer = lines.pop() || '';
 
-              accumulatedContent += data;
+            for (const line of lines) {
+              if (line.startsWith('data: ')) {
+                const data = line.slice(6);
+                if (data === '[DONE]') continue;
 
-              // ストリーム中の仮AIメッセージを更新
-              setMessages(prev =>
-                prev.map(msg =>
-                  msg.id === tempAIMsg.id
-                    ? { ...msg, content: accumulatedContent }
-                    : msg
-                )
-              );
+                accumulatedContent += data;
+
+                // ストリーム中の仮AIメッセージを更新
+                setMessages(prev =>
+                  prev.map(msg =>
+                    msg.id === tempAIMsg.id
+                      ? { ...msg, content: accumulatedContent }
+                      : msg
+                  )
+                );
+              }
             }
           }
+
+          // ★重要: Stream完了後、DB保存済みの確定メッセージを取得
+          // これでmeta.timer付きの確定メッセージに置き換わる
+          await fetchMessages(threadId);
+          console.log(
+            'Stream completed. Fetched saved messages with meta.timer.'
+          );
+        } catch (err) {
+          const errorMessage =
+            err instanceof Error ? err.message : 'An error occurred';
+          setError(errorMessage);
+          console.error('Error in sendMessage:', err);
+
+          // エラー時は仮メッセージを削除
+          setMessages(prev =>
+            prev.filter(
+              msg => msg.id !== tempUserMsg?.id && msg.id !== tempAIMsg.id
+            )
+          );
+        } finally {
+          setIsLoading(false);
         }
 
-        // ★重要: Stream完了後、DB保存済みの確定メッセージを取得
-        // これでmeta.timer付きの確定メッセージに置き換わる
+        // Stream完了後、DB保存済みの確定メッセージを取得
         await fetchMessages(threadId);
         console.log(
           'Stream completed. Fetched saved messages with meta.timer.'
@@ -137,31 +162,18 @@ export function useCogno(threadId: number | null) {
         console.error('Error in sendMessage:', err);
 
         // エラー時は仮メッセージを削除
+        const messagesToRemove = tempUserMsg
+          ? [tempUserMsg.id, tempAIMsg.id]
+          : [tempAIMsg.id];
         setMessages(prev =>
-          prev.filter(
-            msg => msg.id !== tempUserMsg?.id && msg.id !== tempAIMsg.id
-          )
+          prev.filter(msg => !messagesToRemove.includes(msg.id))
         );
       } finally {
         setIsLoading(false);
       }
-
-      // Stream完了後、DB保存済みの確定メッセージを取得
-      await fetchMessages(threadId);
-      console.log('Stream completed. Fetched saved messages with meta.timer.');
-
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'An error occurred';
-      setError(errorMessage);
-      console.error('Error in sendMessage:', err);
-      
-      // エラー時は仮メッセージを削除
-      const messagesToRemove = tempUserMsg ? [tempUserMsg.id, tempAIMsg.id] : [tempAIMsg.id];
-      setMessages(prev => prev.filter(msg => !messagesToRemove.includes(msg.id)));
-    } finally {
-      setIsLoading(false);
-    }
-  }, [threadId, fetchMessages]);
+    },
+    [threadId, fetchMessages]
+  );
 
   // タイマー開始（手動開始用 - 通常は使われない）
   const startTimer = useCallback(
@@ -193,7 +205,6 @@ export function useCogno(threadId: number | null) {
     },
     [threadId]
   );
-
 
   return {
     messages,

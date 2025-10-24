@@ -198,5 +198,3 @@ export async function triggerNotification(
     throw new Error('Failed to trigger notification');
   }
 }
-
-

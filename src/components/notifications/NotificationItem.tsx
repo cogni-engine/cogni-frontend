@@ -16,7 +16,7 @@ export default function NotificationItem({
 }: NotificationItemProps) {
   const isScheduled = notification.status === 'scheduled';
   const [isClicked, setIsClicked] = useState(false);
-  
+
   const handleClick = () => {
     if (onNotificationClick) {
       setIsClicked(true);
@@ -29,10 +29,10 @@ export default function NotificationItem({
   };
 
   return (
-    <div 
+    <div
       className={`p-3 rounded-lg bg-white/5 hover:bg-white/10 transition-all duration-150 border border-white/5 cursor-pointer ${
-        isClicked 
-          ? 'bg-white/20 scale-95 shadow-lg shadow-white/20' 
+        isClicked
+          ? 'bg-white/20 scale-95 shadow-lg shadow-white/20'
           : 'hover:scale-[1.02]'
       }`}
       onClick={handleClick}
