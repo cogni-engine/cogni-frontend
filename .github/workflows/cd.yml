@@ -49,8 +49,8 @@ jobs:
 
       - name: Deploy to Production
         if: github.ref == 'refs/heads/main'
-        run: npx vercel deploy --prod --token=${{ env.VERCEL_TOKEN }} --yes --scope=${{ env.VERCEL_ORG_ID }}
+        run: npx vercel deploy --prod --token=${{ env.VERCEL_TOKEN }} --yes
 
       - name: Deploy to Staging
         if: github.ref == 'refs/heads/staging'
-        run: npx vercel deploy --target=staging --token=${{ env.VERCEL_TOKEN }} --yes --scope=${{ env.VERCEL_ORG_ID }}
+        run: npx vercel deploy --target=staging --token=${{ env.VERCEL_TOKEN }} --yes
