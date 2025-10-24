@@ -7,7 +7,7 @@ This repository uses GitHub Actions for continuous integration and deployment.
 ### CI (Continuous Integration)
 
 - **File**: `.github/workflows/ci.yml`
-- **Triggers**: Push to `main`/`staging` branches, Pull Requests
+- **Triggers**: Push to `main` branch, Pull Requests
 - **Actions**:
   - ESLint code quality checks
   - Prettier formatting validation
@@ -17,28 +17,26 @@ This repository uses GitHub Actions for continuous integration and deployment.
 ### CD (Continuous Deployment)
 
 - **File**: `.github/workflows/cd.yml`
-- **Triggers**: Successful CI completion on `main`/`staging` branches
+- **Triggers**: Successful CI completion on `main` branch
 - **Actions**:
   - Deploy to Vercel production (main branch)
-  - Deploy to Vercel staging (staging branch)
 
 ## Required Secrets
 
 Configure these secrets in your GitHub repository settings:
 
-1. **VERCEL_ORG_ID** - Your Vercel organization ID
-2. **VERCEL_TOKEN** - Your Vercel API token
-3. **VERCEL_PROJECT_ID** - Your Vercel project ID
-4. **NEXT_PUBLIC_SUPABASE_URL** - Your Supabase project URL
-5. **NEXT_PUBLIC_SUPABASE_ANON_KEY** - Your Supabase anonymous key
+1. **VERCEL_DEPLOY_HOOK_PRODUCTION** - Vercel deploy hook URL for production
+2. **NEXT_PUBLIC_SUPABASE_URL** - Your Supabase project URL
+3. **NEXT_PUBLIC_SUPABASE_ANON_KEY** - Your Supabase anonymous key
 
-## Getting Vercel Credentials
+## Getting Vercel Deploy Hooks
 
 1. Go to [Vercel Dashboard](https://vercel.com/dashboard)
 2. Navigate to your project settings
-3. Copy the Project ID from the General tab
-4. Generate an API token from Account Settings > Tokens
-5. Find your Organization ID in the URL or API responses
+3. Go to **Settings** → **Git** → **Deploy Hooks**
+4. Create a deploy hook:
+   - **Production Hook**: Set branch to `main`, name it "Production Deploy"
+5. Copy the generated hook URL and add it as a GitHub secret
 
 ## Getting Supabase Credentials
 

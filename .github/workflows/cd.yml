@@ -3,14 +3,12 @@ name: CD
 on:
   workflow_run:
     workflows: ['CI']
-    branches: [main, staging]
+    branches: [main]
     types: [completed]
   workflow_dispatch:
 
 env:
-  VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-  VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-  VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+  VERCEL_DEPLOY_HOOK_PRODUCTION: ${{ secrets.VERCEL_DEPLOY_HOOK_PRODUCTION }}
 
 jobs:
   deploy:
@@ -21,36 +19,8 @@ jobs:
     env:
       NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
       NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
-      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
 
     steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-
-      - name: Enable Corepack
-        run: corepack enable
-
-      - name: Cache Yarn dependencies
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.yarn/cache
-            ~/.yarn/berry/cache
-          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-yarn-
-
-      - name: Install dependencies
-        run: yarn install --frozen-lockfile
-
       - name: Deploy to Production
-        if: github.ref == 'refs/heads/main'
-        run: npx vercel deploy --prod --token=${{ env.VERCEL_TOKEN }} --yes
-
-      - name: Deploy to Staging
-        if: github.ref == 'refs/heads/staging'
-        run: npx vercel deploy --target=staging --token=${{ env.VERCEL_TOKEN }} --yes
+        run: |
+          curl -X POST ${{ env.VERCEL_DEPLOY_HOOK_PRODUCTION }}

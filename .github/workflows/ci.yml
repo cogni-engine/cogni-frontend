@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: [main, staging]
+    branches: [main]
     paths-ignore:
       - '**/*.md'
       - '**/*.png'
@@ -12,7 +12,7 @@ on:
       - '**/*.svg'
       - '**/*.ico'
   pull_request:
-    branches: [main, staging]
+    branches: [main]
     paths-ignore:
       - '**/*.md'
       - '**/*.png'
