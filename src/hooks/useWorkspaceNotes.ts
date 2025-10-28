@@ -187,7 +187,7 @@ export function useWorkspaceNote(workspaceId: number, id: number | 'new') {
         setLoading(true);
         setError(null);
 
-        const data = await getNote(id);
+        const data = await getNote(id as number);
         if (!data) {
           throw new Error('Note not found');
         }
