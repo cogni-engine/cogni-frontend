@@ -2,8 +2,22 @@ import { createClient } from '@/lib/supabase/browserClient';
 
 const supabase = createClient();
 
-export async function signUp(email: string, password: string) {
-  const { data, error } = await supabase.auth.signUp({ email, password });
+export async function signUp(
+  email: string,
+  password: string,
+  emailRedirectTo?: string
+) {
+  const { data, error } = await supabase.auth.signUp({
+    email,
+    password,
+    options: {
+      emailRedirectTo:
+        emailRedirectTo ||
+        (typeof window !== 'undefined'
+          ? `${window.location.origin}/auth/callback`
+          : undefined),
+    },
+  });
   if (error) throw error;
   return data;
 }

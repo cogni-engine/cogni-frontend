@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import type { Workspace } from '@/types/workspace';
 import { PencilIcon, Trash2 as TrashIcon } from 'lucide-react';
 
@@ -72,8 +73,21 @@ function WorkspaceCard({
   onDelete,
   isDeleting,
 }: WorkspaceCardProps) {
+  const router = useRouter();
+
+  const handleCardClick = (e: React.MouseEvent) => {
+    // Don't navigate if clicking on buttons
+    if ((e.target as HTMLElement).closest('button')) {
+      return;
+    }
+    router.push(`/workspace/${workspace.id}`);
+  };
+
   return (
-    <div className='bg-white/8 backdrop-blur-md hover:bg-white/12 transition-all rounded-2xl p-5 border border-white/15 shadow-[0_8px_32px_rgba(0,0,0,0.2)] hover:shadow-[0_8px_32px_rgba(0,0,0,0.3)]'>
+    <div
+      onClick={handleCardClick}
+      className='bg-white/8 backdrop-blur-md hover:bg-white/12 transition-all rounded-2xl p-5 border border-white/15 shadow-[0_8px_32px_rgba(0,0,0,0.2)] hover:shadow-[0_8px_32px_rgba(0,0,0,0.3)] cursor-pointer'
+    >
       <div className='flex items-center justify-between gap-3'>
         <div className='flex-1 min-w-0'>
           <h3 className='text-base font-semibold text-white mb-1 truncate'>
@@ -97,14 +111,20 @@ function WorkspaceCard({
 
         <div className='flex gap-1.5 shrink-0'>
           <button
-            onClick={() => onEdit(workspace)}
+            onClick={e => {
+              e.stopPropagation();
+              onEdit(workspace);
+            }}
             disabled={isDeleting}
             className='p-2 bg-gray-950 hover:bg-gray-900 text-white rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed'
           >
             <PencilIcon className='w-4 h-4' />
           </button>
           <button
-            onClick={() => onDelete(workspace.id)}
+            onClick={e => {
+              e.stopPropagation();
+              onDelete(workspace.id);
+            }}
             disabled={isDeleting}
             className='p-2 bg-red-600/10 hover:bg-red-600/20 text-red-400 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed'
           >

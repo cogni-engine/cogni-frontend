@@ -1,5 +1,5 @@
 import { createClient } from '@/lib/supabase/browserClient';
-import type { Workspace } from '@/types/workspace';
+import type { Workspace, WorkspaceMember } from '@/types/workspace';
 
 const supabase = createClient();
 
@@ -152,4 +152,69 @@ export async function deleteWorkspace(id: number): Promise<void> {
   const { error } = await supabase.from('workspace').delete().eq('id', id);
 
   if (error) throw error;
+}
+
+export async function checkWorkspaceMembership(
+  workspaceId: number
+): Promise<boolean> {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) return false;
+
+  const { data, error } = await supabase
+    .from('workspace_member')
+    .select('workspace_id')
+    .eq('workspace_id', workspaceId)
+    .eq('user_id', user.id)
+    .maybeSingle();
+
+  return !error && data !== null;
+}
+
+export async function getWorkspaceMembers(
+  workspaceId: number
+): Promise<WorkspaceMember[]> {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    throw new Error('User not authenticated');
+  }
+
+  // Fetch workspace members with their user profiles
+  const { data, error } = await supabase
+    .from('workspace_member')
+    .select(
+      `
+      id,
+      created_at,
+      user_id,
+      workspace_id,
+      role,
+      user_profile!user_id(id, user_name)
+    `
+    )
+    .eq('workspace_id', workspaceId)
+    .order('created_at', { ascending: true });
+
+  if (error) throw error;
+
+  // Transform the data to match the expected type
+  const transformedData: WorkspaceMember[] = (data || []).map(
+    (member: any) => ({
+      id: member.id,
+      created_at: member.created_at,
+      user_id: member.user_id,
+      workspace_id: member.workspace_id,
+      role: member.role as 'owner' | 'admin' | 'member',
+      user_profile: Array.isArray(member.user_profile)
+        ? member.user_profile[0]
+        : member.user_profile,
+    })
+  );
+
+  return transformedData;
 }

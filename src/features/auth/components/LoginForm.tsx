@@ -3,18 +3,30 @@
 import { useState } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { getPendingInviteToken } from '@/lib/cookies';
 
 export default function LoginForm() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const { handleSignIn, loading, error } = useAuth();
   const router = useRouter();
+  const searchParams = useSearchParams();
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     await handleSignIn(email, password);
-    router.push('/home');
+
+    // Check for invite token in URL or cookie
+    const inviteFromUrl = searchParams.get('invite');
+    const inviteFromCookie = getPendingInviteToken();
+    const inviteToken = inviteFromUrl || inviteFromCookie;
+
+    if (inviteToken) {
+      router.push(`/invite/${inviteToken}`);
+    } else {
+      router.push('/home');
+    }
   };
 
   return (
