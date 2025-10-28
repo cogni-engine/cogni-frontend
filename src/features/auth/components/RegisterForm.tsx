@@ -28,7 +28,7 @@ export default function RegisterForm() {
         <div className='space-y-4'>
           <div className='bg-blue-500/10 border border-blue-500/20 rounded-lg p-4'>
             <p className='text-gray-300'>
-              We've sent a verification link to{' '}
+              We&apos;ve sent a verification link to{' '}
               <strong className='text-white'>{email}</strong>
             </p>
             <p className='text-gray-400 text-sm mt-2'>
@@ -37,7 +37,7 @@ export default function RegisterForm() {
             </p>
           </div>
           <p className='text-gray-400 text-sm text-center'>
-            Didn't receive an email? Check your spam folder.
+            Didn&apos;t receive an email? Check your spam folder.
           </p>
         </div>
       </div>
