@@ -7,12 +7,42 @@ import Link from 'next/link';
 export default function RegisterForm() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [submitted, setSubmitted] = useState(false);
   const { handleSignUp, loading, error } = useAuth();
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     await handleSignUp(email, password);
+    if (!error) {
+      setSubmitted(true);
+    }
   };
+
+  // Show email verification message after signup
+  if (submitted) {
+    return (
+      <div className='w-full bg-zinc-900/80 rounded-3xl p-8 shadow-2xl backdrop-blur-sm'>
+        <h1 className='text-2xl font-semibold mb-6 text-center'>
+          Check your email
+        </h1>
+        <div className='space-y-4'>
+          <div className='bg-blue-500/10 border border-blue-500/20 rounded-lg p-4'>
+            <p className='text-gray-300'>
+              We've sent a verification link to{' '}
+              <strong className='text-white'>{email}</strong>
+            </p>
+            <p className='text-gray-400 text-sm mt-2'>
+              Click the link in the email to verify your account and complete
+              registration.
+            </p>
+          </div>
+          <p className='text-gray-400 text-sm text-center'>
+            Didn't receive an email? Check your spam folder.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className='w-full bg-zinc-900/80 rounded-3xl p-8 shadow-2xl backdrop-blur-sm'>

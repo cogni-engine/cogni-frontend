@@ -24,10 +24,19 @@ export function deleteCookie(name: string) {
 // Specific cookie keys
 export const COOKIE_KEYS = {
   PERSONAL_WORKSPACE_ID: 'personal_workspace_id',
+  PENDING_INVITE_TOKEN: 'pending_invite_token',
 } as const;
 
 // Helper functions for specific cookies
 export function getPersonalWorkspaceId(): number | null {
   const id = getCookie(COOKIE_KEYS.PERSONAL_WORKSPACE_ID);
   return id ? parseInt(id, 10) : null;
+}
+
+export function getPendingInviteToken(): string | null {
+  return getCookie(COOKIE_KEYS.PENDING_INVITE_TOKEN);
+}
+
+export function clearPendingInviteToken() {
+  deleteCookie(COOKIE_KEYS.PENDING_INVITE_TOKEN);
 }

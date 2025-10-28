@@ -253,18 +253,30 @@ export async function cancelInvitation(invitationId: string): Promise<void> {
     throw new Error('User not authenticated');
   }
 
-  // Verify user has permission to cancel this invitation
+  // First, fetch the invitation to get the workspace_id
   const { data: invitation, error: fetchError } = await supabase
     .from('workspace_invitations')
-    .select('*, workspace_member!inner(user_id, role)')
+    .select('workspace_id')
     .eq('id', invitationId)
-    .eq('workspace_member.user_id', user.id)
     .single();
 
   if (fetchError || !invitation) {
-    throw new Error('Invitation not found or access denied');
+    throw new Error('Invitation not found');
   }
 
+  // Verify user is a member of this workspace
+  const { data: memberData, error: memberError } = await supabase
+    .from('workspace_member')
+    .select('role')
+    .eq('workspace_id', invitation.workspace_id)
+    .eq('user_id', user.id)
+    .single();
+
+  if (memberError || !memberData) {
+    throw new Error('Access denied or workspace not found');
+  }
+
+  // Cancel the invitation
   const { error } = await supabase
     .from('workspace_invitations')
     .update({ status: 'cancelled' })
@@ -282,18 +294,30 @@ export async function disableInviteLink(inviteLinkId: string): Promise<void> {
     throw new Error('User not authenticated');
   }
 
-  // Verify user has permission to disable this invite link
+  // First, fetch the invite link to get the workspace_id
   const { data: inviteLink, error: fetchError } = await supabase
     .from('workspace_invite_links')
-    .select('*, workspace_member!inner(user_id, role)')
+    .select('workspace_id')
     .eq('id', inviteLinkId)
-    .eq('workspace_member.user_id', user.id)
     .single();
 
   if (fetchError || !inviteLink) {
-    throw new Error('Invite link not found or access denied');
+    throw new Error('Invite link not found');
   }
 
+  // Verify user is a member of this workspace
+  const { data: memberData, error: memberError } = await supabase
+    .from('workspace_member')
+    .select('role')
+    .eq('workspace_id', parseInt(inviteLink.workspace_id))
+    .eq('user_id', user.id)
+    .single();
+
+  if (memberError || !memberData) {
+    throw new Error('Access denied or workspace not found');
+  }
+
+  // Disable the invite link
   const { error } = await supabase
     .from('workspace_invite_links')
     .update({ status: 'disabled' })
@@ -313,6 +337,7 @@ export async function getInvitationByToken(
     .eq('status', 'pending')
     .single();
 
+  // If found an email invitation, check if expired
   if (!invitationError && invitation) {
     // Check if invitation is expired
     const now = new Date();
@@ -328,6 +353,12 @@ export async function getInvitationByToken(
     }
 
     return invitation;
+  }
+
+  // If PGRST116 error (not found), continue to check invite links
+  // Otherwise, if it's a different error, throw it
+  if (invitationError && invitationError.code !== 'PGRST116') {
+    throw invitationError;
   }
 
   // If not found in invitations, try workspace_invite_links

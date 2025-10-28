@@ -3,7 +3,12 @@
 import { useState } from 'react';
 import { signIn, signUp, signOut } from '../api/supabaseAuth';
 import { getPersonalWorkspace } from '@/lib/api/workspaceApi';
-import { setCookie, deleteCookie, COOKIE_KEYS } from '@/lib/cookies';
+import {
+  setCookie,
+  deleteCookie,
+  COOKIE_KEYS,
+  getPendingInviteToken,
+} from '@/lib/cookies';
 
 export function useAuth() {
   const [loading, setLoading] = useState(false);
@@ -13,22 +18,22 @@ export function useAuth() {
     setLoading(true);
     setError(null);
     try {
-      // Sign up the user
-      await signUp(email, password);
+      // Check if there's a pending invite token
+      const inviteToken = getPendingInviteToken();
 
-      // Fetch and store personal workspace ID
-      try {
-        const personalWorkspace = await getPersonalWorkspace();
-        if (personalWorkspace?.id) {
-          setCookie(
-            COOKIE_KEYS.PERSONAL_WORKSPACE_ID,
-            personalWorkspace.id.toString()
-          );
-        }
-      } catch (workspaceError) {
-        // Log the error but don't fail the signup
-        console.error('Failed to fetch personal workspace:', workspaceError);
-      }
+      // Build redirect URL based on whether user is signing up from invite
+      const redirectUrl =
+        typeof window !== 'undefined'
+          ? inviteToken
+            ? `${window.location.origin}/auth/callback?invite=${inviteToken}`
+            : `${window.location.origin}/auth/callback`
+          : undefined;
+
+      // Sign up the user with custom redirect
+      await signUp(email, password, redirectUrl);
+
+      // Note: We don't fetch personal workspace here because user isn't confirmed yet
+      // That will happen in the callback after email verification
     } catch (e) {
       setError(
         e instanceof Error ? e.message : 'An error occurred during sign up'
@@ -74,6 +79,8 @@ export function useAuth() {
       await signOut();
       // Clear the personal workspace ID cookie
       deleteCookie(COOKIE_KEYS.PERSONAL_WORKSPACE_ID);
+      // Clear any pending invite tokens
+      deleteCookie(COOKIE_KEYS.PENDING_INVITE_TOKEN);
     } catch (e) {
       setError(
         e instanceof Error ? e.message : 'An error occurred during sign out'

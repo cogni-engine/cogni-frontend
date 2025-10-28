@@ -3,8 +3,10 @@
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import NoteList from '@/components/notes/NoteList';
+import MemberList from '@/components/workspace/MemberList';
 import { useWorkspaceNotes, formatDate } from '@/hooks/useWorkspaceNotes';
 import { useWorkspaceInvitations } from '@/hooks/useWorkspaceInvitations';
+import { useWorkspaceMembers } from '@/hooks/useWorkspace';
 import { generateInvitationLink } from '@/lib/api/invitationsApi';
 import type { NoteWithParsed } from '@/types/note';
 import {
@@ -44,6 +46,11 @@ export default function WorkspacePage() {
     cancelInvitationById,
     disableInviteLinkById,
   } = useWorkspaceInvitations(workspaceId);
+  const {
+    members,
+    isLoading: membersLoading,
+    error: membersError,
+  } = useWorkspaceMembers(workspaceId);
 
   // Update view based on URL search params
   useEffect(() => {
@@ -161,6 +168,16 @@ export default function WorkspacePage() {
 
             <div className='space-y-4'>
               <h3 className='text-lg font-medium text-gray-300'>
+                Workspace Members
+              </h3>
+              {membersError && (
+                <div className='bg-red-500/10 border border-red-500/20 rounded-lg p-4 text-red-300'>
+                  Failed to load members
+                </div>
+              )}
+              <MemberList members={members} loading={membersLoading} />
+
+              <h3 className='text-lg font-medium text-gray-300 pt-4'>
                 Email Invitations
               </h3>
               {invitationsLoading ? (
@@ -302,6 +319,9 @@ export default function WorkspacePage() {
         );
     }
   }, [
+    members,
+    membersLoading,
+    membersError,
     currentView,
     loading,
     error,

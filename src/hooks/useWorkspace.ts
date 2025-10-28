@@ -7,8 +7,9 @@ import {
   createWorkspace,
   updateWorkspace,
   deleteWorkspace,
+  getWorkspaceMembers,
 } from '@/lib/api/workspaceApi';
-import type { Workspace } from '@/types/workspace';
+import type { Workspace, WorkspaceMember } from '@/types/workspace';
 
 // SWR keys
 const WORKSPACES_KEY = '/workspaces';
@@ -44,6 +45,23 @@ export function useWorkspace(id: number | null) {
 
   return {
     workspace: data,
+    isLoading,
+    error,
+  };
+}
+
+export function useWorkspaceMembers(workspaceId: number | null) {
+  const { data, error, isLoading } = useSWR<WorkspaceMember[]>(
+    workspaceId ? `/workspaces/${workspaceId}/members` : null,
+    workspaceId ? async () => await getWorkspaceMembers(workspaceId) : null,
+    {
+      revalidateOnFocus: false,
+      revalidateOnReconnect: true,
+    }
+  );
+
+  return {
+    members: data || [],
     isLoading,
     error,
   };
