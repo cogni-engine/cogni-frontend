@@ -54,3 +54,18 @@ export interface WorkspaceInviteLink {
   status: InviteLinkStatus;
   created_at: string;
 }
+
+export interface WorkspaceMessage {
+  id: number;
+  workspace_id: number;
+  workspace_member_id: number;
+  text: string;
+  created_at: string;
+  updated_at: string;
+  workspace_member?: {
+    user_id?: string;
+    user_profile?: {
+      user_name: string | null;
+    };
+  };
+}
