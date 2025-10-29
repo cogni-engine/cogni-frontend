@@ -53,55 +53,57 @@ export default function WorkspaceLayout({
       </div>
 
       <div className='relative z-10 flex flex-col h-full'>
-        {/* Header */}
-        <div className='flex items-center gap-3 mb-6'>
-          <button
-            onClick={() => router.back()}
-            className='p-2 rounded-lg bg-white/10 hover:bg-white/20 transition-colors'
-            title='Go back'
-          >
-            <ArrowLeft className='w-5 h-5 text-white' />
-          </button>
-          <h1 className='text-2xl font-bold bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent'>
-            {workspace ? workspace.title : 'Workspace'}
-          </h1>
-        </div>
+        <div className='flex justify-between items-center'>
+          {/* Header */}
+          <div className='flex items-center gap-3 mb-6'>
+            <button
+              onClick={() => router.back()}
+              className='p-2 rounded-lg bg-white/10 hover:bg-white/20 transition-colors'
+              title='Go back'
+            >
+              <ArrowLeft className='w-5 h-5 text-white' />
+            </button>
+            <h1 className='text-2xl font-bold bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent'>
+              {workspace ? workspace.title : 'Workspace'}
+            </h1>
+          </div>
 
-        {/* Navigation Tabs */}
-        <div className='flex gap-1 mb-6 bg-white/5 rounded-lg p-1'>
-          <button
-            onClick={() => handleViewChange('notes')}
-            className={`flex items-center gap-2 px-4 py-2 rounded-md transition-colors ${
-              currentView === 'notes'
-                ? 'bg-white/20 text-white'
-                : 'text-gray-400 hover:text-white hover:bg-white/10'
-            }`}
-          >
-            <FileText className='w-4 h-4' />
-            Notes
-          </button>
-          <button
-            onClick={() => handleViewChange('chat')}
-            className={`flex items-center gap-2 px-4 py-2 rounded-md transition-colors ${
-              currentView === 'chat'
-                ? 'bg-white/20 text-white'
-                : 'text-gray-400 hover:text-white hover:bg-white/10'
-            }`}
-          >
-            <MessageSquare className='w-4 h-4' />
-            Chat
-          </button>
-          <button
-            onClick={() => handleViewChange('members')}
-            className={`flex items-center gap-2 px-4 py-2 rounded-md transition-colors ${
-              currentView === 'members'
-                ? 'bg-white/20 text-white'
-                : 'text-gray-400 hover:text-white hover:bg-white/10'
-            }`}
-          >
-            <Users className='w-4 h-4' />
-            Members
-          </button>
+          {/* Navigation Tabs */}
+          <div className='flex gap-1 mb-6 bg-white/5 rounded-lg p-1'>
+            <button
+              onClick={() => handleViewChange('notes')}
+              className={`flex items-center gap-2 px-4 py-2 rounded-md transition-colors ${
+                currentView === 'notes'
+                  ? 'bg-white/20 text-white'
+                  : 'text-gray-400 hover:text-white hover:bg-white/10'
+              }`}
+            >
+              <FileText className='w-4 h-4' />
+              Notes
+            </button>
+            <button
+              onClick={() => handleViewChange('chat')}
+              className={`flex items-center gap-2 px-4 py-2 rounded-md transition-colors ${
+                currentView === 'chat'
+                  ? 'bg-white/20 text-white'
+                  : 'text-gray-400 hover:text-white hover:bg-white/10'
+              }`}
+            >
+              <MessageSquare className='w-4 h-4' />
+              Chat
+            </button>
+            <button
+              onClick={() => handleViewChange('members')}
+              className={`flex items-center gap-2 px-4 py-2 rounded-md transition-colors ${
+                currentView === 'members'
+                  ? 'bg-white/20 text-white'
+                  : 'text-gray-400 hover:text-white hover:bg-white/10'
+              }`}
+            >
+              <Users className='w-4 h-4' />
+              Members
+            </button>
+          </div>
         </div>
 
         {/* Content */}
