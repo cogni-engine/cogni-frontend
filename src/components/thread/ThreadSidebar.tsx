@@ -54,7 +54,7 @@ export default function ThreadSidebar() {
         isThreadSidebarOpen ? 'w-60 translate-x-0' : 'w-0 -translate-x-full'
       }`}
     >
-      <div className='flex flex-col h-full overflow-hidden'>
+      <div className='flex flex-col h-full overflow-hidden pb-17'>
         {/* Header */}
         <div className='flex items-center justify-between p-4 border-b border-white/10'>
           <h2 className='text-lg font-semibold text-white'></h2>

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { Message } from '@/types/chat';
 
 const API_BASE_URL =
@@ -10,6 +10,7 @@ export function useCogno(threadId: number | null) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const abortControllerRef = useRef<AbortController | null>(null);
 
   // メッセージ一覧取得（初回読み込み用）
   const fetchMessages = useCallback(async (tid: number) => {
@@ -27,10 +28,38 @@ export function useCogno(threadId: number | null) {
     }
   }, []);
 
+  // threadIdが変更されたら自動的にメッセージを取得
+  useEffect(() => {
+    if (threadId) {
+      fetchMessages(threadId);
+    } else {
+      // threadIdがnullの場合はメッセージをクリア
+      setMessages([]);
+    }
+  }, [threadId, fetchMessages]);
+
+  // ストリーム停止関数
+  const stopStream = useCallback(() => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+      abortControllerRef.current = null;
+      setIsLoading(false);
+    }
+  }, []);
+
   // 統合されたメッセージ送信関数（通常メッセージと通知メッセージの両方を処理）
   const sendMessage = useCallback(
-    async (content: string, notificationId?: number) => {
+    async (content: string, notificationId?: number, timerCompleted?: boolean) => {
       if (!threadId) return;
+
+      // 既存のストリームがあれば中断
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+
+      // 新しいAbortControllerを作成
+      const abortController = new AbortController();
+      abortControllerRef.current = abortController;
 
       setIsLoading(true);
       setError(null);
@@ -71,7 +100,9 @@ export function useCogno(threadId: number | null) {
               thread_id: threadId,
               message: content,
               ...(notificationId && { notification_id: notificationId }),
+              ...(timerCompleted && { timer_completed: true }),
             }),
+            signal: abortController.signal,
           }
         );
 
@@ -86,6 +117,11 @@ export function useCogno(threadId: number | null) {
         let buffer = '';
 
         while (true) {
+          // 中断された場合はループを抜ける
+          if (abortController.signal.aborted) {
+            break;
+          }
+
           const { done, value } = await reader.read();
           if (done) break;
 
@@ -114,6 +150,12 @@ export function useCogno(threadId: number | null) {
           }
         }
 
+        // 中断された場合は仮メッセージを削除せず、そのまま残す
+        if (abortController.signal.aborted) {
+          console.log('Stream aborted by user');
+          return;
+        }
+
         // ★重要: Stream完了後、DB保存済みの確定メッセージを取得
         // これでmeta.timer付きの確定メッセージに置き換わる
         await fetchMessages(threadId);
@@ -121,6 +163,12 @@ export function useCogno(threadId: number | null) {
           'Stream completed. Fetched saved messages with meta.timer.'
         );
       } catch (err) {
+        // AbortErrorの場合はユーザーが中断したのでエラーとして扱わない
+        if (err instanceof Error && err.name === 'AbortError') {
+          console.log('Stream aborted by user');
+          return;
+        }
+
         const errorMessage =
           err instanceof Error ? err.message : 'An error occurred';
         setError(errorMessage);
@@ -134,6 +182,7 @@ export function useCogno(threadId: number | null) {
         );
       } finally {
         setIsLoading(false);
+        abortControllerRef.current = null;
       }
     },
     [threadId, fetchMessages]
@@ -177,5 +226,6 @@ export function useCogno(threadId: number | null) {
     isLoading,
     error,
     startTimer,
+    stopStream,
   };
 }

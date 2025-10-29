@@ -25,7 +25,7 @@ export default function NoteEditor({ noteId }: { noteId: string }) {
       setTitle(note.title);
       setContent(note.content);
     }
-  }, [note]);
+  }, [note?.id]);
 
   const handleSave = async () => {
     try {
@@ -92,7 +92,7 @@ export default function NoteEditor({ noteId }: { noteId: string }) {
         {/* 戻るボタン - 丸く浮き出る */}
         <button
           onClick={() => router.back()}
-          className='w-10 h-10 rounded-full bg-white/8 backdrop-blur-xl border border-white/10 text-gray-400 hover:text-white hover:bg-white/12 hover:scale-110 transition-all shadow-[0_8px_32px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.12)] flex items-center justify-center'
+          className='w-11 h-11 rounded-full bg-white/8 backdrop-blur-xl border border-black text-gray-400 hover:text-white hover:bg-white/12 hover:scale-110 transition-all shadow-[0_8px_32px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.12)] flex items-center justify-center'
         >
           <svg
             xmlns='http://www.w3.org/2000/svg'
@@ -113,7 +113,7 @@ export default function NoteEditor({ noteId }: { noteId: string }) {
         <button
           onClick={handleSave}
           disabled={saving}
-          className='w-10 h-10 rounded-full bg-white/15 backdrop-blur-xl border border-white/20 text-white hover:bg-white/25 hover:scale-110 transition-all shadow-[0_8px_32px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.12)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.25),inset_0_1px_0_rgba(255,255,255,0.18)] flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed'
+          className='w-11 h-11 rounded-full bg-white/15 backdrop-blur-xl border border-black text-white hover:bg-white/25 hover:scale-110 transition-all shadow-[0_8px_32px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.12)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.25),inset_0_1px_0_rgba(255,255,255,0.18)] flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed'
         >
           {saving ? (
             <div className='animate-spin rounded-full h-5 w-5 border-b-2 border-white'></div>

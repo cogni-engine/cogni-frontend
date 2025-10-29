@@ -13,11 +13,12 @@ export const AIInitiatedMessageWrapper = ({
     <div
       className='
       border border-white/20 
-      shadow-[0_0_12px_rgba(255,255,255,0.4)]
+      shadow-[0_0_5px_rgba(255,255,255,0.4)]
       bg-white/3
       backdrop-blur-md
       rounded-[1.618rem]
-      p-6
+      px-6
+      py-2
     '
     >
       {children}

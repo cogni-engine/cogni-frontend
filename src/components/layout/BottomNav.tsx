@@ -1,10 +1,20 @@
 'use client';
 
 import { usePathname, useRouter } from 'next/navigation';
+import { useEffect } from 'react';
+import { useUI } from '@/contexts/UIContext';
 
 export default function BottomNav() {
   const pathname = usePathname();
   const router = useRouter();
+  const { closeThreadSidebar } = useUI();
+
+  // パスが/home以外になったらスレッドサイドバーを閉じる
+  useEffect(() => {
+    if (!pathname.startsWith('/home')) {
+      closeThreadSidebar();
+    }
+  }, [pathname, closeThreadSidebar]);
 
   const tabs = [
     { name: 'Chat', path: '/workspace' },
@@ -13,7 +23,7 @@ export default function BottomNav() {
   ];
 
   return (
-    <div className='border-t border-white/5 bg-white/3 backdrop-blur-md relative z-10'>
+    <div className='border-t border-black bg-white/1 backdrop-blur-lg relative z-100'>
       <div className='flex items-center justify-around py-4 px-4'>
         {tabs.map(tab => {
           const isActive = pathname.startsWith(tab.path);

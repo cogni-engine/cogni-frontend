@@ -1,10 +1,11 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { cn } from '@/lib/utils';
 import { Components } from 'react-markdown';
+import { Copy, Check } from 'lucide-react';
 
 type AIMessageViewProps = {
   content: string;
@@ -14,35 +15,91 @@ type AIMessageViewProps = {
 export const AIMessageView = ({ content, className }: AIMessageViewProps) => {
   const customComponents: Components = {
     h1: ({ children }) => (
-      <h1 className='my-3 text-2xl font-semibold text-white'>{children}</h1>
+      <h1 className='my-3 text-lg font-semibold text-white'>{children}</h1>
     ),
     h2: ({ children }) => (
-      <h2 className='my-2 text-xl font-semibold text-white'>{children}</h2>
+      <h2 className='my-2 text-base font-semibold text-white'>{children}</h2>
     ),
     h3: ({ children }) => (
-      <h3 className='my-2 text-lg font-semibold text-white'>{children}</h3>
+      <h3 className='my-2 text-sm font-semibold text-white'>{children}</h3>
     ),
     p: ({ children }) => (
-      <p className='my-2 text-base leading-7 text-gray-200'>{children}</p>
+      <p className='my-2 text-sm leading-7 text-gray-200'>{children}</p>
     ),
     code: ({ children, className }) => {
       const isCodeBlock = className?.startsWith('language-');
 
       if (isCodeBlock) {
-        return <code className={className}>{children}</code>;
+        return <code className={`${className} text-gray-400`}>{children}</code>;
       }
 
       return (
-        <code className='rounded bg-gray-800 px-1.5 py-0.5 text-sm text-gray-200'>
+        <code className='rounded bg-neutral-800 px-1.5 py-0.5 text-sm text-gray-200'>
           {children}
         </code>
       );
     },
-    pre: ({ children }) => (
-      <pre className='my-3 overflow-x-auto rounded-lg bg-gray-800 p-4 text-sm text-gray-100'>
-        {children}
-      </pre>
-    ),
+    pre: ({ children }) => {
+      const [copied, setCopied] = useState(false);
+      
+      // preの中のcode要素からテキストを抽出
+      const extractCodeText = (node: React.ReactNode): string => {
+        if (typeof node === 'string') {
+          return node;
+        }
+        if (typeof node === 'number') {
+          return String(node);
+        }
+        if (React.isValidElement(node)) {
+          if (node.type === 'code') {
+            const props = node.props as { children?: React.ReactNode };
+            return extractCodeText(props.children || '');
+          }
+          const props = node.props as { children?: React.ReactNode };
+          if (props.children) {
+            return React.Children.toArray(props.children)
+              .map(child => extractCodeText(child))
+              .join('');
+          }
+        }
+        if (Array.isArray(node)) {
+          return node.map(child => extractCodeText(child)).join('');
+        }
+        return '';
+      };
+
+      const codeText = extractCodeText(children);
+
+      const handleCopy = async () => {
+        if (codeText) {
+          try {
+            await navigator.clipboard.writeText(codeText);
+            setCopied(true);
+            setTimeout(() => setCopied(false), 2000);
+          } catch (err) {
+            console.error('コピーに失敗しました:', err);
+          }
+        }
+      };
+
+      return (
+        <div className='my-3 relative'>
+          <pre 
+            className='overflow-x-auto rounded-2xl border border-white/10 p-5 text-sm text-gray-400'
+            style={{ overscrollBehaviorX: 'contain', overscrollBehaviorY: 'auto' }}
+          >
+            {children}
+          </pre>
+          <button
+            onClick={handleCopy}
+            className='absolute top-1 right-2 flex items-center gap-1.5 px-3 py-1.5 rounded-xl border-black text-white/70 text-sm transition-colors'
+          >
+            {copied ? <Check className='w-4 h-4' /> : <Copy className='w-4 h-4' />}
+            <span>{copied ? 'Copied' : 'Copy'}</span>
+          </button>
+        </div>
+      );
+    },
     a: ({ children, href }) => (
       <a
         href={href}
@@ -73,7 +130,7 @@ export const AIMessageView = ({ content, className }: AIMessageViewProps) => {
   if (!content) return null;
 
   return (
-    <div className={cn('w-full text-lg md:text-xl', className)}>
+    <div className={cn('w-full text-sm md:text-base', className)}>
       <ReactMarkdown remarkPlugins={[remarkGfm]} components={customComponents}>
         {content}
       </ReactMarkdown>

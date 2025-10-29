@@ -17,7 +17,7 @@ export default function EmptyState() {
         Cogno
       </h2>
       <p className='text-gray-400 max-w-md text-lg'>
-        Your cosmic AI companion. Ask anything, explore everything.
+      The space between thought and creation.
       </p>
     </div>
   );

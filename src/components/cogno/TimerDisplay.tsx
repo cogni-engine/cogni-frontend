@@ -1,14 +1,17 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { TimerState } from '@/types/chat';
 
 type TimerDisplayProps = {
   timer: TimerState;
+  sendMessage: (content: string, notificationId?: number, timerCompleted?: boolean) => Promise<void>;
+  threadId: number;
 };
 
-export const TimerDisplay: React.FC<TimerDisplayProps> = ({ timer }) => {
+export const TimerDisplay: React.FC<TimerDisplayProps> = ({ timer, sendMessage, threadId }) => {
   const [remainingSeconds, setRemainingSeconds] = useState<number>(0);
+  const hasCompleted = useRef(false);
 
   // デバッグ用ログ
   console.log('TimerDisplay rendered with timer:', timer);
@@ -47,20 +50,32 @@ export const TimerDisplay: React.FC<TimerDisplayProps> = ({ timer }) => {
     const initialRemaining = calculateRemaining();
     setRemainingSeconds(initialRemaining);
     console.log('Initial remaining seconds set to:', initialRemaining);
+    
+    // 2秒前に送信するための閾値チェック
+    const EARLY_SEND_SECONDS = 1;
 
-    // 1秒ごとに残り時間を更新
+    // 1秒ごとに更新
     const interval = setInterval(() => {
       const remaining = calculateRemaining();
       setRemainingSeconds(remaining);
 
-      // 0になったらインターバルをクリア
       if (remaining === 0) {
         clearInterval(interval);
+        return;
+      }
+      
+      // 残り1秒になったら送信
+      if (remaining === EARLY_SEND_SECONDS && !hasCompleted.current) {
+        hasCompleted.current = true;
+        console.log('Timer reached 1 seconds remaining, calling sendMessage');
+        sendMessage('', undefined, true).catch(err => {
+          console.error('Error completing timer:', err);
+        });
       }
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [timer]); // timer全体に依存するように変更
+  }, [timer, sendMessage]); // timer, sendMessageに依存
 
   console.log('Current remainingSeconds:', remainingSeconds);
   console.log('Timer status check:', timer.status === 'completed');
@@ -88,10 +103,10 @@ export const TimerDisplay: React.FC<TimerDisplayProps> = ({ timer }) => {
 
   return (
     <div className='flex justify-start items-center my-6 px-2'>
-      <div className='bg-black/20 backdrop-blur-xl rounded-[20px] px-8 py-2 flex items-center justify-between min-w-[320px] border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.12)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.25),inset_0_1px_0_rgba(255,255,255,0.18)] transition-all duration-300'>
+      <div className='bg-black/20 backdrop-blur-xl rounded-[20px] px-6 py-2 flex items-center justify-between min-w-[270px] border border-white/5 shadow-[0_8px_32px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.12)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.25),inset_0_1px_0_rgba(255,255,255,0.18)] transition-all duration-300'>
         {/* 左側: 時間表示 */}
         <div className='flex flex-col items-start'>
-          <div className='text-4xl font-light text-white tracking-tight'>
+          <div className='text-3xl font-light text-white tracking-tight'>
             {timeDisplay}
           </div>
           <div className='text-sm text-white/60 font-normal mt-1 px-2'>
