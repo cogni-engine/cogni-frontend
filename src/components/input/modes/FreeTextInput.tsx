@@ -71,8 +71,8 @@ export default function FreeTextInput({
       const now = Date.now();
       const timeSinceLastEnter = now - lastEnterPressRef.current;
 
-      // 300ms以内に2回Enterが押されたら送信
-      if (timeSinceLastEnter < 300 && timeSinceLastEnter > 0) {
+      // 2000ms以内に2回Enterが押されたら送信
+      if (timeSinceLastEnter < 2000 && timeSinceLastEnter > 0) {
         e.preventDefault();
         handleSend();
         lastEnterPressRef.current = 0; // リセット
