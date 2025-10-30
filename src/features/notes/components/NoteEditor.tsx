@@ -1,56 +1,103 @@
 'use client';
+
 import { useRouter } from 'next/navigation';
-import { useState, useEffect, useRef } from 'react';
-import { useNote, useNoteMutations } from '@/hooks/useNotes';
-import { ArrowLeft } from 'lucide-react';
+import { useEffect } from 'react';
+import { useNoteEditor } from '@/hooks/useNoteEditor';
+import {
+  ArrowLeft,
+  Bold,
+  Italic,
+  Strikethrough,
+  Code,
+  List,
+  ListOrdered,
+  Quote,
+  Undo,
+  Redo,
+} from 'lucide-react';
+import { useEditor, EditorContent } from '@tiptap/react';
+import StarterKit from '@tiptap/starter-kit';
+import { Markdown } from '@tiptap/markdown';
+import Placeholder from '@tiptap/extension-placeholder';
+
+interface ToolbarButtonProps {
+  onClick: () => void;
+  isActive?: boolean;
+  disabled?: boolean;
+  icon: React.ReactNode;
+  title: string;
+}
+
+function ToolbarButton({
+  onClick,
+  isActive,
+  disabled,
+  icon,
+  title,
+}: ToolbarButtonProps) {
+  return (
+    <button
+      type='button'
+      onClick={onClick}
+      disabled={disabled}
+      title={title}
+      className={`p-2 rounded-lg transition-all ${
+        isActive
+          ? 'bg-white/20 text-white'
+          : 'bg-white/5 text-gray-400 hover:bg-white/10 hover:text-gray-300'
+      } ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+    >
+      {icon}
+    </button>
+  );
+}
 
 export default function NoteEditor({ noteId }: { noteId: string }) {
   const router = useRouter();
   const id = parseInt(noteId, 10);
   const isValidId = !isNaN(id);
 
-  // Always call hooks first (React requirement)
-  const { note, loading, error } = useNote(isValidId ? id : 0);
-  const { update } = useNoteMutations();
-  const [title, setTitle] = useState('');
-  const [content, setContent] = useState('');
-  const [saving, setSaving] = useState(false);
-  const hasLoadedInitialData = useRef(false);
+  const { note, title, content, saving, loading, error, setTitle, setContent } =
+    useNoteEditor(isValidId ? id : null);
 
-  // Reset the loaded flag when noteId changes
+  // Initialize TipTap editor
+  const editor = useEditor({
+    immediatelyRender: false,
+    extensions: [
+      StarterKit.configure({
+        heading: {
+          levels: [1, 2, 3],
+        },
+      }),
+      Placeholder.configure({
+        placeholder: 'メモを入力...',
+      }),
+      Markdown,
+    ],
+    content: content || '',
+    contentType: 'markdown',
+    editorProps: {
+      attributes: {
+        class:
+          'prose prose-invert prose-sm sm:prose-base lg:prose-lg xl:prose-xl focus:outline-none max-w-none min-h-full text-gray-300',
+      },
+    },
+    onUpdate: ({ editor }) => {
+      const markdown = editor.getMarkdown();
+      setContent(markdown);
+    },
+  });
+
+  // Update editor content when content from hook changes (e.g., after loading)
   useEffect(() => {
-    hasLoadedInitialData.current = false;
-  }, [noteId]);
-
-  // Load note data only once when it first becomes available
-  useEffect(() => {
-    if (note && isValidId && !hasLoadedInitialData.current) {
-      setTitle(note.title);
-      setContent(note.content);
-      hasLoadedInitialData.current = true;
-    }
-  }, [note, isValidId]);
-
-  // Debounced autosave (update only, since note is already created)
-  useEffect(() => {
-    if (loading || !isValidId) return;
-
-    // Skip if we haven't loaded the note data yet
-    if (!hasLoadedInitialData.current) return;
-
-    const timeout = setTimeout(async () => {
-      try {
-        setSaving(true);
-        await update(id, title, content);
-      } catch (err) {
-        console.error('Autosave failed:', err);
-      } finally {
-        setSaving(false);
+    if (editor && content !== undefined && !editor.isDestroyed) {
+      const currentMarkdown = editor.getMarkdown();
+      // Only update if the content is actually different to avoid cursor jumps
+      if (currentMarkdown !== content) {
+        editor.commands.setContent(content || '', { contentType: 'markdown' });
       }
-    }, 700);
-
-    return () => clearTimeout(timeout);
-  }, [title, content, id, update, loading, isValidId]);
+    }
+  }, [content, editor]);
 
   // Validate that noteId is a valid number (after hooks)
   if (!isValidId) {
@@ -95,6 +142,27 @@ export default function NoteEditor({ noteId }: { noteId: string }) {
     );
   }
 
+  if (!note && !loading) {
+    return (
+      <div className='flex flex-col h-full bg-gradient-to-br from-slate-950 via-black to-slate-950 text-gray-100 items-center justify-center p-6'>
+        <div className='bg-yellow-500/10 border border-yellow-500/20 rounded-lg p-6 text-yellow-300 max-w-md'>
+          <h2 className='font-bold mb-2'>Note Not Found</h2>
+          <p>This note does not exist or you don&apos;t have access to it.</p>
+          <button
+            onClick={() => router.push('/notes')}
+            className='mt-4 px-4 py-2 bg-white/10 rounded-lg hover:bg-white/20 transition'
+          >
+            Back to Notes
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (!editor) {
+    return null;
+  }
+
   return (
     <div
       className='flex flex-col h-full bg-gradient-to-br from-slate-950 via-black to-slate-950 text-gray-100 relative overflow-hidden'
@@ -133,7 +201,7 @@ export default function NoteEditor({ noteId }: { noteId: string }) {
 
       {/* エディタ */}
       <div
-        className='flex flex-col flex-1 p-4 md:p-6 relative z-10'
+        className='flex flex-col flex-1 p-4 md:p-6 relative z-10 overflow-auto'
         style={{
           willChange: 'scroll-position',
           transform: 'translateZ(0)',
@@ -147,13 +215,177 @@ export default function NoteEditor({ noteId }: { noteId: string }) {
           placeholder='タイトル'
           className='text-2xl font-bold bg-transparent focus:outline-none mb-3 text-white placeholder-gray-500'
         />
-        <textarea
-          value={content}
-          onChange={e => setContent(e.target.value)}
-          placeholder='メモを入力...'
-          className='flex-1 bg-transparent resize-none focus:outline-none leading-relaxed text-gray-300 placeholder-gray-600'
-        />
+
+        {/* Toolbar */}
+        <div className='flex flex-wrap gap-2 mb-4 pb-3 border-b border-white/10'>
+          <ToolbarButton
+            onClick={() => editor.chain().focus().toggleBold().run()}
+            isActive={editor.isActive('bold')}
+            icon={<Bold className='w-4 h-4' />}
+            title='Bold'
+          />
+          <ToolbarButton
+            onClick={() => editor.chain().focus().toggleItalic().run()}
+            isActive={editor.isActive('italic')}
+            icon={<Italic className='w-4 h-4' />}
+            title='Italic'
+          />
+          <ToolbarButton
+            onClick={() => editor.chain().focus().toggleStrike().run()}
+            isActive={editor.isActive('strike')}
+            icon={<Strikethrough className='w-4 h-4' />}
+            title='Strikethrough'
+          />
+          <ToolbarButton
+            onClick={() => editor.chain().focus().toggleCode().run()}
+            isActive={editor.isActive('code')}
+            icon={<Code className='w-4 h-4' />}
+            title='Inline code'
+          />
+          <div className='w-px h-6 bg-white/10 my-auto' />
+          <ToolbarButton
+            onClick={() => editor.chain().focus().toggleBulletList().run()}
+            isActive={editor.isActive('bulletList')}
+            icon={<List className='w-4 h-4' />}
+            title='Bullet list'
+          />
+          <ToolbarButton
+            onClick={() => editor.chain().focus().toggleOrderedList().run()}
+            isActive={editor.isActive('orderedList')}
+            icon={<ListOrdered className='w-4 h-4' />}
+            title='Numbered list'
+          />
+          <ToolbarButton
+            onClick={() => editor.chain().focus().toggleBlockquote().run()}
+            isActive={editor.isActive('blockquote')}
+            icon={<Quote className='w-4 h-4' />}
+            title='Quote'
+          />
+          <div className='w-px h-6 bg-white/10 my-auto' />
+          <ToolbarButton
+            onClick={() => editor.chain().focus().undo().run()}
+            disabled={!editor.can().undo()}
+            icon={<Undo className='w-4 h-4' />}
+            title='Undo'
+          />
+          <ToolbarButton
+            onClick={() => editor.chain().focus().redo().run()}
+            disabled={!editor.can().redo()}
+            icon={<Redo className='w-4 h-4' />}
+            title='Redo'
+          />
+        </div>
+
+        {/* Editor Content */}
+        <div className='flex-1 min-h-0'>
+          <EditorContent editor={editor} />
+        </div>
       </div>
+
+      <style jsx global>{`
+        .ProseMirror {
+          outline: none;
+          min-height: 100%;
+          padding: 0;
+        }
+        .ProseMirror p {
+          margin: 0.75em 0;
+        }
+        .ProseMirror p:first-child {
+          margin-top: 0;
+        }
+        .ProseMirror p:last-child {
+          margin-bottom: 0;
+        }
+        .ProseMirror h1,
+        .ProseMirror h2,
+        .ProseMirror h3 {
+          margin-top: 1em;
+          margin-bottom: 0.5em;
+          font-weight: 600;
+          line-height: 1.2;
+        }
+        .ProseMirror h1 {
+          font-size: 2em;
+        }
+        .ProseMirror h2 {
+          font-size: 1.5em;
+        }
+        .ProseMirror h3 {
+          font-size: 1.25em;
+        }
+        .ProseMirror ul,
+        .ProseMirror ol {
+          margin: 0.75em 0;
+          padding-left: 1.5em !important;
+          list-style-position: outside !important;
+        }
+        .ProseMirror ul {
+          list-style-type: disc !important;
+        }
+        .ProseMirror ul li {
+          display: list-item !important;
+          list-style-type: disc !important;
+        }
+        .ProseMirror ol {
+          list-style-type: decimal !important;
+        }
+        .ProseMirror ol li {
+          display: list-item !important;
+          list-style-type: decimal !important;
+        }
+        .ProseMirror li {
+          margin: 0.25em 0;
+        }
+        .ProseMirror ul[data-type='taskList'] {
+          list-style: none !important;
+          padding: 0;
+        }
+        .ProseMirror ul[data-type='taskList'] li {
+          display: flex;
+        }
+        .ProseMirror blockquote {
+          border-left: 3px solid rgba(255, 255, 255, 0.2);
+          padding-left: 1em;
+          margin: 1em 0;
+          font-style: italic;
+          color: rgba(255, 255, 255, 0.7);
+        }
+        .ProseMirror code {
+          background: rgba(255, 255, 255, 0.1);
+          padding: 0.2em 0.4em;
+          border-radius: 0.25em;
+          font-size: 0.9em;
+          font-family: 'Courier New', monospace;
+        }
+        .ProseMirror pre {
+          background: rgba(255, 255, 255, 0.05);
+          padding: 1em;
+          border-radius: 0.5em;
+          margin: 1em 0;
+          overflow-x: auto;
+        }
+        .ProseMirror pre code {
+          background: transparent;
+          padding: 0;
+        }
+        .ProseMirror strong {
+          font-weight: 600;
+        }
+        .ProseMirror em {
+          font-style: italic;
+        }
+        .ProseMirror s {
+          text-decoration: line-through;
+        }
+        .ProseMirror p.is-editor-empty:first-child::before {
+          content: attr(data-placeholder);
+          float: left;
+          color: rgba(156, 163, 175, 0.6);
+          pointer-events: none;
+          height: 0;
+        }
+      `}</style>
     </div>
   );
 }
