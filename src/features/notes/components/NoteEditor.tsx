@@ -1,7 +1,8 @@
 'use client';
 import { useRouter } from 'next/navigation';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNote, useNewNote, useNoteMutations } from '@/hooks/useNotes';
+import { ArrowLeft } from 'lucide-react';
 
 export default function NoteEditor({ noteId }: { noteId: string }) {
   const router = useRouter();
@@ -18,31 +19,56 @@ export default function NoteEditor({ noteId }: { noteId: string }) {
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [saving, setSaving] = useState(false);
+  const [currentId, setCurrentId] = useState<number | null>(isNew ? null : id);
+  const hasLoadedInitialData = useRef(false);
 
-  // Load note data when available
+  // Reset the loaded flag when noteId changes
   useEffect(() => {
-    if (note) {
+    hasLoadedInitialData.current = false;
+    setCurrentId(isNew ? null : id);
+  }, [noteId, isNew, id]);
+
+  // Load note data only once when it first becomes available
+  useEffect(() => {
+    if (note && !hasLoadedInitialData.current) {
       setTitle(note.title);
       setContent(note.content);
-    }
-  }, [note?.id]);
-
-  const handleSave = async () => {
-    try {
-      setSaving(true);
-      if (isNew) {
-        await create(title, content);
-      } else {
-        await update(id, title, content);
+      if (!isNew && note.id) {
+        setCurrentId(note.id);
       }
-      router.push('/notes');
-    } catch (err) {
-      console.error('Failed to save note:', err);
-      alert('Failed to save note. Please try again.');
-    } finally {
-      setSaving(false);
+      hasLoadedInitialData.current = true;
     }
-  };
+  }, [note, isNew]);
+
+  // Debounced autosave (create first, then update)
+  useEffect(() => {
+    if (loading) return;
+
+    // Skip if both empty and new without prior id to avoid creating empty notes until user types
+    if (currentId === null && title.trim() === '' && content.trim() === '') {
+      return;
+    }
+
+    const timeout = setTimeout(async () => {
+      try {
+        setSaving(true);
+        if (currentId === null) {
+          const created = await create(title, content);
+          setCurrentId(created.id);
+          // Reflect real note id in the URL without losing state
+          router.replace(`/notes/${created.id}`);
+        } else {
+          await update(currentId, title, content);
+        }
+      } catch (err) {
+        console.error('Autosave failed:', err);
+      } finally {
+        setSaving(false);
+      }
+    }, 700);
+
+    return () => clearTimeout(timeout);
+  }, [title, content, currentId, create, update, loading, router]);
 
   if (loading) {
     return (
@@ -94,45 +120,15 @@ export default function NoteEditor({ noteId }: { noteId: string }) {
           onClick={() => router.back()}
           className='w-11 h-11 rounded-full bg-white/8 backdrop-blur-xl border border-black text-gray-400 hover:text-white hover:bg-white/12 hover:scale-110 transition-all shadow-[0_8px_32px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.12)] flex items-center justify-center'
         >
-          <svg
-            xmlns='http://www.w3.org/2000/svg'
-            width='24'
-            height='24'
-            viewBox='0 0 24 24'
-            fill='none'
-            stroke='currentColor'
-            strokeWidth='2'
-            strokeLinecap='round'
-            strokeLinejoin='round'
-          >
-            <path d='M15 18l-6-6 6-6' />
-          </svg>
+          <ArrowLeft className='w-4 h-4' />
         </button>
 
-        {/* 保存ボタン - 丸く浮き出る */}
-        <button
-          onClick={handleSave}
-          disabled={saving}
-          className='w-11 h-11 rounded-full bg-white/15 backdrop-blur-xl border border-black text-white hover:bg-white/25 hover:scale-110 transition-all shadow-[0_8px_32px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.12)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.25),inset_0_1px_0_rgba(255,255,255,0.18)] flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed'
-        >
-          {saving ? (
-            <div className='animate-spin rounded-full h-5 w-5 border-b-2 border-white'></div>
-          ) : (
-            <svg
-              xmlns='http://www.w3.org/2000/svg'
-              width='20'
-              height='20'
-              viewBox='0 0 24 24'
-              fill='none'
-              stroke='currentColor'
-              strokeWidth='2'
-              strokeLinecap='round'
-              strokeLinejoin='round'
-            >
-              <polyline points='20 6 9 17 4 12'></polyline>
-            </svg>
-          )}
-        </button>
+        {/* Saving indicator (subtle, replaces explicit save) */}
+        {saving && (
+          <div className='text-xs text-white/60 px-3 py-1 rounded-full bg-white/10 border border-white/15'>
+            Saving...
+          </div>
+        )}
       </header>
 
       {/* エディタ */}
