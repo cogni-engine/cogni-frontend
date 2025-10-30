@@ -52,9 +52,6 @@ export default function WorkspacePage() {
         <div className='flex items-center justify-between mb-8'>
           <div>
             <h1 className='text-3xl font-bold text-white mb-2'>Workspaces</h1>
-            <p className='text-gray-400'>
-              Manage your workspaces and collaborate with your team
-            </p>
           </div>
           <WorkspaceForm
             workspace={editingWorkspace}

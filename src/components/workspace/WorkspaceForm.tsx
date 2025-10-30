@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import type { Workspace } from '@/types/workspace';
+import { Plus } from 'lucide-react';
 
 interface WorkspaceFormProps {
   workspace?: Workspace | null;
@@ -71,10 +72,9 @@ export default function WorkspaceForm({
       <button
         onClick={handleOpen}
         disabled={isLoading}
-        className='px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2'
+        className='p-3 bg-white/8 backdrop-blur-md hover:bg-white/12 border border-white/15 shadow-[0_8px_32px_rgba(0,0,0,0.2)] hover:shadow-[0_8px_32px_rgba(0,0,0,0.3)] text-white rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2'
       >
-        <span className='text-xl'>+</span>
-        <span>New Workspace</span>
+        <Plus className='w-4 h-4' />
       </button>
 
       {/* Modal */}

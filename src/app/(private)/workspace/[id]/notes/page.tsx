@@ -4,6 +4,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { useWorkspaceNotes, formatDate } from '@/hooks/useWorkspaceNotes';
 import type { NoteWithParsed } from '@/types/note';
+import { Search } from 'lucide-react';
 
 export default function WorkspaceNotesPage() {
   const params = useParams();
@@ -17,7 +18,6 @@ export default function WorkspaceNotesPage() {
 
   const {
     notes,
-    workspace,
     loading,
     error,
     refetch,
@@ -90,7 +90,8 @@ export default function WorkspaceNotesPage() {
       {/* Header */}
       <div className='flex p-6 border-b border-white/10 gap-3'>
         {/* Search */}
-        <div className='w-full'>
+        <div className='w-full relative'>
+          <Search className='text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2' />
           <input
             type='text'
             placeholder='Search notes...'
@@ -98,26 +99,6 @@ export default function WorkspaceNotesPage() {
             onChange={e => handleSearch(e.target.value)}
             className='w-full bg-white/8 border border-white/10 rounded-lg px-4 py-2 pl-10 text-white placeholder-gray-400 focus:outline-none focus:border-white/20'
           />
-          <svg
-            xmlns='http://www.w3.org/2000/svg'
-            width='16'
-            height='16'
-            viewBox='0 0 24 24'
-            fill='none'
-            stroke='currentColor'
-            strokeWidth='2'
-            strokeLinecap='round'
-            strokeLinejoin='round'
-            className='absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400'
-          >
-            <circle cx='11' cy='11' r='8' />
-            <path d='m21 21-4.35-4.35' />
-          </svg>
-          {isSearching && (
-            <div className='absolute right-3 top-1/2 transform -translate-y-1/2'>
-              <div className='animate-spin rounded-full h-4 w-4 border-b-2 border-white'></div>
-            </div>
-          )}
         </div>
         <button
           onClick={handleCreateNote}

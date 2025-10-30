@@ -1,4 +1,6 @@
+'use client';
 import React from 'react';
+import { usePathname } from 'next/navigation';
 import Header from '@/components/layout/Header';
 import BottomNav from '@/components/layout/BottomNav';
 import ThreadSidebar from '@/components/thread/ThreadSidebar';
@@ -10,6 +12,9 @@ export default function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const pathname = usePathname();
+  const showTopLevelChrome =
+    pathname === '/home' || pathname === '/notes' || pathname === '/workspace';
   return (
     <ThreadProvider>
       <UIProvider>
@@ -20,13 +25,13 @@ export default function DashboardLayout({
           {/* Main Layout */}
           <div className='flex flex-col h-screen'>
             {/* Header */}
-            <Header />
+            {showTopLevelChrome && <Header />}
 
             {/* Main */}
             <main className='flex-1 overflow-hidden'>{children}</main>
 
             {/* Bottom Navigation */}
-            <BottomNav />
+            {showTopLevelChrome && <BottomNav />}
           </div>
         </div>
       </UIProvider>
