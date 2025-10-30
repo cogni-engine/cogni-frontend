@@ -1,5 +1,5 @@
 import type { WorkspaceMessage } from '@/types/workspace';
-import WorkspaceMessageItem from '@/components/workspace/WorkspaceMessageItem';
+import WorkspaceMessageItem from '@/features/workspace/components/WorkspaceMessageItem';
 
 type Props = {
   messages: WorkspaceMessage[];

@@ -1,6 +1,6 @@
 'use client';
 
-import NoteList from '@/components/notes/NoteList';
+import NoteList from '@/features/notes/components/NoteList';
 import { useNotes, formatDate } from '@/hooks/useNotes';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';

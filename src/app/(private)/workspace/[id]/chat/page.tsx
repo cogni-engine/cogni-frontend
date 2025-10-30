@@ -4,8 +4,8 @@ import { useParams } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 import { useWorkspaceChat } from '@/hooks/useWorkspaceChat';
 import { createClient } from '@/lib/supabase/browserClient';
-import WorkspaceMessageList from '@/components/workspace/WorkspaceMessageList';
-import WorkspaceChatInput from '@/components/workspace/WorkspaceChatInput';
+import WorkspaceMessageList from '@/features/workspace/components/WorkspaceMessageList';
+import WorkspaceChatInput from '@/features/workspace/components/WorkspaceChatInput';
 
 export default function WorkspaceChatPage() {
   const params = useParams();

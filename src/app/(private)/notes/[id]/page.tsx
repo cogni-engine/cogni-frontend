@@ -1,6 +1,6 @@
 'use client';
 
-import NoteEditor from '@/components/notes/NoteEditor';
+import NoteEditor from '@/features/notes/components/NoteEditor';
 import { use } from 'react';
 
 export default function NoteDetailPage({

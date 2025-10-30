@@ -1,9 +1,9 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
-import ChatContainer from '@/components/cogno/ChatContainer';
+import ChatContainer from '@/features/cogno/components/ChatContainer';
 import InputArea from '@/components/input/InputArea';
-import NotificationPanel from '@/components/notifications/NotificationPanel';
+import NotificationPanel from '@/features/notifications/components/NotificationPanel';
 import { useCogno } from '@/hooks/useCogno';
 import { useThreadContext } from '@/contexts/ThreadContext';
 import { useThreads } from '@/hooks/useThreads';

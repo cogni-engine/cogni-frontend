@@ -2,7 +2,7 @@
 
 import { useParams } from 'next/navigation';
 import { useState, useCallback } from 'react';
-import MemberList from '@/components/workspace/MemberList';
+import MemberList from '@/features/workspace/components/MemberList';
 import { useWorkspaceInvitations } from '@/hooks/useWorkspaceInvitations';
 import { useWorkspaceMembers } from '@/hooks/useWorkspace';
 import { generateInvitationLink } from '@/lib/api/invitationsApi';

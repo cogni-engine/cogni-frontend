@@ -2,8 +2,8 @@
 
 import { useState } from 'react';
 import { useWorkspaces, useWorkspaceMutations } from '@/hooks/useWorkspace';
-import WorkspaceList from '@/components/workspace/WorkspaceList';
-import WorkspaceForm from '@/components/workspace/WorkspaceForm';
+import WorkspaceList from '@/features/workspace/components/WorkspaceList';
+import WorkspaceForm from '@/features/workspace/components/WorkspaceForm';
 import type { Workspace } from '@/types/workspace';
 
 export default function WorkspacePage() {
