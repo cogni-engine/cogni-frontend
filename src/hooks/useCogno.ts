@@ -139,9 +139,8 @@ export function useCogno(threadId: number | null) {
             if (line.startsWith('data: ')) {
               const data = line.slice(6);
               if (data === '[DONE]') continue;
-
-              accumulatedContent += data;
-
+              const parsedData = JSON.parse(data);
+              accumulatedContent += parsedData.data;
               // ストリーム中の仮AIメッセージを更新
               setMessages(prev =>
                 prev.map(msg =>

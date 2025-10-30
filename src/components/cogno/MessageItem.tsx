@@ -22,15 +22,6 @@ export default function MessageItem({
     const isAIInitiated =
       'meta' in message && message.meta?.is_ai_initiated === true;
 
-    // デバッグ用ログ
-    console.log('MessageItem - message:', message);
-    console.log('MessageItem - hasTimer:', hasTimer);
-    console.log('MessageItem - isAIInitiated:', isAIInitiated);
-    console.log(
-      'MessageItem - message.meta:',
-      'meta' in message ? message.meta : 'No meta property'
-    );
-
     return (
       <div className='w-full max-w-5xl mx-auto mb-6 px-1 md:px-3'>
         {isAIInitiated ? (
