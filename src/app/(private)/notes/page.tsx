@@ -1,14 +1,17 @@
 'use client';
 
 import NoteList from '@/features/notes/components/NoteList';
-import { useNotes, formatDate } from '@/hooks/useNotes';
+import { useNotes, formatDate, useNoteMutations } from '@/hooks/useNotes';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
+import { getPersonalWorkspaceId } from '@/lib/cookies';
 
 export default function NotesPage() {
   const router = useRouter();
   const { notes, loading, error, searchNotes } = useNotes();
+  const { create } = useNoteMutations();
   const [searchQuery, setSearchQuery] = useState('');
+  const [isCreating, setIsCreating] = useState(false);
 
   const formattedNotes = notes.map(note => ({
     id: note.id.toString(),
@@ -16,6 +19,27 @@ export default function NotesPage() {
     date: formatDate(note.updated_at),
     preview: note.preview,
   }));
+
+  const handleCreateNote = async () => {
+    try {
+      setIsCreating(true);
+      const workspaceId = getPersonalWorkspaceId();
+      if (!workspaceId) {
+        throw new Error('No personal workspace found');
+      }
+
+      // Create a new note with empty/default content
+      const newNote = await create('Untitled', '');
+
+      // Navigate to the new note page
+      router.push(`/notes/${newNote.id}`);
+    } catch (err) {
+      console.error('Failed to create note:', err);
+      // TODO: Show error toast/notification
+    } finally {
+      setIsCreating(false);
+    }
+  };
 
   return (
     <div className='flex flex-col h-full bg-gradient-to-br from-slate-950 via-black to-slate-950 text-gray-100 relative overflow-hidden'>
@@ -81,32 +105,37 @@ export default function NotesPage() {
 
           {/* 新規作成ボタン */}
           <button
-            onClick={() => router.push('/notes/new')}
-            className='bg-white/10 backdrop-blur-xl border border-white/12 hover:border-white/18 p-3 rounded-full hover:bg-white/15 hover:scale-[1.08] transition-all duration-300 shadow-[0_8px_32px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.12)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.25),inset_0_1px_0_rgba(255,255,255,0.18)]'
+            onClick={handleCreateNote}
+            disabled={isCreating}
+            className='bg-white/10 backdrop-blur-xl border border-white/12 hover:border-white/18 p-3 rounded-full hover:bg-white/15 hover:scale-[1.08] transition-all duration-300 shadow-[0_8px_32px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.12)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.25),inset_0_1px_0_rgba(255,255,255,0.18)] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100'
           >
-            <svg
-              width='20'
-              height='20'
-              viewBox='0 0 24 24'
-              fill='none'
-              stroke='currentColor'
-              strokeWidth='2'
-              strokeLinecap='round'
-              strokeLinejoin='round'
-              className='text-gray-300'
-            >
-              <rect
-                x='3'
-                y='3'
-                width='14'
-                height='14'
-                rx='2'
-                ry='2'
-                stroke='currentColor'
+            {isCreating ? (
+              <div className='animate-spin rounded-full h-5 w-5 border-b-2 border-gray-300'></div>
+            ) : (
+              <svg
+                width='20'
+                height='20'
+                viewBox='0 0 24 24'
                 fill='none'
-              ></rect>
-              <path d='M17 3l4 4-9.5 9.5-4 1 1-4L17 3z'></path>
-            </svg>
+                stroke='currentColor'
+                strokeWidth='2'
+                strokeLinecap='round'
+                strokeLinejoin='round'
+                className='text-gray-300'
+              >
+                <rect
+                  x='3'
+                  y='3'
+                  width='14'
+                  height='14'
+                  rx='2'
+                  ry='2'
+                  stroke='currentColor'
+                  fill='none'
+                ></rect>
+                <path d='M17 3l4 4-9.5 9.5-4 1 1-4L17 3z'></path>
+              </svg>
+            )}
           </button>
         </div>
       </div>

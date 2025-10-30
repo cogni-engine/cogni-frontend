@@ -1,65 +1,47 @@
 'use client';
 import { useRouter } from 'next/navigation';
 import { useState, useEffect, useRef } from 'react';
-import { useNote, useNewNote, useNoteMutations } from '@/hooks/useNotes';
+import { useNote, useNoteMutations } from '@/hooks/useNotes';
 import { ArrowLeft } from 'lucide-react';
 
 export default function NoteEditor({ noteId }: { noteId: string }) {
   const router = useRouter();
-  const isNew = noteId === 'new';
-  const id = isNew ? 0 : parseInt(noteId, 10);
+  const id = parseInt(noteId, 10);
+  const isValidId = !isNaN(id);
 
-  // Always call hooks, but conditionally use their results
-  const existingNote = useNote(id);
-  const newNote = useNewNote();
-  const { create, update } = useNoteMutations();
-
-  const { note, loading, error } = isNew ? newNote : existingNote;
-
+  // Always call hooks first (React requirement)
+  const { note, loading, error } = useNote(isValidId ? id : 0);
+  const { update } = useNoteMutations();
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [saving, setSaving] = useState(false);
-  const [currentId, setCurrentId] = useState<number | null>(isNew ? null : id);
   const hasLoadedInitialData = useRef(false);
 
   // Reset the loaded flag when noteId changes
   useEffect(() => {
     hasLoadedInitialData.current = false;
-    setCurrentId(isNew ? null : id);
-  }, [noteId, isNew, id]);
+  }, [noteId]);
 
   // Load note data only once when it first becomes available
   useEffect(() => {
-    if (note && !hasLoadedInitialData.current) {
+    if (note && isValidId && !hasLoadedInitialData.current) {
       setTitle(note.title);
       setContent(note.content);
-      if (!isNew && note.id) {
-        setCurrentId(note.id);
-      }
       hasLoadedInitialData.current = true;
     }
-  }, [note, isNew]);
+  }, [note, isValidId]);
 
-  // Debounced autosave (create first, then update)
+  // Debounced autosave (update only, since note is already created)
   useEffect(() => {
-    if (loading) return;
+    if (loading || !isValidId) return;
 
-    // Skip if both empty and new without prior id to avoid creating empty notes until user types
-    if (currentId === null && title.trim() === '' && content.trim() === '') {
-      return;
-    }
+    // Skip if we haven't loaded the note data yet
+    if (!hasLoadedInitialData.current) return;
 
     const timeout = setTimeout(async () => {
       try {
         setSaving(true);
-        if (currentId === null) {
-          const created = await create(title, content);
-          setCurrentId(created.id);
-          // Reflect real note id in the URL without losing state
-          router.replace(`/notes/${created.id}`);
-        } else {
-          await update(currentId, title, content);
-        }
+        await update(id, title, content);
       } catch (err) {
         console.error('Autosave failed:', err);
       } finally {
@@ -68,7 +50,25 @@ export default function NoteEditor({ noteId }: { noteId: string }) {
     }, 700);
 
     return () => clearTimeout(timeout);
-  }, [title, content, currentId, create, update, loading, router]);
+  }, [title, content, id, update, loading, isValidId]);
+
+  // Validate that noteId is a valid number (after hooks)
+  if (!isValidId) {
+    return (
+      <div className='flex flex-col h-full bg-gradient-to-br from-slate-950 via-black to-slate-950 text-gray-100 items-center justify-center p-6'>
+        <div className='bg-red-500/10 border border-red-500/20 rounded-lg p-6 text-red-300 max-w-md'>
+          <h2 className='font-bold mb-2'>Invalid Note ID</h2>
+          <p>The note ID must be a valid number.</p>
+          <button
+            onClick={() => router.push('/notes')}
+            className='mt-4 px-4 py-2 bg-white/10 rounded-lg hover:bg-white/20 transition'
+          >
+            Back to Notes
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   if (loading) {
     return (
