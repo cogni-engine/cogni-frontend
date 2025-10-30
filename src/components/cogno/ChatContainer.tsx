@@ -5,7 +5,11 @@ import MessageList from './MessageList';
 
 type ChatContainerProps = {
   messages: Message[] | AIMessage[];
-  sendMessage: (content: string, notificationId?: number, timerCompleted?: boolean) => Promise<void>;
+  sendMessage: (
+    content: string,
+    notificationId?: number,
+    timerCompleted?: boolean
+  ) => Promise<void>;
 };
 
 const ChatContainer = forwardRef<HTMLDivElement, ChatContainerProps>(

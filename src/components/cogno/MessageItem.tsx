@@ -5,10 +5,17 @@ import { AIInitiatedMessageWrapper } from './AIInitiatedMessageWrapper';
 
 type MessageItemProps = {
   message: Message | AIMessage;
-  sendMessage: (content: string, notificationId?: number, timerCompleted?: boolean) => Promise<void>;
+  sendMessage: (
+    content: string,
+    notificationId?: number,
+    timerCompleted?: boolean
+  ) => Promise<void>;
 };
 
-export default function MessageItem({ message, sendMessage }: MessageItemProps) {
+export default function MessageItem({
+  message,
+  sendMessage,
+}: MessageItemProps) {
   // assistantメッセージは常にAIMessageViewを使用（Markdownサポート）
   if (message.role === 'assistant') {
     const hasTimer = 'meta' in message && message.meta?.timer;
@@ -35,13 +42,16 @@ export default function MessageItem({ message, sendMessage }: MessageItemProps) 
         )}
 
         {/* タイマー表示 - TimerDisplayが完全自己完結 */}
-        {hasTimer && 'meta' in message && message.meta?.timer && 'thread_id' in message && (
-          <TimerDisplay 
-            timer={message.meta.timer} 
-            sendMessage={sendMessage}
-            threadId={message.thread_id}
-          />
-        )}
+        {hasTimer &&
+          'meta' in message &&
+          message.meta?.timer &&
+          'thread_id' in message && (
+            <TimerDisplay
+              timer={message.meta.timer}
+              sendMessage={sendMessage}
+              threadId={message.thread_id}
+            />
+          )}
       </div>
     );
   }

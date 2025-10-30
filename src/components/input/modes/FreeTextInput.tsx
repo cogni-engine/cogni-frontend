@@ -108,7 +108,7 @@ export default function FreeTextInput({
         {/* マイクボタン - 送信ボタンの左 */}
         <div className='absolute right-[50px] bottom-2.5 z-10'>
           <VoiceInputButton
-            onTranscriptChange={(text) => setInput(text)}
+            onTranscriptChange={text => setInput(text)}
             currentText={input}
             disabled={isLoading}
             className='w-11 h-11 rounded-full bg-transparent border-0 text-white hover:scale-102 transition-all duration-300'

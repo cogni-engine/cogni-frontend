@@ -12,7 +12,8 @@ import { useUI } from '@/contexts/UIContext';
 export default function HomePage() {
   const { selectedThreadId, setSelectedThreadId } = useThreadContext();
   const { threads, loading: threadsLoading, createThread } = useThreads();
-  const { messages, sendMessage, isLoading, error, stopStream } = useCogno(selectedThreadId);
+  const { messages, sendMessage, isLoading, error, stopStream } =
+    useCogno(selectedThreadId);
   const { isThreadSidebarOpen } = useUI();
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const prevMessageCountRef = useRef(0);
@@ -54,7 +55,13 @@ export default function HomePage() {
     if (selectedThreadId !== null) {
       hasInitialized.current = true;
     }
-  }, [threads, threadsLoading, selectedThreadId, setSelectedThreadId, createThread]);
+  }, [
+    threads,
+    threadsLoading,
+    selectedThreadId,
+    setSelectedThreadId,
+    createThread,
+  ]);
 
   // 新しいメッセージが追加されたら自動スクロール
   useEffect(() => {
@@ -82,7 +89,11 @@ export default function HomePage() {
         isThreadSidebarOpen ? 'ml-80' : 'ml-0'
       }`}
     >
-      <ChatContainer ref={scrollContainerRef} messages={messages} sendMessage={sendMessage} />
+      <ChatContainer
+        ref={scrollContainerRef}
+        messages={messages}
+        sendMessage={sendMessage}
+      />
       <InputArea
         messages={messages}
         onSend={sendMessage}

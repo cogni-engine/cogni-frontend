@@ -49,7 +49,11 @@ export function useCogno(threadId: number | null) {
 
   // 統合されたメッセージ送信関数（通常メッセージと通知メッセージの両方を処理）
   const sendMessage = useCallback(
-    async (content: string, notificationId?: number, timerCompleted?: boolean) => {
+    async (
+      content: string,
+      notificationId?: number,
+      timerCompleted?: boolean
+    ) => {
       if (!threadId) return;
 
       // 既存のストリームがあれば中断

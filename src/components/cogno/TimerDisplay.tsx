@@ -5,11 +5,19 @@ import { TimerState } from '@/types/chat';
 
 type TimerDisplayProps = {
   timer: TimerState;
-  sendMessage: (content: string, notificationId?: number, timerCompleted?: boolean) => Promise<void>;
+  sendMessage: (
+    content: string,
+    notificationId?: number,
+    timerCompleted?: boolean
+  ) => Promise<void>;
   threadId: number;
 };
 
-export const TimerDisplay: React.FC<TimerDisplayProps> = ({ timer, sendMessage, threadId }) => {
+export const TimerDisplay: React.FC<TimerDisplayProps> = ({
+  timer,
+  sendMessage,
+  threadId,
+}) => {
   const [remainingSeconds, setRemainingSeconds] = useState<number>(0);
   const hasCompleted = useRef(false);
 
@@ -50,7 +58,7 @@ export const TimerDisplay: React.FC<TimerDisplayProps> = ({ timer, sendMessage, 
     const initialRemaining = calculateRemaining();
     setRemainingSeconds(initialRemaining);
     console.log('Initial remaining seconds set to:', initialRemaining);
-    
+
     // 2秒前に送信するための閾値チェック
     const EARLY_SEND_SECONDS = 1;
 
@@ -63,7 +71,7 @@ export const TimerDisplay: React.FC<TimerDisplayProps> = ({ timer, sendMessage, 
         clearInterval(interval);
         return;
       }
-      
+
       // 残り1秒になったら送信
       if (remaining === EARLY_SEND_SECONDS && !hasCompleted.current) {
         hasCompleted.current = true;

@@ -4,10 +4,17 @@ import EmptyState from './EmptyState';
 
 type MessageListProps = {
   messages: Message[] | AIMessage[];
-  sendMessage: (content: string, notificationId?: number, timerCompleted?: boolean) => Promise<void>;
+  sendMessage: (
+    content: string,
+    notificationId?: number,
+    timerCompleted?: boolean
+  ) => Promise<void>;
 };
 
-export default function MessageList({ messages, sendMessage }: MessageListProps) {
+export default function MessageList({
+  messages,
+  sendMessage,
+}: MessageListProps) {
   if (messages.length === 0) {
     return <EmptyState />;
   }

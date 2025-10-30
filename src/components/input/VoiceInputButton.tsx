@@ -1,6 +1,6 @@
 'use client';
 
-import { Mic,} from 'lucide-react';
+import { Mic } from 'lucide-react';
 import {
   useState,
   useRef,
@@ -67,7 +67,7 @@ export const VoiceInputButton = forwardRef<
 >(
   (
     { onTranscriptChange, currentText = '', disabled = false, className = '' },
-    ref,
+    ref
   ) => {
     const [isRecording, setIsRecording] = useState(false);
     const recognitionRef = useRef<SpeechRecognition | null>(null);
@@ -137,7 +137,7 @@ export const VoiceInputButton = forwardRef<
       recognition.onresult = (event: SpeechRecognitionEvent) => {
         // ベースとなる確定済み文字列
         let finalTranscript = finalTranscriptRef.current;
-        
+
         // 処理済みの確定済み結果以降から、新しい確定済み結果を順番に追加
         // event.resultsには全ての結果が含まれるため、処理済み以降から追加する
         const startIndex = processedResultIndexRef.current;
@@ -173,7 +173,7 @@ export const VoiceInputButton = forwardRef<
         onTranscriptChange(fullText);
       };
 
-      recognition.onerror = (event) => {
+      recognition.onerror = event => {
         console.error('音声認識エラー:', event.error);
         setIsRecording(false);
       };
@@ -234,12 +234,15 @@ export const VoiceInputButton = forwardRef<
         title={isRecording ? '音声認識を停止' : '音声認識を開始'}
         className={`${className} relative flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300`}
       >
-        <Icon className={`w-5 h-5 relative z-10 transition-colors duration-300 ${
-          isRecording ? 'text-white' : 'text-white/40'
-        }`} style={isRecording ? { animationDuration: '1.5s' } : undefined} />
+        <Icon
+          className={`w-5 h-5 relative z-10 transition-colors duration-300 ${
+            isRecording ? 'text-white' : 'text-white/40'
+          }`}
+          style={isRecording ? { animationDuration: '1.5s' } : undefined}
+        />
       </button>
     );
-  },
+  }
 );
 
 VoiceInputButton.displayName = 'VoiceInputButton';

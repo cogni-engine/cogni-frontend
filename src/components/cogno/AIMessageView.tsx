@@ -12,6 +12,65 @@ type AIMessageViewProps = {
   className?: string;
 };
 
+// Extracted component to satisfy React Hooks rule (component names must be Capitalized)
+const PreBlock = ({ children, ...rest }: any) => {
+  const [copied, setCopied] = useState(false);
+
+  // preの中のcode要素からテキストを抽出
+  const extractCodeText = (node: React.ReactNode): string => {
+    if (typeof node === 'string') return node;
+    if (typeof node === 'number') return String(node);
+    if (React.isValidElement(node)) {
+      if (node.type === 'code') {
+        const props = node.props as { children?: React.ReactNode };
+        return extractCodeText(props.children || '');
+      }
+      const props = node.props as { children?: React.ReactNode };
+      if (props.children) {
+        return React.Children.toArray(props.children)
+          .map(child => extractCodeText(child))
+          .join('');
+      }
+    }
+    if (Array.isArray(node)) {
+      return node.map(child => extractCodeText(child)).join('');
+    }
+    return '';
+  };
+
+  const codeText = extractCodeText(children);
+
+  const handleCopy = async () => {
+    if (!codeText) return;
+    try {
+      await navigator.clipboard.writeText(codeText);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      console.error('コピーに失敗しました:', err);
+    }
+  };
+
+  return (
+    <div className='my-3 relative'>
+      <pre
+        className='overflow-x-auto rounded-2xl border border-white/10 p-5 text-sm text-gray-400'
+        style={{ overscrollBehaviorX: 'contain', overscrollBehaviorY: 'auto' }}
+        {...rest}
+      >
+        {children}
+      </pre>
+      <button
+        onClick={handleCopy}
+        className='absolute top-1 right-2 flex items-center gap-1.5 px-3 py-1.5 rounded-xl border-black text-white/70 text-sm transition-colors'
+      >
+        {copied ? <Check className='w-4 h-4' /> : <Copy className='w-4 h-4' />}
+        <span>{copied ? 'Copied' : 'Copy'}</span>
+      </button>
+    </div>
+  );
+};
+
 export const AIMessageView = ({ content, className }: AIMessageViewProps) => {
   const customComponents: Components = {
     h1: ({ children }) => (
@@ -39,67 +98,7 @@ export const AIMessageView = ({ content, className }: AIMessageViewProps) => {
         </code>
       );
     },
-    pre: ({ children }) => {
-      const [copied, setCopied] = useState(false);
-      
-      // preの中のcode要素からテキストを抽出
-      const extractCodeText = (node: React.ReactNode): string => {
-        if (typeof node === 'string') {
-          return node;
-        }
-        if (typeof node === 'number') {
-          return String(node);
-        }
-        if (React.isValidElement(node)) {
-          if (node.type === 'code') {
-            const props = node.props as { children?: React.ReactNode };
-            return extractCodeText(props.children || '');
-          }
-          const props = node.props as { children?: React.ReactNode };
-          if (props.children) {
-            return React.Children.toArray(props.children)
-              .map(child => extractCodeText(child))
-              .join('');
-          }
-        }
-        if (Array.isArray(node)) {
-          return node.map(child => extractCodeText(child)).join('');
-        }
-        return '';
-      };
-
-      const codeText = extractCodeText(children);
-
-      const handleCopy = async () => {
-        if (codeText) {
-          try {
-            await navigator.clipboard.writeText(codeText);
-            setCopied(true);
-            setTimeout(() => setCopied(false), 2000);
-          } catch (err) {
-            console.error('コピーに失敗しました:', err);
-          }
-        }
-      };
-
-      return (
-        <div className='my-3 relative'>
-          <pre 
-            className='overflow-x-auto rounded-2xl border border-white/10 p-5 text-sm text-gray-400'
-            style={{ overscrollBehaviorX: 'contain', overscrollBehaviorY: 'auto' }}
-          >
-            {children}
-          </pre>
-          <button
-            onClick={handleCopy}
-            className='absolute top-1 right-2 flex items-center gap-1.5 px-3 py-1.5 rounded-xl border-black text-white/70 text-sm transition-colors'
-          >
-            {copied ? <Check className='w-4 h-4' /> : <Copy className='w-4 h-4' />}
-            <span>{copied ? 'Copied' : 'Copy'}</span>
-          </button>
-        </div>
-      );
-    },
+    pre: PreBlock,
     a: ({ children, href }) => (
       <a
         href={href}
