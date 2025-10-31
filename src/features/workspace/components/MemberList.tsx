@@ -1,5 +1,6 @@
 'use client';
 
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { WorkspaceMember } from '@/types/workspace';
 import { User, Crown, Shield } from 'lucide-react';
 
@@ -50,34 +51,47 @@ export default function MemberList({ members, loading }: MemberListProps) {
 
   return (
     <div className='space-y-2'>
-      {members.map(member => (
-        <div
-          key={member.id}
-          className='flex items-center justify-between bg-white/5 rounded-lg p-4 border border-white/10 hover:bg-white/10 transition-colors'
-        >
-          <div className='flex items-center gap-3'>
-            <div className='w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center'>
-              <User className='w-5 h-5 text-white' />
+      {members.map(member => {
+        const profile = member.user_profile ?? null;
+
+        return (
+          <div
+            key={member.id}
+            className='flex items-center justify-between bg-white/5 rounded-lg p-4 border border-white/10 hover:bg-white/10 transition-colors'
+          >
+            <div className='flex items-center gap-3'>
+              <Avatar className='h-10 w-10 border border-white/20 bg-white/10 text-sm font-medium'>
+                {profile?.avatar_url ? (
+                  <AvatarImage
+                    src={profile.avatar_url}
+                    alt={profile.name ?? 'Workspace member'}
+                  />
+                ) : (
+                  <AvatarFallback>
+                    <User className='w-4 h-4 text-gray-300' />
+                  </AvatarFallback>
+                )}
+              </Avatar>
+              <div>
+                <p className='text-white font-medium'>
+                  {profile?.name ?? 'Unknown'}
+                </p>
+                <p className='text-sm text-gray-400'>
+                  Joined {new Date(member.created_at).toLocaleDateString()}
+                </p>
+              </div>
             </div>
-            <div>
-              <p className='text-white font-medium'>
-                {member.user_profile?.user_name || 'Unknown User'}
-              </p>
-              <p className='text-sm text-gray-400'>
-                Joined {new Date(member.created_at).toLocaleDateString()}
-              </p>
+            <div className='flex items-center gap-2'>
+              {getRoleIcon(member.role)}
+              <span
+                className={`px-3 py-1 rounded-full text-xs font-medium ${getRoleBadgeStyles(member.role)}`}
+              >
+                {member.role.charAt(0).toUpperCase() + member.role.slice(1)}
+              </span>
             </div>
           </div>
-          <div className='flex items-center gap-2'>
-            {getRoleIcon(member.role)}
-            <span
-              className={`px-3 py-1 rounded-full text-xs font-medium ${getRoleBadgeStyles(member.role)}`}
-            >
-              {member.role.charAt(0).toUpperCase() + member.role.slice(1)}
-            </span>
-          </div>
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
 }

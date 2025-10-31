@@ -16,12 +16,15 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
 import { signOut } from '@/features/auth/api/supabaseAuth';
+import { useUserProfile } from '@/hooks/useUserProfile';
+import type { UserProfile } from '@/types/userProfile';
 
 type UserMenuProps = {
   user: User | null;
 };
 
-function getInitials(name?: string | null, email?: string | null) {
+function getInitials(profile?: UserProfile | null, email?: string | null) {
+  const name = profile?.name;
   if (name && name.trim().length > 0) {
     const parts = name.trim().split(' ');
     if (parts.length === 1) {
@@ -40,12 +43,12 @@ export function UserMenu({ user }: UserMenuProps) {
   const [open, setOpen] = React.useState(false);
   const [isSigningOut, setIsSigningOut] = React.useState(false);
   const hoverTimeoutRef = React.useRef<number | null>(null);
+  const userId = user?.id ?? null;
+  const { profile } = useUserProfile({ userId });
 
-  const fullName = (user?.user_metadata?.full_name as string | undefined) ?? '';
   const email = user?.email ?? 'Unknown user';
-  const avatarUrl =
-    (user?.user_metadata?.avatar_url as string | undefined) ?? '';
-  const initials = getInitials(fullName, email);
+  const avatarUrl = profile?.avatar_url ?? null;
+  const initials = getInitials(profile, email);
 
   const handleSelectSettings = React.useCallback(() => {
     setOpen(false);
@@ -108,7 +111,7 @@ export function UserMenu({ user }: UserMenuProps) {
           >
             <Avatar className='h-9 w-9'>
               {avatarUrl ? (
-                <AvatarImage src={avatarUrl} alt={fullName || email} />
+                <AvatarImage src={avatarUrl} alt={profile?.name || email} />
               ) : (
                 <AvatarFallback>{initials}</AvatarFallback>
               )}
@@ -124,7 +127,7 @@ export function UserMenu({ user }: UserMenuProps) {
         >
           <DropdownMenuLabel className='flex flex-col gap-1'>
             <span className='text-sm font-semibold'>
-              {fullName || initials}
+              {profile?.name || initials}
             </span>
             <span className='text-xs text-white/60'>{email}</span>
           </DropdownMenuLabel>
