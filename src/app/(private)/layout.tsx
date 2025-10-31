@@ -14,7 +14,11 @@ export default function DashboardLayout({
 }) {
   const pathname = usePathname();
   const showTopLevelChrome =
-    pathname === '/home' || pathname === '/notes' || pathname === '/workspace';
+    pathname === '/home' ||
+    pathname === '/notes' ||
+    pathname === '/workspace' ||
+    pathname === '/personal' ||
+    pathname === '/user/settings';
   return (
     <ThreadProvider>
       <UIProvider>

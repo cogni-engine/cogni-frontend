@@ -7,6 +7,8 @@ import { useThreadContext } from '@/contexts/ThreadContext';
 import { useNotifications } from '@/hooks/useNotifications';
 import { useUI } from '@/contexts/UIContext';
 import { createClient } from '@/lib/supabase/browserClient';
+import type { User } from '@supabase/supabase-js';
+import { UserMenu } from '@/components/layout/UserMenu';
 
 export default function Header() {
   const pathname = usePathname();
@@ -14,11 +16,12 @@ export default function Header() {
   const { createThread } = useThreads();
   const { setSelectedThreadId } = useThreadContext();
   const { toggleThreadSidebar, toggleNotificationPanel } = useUI();
-  const [userId, setUserId] = useState<string | null>(null);
+  const [user, setUser] = useState<User | null>(null);
   const [isMounted, setIsMounted] = useState(false);
   const [currentTime, setCurrentTime] = useState('');
 
   // Get notifications hook
+  const userId = user?.id ?? null;
   const { unreadCount, fetchUnreadCount } = useNotifications(
     userId || undefined
   );
@@ -27,16 +30,16 @@ export default function Header() {
   useEffect(() => {
     setIsMounted(true);
 
-    const getUserId = async () => {
+    const getUserData = async () => {
       const supabase = createClient();
       const {
         data: { user },
       } = await supabase.auth.getUser();
       if (user) {
-        setUserId(user.id);
+        setUser(user);
       }
     };
-    getUserId();
+    getUserData();
   }, []);
 
   // Update time every minute
@@ -153,29 +156,31 @@ export default function Header() {
         <h1 className='text-lg font-semibold text-white'>Cogno</h1>
       </div>
 
-      {/* Right Side - Time + Notification Icon */}
-      {isHomePage && isMounted && (
-        <button
-          onClick={toggleNotificationPanel}
-          data-notification-trigger='true'
-          className='flex items-center gap-2 text-white/60 hover:text-white transition-colors group relative'
-        >
-          <span className='text-sm font-medium'>{currentTime}</span>
+      <div className='flex items-center gap-3'>
+        {isHomePage && isMounted && (
+          <button
+            onClick={toggleNotificationPanel}
+            data-notification-trigger='true'
+            className='flex items-center gap-2 text-white/60 hover:text-white transition-colors group relative'
+          >
+            <span className='text-sm font-medium'>{currentTime}</span>
 
-          {/* Cogno Icon (Star/Comet) */}
-          <div className='relative'>
-            <div className='w-2 h-2 bg-white rounded-full'></div>
-            <div className='absolute top-1/2 left-0 w-6 h-0.5 bg-gradient-to-r from-white/50 via-white/20 to-transparent transform -translate-y-1/2'></div>
+            {/* Cogno Icon (Star/Comet) */}
+            <div className='relative'>
+              <div className='w-2 h-2 bg-white rounded-full'></div>
+              <div className='absolute top-1/2 left-0 w-6 h-0.5 bg-gradient-to-r from-white/50 via-white/20 to-transparent transform -translate-y-1/2'></div>
 
-            {/* Unread Badge */}
-            {unreadCount > 0 && (
-              <span className='absolute -top-1 -right-1 bg-red-500 text-white text-[9px] font-bold rounded-full min-w-[14px] h-[14px] flex items-center justify-center px-0.5 border border-black/50'>
-                {unreadCount > 9 ? '9+' : unreadCount}
-              </span>
-            )}
-          </div>
-        </button>
-      )}
+              {/* Unread Badge */}
+              {unreadCount > 0 && (
+                <span className='absolute -top-1 -right-1 bg-red-500 text-white text-[9px] font-bold rounded-full min-w-[14px] h-[14px] flex items-center justify-center px-0.5 border border-black/50'>
+                  {unreadCount > 9 ? '9+' : unreadCount}
+                </span>
+              )}
+            </div>
+          </button>
+        )}
+        {isMounted && <UserMenu user={user} />}
+      </div>
     </header>
   );
 }

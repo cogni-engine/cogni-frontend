@@ -1,4 +1,8 @@
 import { createClient } from '@/lib/supabase/browserClient';
+import {
+  normalizeWorkspaceMember,
+  type SupabaseWorkspaceMember,
+} from '@/lib/api/profileUtils';
 import type { Workspace, WorkspaceMember } from '@/types/workspace';
 
 const supabase = createClient();
@@ -194,7 +198,7 @@ export async function getWorkspaceMembers(
       user_id,
       workspace_id,
       role,
-      user_profile!user_id(id, user_name)
+      user_profile:user_id(id, name, avatar_url)
     `
     )
     .eq('workspace_id', workspaceId)
@@ -202,19 +206,7 @@ export async function getWorkspaceMembers(
 
   if (error) throw error;
 
-  // Transform the data to match the expected type
-  const transformedData: WorkspaceMember[] = (data || []).map(
-    (member: any) => ({
-      id: member.id,
-      created_at: member.created_at,
-      user_id: member.user_id,
-      workspace_id: member.workspace_id,
-      role: member.role as 'owner' | 'admin' | 'member',
-      user_profile: Array.isArray(member.user_profile)
-        ? member.user_profile[0]
-        : member.user_profile,
-    })
-  );
+  const members = (data ?? []) as SupabaseWorkspaceMember[];
 
-  return transformedData;
+  return members.map(normalizeWorkspaceMember);
 }

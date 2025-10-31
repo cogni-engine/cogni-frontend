@@ -1,7 +1,43 @@
 import { createClient } from '@/lib/supabase/browserClient';
+import {
+  normalizeWorkspaceProfile,
+  type SupabaseProfile,
+} from '@/lib/api/profileUtils';
 import type { WorkspaceMessage } from '@/types/workspace';
 
 const supabase = createClient();
+
+type RawWorkspaceMember = Omit<
+  NonNullable<WorkspaceMessage['workspace_member']>,
+  'user_profile'
+> & {
+  user_profile?: SupabaseProfile;
+};
+
+type RawWorkspaceMessage = WorkspaceMessage & {
+  workspace_member?: RawWorkspaceMember | null;
+};
+
+function transformMessageRow(
+  row: RawWorkspaceMessage | null
+): WorkspaceMessage {
+  if (!row) {
+    return row as unknown as WorkspaceMessage;
+  }
+
+  const workspaceMember = row.workspace_member
+    ? {
+        ...row.workspace_member,
+        user_profile:
+          normalizeWorkspaceProfile(row.workspace_member.user_profile) ?? null,
+      }
+    : undefined;
+
+  return {
+    ...row,
+    workspace_member: workspaceMember,
+  };
+}
 
 export async function getWorkspaceMessages(
   workspaceId: number,
@@ -23,7 +59,7 @@ export async function getWorkspaceMessages(
       workspace_member:workspace_member_id(
         id,
         user_id,
-        user_profile:user_id(id, user_name)
+        user_profile:user_id(id, name, avatar_url)
       )
     `
     )
@@ -34,17 +70,7 @@ export async function getWorkspaceMessages(
   if (error) throw error;
 
   // Transform nested structure
-  return (data || []).map((msg: any) => ({
-    ...msg,
-    workspace_member: msg.workspace_member
-      ? {
-          ...msg.workspace_member,
-          user_profile: Array.isArray(msg.workspace_member.user_profile)
-            ? msg.workspace_member.user_profile[0]
-            : msg.workspace_member.user_profile,
-        }
-      : undefined,
-  }));
+  return (data || []).map(transformMessageRow);
 }
 
 export async function sendWorkspaceMessage(
@@ -65,7 +91,7 @@ export async function sendWorkspaceMessage(
       workspace_member:workspace_member_id(
         id,
         user_id,
-        user_profile:user_id(id, user_name)
+        user_profile:user_id(id, name, avatar_url)
       )
     `
     )
@@ -74,17 +100,7 @@ export async function sendWorkspaceMessage(
   if (error) throw error;
 
   // Transform nested structure
-  return {
-    ...data,
-    workspace_member: data.workspace_member
-      ? {
-          ...data.workspace_member,
-          user_profile: Array.isArray(data.workspace_member.user_profile)
-            ? data.workspace_member.user_profile[0]
-            : data.workspace_member.user_profile,
-        }
-      : undefined,
-  };
+  return transformMessageRow(data);
 }
 
 export async function updateWorkspaceMessage(
@@ -101,7 +117,7 @@ export async function updateWorkspaceMessage(
       workspace_member:workspace_member_id(
         id,
         user_id,
-        user_profile:user_id(id, user_name)
+        user_profile:user_id(id, name, avatar_url)
       )
     `
     )
@@ -109,7 +125,7 @@ export async function updateWorkspaceMessage(
 
   if (error) throw error;
 
-  return data;
+  return transformMessageRow(data);
 }
 
 export async function deleteWorkspaceMessage(messageId: number): Promise<void> {

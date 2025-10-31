@@ -15,16 +15,19 @@ export interface Note {
   workspace_id: number;
 }
 
+export interface WorkspaceProfile {
+  id: string;
+  name: string | null;
+  avatar_url: string | null;
+}
+
 export interface WorkspaceMember {
   id: number;
   created_at: string;
   user_id: string;
   workspace_id: number;
   role: 'owner' | 'admin' | 'member';
-  user_profile?: {
-    id: string;
-    user_name: string | null;
-  };
+  user_profile?: WorkspaceProfile | null;
 }
 
 export type InvitationStatus = 'pending' | 'accepted' | 'expired' | 'cancelled';
@@ -64,8 +67,6 @@ export interface WorkspaceMessage {
   updated_at: string;
   workspace_member?: {
     user_id?: string;
-    user_profile?: {
-      user_name: string | null;
-    };
+    user_profile?: WorkspaceProfile | null;
   };
 }
