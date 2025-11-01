@@ -136,3 +136,152 @@ export async function searchNotes(
   if (error) throw error;
   return data || [];
 }
+
+/**
+ * Get notes where current user is assigned as assigner or assignee
+ */
+export async function getUserAssignedNotes(): Promise<Note[]> {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) throw new Error('Not authenticated');
+
+  // 1. Get all workspace_member records for current user
+  const { data: members, error: memberError } = await supabase
+    .from('workspace_member')
+    .select('id')
+    .eq('user_id', user.id);
+
+  if (memberError) throw memberError;
+  if (!members || members.length === 0) return [];
+
+  const memberIds = members.map(m => m.id);
+
+  // 2. Get note_ids from workspace_member_note
+  const { data: assignments, error: assignmentError } = await supabase
+    .from('workspace_member_note')
+    .select('note_id')
+    .in('workspace_member_id', memberIds);
+
+  if (assignmentError) throw assignmentError;
+  if (!assignments || assignments.length === 0) return [];
+
+  const noteIds = [...new Set(assignments.map(a => a.note_id))];
+
+  // 3. Get notes with workspace info
+  const { data, error } = await supabase
+    .from('notes')
+    .select('*, workspace:workspace_id(*)')
+    .in('id', noteIds)
+    .order('updated_at', { ascending: false });
+
+  if (error) throw error;
+  return data || [];
+}
+
+/**
+ * Assign note to workspace members as assigner/assignee
+ */
+export async function assignNoteToMembers(
+  noteId: number,
+  assignerIds: number[],
+  assigneeIds: number[]
+): Promise<void> {
+  // Delete existing assignments
+  const { error: deleteError } = await supabase
+    .from('workspace_member_note')
+    .delete()
+    .eq('note_id', noteId);
+
+  if (deleteError) throw deleteError;
+
+  // Create new assignments
+  const assignments = [
+    ...assignerIds.map(id => ({
+      workspace_member_id: id,
+      note_id: noteId,
+      workspace_member_note_role: 'assigner',
+    })),
+    ...assigneeIds.map(id => ({
+      workspace_member_id: id,
+      note_id: noteId,
+      workspace_member_note_role: 'assignee',
+    })),
+  ];
+
+  if (assignments.length > 0) {
+    const { error } = await supabase
+      .from('workspace_member_note')
+      .insert(assignments);
+    if (error) throw error;
+  }
+}
+
+/**
+ * Get note assignment information
+ */
+export async function getNoteAssignments(noteId: number): Promise<{
+  assigners: any[];
+  assignees: any[];
+}> {
+  console.log('🔍 getNoteAssignments called with noteId:', noteId);
+
+  const { data, error } = await supabase
+    .from('workspace_member_note')
+    .select(
+      `
+      workspace_member_note_role,
+      workspace_member:workspace_member_id(
+        id,
+        user_id,
+        user_profiles!user_id(id, name)
+      )
+    `
+    )
+    .eq('note_id', noteId);
+
+  console.log('📦 Raw Supabase response:', { data, error });
+
+  if (error) {
+    console.error('❌ Supabase error:', error);
+    console.error('❌ Error details:', JSON.stringify(error, null, 2));
+    throw error;
+  }
+
+  console.log('✅ Data received:', data);
+  console.log('📊 Data length:', data?.length);
+
+  // Transform nested structure (same pattern as workspaceMessagesApi)
+  const transformedData = (data || []).map((item: any) => {
+    console.log('🔄 Transforming item:', item);
+    return {
+      workspace_member_note_role: item.workspace_member_note_role,
+      workspace_member: item.workspace_member
+        ? {
+            ...item.workspace_member,
+            user_profile: Array.isArray(item.workspace_member.user_profiles)
+              ? item.workspace_member.user_profiles[0]
+              : item.workspace_member.user_profiles,
+          }
+        : undefined,
+    };
+  });
+
+  console.log('🎯 Transformed data:', transformedData);
+
+  const result = {
+    assigners:
+      transformedData.filter(
+        d => d.workspace_member_note_role === 'assigner'
+      ) || [],
+    assignees:
+      transformedData.filter(
+        d => d.workspace_member_note_role === 'assignee'
+      ) || [],
+  };
+
+  console.log('📤 Final result:', result);
+
+  return result;
+}

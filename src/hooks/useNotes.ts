@@ -10,6 +10,7 @@ import {
   deleteNote,
   searchNotes,
   parseNoteText,
+  getUserAssignedNotes,
 } from '@/lib/api/notesApi';
 import type { Note, NoteWithParsed } from '@/types/note';
 import { getPersonalWorkspaceId } from '@/lib/cookies';
@@ -58,8 +59,19 @@ export function useNotes() {
         throw new Error('No personal workspace found');
       }
 
-      const data = await getNotes(workspaceId);
-      const parsedNotes = data.map(parseNote);
+      // Get personal notes
+      const personalNotes = await getNotes(workspaceId);
+
+      // Get assigned group notes
+      const assignedNotes = await getUserAssignedNotes();
+
+      // Merge and deduplicate by note ID
+      const allNotesMap = new Map<number, Note>();
+      [...personalNotes, ...assignedNotes].forEach(note => {
+        allNotesMap.set(note.id, note);
+      });
+
+      const parsedNotes = Array.from(allNotesMap.values()).map(parseNote);
       setNotes(parsedNotes);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to fetch notes');

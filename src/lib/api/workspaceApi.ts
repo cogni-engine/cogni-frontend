@@ -180,6 +180,8 @@ export async function checkWorkspaceMembership(
 export async function getWorkspaceMembers(
   workspaceId: number
 ): Promise<WorkspaceMember[]> {
+  console.log('🔍 getWorkspaceMembers called with workspaceId:', workspaceId);
+
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -204,7 +206,16 @@ export async function getWorkspaceMembers(
     .eq('workspace_id', workspaceId)
     .order('created_at', { ascending: true });
 
-  if (error) throw error;
+  console.log('📦 getWorkspaceMembers raw response:', { data, error });
+
+  if (error) {
+    console.error('❌ getWorkspaceMembers error:', error);
+    console.error('❌ Error details:', JSON.stringify(error, null, 2));
+    throw error;
+  }
+
+  console.log('✅ getWorkspaceMembers data received:', data);
+  console.log('📊 getWorkspaceMembers data length:', data?.length);
 
   const members = (data ?? []) as SupabaseWorkspaceMember[];
 

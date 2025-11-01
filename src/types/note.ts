@@ -4,6 +4,12 @@ export interface Note {
   updated_at: string;
   text: string;
   workspace_id: number;
+  workspace?: {
+    id: number;
+    title: string;
+    type: 'group' | 'personal';
+    created_at: string;
+  };
 }
 
 export interface NoteWithParsed extends Note {

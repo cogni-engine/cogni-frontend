@@ -5,6 +5,7 @@ import { useNotes, formatDate, useNoteMutations } from '@/hooks/useNotes';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { getPersonalWorkspaceId } from '@/lib/cookies';
+import { PenSquare } from 'lucide-react';
 
 export default function NotesPage() {
   const router = useRouter();
@@ -13,11 +14,17 @@ export default function NotesPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [isCreating, setIsCreating] = useState(false);
 
+  const personalWorkspaceId = getPersonalWorkspaceId();
+
   const formattedNotes = notes.map(note => ({
     id: note.id.toString(),
     title: note.title,
     date: formatDate(note.updated_at),
     preview: note.preview,
+    workspace: note.workspace,
+    isGroupNote:
+      note.workspace?.type === 'group' &&
+      note.workspace_id !== personalWorkspaceId,
   }));
 
   const handleCreateNote = async () => {
@@ -59,9 +66,9 @@ export default function NotesPage() {
         </h1>
 
         {/* 検索バー + 新規作成ボタン */}
-        <div className='flex items-center justify-between w-full max-w-4xl mx-auto gap-3'>
+        <div className='flex items-center justify-between w-full gap-3'>
           {/* Search Box */}
-          <div className='flex items-center bg-white/8 backdrop-blur-xl text-gray-300 px-4 py-3 rounded-full flex-1 border border-white/10 hover:border-white/15 focus-within:border-white/15 hover:scale-[1.005] focus-within:scale-[1.002] shadow-[0_8px_32px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.12)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.25),inset_0_1px_0_rgba(255,255,255,0.18)] focus-within:shadow-[0_12px_40px_rgba(0,0,0,0.25),inset_0_1px_0_rgba(255,255,255,0.18)] transition-all duration-300'>
+          <div className='flex items-center bg-white/8 backdrop-blur-xl text-white px-4 py-3 rounded-4xl flex-1 border border-black focus-within:border-black shadow-[0_8px_32px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.12)] focus-within:shadow-[0_12px_40px_rgba(0,0,0,0.25),inset_0_1px_0_rgba(255,255,255,0.18)] transition-all duration-300'>
             <svg
               width='18'
               height='18'
@@ -84,7 +91,7 @@ export default function NotesPage() {
                 setSearchQuery(e.target.value);
                 searchNotes(e.target.value);
               }}
-              className='bg-transparent outline-none text-sm text-gray-200 w-full placeholder-gray-500'
+              className='bg-transparent outline-none text-sm text-white w-full placeholder-gray-500'
             />
             <svg
               width='18'
@@ -107,34 +114,12 @@ export default function NotesPage() {
           <button
             onClick={handleCreateNote}
             disabled={isCreating}
-            className='bg-white/10 backdrop-blur-xl border border-white/12 hover:border-white/18 p-3 rounded-full hover:bg-white/15 hover:scale-[1.08] transition-all duration-300 shadow-[0_8px_32px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.12)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.25),inset_0_1px_0_rgba(255,255,255,0.18)] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100'
+            className='bg-white/10 backdrop-blur-xl border border-black p-3 rounded-full hover:bg-white/15 transition-all duration-300 shadow-[0_8px_32px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.12)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.25),inset_0_1px_0_rgba(255,255,255,0.18)] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:shadow-[0_8px_32px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.12)]'
           >
             {isCreating ? (
               <div className='animate-spin rounded-full h-5 w-5 border-b-2 border-gray-300'></div>
             ) : (
-              <svg
-                width='20'
-                height='20'
-                viewBox='0 0 24 24'
-                fill='none'
-                stroke='currentColor'
-                strokeWidth='2'
-                strokeLinecap='round'
-                strokeLinejoin='round'
-                className='text-gray-300'
-              >
-                <rect
-                  x='3'
-                  y='3'
-                  width='14'
-                  height='14'
-                  rx='2'
-                  ry='2'
-                  stroke='currentColor'
-                  fill='none'
-                ></rect>
-                <path d='M17 3l4 4-9.5 9.5-4 1 1-4L17 3z'></path>
-              </svg>
+              <PenSquare className='w-5 h-5 text-white' />
             )}
           </button>
         </div>
