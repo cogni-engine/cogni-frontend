@@ -9,10 +9,19 @@ import { useUI } from '@/contexts/UIContext';
 import { createClient } from '@/lib/supabase/browserClient';
 import type { User } from '@supabase/supabase-js';
 import { UserMenu } from '@/components/layout/UserMenu';
+import { BellIcon } from 'lucide-react';
 
 export default function Header() {
   const pathname = usePathname();
   const isHomePage = pathname === '/home';
+  const pageTitleMap: Record<string, string> = {
+    '/home': 'Home',
+    '/notes': 'Notes',
+    '/workspace': 'Workspaces',
+    '/personal': 'Personal',
+    '/user/settings': 'User Settings',
+  };
+  const pageTitle = pageTitleMap[pathname] ?? null;
   const { createThread } = useThreads();
   const { setSelectedThreadId } = useThreadContext();
   const { toggleThreadSidebar, toggleNotificationPanel } = useUI();
@@ -153,7 +162,9 @@ export default function Header() {
         )}
 
         {/* Logo */}
-        <h1 className='text-lg font-semibold text-white'>Cogno</h1>
+        <h1 className='text-lg font-semibold text-white'>
+          Cogno{pageTitle ? ` | ${pageTitle}` : ''}
+        </h1>
       </div>
 
       <div className='flex items-center gap-3'>
@@ -164,12 +175,11 @@ export default function Header() {
             className='flex items-center gap-2 text-white/60 hover:text-white transition-colors group relative'
           >
             <span className='text-sm font-medium'>{currentTime}</span>
-
+            <BellIcon className='h-5 w-5' />
             {/* Cogno Icon (Star/Comet) */}
             <div className='relative'>
-              <div className='w-2 h-2 bg-white rounded-full'></div>
-              <div className='absolute top-1/2 left-0 w-6 h-0.5 bg-gradient-to-r from-white/50 via-white/20 to-transparent transform -translate-y-1/2'></div>
-
+              {/* <div className='w-2 h-2 bg-white rounded-full'></div>
+              <div className='absolute top-1/2 left-0 w-6 h-0.5 bg-gradient-to-r from-white/50 via-white/20 to-transparent transform -translate-y-1/2'></div> */}
               {/* Unread Badge */}
               {unreadCount > 0 && (
                 <span className='absolute -top-1 -right-1 bg-red-500 text-white text-[9px] font-bold rounded-full min-w-[14px] h-[14px] flex items-center justify-center px-0.5 border border-black/50'>

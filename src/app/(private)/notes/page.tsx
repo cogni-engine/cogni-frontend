@@ -53,11 +53,7 @@ export default function NotesPage() {
       </div>
 
       {/* 固定ヘッダー（タイトル + 検索バー + 新規作成ボタン） */}
-      <div className='relative z-20 px-4 md:px-6 pt-4 md:pt-6 pb-4 space-y-4 bg-gradient-to-br from-slate-950 via-black to-slate-950'>
-        <h1 className='text-2xl font-bold bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent'>
-          All Notes
-        </h1>
-
+      <div className='relative z-20 px-4 md:px-6 pt-4 md:pt-6 pb-4 bg-gradient-to-br from-slate-950 via-black to-slate-950'>
         {/* 検索バー + 新規作成ボタン */}
         <div className='flex items-center justify-between w-full max-w-4xl mx-auto gap-3'>
           {/* Search Box */}

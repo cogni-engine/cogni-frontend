@@ -162,11 +162,6 @@ export default function UserSettingsClient() {
 
   return (
     <div className='flex h-full flex-col gap-6 overflow-auto p-6 text-white'>
-      <div>
-        <h1 className='text-3xl font-semibold'>User Settings</h1>
-        <p className='text-white/60'>Manage your profile details and avatar.</p>
-      </div>
-
       {isLoading ? (
         <div className='flex flex-1 items-center justify-center text-white/60'>
           Loading your settings...
