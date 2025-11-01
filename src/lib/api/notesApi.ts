@@ -273,11 +273,11 @@ export async function getNoteAssignments(noteId: number): Promise<{
   const result = {
     assigners:
       transformedData.filter(
-        (d) => d.workspace_member_note_role === 'assigner'
+        d => d.workspace_member_note_role === 'assigner'
       ) || [],
     assignees:
       transformedData.filter(
-        (d) => d.workspace_member_note_role === 'assignee'
+        d => d.workspace_member_note_role === 'assignee'
       ) || [],
   };
 
