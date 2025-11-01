@@ -14,8 +14,17 @@ type RawWorkspaceMember = Omit<
   user_profile?: SupabaseProfile;
 };
 
+type RawWorkspaceMessageRead = {
+  workspace_message_id: number;
+  workspace_member_id: number;
+  read_at?: string;
+  created_at?: string;
+  workspace_member?: RawWorkspaceMember | null;
+};
+
 type RawWorkspaceMessage = WorkspaceMessage & {
   workspace_member?: RawWorkspaceMember | null;
+  workspace_message_reads?: RawWorkspaceMessageRead[] | null;
 };
 
 function transformMessageRow(
@@ -25,17 +34,35 @@ function transformMessageRow(
     return row as unknown as WorkspaceMessage;
   }
 
-  const workspaceMember = row.workspace_member
+  const { workspace_member, workspace_message_reads, ...rest } = row;
+
+  const workspaceMember = workspace_member
     ? {
-        ...row.workspace_member,
+        ...workspace_member,
         user_profile:
-          normalizeWorkspaceProfile(row.workspace_member.user_profile) ?? null,
+          normalizeWorkspaceProfile(workspace_member.user_profile) ?? null,
       }
     : undefined;
 
+  const reads = (workspace_message_reads ?? []).map(read => ({
+    workspace_message_id: read.workspace_message_id,
+    workspace_member_id: read.workspace_member_id,
+    read_at: read.read_at ?? read.created_at ?? new Date().toISOString(),
+    workspace_member: read.workspace_member
+      ? {
+          ...read.workspace_member,
+          user_profile:
+            normalizeWorkspaceProfile(read.workspace_member.user_profile) ??
+            null,
+        }
+      : undefined,
+  }));
+
   return {
-    ...row,
+    ...rest,
     workspace_member: workspaceMember,
+    reads,
+    read_count: reads.length,
   };
 }
 
@@ -60,6 +87,16 @@ export async function getWorkspaceMessages(
         id,
         user_id,
         user_profile:user_id(id, name, avatar_url)
+      ),
+      workspace_message_reads(
+        workspace_message_id,
+        workspace_member_id,
+        created_at,
+        workspace_member:workspace_member_id(
+          id,
+          user_id,
+          user_profile:user_id(id, name, avatar_url)
+        )
       )
     `
     )
@@ -92,6 +129,16 @@ export async function sendWorkspaceMessage(
         id,
         user_id,
         user_profile:user_id(id, name, avatar_url)
+      ),
+      workspace_message_reads(
+        workspace_message_id,
+        workspace_member_id,
+        created_at,
+        workspace_member:workspace_member_id(
+          id,
+          user_id,
+          user_profile:user_id(id, name, avatar_url)
+        )
       )
     `
     )
@@ -118,6 +165,16 @@ export async function updateWorkspaceMessage(
         id,
         user_id,
         user_profile:user_id(id, name, avatar_url)
+      ),
+      workspace_message_reads(
+        workspace_message_id,
+        workspace_member_id,
+        created_at,
+        workspace_member:workspace_member_id(
+          id,
+          user_id,
+          user_profile:user_id(id, name, avatar_url)
+        )
       )
     `
     )
@@ -137,9 +194,14 @@ export async function deleteWorkspaceMessage(messageId: number): Promise<void> {
   if (error) throw error;
 }
 
+export type CurrentWorkspaceMember = {
+  id: number;
+  last_read_message_id: number | null;
+};
+
 export async function getCurrentWorkspaceMember(
   workspaceId: number
-): Promise<number | null> {
+): Promise<CurrentWorkspaceMember | null> {
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -150,12 +212,61 @@ export async function getCurrentWorkspaceMember(
 
   const { data, error } = await supabase
     .from('workspace_member')
-    .select('id')
+    .select('id, last_read_message_id')
     .eq('workspace_id', workspaceId)
     .eq('user_id', user.id)
     .maybeSingle();
 
   if (error) throw error;
 
-  return data?.id || null;
+  if (!data) {
+    return null;
+  }
+
+  return {
+    id: data.id,
+    last_read_message_id: data.last_read_message_id ?? null,
+  };
+}
+
+export async function markWorkspaceMessagesAsRead(
+  workspaceId: number,
+  workspaceMemberId: number,
+  messageIds: number[],
+  currentLastRead?: number | null
+): Promise<number | null> {
+  if (messageIds.length === 0) {
+    return currentLastRead ?? null;
+  }
+
+  const uniqueIds = Array.from(new Set(messageIds));
+  const rows = uniqueIds.map(messageId => ({
+    workspace_message_id: messageId,
+    workspace_member_id: workspaceMemberId,
+  }));
+
+  const { error: upsertError } = await supabase
+    .from('workspace_message_reads')
+    .upsert(rows, {
+      onConflict: 'workspace_message_id,workspace_member_id',
+    });
+
+  if (upsertError) throw upsertError;
+
+  const newLastRead = Math.max(...uniqueIds);
+  const lastReadToCompare = currentLastRead ?? null;
+
+  if (lastReadToCompare !== null && newLastRead <= lastReadToCompare) {
+    return lastReadToCompare;
+  }
+
+  const { error: updateError } = await supabase
+    .from('workspace_member')
+    .update({ last_read_message_id: newLastRead })
+    .eq('id', workspaceMemberId)
+    .eq('workspace_id', workspaceId);
+
+  if (updateError) throw updateError;
+
+  return newLastRead;
 }

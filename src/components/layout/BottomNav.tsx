@@ -3,6 +3,8 @@
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import { useUI } from '@/contexts/UIContext';
+import { HomeIcon, MessageSquare } from 'lucide-react';
+import { Notebook } from 'lucide-react';
 
 export default function BottomNav() {
   const pathname = usePathname();
@@ -17,9 +19,13 @@ export default function BottomNav() {
   }, [pathname, closeThreadSidebar]);
 
   const tabs = [
-    { name: 'Chat', path: '/workspace' },
-    { name: 'Cogno', path: '/home' },
-    { name: 'Notes', path: '/notes' },
+    {
+      name: 'Chat',
+      path: '/workspace',
+      icon: <MessageSquare className='w-6 h-6' />,
+    },
+    { name: 'Cogno', path: '/home', icon: <HomeIcon className='w-6 h-6' /> },
+    { name: 'Notes', path: '/notes', icon: <Notebook className='w-6 h-6' /> },
   ];
 
   return (
@@ -36,8 +42,7 @@ export default function BottomNav() {
                 isActive ? 'text-white' : 'text-gray-400 hover:text-white'
               }`}
             >
-              <div className='relative'>
-                {/* 中心の丸 - サイズがアニメーション */}
+              {/* <div className='relative'>
                 <div
                   className={`bg-white rounded-full shadow-lg transition-all duration-500 ease-out ${
                     isActive
@@ -46,7 +51,6 @@ export default function BottomNav() {
                   }`}
                 ></div>
 
-                {/* 彗星の尾 - アクティブ時にフェードイン */}
                 <div
                   className={`absolute top-1/2 left-0 transition-all duration-500 ease-out ${
                     isActive
@@ -60,7 +64,6 @@ export default function BottomNav() {
                   <div className='absolute top-1/2 left-0 w-4 h-0.5 bg-gradient-to-r from-white/20 via-white/10 to-transparent transform -translate-y-1/2 translate-y-2.5'></div>
                 </div>
 
-                {/* 土星の環 - 非アクティブ時にフェードイン */}
                 <div
                   className={`transition-all duration-500 ease-out ${
                     isActive ? 'opacity-0 scale-75' : 'opacity-100 scale-100'
@@ -70,7 +73,8 @@ export default function BottomNav() {
                   <div className='absolute top-1/2 left-1/2 w-7 h-0.5 bg-gradient-to-r from-transparent via-white/25 to-transparent transform -translate-x-1/2 -translate-y-1/2 -rotate-12'></div>
                   <div className='absolute top-1/2 left-1/2 w-6 h-0.5 bg-gradient-to-r from-transparent via-white/15 to-transparent transform -translate-x-1/2 -translate-y-1/2 rotate-6'></div>
                 </div>
-              </div>
+              </div> */}
+              {tab.icon}
 
               <span className='text-xs font-medium'>{tab.name}</span>
             </button>

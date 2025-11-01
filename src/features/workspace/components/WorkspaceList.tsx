@@ -1,39 +1,15 @@
 'use client';
 
-import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import type { Workspace } from '@/types/workspace';
-import { PencilIcon, Trash2 as TrashIcon } from 'lucide-react';
+import { Building2 } from 'lucide-react';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 interface WorkspaceListProps {
   workspaces: Workspace[];
-  onEdit: (workspace: Workspace) => void;
-  onDelete: (id: number) => Promise<void>;
 }
 
-export default function WorkspaceList({
-  workspaces,
-  onEdit,
-  onDelete,
-}: WorkspaceListProps) {
-  const [deletingId, setDeletingId] = useState<number | null>(null);
-
-  const handleDelete = async (id: number) => {
-    if (!confirm('Are you sure you want to delete this workspace?')) {
-      return;
-    }
-
-    setDeletingId(id);
-    try {
-      await onDelete(id);
-    } catch (err) {
-      console.error('Failed to delete workspace:', err);
-      alert('Failed to delete workspace');
-    } finally {
-      setDeletingId(null);
-    }
-  };
-
+export default function WorkspaceList({ workspaces }: WorkspaceListProps) {
   if (workspaces.length === 0) {
     return (
       <div className='text-center py-12'>
@@ -48,13 +24,7 @@ export default function WorkspaceList({
   return (
     <div className='flex flex-col gap-4'>
       {workspaces.map(workspace => (
-        <WorkspaceCard
-          key={workspace.id}
-          workspace={workspace}
-          onEdit={onEdit}
-          onDelete={handleDelete}
-          isDeleting={deletingId === workspace.id}
-        />
+        <WorkspaceCard key={workspace.id} workspace={workspace} />
       ))}
     </div>
   );
@@ -62,24 +32,15 @@ export default function WorkspaceList({
 
 interface WorkspaceCardProps {
   workspace: Workspace;
-  onEdit: (workspace: Workspace) => void;
-  onDelete: (id: number) => void;
-  isDeleting: boolean;
 }
 
-function WorkspaceCard({
-  workspace,
-  onEdit,
-  onDelete,
-  isDeleting,
-}: WorkspaceCardProps) {
+function WorkspaceCard({ workspace }: WorkspaceCardProps) {
   const router = useRouter();
+  const unreadCount = workspace.unread_count ?? 0;
+  const hasUnread = unreadCount > 0;
+  const displayCount = unreadCount > 99 ? '99+' : unreadCount;
 
-  const handleCardClick = (e: React.MouseEvent) => {
-    // Don't navigate if clicking on buttons
-    if ((e.target as HTMLElement).closest('button')) {
-      return;
-    }
+  const handleCardClick = () => {
     router.push(`/workspace/${workspace.id}`);
   };
 
@@ -89,47 +50,51 @@ function WorkspaceCard({
       className='bg-white/8 backdrop-blur-md hover:bg-white/12 transition-all rounded-2xl p-5 border border-white/15 shadow-[0_8px_32px_rgba(0,0,0,0.2)] hover:shadow-[0_8px_32px_rgba(0,0,0,0.3)] cursor-pointer'
     >
       <div className='flex items-center justify-between gap-3'>
-        <div className='flex-1 min-w-0'>
-          <h3 className='text-base font-semibold text-white mb-1 truncate'>
-            {workspace.title || 'Untitled Workspace'}
-          </h3>
-          <div className='flex items-center gap-2'>
-            <span
-              className={`px-1.5 py-0.5 rounded text-xs font-medium ${
-                workspace.type === 'personal'
-                  ? 'bg-blue-500/10 text-blue-400'
-                  : 'bg-purple-500/10 text-purple-400'
-              }`}
-            >
-              {workspace.type}
-            </span>
-            <span className='text-xs text-gray-600'>
-              {new Date(workspace.created_at).toLocaleDateString()}
-            </span>
+        <div className='flex items-center gap-4 flex-1 min-w-0'>
+          <Avatar className='h-12 w-12 border border-white/10 bg-white/5 uppercase text-sm tracking-wide'>
+            {workspace.icon_url ? (
+              <AvatarImage
+                src={workspace.icon_url}
+                alt={workspace.title ?? 'Workspace icon'}
+              />
+            ) : (
+              <AvatarFallback className='bg-white/5 text-white/70'>
+                <Building2 className='w-5 h-5' />
+              </AvatarFallback>
+            )}
+          </Avatar>
+          <div className='flex-1 min-w-0'>
+            <h3 className='text-base font-semibold text-white mb-1 truncate'>
+              {workspace.title || 'Untitled Workspace'}
+            </h3>
+            <div className='flex items-center gap-2'>
+              <span
+                className={`px-1.5 py-0.5 rounded text-xs font-medium ${
+                  workspace.type === 'personal'
+                    ? 'bg-blue-500/10 text-blue-400'
+                    : 'bg-purple-500/10 text-purple-400'
+                }`}
+              >
+                {workspace.type}
+              </span>
+              <span className='text-xs text-gray-400'>
+                {new Date(workspace.created_at).toLocaleDateString()}
+              </span>
+            </div>
           </div>
         </div>
 
-        <div className='flex gap-1.5 shrink-0'>
-          <button
-            onClick={e => {
-              e.stopPropagation();
-              onEdit(workspace);
-            }}
-            disabled={isDeleting}
-            className='p-2 bg-gray-950 hover:bg-gray-900 text-white rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed'
+        <div className='flex items-center gap-3 shrink-0'>
+          <div className='text-sm text-white/60'>View</div>
+          <span
+            className={`inline-flex min-w-[2.25rem] items-center justify-center rounded-full px-3 py-1 text-xs font-semibold transition-colors ${
+              hasUnread
+                ? 'bg-purple-500/20 text-purple-100 shadow-[0_0_15px_rgba(192,132,252,0.35)]'
+                : 'bg-white/10 text-white/40'
+            }`}
           >
-            <PencilIcon className='w-4 h-4' />
-          </button>
-          <button
-            onClick={e => {
-              e.stopPropagation();
-              onDelete(workspace.id);
-            }}
-            disabled={isDeleting}
-            className='p-2 bg-red-600/10 hover:bg-red-600/20 text-red-400 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed'
-          >
-            <TrashIcon className='w-4 h-4' />
-          </button>
+            {displayCount}
+          </span>
         </div>
       </div>
     </div>

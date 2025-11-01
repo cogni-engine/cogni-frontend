@@ -2,9 +2,11 @@ export interface Workspace {
   id: number;
   created_at: string;
   title: string | null;
+  icon_url: string | null;
   type: 'group' | 'personal';
   notes?: Note[];
   members?: WorkspaceMember[];
+  unread_count?: number;
 }
 
 export interface Note {
@@ -28,6 +30,19 @@ export interface WorkspaceMember {
   workspace_id: number;
   role: 'owner' | 'admin' | 'member';
   user_profile?: WorkspaceProfile | null;
+  last_read_message_id?: number | null;
+}
+
+export interface WorkspaceMessageRead {
+  workspace_message_id: number;
+  workspace_member_id: number;
+  read_at: string;
+  created_at?: string;
+  workspace_member?: {
+    id?: number;
+    user_id?: string;
+    user_profile?: WorkspaceProfile | null;
+  } | null;
 }
 
 export type InvitationStatus = 'pending' | 'accepted' | 'expired' | 'cancelled';
@@ -69,4 +84,7 @@ export interface WorkspaceMessage {
     user_id?: string;
     user_profile?: WorkspaceProfile | null;
   };
+  reads?: WorkspaceMessageRead[];
+  read_count?: number;
+  is_read_by_current_user?: boolean;
 }
