@@ -27,7 +27,7 @@ export default function WorkspaceMessageItem({ message, isOwnMessage }: Props) {
     return (
       <div className='flex justify-end'>
         <div className='flex gap-2 max-w-[70%]'>
-          <div className='flex flex-col'>
+          <div className='flex flex-col justify-end'>
             <div className='text-right'>
               <ReadStatus readCount={readCount} />
             </div>

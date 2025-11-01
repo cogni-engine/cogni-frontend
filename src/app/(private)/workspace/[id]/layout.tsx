@@ -35,6 +35,15 @@ export default function WorkspaceLayout({
 
   const currentView = getCurrentView();
 
+  const handleBackNavigation = () => {
+    if (currentView === 'members' || currentView === 'menu') {
+      router.push(`${basePath}/chat`);
+      return;
+    }
+
+    router.push('/workspace');
+  };
+
   const handleViewChange = (view: ViewType) => {
     const basePath = `/workspace/${workspaceId}`;
     switch (view) {
@@ -90,7 +99,7 @@ export default function WorkspaceLayout({
           {/* Header */}
           <div className='flex items-center gap-3 w-full'>
             <button
-              onClick={() => router.back()}
+              onClick={handleBackNavigation}
               className='p-2 rounded-lg bg-white/10 hover:bg-white/20 transition-colors'
               title='Go back'
             >
@@ -144,35 +153,39 @@ export default function WorkspaceLayout({
 
           {/* Navigation Tabs */}
           {(currentView === 'chat' || currentView === 'notes') && (
-            <div className='w-full flex items-center gap-1 bg-white/8 border border-white/10 rounded-lg p-1'>
-              <button
-                onClick={() => handleViewChange('chat')}
-                className={`w-1/2 flex items-center justify-center gap-2 px-4 py-2 rounded-md transition-colors ${
-                  currentView === 'chat'
-                    ? 'bg-white/20 text-white'
-                    : 'text-gray-400 hover:text-white hover:bg-white/10'
-                }`}
-              >
-                <MessageSquare className='w-4 h-4' />
-                Chat
-              </button>
-              <button
-                onClick={() => handleViewChange('notes')}
-                className={`w-1/2 flex items-center justify-center gap-2 px-4 py-2 rounded-md transition-colors ${
-                  currentView === 'notes'
-                    ? 'bg-white/20 text-white'
-                    : 'text-gray-400 hover:text-white hover:bg-white/10'
-                }`}
-              >
-                <FileText className='w-4 h-4' />
-                Notes
-              </button>
+            <div className='relative flex w-full justify-center -mb-4'>
+              <div className='flex w-full max-w-md divide-x divide-white/15 overflow-hidden rounded-3xl border border-white/15 bg-white/10 backdrop-blur-md shadow-[0_20px_45px_rgba(15,23,42,0.45)]'>
+                <button
+                  onClick={() => handleViewChange('chat')}
+                  className={`flex flex-1 items-center justify-center gap-2 px-6 py-2 text-sm font-medium transition-colors ${
+                    currentView === 'chat'
+                      ? 'text-white bg-white/10'
+                      : 'text-gray-400 hover:text-white'
+                  }`}
+                  aria-current={currentView === 'chat' ? 'page' : undefined}
+                >
+                  <MessageSquare className='w-4 h-4' />
+                  Chat
+                </button>
+                <button
+                  onClick={() => handleViewChange('notes')}
+                  className={`flex flex-1 items-center justify-center gap-2 px-6 py-2 text-sm font-medium transition-colors ${
+                    currentView === 'notes'
+                      ? 'text-white bg-white/10'
+                      : 'text-gray-400 hover:text-white'
+                  }`}
+                  aria-current={currentView === 'notes' ? 'page' : undefined}
+                >
+                  <FileText className='w-4 h-4' />
+                  Notes
+                </button>
+              </div>
             </div>
           )}
         </div>
 
         {/* Content */}
-        <div className='flex-1 overflow-y-auto'>{children}</div>
+        <div className='flex-1 overflow-y-auto pt-6'>{children}</div>
       </div>
     </div>
   );

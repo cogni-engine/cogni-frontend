@@ -41,7 +41,7 @@ function WorkspaceCard({ workspace }: WorkspaceCardProps) {
   const displayCount = unreadCount > 99 ? '99+' : unreadCount;
 
   const handleCardClick = () => {
-    router.push(`/workspace/${workspace.id}`);
+    router.push(`/workspace/${workspace.id}/chat`);
   };
 
   return (

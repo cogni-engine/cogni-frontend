@@ -42,7 +42,7 @@ export default function WorkspaceNotesPage() {
   const handleCreateNote = async () => {
     try {
       const newNote = await createNote('Untitled', '');
-      router.push(`/workspace/${workspaceId}/notes/${newNote.id}`);
+      router.push(`/notes/${newNote.id}`);
     } catch (err) {
       console.error('Failed to create note:', err);
     }
@@ -58,7 +58,7 @@ export default function WorkspaceNotesPage() {
   };
 
   const handleNoteClick = (noteId: number) => {
-    router.push(`/workspace/${workspaceId}/notes/${noteId}`);
+    router.push(`/notes/${noteId}`);
   };
 
   if (loading && !isSearching) {

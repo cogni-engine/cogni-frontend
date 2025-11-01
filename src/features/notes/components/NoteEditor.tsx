@@ -182,15 +182,21 @@ export default function NoteEditor({ noteId }: { noteId: string }) {
       </div>
 
       {/* ヘッダー */}
-      <header className='flex justify-between items-center px-4 md:px-6 py-3 relative z-10'>
+      <header className='flex items-end gap-3 px-4 md:px-6 py-3 relative z-10'>
         {/* 戻るボタン - 丸く浮き出る */}
         <button
           onClick={() => router.back()}
-          className='w-11 h-11 rounded-full bg-white/8 backdrop-blur-xl border border-black text-gray-400 hover:text-white hover:bg-white/12 hover:scale-110 transition-all shadow-[0_8px_32px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.12)] flex items-center justify-center'
+          className='w-10 h-10 rounded-full bg-white/8 backdrop-blur-xl border border-black text-gray-400 hover:text-white hover:bg-white/12 hover:scale-110 transition-all shadow-[0_8px_32px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.12)] flex items-center justify-center'
         >
           <ArrowLeft className='w-4 h-4' />
         </button>
-
+        <input
+          type='text'
+          value={title}
+          onChange={e => setTitle(e.target.value)}
+          placeholder='タイトル'
+          className='text-2xl font-bold bg-transparent focus:outline-none text-white placeholder-gray-500'
+        />
         {/* Saving indicator (subtle, replaces explicit save) */}
         {saving && (
           <div className='text-xs text-white/60 px-3 py-1 rounded-full bg-white/10 border border-white/15'>
@@ -198,84 +204,75 @@ export default function NoteEditor({ noteId }: { noteId: string }) {
           </div>
         )}
       </header>
+      {/* Toolbar */}
+      <div className='sticky top-0 z-20 flex flex-wrap gap-2 mb-4 p-3 border-b border-white/10 bg-slate-950/90 backdrop-blur-sm shadow-[0_6px_20px_rgba(0,0,0,0.35)]'>
+        <ToolbarButton
+          onClick={() => editor.chain().focus().toggleBold().run()}
+          isActive={editor.isActive('bold')}
+          icon={<Bold className='w-4 h-4' />}
+          title='Bold'
+        />
+        <ToolbarButton
+          onClick={() => editor.chain().focus().toggleItalic().run()}
+          isActive={editor.isActive('italic')}
+          icon={<Italic className='w-4 h-4' />}
+          title='Italic'
+        />
+        <ToolbarButton
+          onClick={() => editor.chain().focus().toggleStrike().run()}
+          isActive={editor.isActive('strike')}
+          icon={<Strikethrough className='w-4 h-4' />}
+          title='Strikethrough'
+        />
+        <ToolbarButton
+          onClick={() => editor.chain().focus().toggleCode().run()}
+          isActive={editor.isActive('code')}
+          icon={<Code className='w-4 h-4' />}
+          title='Inline code'
+        />
+        <div className='w-px h-6 bg-white/10 my-auto' />
+        <ToolbarButton
+          onClick={() => editor.chain().focus().toggleBulletList().run()}
+          isActive={editor.isActive('bulletList')}
+          icon={<List className='w-4 h-4' />}
+          title='Bullet list'
+        />
+        <ToolbarButton
+          onClick={() => editor.chain().focus().toggleOrderedList().run()}
+          isActive={editor.isActive('orderedList')}
+          icon={<ListOrdered className='w-4 h-4' />}
+          title='Numbered list'
+        />
+        <ToolbarButton
+          onClick={() => editor.chain().focus().toggleBlockquote().run()}
+          isActive={editor.isActive('blockquote')}
+          icon={<Quote className='w-4 h-4' />}
+          title='Quote'
+        />
+        <div className='w-px h-6 bg-white/10 my-auto' />
+        <ToolbarButton
+          onClick={() => editor.chain().focus().undo().run()}
+          disabled={!editor.can().undo()}
+          icon={<Undo className='w-4 h-4' />}
+          title='Undo'
+        />
+        <ToolbarButton
+          onClick={() => editor.chain().focus().redo().run()}
+          disabled={!editor.can().redo()}
+          icon={<Redo className='w-4 h-4' />}
+          title='Redo'
+        />
+      </div>
 
       {/* エディタ */}
       <div
-        className='flex flex-col flex-1 p-4 md:p-6 relative z-10 overflow-auto'
+        className='flex flex-col flex-1 px-4 md:px-6 relative z-10 overflow-auto'
         style={{
           willChange: 'scroll-position',
           transform: 'translateZ(0)',
           WebkitOverflowScrolling: 'touch',
         }}
       >
-        <input
-          type='text'
-          value={title}
-          onChange={e => setTitle(e.target.value)}
-          placeholder='タイトル'
-          className='text-2xl font-bold bg-transparent focus:outline-none mb-3 text-white placeholder-gray-500'
-        />
-
-        {/* Toolbar */}
-        <div className='flex flex-wrap gap-2 mb-4 pb-3 border-b border-white/10'>
-          <ToolbarButton
-            onClick={() => editor.chain().focus().toggleBold().run()}
-            isActive={editor.isActive('bold')}
-            icon={<Bold className='w-4 h-4' />}
-            title='Bold'
-          />
-          <ToolbarButton
-            onClick={() => editor.chain().focus().toggleItalic().run()}
-            isActive={editor.isActive('italic')}
-            icon={<Italic className='w-4 h-4' />}
-            title='Italic'
-          />
-          <ToolbarButton
-            onClick={() => editor.chain().focus().toggleStrike().run()}
-            isActive={editor.isActive('strike')}
-            icon={<Strikethrough className='w-4 h-4' />}
-            title='Strikethrough'
-          />
-          <ToolbarButton
-            onClick={() => editor.chain().focus().toggleCode().run()}
-            isActive={editor.isActive('code')}
-            icon={<Code className='w-4 h-4' />}
-            title='Inline code'
-          />
-          <div className='w-px h-6 bg-white/10 my-auto' />
-          <ToolbarButton
-            onClick={() => editor.chain().focus().toggleBulletList().run()}
-            isActive={editor.isActive('bulletList')}
-            icon={<List className='w-4 h-4' />}
-            title='Bullet list'
-          />
-          <ToolbarButton
-            onClick={() => editor.chain().focus().toggleOrderedList().run()}
-            isActive={editor.isActive('orderedList')}
-            icon={<ListOrdered className='w-4 h-4' />}
-            title='Numbered list'
-          />
-          <ToolbarButton
-            onClick={() => editor.chain().focus().toggleBlockquote().run()}
-            isActive={editor.isActive('blockquote')}
-            icon={<Quote className='w-4 h-4' />}
-            title='Quote'
-          />
-          <div className='w-px h-6 bg-white/10 my-auto' />
-          <ToolbarButton
-            onClick={() => editor.chain().focus().undo().run()}
-            disabled={!editor.can().undo()}
-            icon={<Undo className='w-4 h-4' />}
-            title='Undo'
-          />
-          <ToolbarButton
-            onClick={() => editor.chain().focus().redo().run()}
-            disabled={!editor.can().redo()}
-            icon={<Redo className='w-4 h-4' />}
-            title='Redo'
-          />
-        </div>
-
         {/* Editor Content */}
         <div className='flex-1 min-h-0'>
           <EditorContent editor={editor} />
