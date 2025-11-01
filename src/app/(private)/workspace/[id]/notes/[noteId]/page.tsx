@@ -3,6 +3,9 @@
 import { useParams, useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import { useWorkspaceNote } from '@/hooks/useWorkspaceNotes';
+import { useWorkspaceMembers } from '@/hooks/useWorkspace';
+import { assignNoteToMembers, getNoteAssignments } from '@/lib/api/notesApi';
+import { MemberMultiSelect } from '@/components/workspace/MemberMultiSelect';
 
 export default function WorkspaceNoteEditorPage() {
   const params = useParams();
@@ -16,10 +19,20 @@ export default function WorkspaceNoteEditorPage() {
     noteId
   );
 
+  const { members } = useWorkspaceMembers(workspaceId);
+
+  // Debug: Log workspace members
+  useEffect(() => {
+    console.log('👥 Workspace members:', members);
+    console.log('👥 Members length:', members?.length);
+  }, [members]);
+
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [saving, setSaving] = useState(false);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [assignerIds, setAssignerIds] = useState<number[]>([]);
+  const [assigneeIds, setAssigneeIds] = useState<number[]>([]);
 
   // Load note data when available
   useEffect(() => {
@@ -29,6 +42,54 @@ export default function WorkspaceNoteEditorPage() {
       setHasUnsavedChanges(false);
     }
   }, [note]);
+
+  // Load assignment data for existing notes
+  useEffect(() => {
+    console.log('🎬 Assignment useEffect triggered');
+    console.log('📝 noteId:', noteId, 'type:', typeof noteId);
+
+    if (noteId !== 'new' && typeof noteId === 'number') {
+      console.log('✅ Fetching assignments for noteId:', noteId);
+
+      getNoteAssignments(noteId)
+        .then(({ assigners, assignees }) => {
+          console.log('🎉 Got assignments:', { assigners, assignees });
+
+          const assignerIdsList = assigners
+            .map((a: any) => {
+              console.log('👤 Assigner:', a);
+              return a.workspace_member?.id;
+            })
+            .filter(Boolean);
+
+          const assigneeIdsList = assignees
+            .map((a: any) => {
+              console.log('👥 Assignee:', a);
+              return a.workspace_member?.id;
+            })
+            .filter(Boolean);
+
+          console.log('🆔 Assigner IDs:', assignerIdsList);
+          console.log('🆔 Assignee IDs:', assigneeIdsList);
+
+          setAssignerIds(assignerIdsList);
+          setAssigneeIds(assigneeIdsList);
+        })
+        .catch(err => {
+          console.error('❌ Failed to load assignments:', err);
+          console.error('❌ Error type:', typeof err);
+          console.error('❌ Error keys:', Object.keys(err));
+          console.error('❌ Error message:', err?.message);
+          console.error('❌ Error stack:', err?.stack);
+          console.error('❌ Full error object:', JSON.stringify(err, null, 2));
+        });
+    } else {
+      console.log('⏭️ Skipping (new note or invalid noteId)');
+      // Reset for new notes
+      setAssignerIds([]);
+      setAssigneeIds([]);
+    }
+  }, [noteId]);
 
   // Track changes
   useEffect(() => {
@@ -48,6 +109,9 @@ export default function WorkspaceNoteEditorPage() {
     try {
       setSaving(true);
       const savedNote = await saveNote(title.trim() || 'Untitled', content);
+
+      // Save assignment information
+      await assignNoteToMembers(savedNote.id, assignerIds, assigneeIds);
 
       // If it was a new note, redirect to the actual note page
       if (noteId === 'new') {
@@ -227,6 +291,22 @@ export default function WorkspaceNoteEditorPage() {
           className='text-2xl md:text-3xl font-bold bg-transparent focus:outline-none mb-4 text-white placeholder-gray-500 border-none resize-none'
           autoFocus={noteId === 'new'}
         />
+
+        {/* Assignment selectors */}
+        <div className='space-y-3 mb-4 pb-4 border-b border-white/10'>
+          <MemberMultiSelect
+            label='Assigner'
+            members={members}
+            selectedIds={assignerIds}
+            onChange={setAssignerIds}
+          />
+          <MemberMultiSelect
+            label='Assignee'
+            members={members}
+            selectedIds={assigneeIds}
+            onChange={setAssigneeIds}
+          />
+        </div>
 
         {/* Content textarea */}
         <textarea
