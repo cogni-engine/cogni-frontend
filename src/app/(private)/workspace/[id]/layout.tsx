@@ -86,21 +86,19 @@ export default function WorkspaceLayout({
       </div>
 
       <div className='relative z-10 flex flex-col h-full'>
-        <div className='flex flex-col'>
+        <div className='flex flex-col gap-3'>
           {/* Header */}
-          <div className='flex items-center justify-between mb-6'>
-            <div className='flex items-center gap-3'>
-              <button
-                onClick={() => router.back()}
-                className='p-2 rounded-lg bg-white/10 hover:bg-white/20 transition-colors'
-                title='Go back'
-              >
-                <ArrowLeft className='w-5 h-5 text-white' />
-              </button>
-              <h1 className='text-2xl font-bold bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent'>
-                {workspace ? workspace.title : 'Workspace'}
-              </h1>
-            </div>
+          <div className='flex items-center gap-3 w-full'>
+            <button
+              onClick={() => router.back()}
+              className='p-2 rounded-lg bg-white/10 hover:bg-white/20 transition-colors'
+              title='Go back'
+            >
+              <ArrowLeft className='w-5 h-5 text-white' />
+            </button>
+            <h1 className='flex-1 min-w-0 text-xl font-bold bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent truncate'>
+              {workspace ? workspace.title : 'Workspace'}
+            </h1>
             <div className='relative' ref={menuRef}>
               <button
                 onClick={() => setIsMenuOpen(prev => !prev)}

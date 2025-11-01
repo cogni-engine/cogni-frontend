@@ -15,7 +15,6 @@ export default function Header() {
   const pathname = usePathname();
   const isHomePage = pathname === '/home';
   const pageTitleMap: Record<string, string> = {
-    '/home': 'Home',
     '/notes': 'Notes',
     '/workspace': 'Workspaces',
     '/personal': 'Personal',

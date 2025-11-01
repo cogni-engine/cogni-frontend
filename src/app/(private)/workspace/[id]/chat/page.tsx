@@ -4,8 +4,8 @@ import { useParams } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 import { useWorkspaceChat } from '@/hooks/useWorkspaceChat';
 import { createClient } from '@/lib/supabase/browserClient';
+import InputArea from '@/components/input/InputArea';
 import WorkspaceMessageList from '@/features/workspace/components/WorkspaceMessageList';
-import WorkspaceChatInput from '@/features/workspace/components/WorkspaceChatInput';
 
 export default function WorkspaceChatPage() {
   const params = useParams();
@@ -56,7 +56,11 @@ export default function WorkspaceChatPage() {
       </div>
 
       {/* Input */}
-      <WorkspaceChatInput onSend={sendMessage} isLoading={isLoading} />
+      <InputArea
+        messages={messages}
+        onSend={sendMessage}
+        isLoading={isLoading}
+      />
     </div>
   );
 }

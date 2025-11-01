@@ -263,10 +263,9 @@ export default function WorkspaceForm({
             type='button'
             disabled={isLoading}
             variant='outline'
-            size='icon'
-            className='bg-white/10 hover:bg-white/20'
+            className='bg-white/10 backdrop-blur-xl border border-black p-2 rounded-full hover:bg-white/15 transition-all duration-300 shadow-[0_8px_32px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.12)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.25),inset_0_1px_0_rgba(255,255,255,0.18)] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:shadow-[0_8px_32px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.12)] size-11'
           >
-            <Plus className='h-5 w-5' />
+            <Plus className='h-6 w-6' />
           </Button>
         </DialogTrigger>
         <DialogContent>

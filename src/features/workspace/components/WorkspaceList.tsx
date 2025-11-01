@@ -85,7 +85,6 @@ function WorkspaceCard({ workspace }: WorkspaceCardProps) {
         </div>
 
         <div className='flex items-center gap-3 shrink-0'>
-          <div className='text-sm text-white/60'>View</div>
           <span
             className={`inline-flex min-w-[2.25rem] items-center justify-center rounded-full px-3 py-1 text-xs font-semibold transition-colors ${
               hasUnread

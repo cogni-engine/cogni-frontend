@@ -4,14 +4,13 @@ import { Message, AIMessage } from '@/types/chat';
 import DynamicInput from './modes/DynamicInput';
 
 type InputAreaProps = {
-  messages: Message[] | AIMessage[];
+  messages?: Message[] | AIMessage[] | unknown[];
   onSend: (content: string) => void;
   onStop?: () => void;
   isLoading?: boolean;
 };
 
 export default function InputArea({
-  messages,
   onSend,
   onStop,
   isLoading = false,
