@@ -34,7 +34,7 @@ export async function getWorkspaces(): Promise<Workspace[]> {
   // Get workspace IDs where user is a member (to avoid RLS recursion)
   const { data: memberData, error: memberError } = await supabase
     .from('workspace_member')
-    .select('workspace_id')
+    .select('workspace_id, id, last_read_message_id')
     .eq('user_id', user.id);
 
   if (memberError) throw memberError;
@@ -45,7 +45,14 @@ export async function getWorkspaces(): Promise<Workspace[]> {
   }
 
   // Get workspaces for those IDs, excluding personal workspaces
-  const workspaceIds = memberData.map(m => m.workspace_id);
+  type WorkspaceMembershipRow = {
+    workspace_id: number;
+    id: number;
+    last_read_message_id: number | null;
+  };
+
+  const membershipRows = (memberData ?? []) as WorkspaceMembershipRow[];
+  const workspaceIds = membershipRows.map(m => m.workspace_id);
   const { data, error } = await supabase
     .from('workspace')
     .select('*')
@@ -54,7 +61,63 @@ export async function getWorkspaces(): Promise<Workspace[]> {
     .order('created_at', { ascending: false });
 
   if (error) throw error;
-  return data || [];
+
+  if (!data || data.length === 0) {
+    return [];
+  }
+
+  const membershipMap = new Map<number, WorkspaceMembershipRow>();
+  for (const membership of membershipRows) {
+    membershipMap.set(membership.workspace_id, membership);
+  }
+
+  const workspacesWithCounts = await Promise.all(
+    data.map(async workspace => {
+      const membership = membershipMap.get(workspace.id);
+
+      if (!membership) {
+        return {
+          ...workspace,
+          unread_count: 0,
+        } as Workspace;
+      }
+
+      let query = supabase
+        .from('workspace_messages')
+        .select('id', { count: 'exact', head: true })
+        .eq('workspace_id', workspace.id);
+
+      if (membership.id != null) {
+        query = query.neq('workspace_member_id', membership.id);
+      }
+
+      if (membership.last_read_message_id != null) {
+        query = query.gt('id', membership.last_read_message_id);
+      }
+
+      const { count, error: countError } = await query;
+
+      if (countError) {
+        console.warn(
+          'Failed to fetch unread message count for workspace',
+          workspace.id,
+          countError
+        );
+
+        return {
+          ...workspace,
+          unread_count: 0,
+        } as Workspace;
+      }
+
+      return {
+        ...workspace,
+        unread_count: count ?? 0,
+      } as Workspace;
+    })
+  );
+
+  return workspacesWithCounts;
 }
 
 export async function getPersonalWorkspace(): Promise<Workspace | null> {

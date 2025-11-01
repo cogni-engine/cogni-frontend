@@ -36,6 +36,9 @@ interface WorkspaceCardProps {
 
 function WorkspaceCard({ workspace }: WorkspaceCardProps) {
   const router = useRouter();
+  const unreadCount = workspace.unread_count ?? 0;
+  const hasUnread = unreadCount > 0;
+  const displayCount = unreadCount > 99 ? '99+' : unreadCount;
 
   const handleCardClick = () => {
     router.push(`/workspace/${workspace.id}`);
@@ -81,7 +84,18 @@ function WorkspaceCard({ workspace }: WorkspaceCardProps) {
           </div>
         </div>
 
-        <div className='shrink-0 text-sm text-white/60'>View</div>
+        <div className='flex items-center gap-3 shrink-0'>
+          <div className='text-sm text-white/60'>View</div>
+          <span
+            className={`inline-flex min-w-[2.25rem] items-center justify-center rounded-full px-3 py-1 text-xs font-semibold transition-colors ${
+              hasUnread
+                ? 'bg-purple-500/20 text-purple-100 shadow-[0_0_15px_rgba(192,132,252,0.35)]'
+                : 'bg-white/10 text-white/40'
+            }`}
+          >
+            {displayCount}
+          </span>
+        </div>
       </div>
     </div>
   );

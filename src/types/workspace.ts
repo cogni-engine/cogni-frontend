@@ -6,6 +6,7 @@ export interface Workspace {
   type: 'group' | 'personal';
   notes?: Note[];
   members?: WorkspaceMember[];
+  unread_count?: number;
 }
 
 export interface Note {
