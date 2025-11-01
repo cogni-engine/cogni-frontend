@@ -77,7 +77,7 @@ export function useWorkspaceMutations() {
 
   const update = async (
     id: number,
-    updates: Partial<Pick<Workspace, 'title' | 'type'>>
+    updates: Partial<Pick<Workspace, 'title' | 'type' | 'icon_url'>>
   ) => {
     const workspace = await updateWorkspace(id, updates);
     mutate(workspaceKey(id)); // Revalidate specific workspace

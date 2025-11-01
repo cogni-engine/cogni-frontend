@@ -2,6 +2,7 @@ export interface Workspace {
   id: number;
   created_at: string;
   title: string | null;
+  icon_url: string | null;
   type: 'group' | 'personal';
   notes?: Note[];
   members?: WorkspaceMember[];

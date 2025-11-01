@@ -3,7 +3,8 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import type { Workspace } from '@/types/workspace';
-import { PencilIcon, Trash2 as TrashIcon } from 'lucide-react';
+import { PencilIcon, Trash2 as TrashIcon, Building2 } from 'lucide-react';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 interface WorkspaceListProps {
   workspaces: Workspace[];
@@ -89,23 +90,37 @@ function WorkspaceCard({
       className='bg-white/8 backdrop-blur-md hover:bg-white/12 transition-all rounded-2xl p-5 border border-white/15 shadow-[0_8px_32px_rgba(0,0,0,0.2)] hover:shadow-[0_8px_32px_rgba(0,0,0,0.3)] cursor-pointer'
     >
       <div className='flex items-center justify-between gap-3'>
-        <div className='flex-1 min-w-0'>
-          <h3 className='text-base font-semibold text-white mb-1 truncate'>
-            {workspace.title || 'Untitled Workspace'}
-          </h3>
-          <div className='flex items-center gap-2'>
-            <span
-              className={`px-1.5 py-0.5 rounded text-xs font-medium ${
-                workspace.type === 'personal'
-                  ? 'bg-blue-500/10 text-blue-400'
-                  : 'bg-purple-500/10 text-purple-400'
-              }`}
-            >
-              {workspace.type}
-            </span>
-            <span className='text-xs text-gray-600'>
-              {new Date(workspace.created_at).toLocaleDateString()}
-            </span>
+        <div className='flex items-center gap-4 flex-1 min-w-0'>
+          <Avatar className='h-12 w-12 border border-white/10 bg-white/5 uppercase text-sm tracking-wide'>
+            {workspace.icon_url ? (
+              <AvatarImage
+                src={workspace.icon_url}
+                alt={workspace.title ?? 'Workspace icon'}
+              />
+            ) : (
+              <AvatarFallback className='bg-white/5 text-white/70'>
+                <Building2 className='w-5 h-5' />
+              </AvatarFallback>
+            )}
+          </Avatar>
+          <div className='flex-1 min-w-0'>
+            <h3 className='text-base font-semibold text-white mb-1 truncate'>
+              {workspace.title || 'Untitled Workspace'}
+            </h3>
+            <div className='flex items-center gap-2'>
+              <span
+                className={`px-1.5 py-0.5 rounded text-xs font-medium ${
+                  workspace.type === 'personal'
+                    ? 'bg-blue-500/10 text-blue-400'
+                    : 'bg-purple-500/10 text-purple-400'
+                }`}
+              >
+                {workspace.type}
+              </span>
+              <span className='text-xs text-gray-400'>
+                {new Date(workspace.created_at).toLocaleDateString()}
+              </span>
+            </div>
           </div>
         </div>
 

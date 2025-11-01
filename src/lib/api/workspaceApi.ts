@@ -6,6 +6,20 @@ import {
 import type { Workspace, WorkspaceMember } from '@/types/workspace';
 
 const supabase = createClient();
+const WORKSPACE_ICON_BUCKET = 'workspace_icon';
+
+function extractStoragePathFromUrl(url: string): string | null {
+  try {
+    const parsed = new URL(url);
+    const parts = parsed.pathname.split('/');
+    const bucketIndex = parts.findIndex(part => part === WORKSPACE_ICON_BUCKET);
+    if (bucketIndex === -1) return null;
+    return parts.slice(bucketIndex + 1).join('/');
+  } catch (error) {
+    console.warn('Failed to parse workspace icon URL', error);
+    return null;
+  }
+}
 
 export async function getWorkspaces(): Promise<Workspace[]> {
   // Get current user
@@ -139,7 +153,7 @@ export async function createWorkspace(
 
 export async function updateWorkspace(
   id: number,
-  updates: Partial<Pick<Workspace, 'title' | 'type'>>
+  updates: Partial<Pick<Workspace, 'title' | 'type' | 'icon_url'>>
 ): Promise<Workspace> {
   const { data, error } = await supabase
     .from('workspace')
@@ -156,6 +170,54 @@ export async function deleteWorkspace(id: number): Promise<void> {
   const { error } = await supabase.from('workspace').delete().eq('id', id);
 
   if (error) throw error;
+}
+
+export async function uploadWorkspaceIcon(
+  workspaceId: number,
+  file: File | Blob,
+  previousIconUrl?: string | null
+): Promise<{ iconUrl: string; path: string }> {
+  const fileExt = file instanceof File ? file.name.split('.').pop() : 'png';
+  const extension = fileExt
+    ? fileExt.replace(/[^a-zA-Z0-9]/g, '') || 'png'
+    : 'png';
+  const filePath = `${workspaceId}/${crypto.randomUUID()}.${extension}`;
+
+  const { error: uploadError } = await supabase.storage
+    .from(WORKSPACE_ICON_BUCKET)
+    .upload(filePath, file, {
+      cacheControl: '3600',
+      upsert: true,
+    });
+
+  if (uploadError) throw uploadError;
+
+  const {
+    data: { publicUrl },
+  } = supabase.storage.from(WORKSPACE_ICON_BUCKET).getPublicUrl(filePath);
+
+  if (previousIconUrl) {
+    const oldPath = extractStoragePathFromUrl(previousIconUrl);
+    if (oldPath) {
+      void supabase.storage.from(WORKSPACE_ICON_BUCKET).remove([oldPath]);
+    }
+  }
+
+  return { iconUrl: publicUrl, path: filePath };
+}
+
+export async function removeWorkspaceIcon(
+  workspaceId: number,
+  currentIconUrl?: string | null
+): Promise<Workspace> {
+  if (currentIconUrl) {
+    const path = extractStoragePathFromUrl(currentIconUrl);
+    if (path) {
+      await supabase.storage.from(WORKSPACE_ICON_BUCKET).remove([path]);
+    }
+  }
+
+  return updateWorkspace(workspaceId, { icon_url: null });
 }
 
 export async function checkWorkspaceMembership(

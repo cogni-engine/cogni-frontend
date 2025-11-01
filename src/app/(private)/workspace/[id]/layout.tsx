@@ -7,10 +7,12 @@ import {
   MessageSquare,
   FileText,
   EllipsisVertical,
+  Users,
+  Settings,
 } from 'lucide-react';
 import { useWorkspaceNotes } from '@/hooks/useWorkspaceNotes';
 
-type ViewType = 'chat' | 'notes' | 'members';
+type ViewType = 'chat' | 'notes' | 'members' | 'menu';
 
 export default function WorkspaceLayout({
   children,
@@ -26,6 +28,7 @@ export default function WorkspaceLayout({
 
   const getCurrentView = (): ViewType => {
     if (pathname.includes('/members')) return 'members';
+    if (pathname.includes('/menu')) return 'menu';
     if (pathname.includes('/chat')) return 'chat';
     return 'notes';
   };
@@ -43,6 +46,9 @@ export default function WorkspaceLayout({
         break;
       case 'members':
         router.push(`${basePath}/members`);
+        break;
+      case 'menu':
+        router.push(`${basePath}/menu`);
         break;
     }
   };
@@ -109,7 +115,7 @@ export default function WorkspaceLayout({
               {isMenuOpen && (
                 <div
                   role='menu'
-                  className='absolute right-0 mt-2 w-40 rounded-md border border-white/10 bg-black/90 backdrop-blur shadow-lg z-20'
+                  className='absolute right-0 mt-2 w-45 rounded-md border border-white/10 bg-black/90 backdrop-blur shadow-lg z-20'
                 >
                   <button
                     role='menuitem'
@@ -119,7 +125,19 @@ export default function WorkspaceLayout({
                     }}
                     className='w-full text-left px-3 py-2 text-sm text-gray-200 hover:bg-white/10 rounded-md flex items-center gap-2'
                   >
+                    <Users className='w-4 h-4' />
                     Members
+                  </button>
+                  <button
+                    role='menuitem'
+                    onClick={() => {
+                      setIsMenuOpen(false);
+                      router.push(`${basePath}/menu`);
+                    }}
+                    className='w-full text-left px-3 py-2 text-sm text-gray-200 hover:bg-white/10 rounded-md flex items-center gap-2'
+                  >
+                    <Settings className='w-4 h-4' />
+                    Workspace Settings
                   </button>
                 </div>
               )}
@@ -127,7 +145,7 @@ export default function WorkspaceLayout({
           </div>
 
           {/* Navigation Tabs */}
-          {currentView !== 'members' && (
+          {(currentView === 'chat' || currentView === 'notes') && (
             <div className='w-full flex items-center gap-1 bg-white/8 border border-white/10 rounded-lg p-1'>
               <button
                 onClick={() => handleViewChange('chat')}
