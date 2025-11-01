@@ -1,12 +1,18 @@
 // Utility functions for managing cookies on the client side
 
+const isBrowser = typeof document !== 'undefined';
+
 export function setCookie(name: string, value: string, days: number = 365) {
+  if (!isBrowser) return;
+
   const expires = new Date();
   expires.setTime(expires.getTime() + days * 24 * 60 * 60 * 1000);
   document.cookie = `${name}=${value};expires=${expires.toUTCString()};path=/;SameSite=Lax`;
 }
 
 export function getCookie(name: string): string | null {
+  if (!isBrowser) return null;
+
   const nameEQ = name + '=';
   const ca = document.cookie.split(';');
   for (let i = 0; i < ca.length; i++) {
@@ -18,6 +24,8 @@ export function getCookie(name: string): string | null {
 }
 
 export function deleteCookie(name: string) {
+  if (!isBrowser) return;
+
   document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/;`;
 }
 
