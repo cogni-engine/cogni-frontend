@@ -1,33 +1,15 @@
 'use client';
 
-import { useState } from 'react';
 import { useWorkspaces, useWorkspaceMutations } from '@/hooks/useWorkspace';
 import WorkspaceList from '@/features/workspace/components/WorkspaceList';
 import WorkspaceForm from '@/features/workspace/components/WorkspaceForm';
-import type { Workspace } from '@/types/workspace';
 
 export default function WorkspacePage() {
   const { workspaces, isLoading, error } = useWorkspaces();
-  const { create, update, remove } = useWorkspaceMutations();
-
-  const [editingWorkspace, setEditingWorkspace] = useState<Workspace | null>(
-    null
-  );
-
-  const handleEdit = (workspace: Workspace) => {
-    setEditingWorkspace(workspace);
-  };
+  const { create } = useWorkspaceMutations();
 
   const handleSubmit = async (id: number | null, title: string) => {
-    if (id) {
-      await update(id, { title, type: 'group' });
-    } else {
-      await create(title);
-    }
-  };
-
-  const handleEditComplete = () => {
-    setEditingWorkspace(null);
+    await create(title);
   };
 
   if (error) {
@@ -53,12 +35,7 @@ export default function WorkspacePage() {
           <div>
             <h1 className='text-3xl font-bold text-white mb-2'>Workspaces</h1>
           </div>
-          <WorkspaceForm
-            workspace={editingWorkspace}
-            onSubmit={handleSubmit}
-            onEditComplete={handleEditComplete}
-            isLoading={isLoading}
-          />
+          <WorkspaceForm onSubmit={handleSubmit} isLoading={isLoading} />
         </div>
 
         {/* Loading State */}
@@ -69,13 +46,7 @@ export default function WorkspacePage() {
         )}
 
         {/* Workspace List */}
-        {!isLoading && workspaces && (
-          <WorkspaceList
-            workspaces={workspaces}
-            onEdit={handleEdit}
-            onDelete={remove}
-          />
-        )}
+        {!isLoading && workspaces && <WorkspaceList workspaces={workspaces} />}
       </div>
     </div>
   );

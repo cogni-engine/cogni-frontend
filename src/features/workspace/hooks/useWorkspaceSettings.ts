@@ -30,13 +30,15 @@ type UseWorkspaceSettingsReturn = {
   updateIcon: (file: File) => Promise<void>;
   removeIcon: () => Promise<void>;
   iconUrl: string | null | undefined;
+  deleteWorkspace: () => Promise<void>;
+  deletingWorkspace: boolean;
 };
 
 export function useWorkspaceSettings(
   workspaceId: number | null
 ): UseWorkspaceSettingsReturn {
   const { workspace, isLoading, error } = useWorkspace(workspaceId);
-  const { update } = useWorkspaceMutations();
+  const { update, remove } = useWorkspaceMutations();
 
   const [title, setTitle] = useState('');
   const [savingTitle, setSavingTitle] = useState(false);
@@ -45,6 +47,7 @@ export function useWorkspaceSettings(
   const [savingIcon, setSavingIcon] = useState(false);
   const [removingIcon, setRemovingIcon] = useState(false);
   const [iconStatus, setIconStatus] = useState<StatusMessage | null>(null);
+  const [deletingWorkspace, setDeletingWorkspace] = useState(false);
 
   useEffect(() => {
     if (workspace) {
@@ -148,6 +151,22 @@ export function useWorkspaceSettings(
     }
   }, [workspace?.icon_url, workspaceId]);
 
+  const deleteWorkspace = useCallback(async () => {
+    if (!workspaceId) return;
+
+    try {
+      setDeletingWorkspace(true);
+      await remove(workspaceId);
+      await mutate(`/workspaces/${workspaceId}`, undefined, false);
+      await mutate('/workspaces');
+    } catch (err) {
+      console.error('Failed to delete workspace', err);
+      throw err;
+    } finally {
+      setDeletingWorkspace(false);
+    }
+  }, [remove, workspaceId]);
+
   return {
     workspaceId,
     isLoading,
@@ -166,5 +185,7 @@ export function useWorkspaceSettings(
     updateIcon,
     removeIcon,
     iconUrl: workspace?.icon_url,
+    deleteWorkspace,
+    deletingWorkspace,
   };
 }

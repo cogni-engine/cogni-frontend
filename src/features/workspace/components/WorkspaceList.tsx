@@ -1,40 +1,15 @@
 'use client';
 
-import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import type { Workspace } from '@/types/workspace';
-import { PencilIcon, Trash2 as TrashIcon, Building2 } from 'lucide-react';
+import { Building2 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 interface WorkspaceListProps {
   workspaces: Workspace[];
-  onEdit: (workspace: Workspace) => void;
-  onDelete: (id: number) => Promise<void>;
 }
 
-export default function WorkspaceList({
-  workspaces,
-  onEdit,
-  onDelete,
-}: WorkspaceListProps) {
-  const [deletingId, setDeletingId] = useState<number | null>(null);
-
-  const handleDelete = async (id: number) => {
-    if (!confirm('Are you sure you want to delete this workspace?')) {
-      return;
-    }
-
-    setDeletingId(id);
-    try {
-      await onDelete(id);
-    } catch (err) {
-      console.error('Failed to delete workspace:', err);
-      alert('Failed to delete workspace');
-    } finally {
-      setDeletingId(null);
-    }
-  };
-
+export default function WorkspaceList({ workspaces }: WorkspaceListProps) {
   if (workspaces.length === 0) {
     return (
       <div className='text-center py-12'>
@@ -49,13 +24,7 @@ export default function WorkspaceList({
   return (
     <div className='flex flex-col gap-4'>
       {workspaces.map(workspace => (
-        <WorkspaceCard
-          key={workspace.id}
-          workspace={workspace}
-          onEdit={onEdit}
-          onDelete={handleDelete}
-          isDeleting={deletingId === workspace.id}
-        />
+        <WorkspaceCard key={workspace.id} workspace={workspace} />
       ))}
     </div>
   );
@@ -63,24 +32,12 @@ export default function WorkspaceList({
 
 interface WorkspaceCardProps {
   workspace: Workspace;
-  onEdit: (workspace: Workspace) => void;
-  onDelete: (id: number) => void;
-  isDeleting: boolean;
 }
 
-function WorkspaceCard({
-  workspace,
-  onEdit,
-  onDelete,
-  isDeleting,
-}: WorkspaceCardProps) {
+function WorkspaceCard({ workspace }: WorkspaceCardProps) {
   const router = useRouter();
 
-  const handleCardClick = (e: React.MouseEvent) => {
-    // Don't navigate if clicking on buttons
-    if ((e.target as HTMLElement).closest('button')) {
-      return;
-    }
+  const handleCardClick = () => {
     router.push(`/workspace/${workspace.id}`);
   };
 
@@ -124,28 +81,7 @@ function WorkspaceCard({
           </div>
         </div>
 
-        <div className='flex gap-1.5 shrink-0'>
-          <button
-            onClick={e => {
-              e.stopPropagation();
-              onEdit(workspace);
-            }}
-            disabled={isDeleting}
-            className='p-2 bg-gray-950 hover:bg-gray-900 text-white rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed'
-          >
-            <PencilIcon className='w-4 h-4' />
-          </button>
-          <button
-            onClick={e => {
-              e.stopPropagation();
-              onDelete(workspace.id);
-            }}
-            disabled={isDeleting}
-            className='p-2 bg-red-600/10 hover:bg-red-600/20 text-red-400 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed'
-          >
-            <TrashIcon className='w-4 h-4' />
-          </button>
-        </div>
+        <div className='shrink-0 text-sm text-white/60'>View</div>
       </div>
     </div>
   );
