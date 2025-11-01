@@ -8,26 +8,38 @@ type Props = {
   isOwnMessage: boolean;
 };
 
+function ReadStatus({ readCount }: { readCount: number }) {
+  if (readCount <= 0) return null;
+
+  return <p className='text-xs text-gray-500 mt-1'>Read {readCount}</p>;
+}
+
 export default function WorkspaceMessageItem({ message, isOwnMessage }: Props) {
   if (!message) return null;
 
   const profile = message.workspace_member?.user_profile ?? null;
   const name = profile?.name ?? 'Unknown';
   const avatarUrl = profile?.avatar_url ?? '';
+  const readCount = message.read_count ?? message.reads?.length ?? 0;
 
   if (isOwnMessage) {
     // Own messages on the right (ChatGPT style)
     return (
       <div className='flex justify-end'>
-        <div className='max-w-[70%]'>
+        <div className='flex gap-2 max-w-[70%]'>
+          <div className='flex flex-col'>
+            <div className='text-right'>
+              <ReadStatus readCount={readCount} />
+            </div>
+            <p className='text-xs text-gray-500 text-right'>
+              {format(new Date(message.created_at), 'HH:mm')}
+            </p>
+          </div>
           <div className='bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl px-4 py-2 shadow-lg'>
             <p className='text-sm text-white whitespace-pre-wrap break-words'>
               {message.text}
             </p>
           </div>
-          <p className='text-xs text-gray-500 mt-1 text-right'>
-            {format(new Date(message.created_at), 'HH:mm')}
-          </p>
         </div>
       </div>
     );
@@ -47,16 +59,18 @@ export default function WorkspaceMessageItem({ message, isOwnMessage }: Props) {
           )}
         </Avatar>
       </div>
-      <div className='flex-1 min-w-0'>
+      <div className='flex flex-col gap-1 min-w-0'>
         <p className='text-xs text-gray-400 mb-1'>{name}</p>
-        <div className='bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl px-4 py-2'>
-          <p className='text-sm text-white whitespace-pre-wrap break-words'>
-            {message.text}
+        <div className='flex gap-2 items-end'>
+          <div className='bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl px-4 py-2'>
+            <p className='text-sm text-white whitespace-pre-wrap break-words'>
+              {message.text}
+            </p>
+          </div>
+          <p className='text-xs text-gray-500 mt-1'>
+            {format(new Date(message.created_at), 'HH:mm')}
           </p>
         </div>
-        <p className='text-xs text-gray-500 mt-1'>
-          {format(new Date(message.created_at), 'HH:mm')}
-        </p>
       </div>
     </div>
   );

@@ -1,4 +1,4 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
 import './globals.css';
 
@@ -20,7 +20,6 @@ export const metadata: Metadata = {
   description:
     'Cogni keeps your team aligned with collaborative workspaces, notes, and AI assistance.',
   manifest: '/manifest.json',
-  themeColor: '#0B0F1A',
   icons: {
     icon: '/favicon.ico',
     shortcut: '/favicon.ico',
@@ -31,6 +30,10 @@ export const metadata: Metadata = {
     statusBarStyle: 'black-translucent',
     title: 'Cogni',
   },
+};
+
+export const viewport: Viewport = {
+  themeColor: '#0B0F1A',
 };
 
 export default function RootLayout({
