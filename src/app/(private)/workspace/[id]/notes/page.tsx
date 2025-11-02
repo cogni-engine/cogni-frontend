@@ -4,7 +4,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { useWorkspaceNotes, formatDate } from '@/hooks/useWorkspaceNotes';
 import type { NoteWithParsed } from '@/types/note';
-import { Search, PenSquare } from 'lucide-react';
+import { Search, PenSquare, Trash } from 'lucide-react';
 
 export default function WorkspaceNotesPage() {
   const params = useParams();
@@ -177,7 +177,70 @@ export default function WorkspaceNotesPage() {
                 <p className='text-[13px] text-gray-400 leading-[1.6] line-clamp-2 mb-1'>
                   {note.preview || 'No content'}
                 </p>
-                <div className='flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity mt-2'>
+                {/* Assigned Members */}
+                {note.workspace_member_note &&
+                  note.workspace_member_note.length > 0 && (
+                    <div className='flex items-center gap-1.5 mt-2 mb-1'>
+                      <div className='flex -space-x-2'>
+                        {note.workspace_member_note
+                          .filter(
+                            assignment =>
+                              assignment.workspace_member_note_role ===
+                              'assignee'
+                          )
+                          .slice(0, 3)
+                          .map((assignment, index) => (
+                            <div
+                              key={
+                                assignment.workspace_member?.id ||
+                                `temp-${index}`
+                              }
+                              className='w-6 h-6 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 border-2 border-gray-900 flex items-center justify-center text-white text-xs font-medium'
+                              title={
+                                assignment.workspace_member?.user_profiles
+                                  ?.name || 'Unknown'
+                              }
+                            >
+                              {assignment.workspace_member?.user_profiles
+                                ?.avatar_url ? (
+                                // eslint-disable-next-line @next/next/no-img-element
+                                <img
+                                  src={
+                                    assignment.workspace_member.user_profiles
+                                      .avatar_url
+                                  }
+                                  alt={
+                                    assignment.workspace_member.user_profiles
+                                      .name || 'User'
+                                  }
+                                  className='w-full h-full rounded-full object-cover'
+                                />
+                              ) : (
+                                assignment.workspace_member?.user_profiles?.name
+                                  ?.charAt(0)
+                                  .toUpperCase() || '?'
+                              )}
+                            </div>
+                          ))}
+                        {note.workspace_member_note.filter(
+                          assignment =>
+                            assignment.workspace_member_note_role === 'assignee'
+                        ).length > 3 && (
+                          <div className='w-6 h-6 rounded-full bg-gray-700 border-2 border-gray-900 flex items-center justify-center text-white text-xs font-medium'>
+                            +
+                            {note.workspace_member_note.filter(
+                              assignment =>
+                                assignment.workspace_member_note_role ===
+                                'assignee'
+                            ).length - 3}
+                          </div>
+                        )}
+                      </div>
+                      <span className='text-xs text-gray-500'>担当者</span>
+                    </div>
+                  )}
+                {/* Delete button - always at bottom right */}
+                <div className='absolute bottom-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity'>
                   <button
                     onClick={e => {
                       e.stopPropagation();
@@ -185,20 +248,7 @@ export default function WorkspaceNotesPage() {
                     }}
                     className='p-2 text-gray-400 hover:text-red-400 hover:bg-red-500/10 rounded-md transition-colors'
                   >
-                    <svg
-                      xmlns='http://www.w3.org/2000/svg'
-                      width='16'
-                      height='16'
-                      viewBox='0 0 24 24'
-                      fill='none'
-                      stroke='currentColor'
-                      strokeWidth='2'
-                      strokeLinecap='round'
-                      strokeLinejoin='round'
-                    >
-                      <polyline points='3 6 5 6 21 6' />
-                      <path d='m19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6m3 0V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2' />
-                    </svg>
+                    <Trash className='w-4 h-4' />
                   </button>
                 </div>
               </div>

@@ -1,3 +1,16 @@
+export interface NoteAssignment {
+  workspace_member_note_role: string;
+  workspace_member?: {
+    id: number;
+    user_id: string;
+    user_profiles?: {
+      id: string;
+      name: string;
+      avatar_url?: string;
+    };
+  };
+}
+
 export interface Note {
   id: number;
   created_at: string;
@@ -10,6 +23,7 @@ export interface Note {
     type: 'group' | 'personal';
     created_at: string;
   };
+  workspace_member_note?: NoteAssignment[];
 }
 
 export interface NoteWithParsed extends Note {

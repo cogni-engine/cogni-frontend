@@ -25,17 +25,48 @@ export function combineNoteText(title: string, content: string): string {
 }
 
 /**
- * Get all notes for a specific workspace
+ * Get all notes for a specific workspace with assignments
  */
 export async function getNotes(workspaceId: number): Promise<Note[]> {
   const { data, error } = await supabase
     .from('notes')
-    .select('*')
+    .select(
+      `
+      *,
+      workspace_member_note(
+        workspace_member_note_role,
+        workspace_member:workspace_member_id(
+          id,
+          user_id,
+          user_profiles!user_id(id, name, avatar_url)
+        )
+      )
+    `
+    )
     .eq('workspace_id', workspaceId)
     .order('updated_at', { ascending: false });
 
   if (error) throw error;
-  return data || [];
+
+  // Transform the nested structure to match our types
+  return (data || []).map(note => ({
+    ...note,
+    workspace_member_note: (note.workspace_member_note || []).map(
+      (assignment: { workspace_member?: { user_profiles?: unknown } }) => ({
+        ...assignment,
+        workspace_member: assignment.workspace_member
+          ? {
+              ...assignment.workspace_member,
+              user_profiles: Array.isArray(
+                assignment.workspace_member.user_profiles
+              )
+                ? assignment.workspace_member.user_profiles[0]
+                : assignment.workspace_member.user_profiles,
+            }
+          : undefined,
+      })
+    ),
+  }));
 }
 
 /**
