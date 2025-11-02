@@ -159,13 +159,45 @@ export async function searchNotes(
 
   const { data, error } = await supabase
     .from('notes')
-    .select('*')
+    .select(
+      `
+      *,
+      workspace:workspace_id(*),
+      workspace_member_note(
+        workspace_member_note_role,
+        workspace_member:workspace_member_id(
+          id,
+          user_id,
+          user_profiles!user_id(id, name, avatar_url)
+        )
+      )
+    `
+    )
     .eq('workspace_id', workspaceId)
     .ilike('text', `%${searchQuery}%`)
     .order('updated_at', { ascending: false });
 
   if (error) throw error;
-  return data || [];
+
+  // Transform the nested structure to match our types
+  return (data || []).map(note => ({
+    ...note,
+    workspace_member_note: (note.workspace_member_note || []).map(
+      (assignment: { workspace_member?: { user_profiles?: unknown } }) => ({
+        ...assignment,
+        workspace_member: assignment.workspace_member
+          ? {
+              ...assignment.workspace_member,
+              user_profiles: Array.isArray(
+                assignment.workspace_member.user_profiles
+              )
+                ? assignment.workspace_member.user_profiles[0]
+                : assignment.workspace_member.user_profiles,
+            }
+          : undefined,
+      })
+    ),
+  }));
 }
 
 /**
@@ -200,15 +232,47 @@ export async function getUserAssignedNotes(): Promise<Note[]> {
 
   const noteIds = [...new Set(assignments.map(a => a.note_id))];
 
-  // 3. Get notes with workspace info
+  // 3. Get notes with workspace info and assignments
   const { data, error } = await supabase
     .from('notes')
-    .select('*, workspace:workspace_id(*)')
+    .select(
+      `
+      *,
+      workspace:workspace_id(*),
+      workspace_member_note(
+        workspace_member_note_role,
+        workspace_member:workspace_member_id(
+          id,
+          user_id,
+          user_profiles!user_id(id, name, avatar_url)
+        )
+      )
+    `
+    )
     .in('id', noteIds)
     .order('updated_at', { ascending: false });
 
   if (error) throw error;
-  return data || [];
+
+  // Transform the nested structure to match our types
+  return (data || []).map(note => ({
+    ...note,
+    workspace_member_note: (note.workspace_member_note || []).map(
+      (assignment: { workspace_member?: { user_profiles?: unknown } }) => ({
+        ...assignment,
+        workspace_member: assignment.workspace_member
+          ? {
+              ...assignment.workspace_member,
+              user_profiles: Array.isArray(
+                assignment.workspace_member.user_profiles
+              )
+                ? assignment.workspace_member.user_profiles[0]
+                : assignment.workspace_member.user_profiles,
+            }
+          : undefined,
+      })
+    ),
+  }));
 }
 
 /**
