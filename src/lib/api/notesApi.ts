@@ -242,8 +242,6 @@ export async function getNoteAssignments(noteId: number): Promise<{
   assigners: NoteAssignmentItem[];
   assignees: NoteAssignmentItem[];
 }> {
-  console.log('🔍 getNoteAssignments called with noteId:', noteId);
-
   const { data, error } = await supabase
     .from('workspace_member_note')
     .select(
@@ -258,21 +256,13 @@ export async function getNoteAssignments(noteId: number): Promise<{
     )
     .eq('note_id', noteId);
 
-  console.log('📦 Raw Supabase response:', { data, error });
-
   if (error) {
-    console.error('❌ Supabase error:', error);
-    console.error('❌ Error details:', JSON.stringify(error, null, 2));
     throw error;
   }
-
-  console.log('✅ Data received:', data);
-  console.log('📊 Data length:', data?.length);
 
   // Transform nested structure (same pattern as workspaceMessagesApi)
   const transformedData = (data || []).map((item: unknown) => {
     const typedItem = item as NoteAssignmentItem;
-    console.log('🔄 Transforming item:', typedItem);
     return {
       workspace_member_note_role: typedItem.workspace_member_note_role,
       workspace_member: typedItem.workspace_member
@@ -288,8 +278,6 @@ export async function getNoteAssignments(noteId: number): Promise<{
     };
   });
 
-  console.log('🎯 Transformed data:', transformedData);
-
   const result = {
     assigners:
       transformedData.filter(
@@ -300,8 +288,6 @@ export async function getNoteAssignments(noteId: number): Promise<{
         d => d.workspace_member_note_role === 'assignee'
       ) || [],
   };
-
-  console.log('📤 Final result:', result);
 
   return result;
 }

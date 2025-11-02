@@ -3,7 +3,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import {
   getNotes,
-  getNote,
   createNote,
   updateNote,
   deleteNote,
@@ -157,83 +156,6 @@ export function useWorkspaceNotes(workspaceId: number) {
     createNote: createNewNote,
     updateNote: updateExistingNote,
     deleteNote: deleteExistingNote,
-  };
-}
-
-export function useWorkspaceNote(workspaceId: number, id: number | 'new') {
-  const [note, setNote] = useState<NoteWithParsed | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (id === 'new') {
-      // Creating a new note
-      setNote({
-        id: 0,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-        text: '',
-        workspace_id: workspaceId,
-        title: '',
-        content: '',
-        preview: '',
-      });
-      setLoading(false);
-      return;
-    }
-
-    async function fetchNote() {
-      try {
-        setLoading(true);
-        setError(null);
-
-        const data = await getNote(id as number);
-        if (!data) {
-          throw new Error('Note not found');
-        }
-
-        setNote(parseNote(data));
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to fetch note');
-        console.error('Error fetching note:', err);
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    fetchNote();
-  }, [id, workspaceId]);
-
-  const saveNote = useCallback(
-    async (title: string, content: string) => {
-      try {
-        setError(null);
-
-        if (id === 'new') {
-          const newNote = await createNote(workspaceId, title, content);
-          const parsedNote = parseNote(newNote);
-          setNote(parsedNote);
-          return parsedNote;
-        } else {
-          const updatedNote = await updateNote(id, title, content);
-          const parsedNote = parseNote(updatedNote);
-          setNote(parsedNote);
-          return parsedNote;
-        }
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to save note');
-        console.error('Error saving note:', err);
-        throw err;
-      }
-    },
-    [id, workspaceId]
-  );
-
-  return {
-    note,
-    loading,
-    error,
-    saveNote,
   };
 }
 
