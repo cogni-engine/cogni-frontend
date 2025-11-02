@@ -23,7 +23,6 @@ export default function FreeTextInput({
   const [input, setInput] = useState('');
   const [isFocused, setIsFocused] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const lastEnterPressRef = useRef<number>(0);
   const { setInputActive } = useUI();
 
   const maxRows = 7;
@@ -70,26 +69,21 @@ export default function FreeTextInput({
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
+    // Shift+Enter: 改行（デフォルト動作を許可）
+    if (e.key === 'Enter' && e.shiftKey) {
+      return; // デフォルト動作（改行）を許可
+    }
+
+    // Enter (without Shift)
     if (e.key === 'Enter' && !e.shiftKey) {
-      // Cmd/Ctrl+Enterは従来通り即座に送信
-      if (e.metaKey || e.ctrlKey) {
-        e.preventDefault();
-        handleSend();
-        return;
+      // 入力中の場合は送信しない（IME確定用のEnter）
+      if (e.nativeEvent.isComposing) {
+        return; // デフォルト動作（IME確定）を許可
       }
 
-      const now = Date.now();
-      const timeSinceLastEnter = now - lastEnterPressRef.current;
-
-      // 2000ms以内に2回Enterが押されたら送信
-      if (timeSinceLastEnter < 2000 && timeSinceLastEnter > 0) {
-        e.preventDefault();
-        handleSend();
-        lastEnterPressRef.current = 0; // リセット
-      } else {
-        // 1回目は改行（デフォルト動作を許可）、時刻を記録
-        lastEnterPressRef.current = now;
-      }
+      // Enterで送信
+      e.preventDefault();
+      handleSend();
     }
   };
 

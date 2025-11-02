@@ -25,9 +25,9 @@ export default function WorkspaceMessageItem({ message, isOwnMessage }: Props) {
   if (isOwnMessage) {
     // Own messages on the right (ChatGPT style)
     return (
-      <div className='flex justify-end'>
-        <div className='flex gap-2 max-w-[70%]'>
-          <div className='flex flex-col justify-end'>
+      <div className='flex justify-end items-end w-full'>
+        <div className='flex gap-2 items-end justify-end min-w-0 max-w-full'>
+          <div className='flex flex-col justify-end flex-shrink-0'>
             <div className='text-right'>
               <ReadStatus readCount={readCount} />
             </div>
