@@ -62,25 +62,25 @@ export default function ThreadSidebar() {
         </div>
 
         {/* Thread List */}
-        <div className='flex-1 overflow-y-auto p-3'>
+        <div className='flex-1 overflow-y-auto px-2 pt-5 pb-5'>
           {threads.length === 0 ? (
             <div className='text-center py-8 text-white/40 text-sm'>
               スレッドがありません
             </div>
           ) : (
-            <div className='space-y-2'>
+            <div className='space-y-1.5'>
               {threads.map(thread => (
                 <div
                   key={thread.id}
-                  className={`relative group rounded-lg transition-all ${
+                  className={`relative group rounded-lg transition-all duration-300 ${
                     selectedThreadId === thread.id
-                      ? 'bg-white/15 border border-white/20'
-                      : 'bg-white/5 border border-white/5 hover:bg-white/10'
+                      ? 'bg-white/15 border border-black shadow-[0_8px_32px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.12)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.25),inset_0_1px_0_rgba(255,255,255,0.18)]'
+                      : 'bg-white/3 border border-black shadow-[0_8px_32px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.12)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.25),inset_0_1px_0_rgba(255,255,255,0.18)]'
                   }`}
                 >
                   {renamingId === thread.id ? (
                     // Rename Mode
-                    <div className='p-3'>
+                    <div className='p-2'>
                       <input
                         type='text'
                         value={renameValue}
@@ -92,7 +92,7 @@ export default function ThreadSidebar() {
                             setRenameValue('');
                           }
                         }}
-                        className='w-full bg-black/30 text-white text-sm px-2 py-1 rounded border border-white/20 focus:outline-none focus:border-white/40'
+                        className='w-full bg-black/30 text-white text-sm px-2 py-1 rounded border border-black focus:outline-none focus:border-black'
                         autoFocus
                       />
                       <div className='flex gap-2 mt-2'>
@@ -115,10 +115,14 @@ export default function ThreadSidebar() {
                     </div>
                   ) : (
                     // Normal Mode
-                    <div className='flex items-center justify-between p-3'>
+                    <div className='flex items-center justify-between px-2 py-2.5'>
                       <button
                         onClick={() => handleSelectThread(thread.id)}
-                        className='flex-1 text-left text-white/80 hover:text-white text-sm transition-colors truncate'
+                        className={`flex-1 text-left text-sm transition-colors truncate ${
+                          selectedThreadId === thread.id
+                            ? 'text-white/80 hover:text-white'
+                            : 'text-white/50 hover:text-white/70'
+                        }`}
                       >
                         {thread.title}
                       </button>
@@ -151,7 +155,7 @@ export default function ThreadSidebar() {
 
                         {/* Menu Dropdown */}
                         {menuOpenId === thread.id && (
-                          <div className='absolute right-0 mt-1 w-32 bg-black/90 backdrop-blur-xl border border-white/20 rounded-lg shadow-xl z-50'>
+                          <div className='absolute right-0 mt-1 w-32 bg-black/90 backdrop-blur-xl border border-black rounded-lg shadow-xl z-[100]'>
                             <button
                               onClick={() => startRename(thread)}
                               className='w-full text-left px-3 py-2 text-sm text-white/80 hover:text-white hover:bg-white/10 transition-colors rounded-t-lg'

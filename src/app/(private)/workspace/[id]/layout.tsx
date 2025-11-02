@@ -85,22 +85,13 @@ export default function WorkspaceLayout({
 
   return (
     <div className='flex flex-col h-full bg-gradient-to-br from-slate-950 via-black to-slate-950 text-gray-100 p-4 md:p-6 relative overflow-hidden'>
-      {/* Background Stars */}
-      <div className='absolute inset-0 overflow-hidden pointer-events-none'>
-        <div className='absolute top-1/4 left-1/4 w-1 h-1 bg-white/20 rounded-full animate-pulse'></div>
-        <div className='absolute top-1/3 right-1/3 w-0.5 h-0.5 bg-white/30 rounded-full animate-pulse delay-1000'></div>
-        <div className='absolute bottom-1/4 left-1/3 w-0.5 h-0.5 bg-white/15 rounded-full animate-pulse delay-2000'></div>
-        <div className='absolute top-2/3 right-1/4 w-1 h-1 bg-white/25 rounded-full animate-pulse delay-500'></div>
-        <div className='absolute bottom-1/3 right-1/2 w-0.5 h-0.5 bg-white/20 rounded-full animate-pulse delay-1500'></div>
-      </div>
-
       <div className='relative z-10 flex flex-col h-full'>
         <div className='flex flex-col gap-3'>
           {/* Header */}
           <div className='flex items-center gap-3 w-full'>
             <button
               onClick={handleBackNavigation}
-              className='p-2 rounded-lg bg-white/10 hover:bg-white/20 transition-colors'
+              className='w-[50px] h-[50px] rounded-full bg-white/10 backdrop-blur-xl border border-black hover:bg-white/15 transition-all duration-300 shadow-[0_8px_32px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.12)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.25),inset_0_1px_0_rgba(255,255,255,0.18)] flex items-center justify-center p-0 z-10'
               title='Go back'
             >
               <ArrowLeft className='w-5 h-5 text-white' />
@@ -111,7 +102,7 @@ export default function WorkspaceLayout({
             <div className='relative' ref={menuRef}>
               <button
                 onClick={() => setIsMenuOpen(prev => !prev)}
-                className='p-2 rounded-lg bg-white/10 hover:bg-white/20 transition-colors'
+                className='w-[50px] h-[50px] rounded-full bg-white/10 backdrop-blur-xl border border-black hover:bg-white/15 transition-all duration-300 shadow-[0_8px_32px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.12)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.25),inset_0_1px_0_rgba(255,255,255,0.18)] flex items-center justify-center p-0'
                 aria-haspopup='menu'
                 aria-expanded={isMenuOpen}
                 aria-label='Open workspace menu'
@@ -153,11 +144,11 @@ export default function WorkspaceLayout({
 
           {/* Navigation Tabs */}
           {(currentView === 'chat' || currentView === 'notes') && (
-            <div className='relative flex w-full justify-center -mb-4'>
-              <div className='flex w-full max-w-md divide-x divide-white/15 overflow-hidden rounded-3xl border border-white/15 bg-white/10 backdrop-blur-md shadow-[0_20px_45px_rgba(15,23,42,0.45)]'>
+            <div className='relative flex w-full mb-4'>
+              <div className='flex w-full divide-x divide-white/15 overflow-hidden rounded-3xl border border-black bg-white/10 backdrop-blur-xl shadow-[0_8px_32px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.12)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.25),inset_0_1px_0_rgba(255,255,255,0.18)] transition-all duration-300'>
                 <button
                   onClick={() => handleViewChange('chat')}
-                  className={`flex flex-1 items-center justify-center gap-2 px-6 py-2 text-sm font-medium transition-colors ${
+                  className={`flex flex-1 items-center justify-center gap-2 px-6 py-2 text-sm font-medium transition-all duration-300 ${
                     currentView === 'chat'
                       ? 'text-white bg-white/10'
                       : 'text-gray-400 hover:text-white'
@@ -169,7 +160,7 @@ export default function WorkspaceLayout({
                 </button>
                 <button
                   onClick={() => handleViewChange('notes')}
-                  className={`flex flex-1 items-center justify-center gap-2 px-6 py-2 text-sm font-medium transition-colors ${
+                  className={`flex flex-1 items-center justify-center gap-2 px-6 py-2 text-sm font-medium transition-all duration-300 ${
                     currentView === 'notes'
                       ? 'text-white bg-white/10'
                       : 'text-gray-400 hover:text-white'
@@ -185,7 +176,7 @@ export default function WorkspaceLayout({
         </div>
 
         {/* Content */}
-        <div className='flex-1 overflow-y-auto pt-6'>{children}</div>
+        <div className='flex-1 overflow-y-auto'>{children}</div>
       </div>
     </div>
   );

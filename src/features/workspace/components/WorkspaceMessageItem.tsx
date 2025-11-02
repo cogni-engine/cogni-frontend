@@ -35,7 +35,7 @@ export default function WorkspaceMessageItem({ message, isOwnMessage }: Props) {
               {format(new Date(message.created_at), 'HH:mm')}
             </p>
           </div>
-          <div className='bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl px-4 py-2 shadow-lg'>
+          <div className='bg-white/13 backdrop-blur-xl border border-black rounded-3xl px-4 py-2.5 shadow-[0_8px_32px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.12)]'>
             <p className='text-sm text-white whitespace-pre-wrap break-words'>
               {message.text}
             </p>
@@ -62,7 +62,7 @@ export default function WorkspaceMessageItem({ message, isOwnMessage }: Props) {
       <div className='flex flex-col gap-1 min-w-0'>
         <p className='text-xs text-gray-400 mb-1'>{name}</p>
         <div className='flex gap-2 items-end'>
-          <div className='bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl px-4 py-2'>
+          <div className='bg-white/8 backdrop-blur-xl border border-black rounded-3xl px-4 py-2.5 shadow-[0_8px_32px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.12)]'>
             <p className='text-sm text-white whitespace-pre-wrap break-words'>
               {message.text}
             </p>

@@ -200,26 +200,16 @@ export default function WorkspaceNoteEditorPage() {
         WebkitOverflowScrolling: 'touch',
       }}
     >
-      {/* Background stars */}
-      <div className='absolute inset-0 overflow-hidden pointer-events-none'>
-        <div className='absolute top-1/4 left-1/4 w-1 h-1 bg-white/20 rounded-full animate-pulse'></div>
-        <div className='absolute top-1/3 right-1/3 w-0.5 h-0.5 bg-white/30 rounded-full animate-pulse delay-1000'></div>
-        <div className='absolute bottom-1/4 left-1/3 w-0.5 h-0.5 bg-white/15 rounded-full animate-pulse delay-2000'></div>
-        <div className='absolute top-2/3 right-1/4 w-1 h-1 bg-white/25 rounded-full animate-pulse delay-500'></div>
-        <div className='absolute bottom-1/3 right-1/2 w-0.5 h-0.5 bg-white/20 rounded-full animate-pulse delay-1500'></div>
-      </div>
-
       {/* Header */}
-      <header className='flex justify-between items-center px-4 md:px-6 py-4 relative z-10 border-b border-white/10'>
+      <header className='flex items-center gap-3 px-4 md:px-6 py-4 relative z-10 border-b border-white/10 w-full'>
         {/* Back button */}
         <button
           onClick={handleBack}
-          className='w-10 h-10 rounded-full bg-white/8 backdrop-blur-xl border border-white/10 text-gray-400 hover:text-white hover:bg-white/12 hover:scale-110 transition-all shadow-[0_8px_32px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.12)] flex items-center justify-center'
+          className='w-[50px] h-[50px] rounded-full bg-white/10 backdrop-blur-xl text-white border border-black transition-all duration-300 shadow-[0_8px_32px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.12)] hover:bg-white/15 hover:scale-102 hover:shadow-[0_12px_40px_rgba(0,0,0,0.25),inset_0_1px_0_rgba(255,255,255,0.18)] flex items-center justify-center'
         >
           <svg
             xmlns='http://www.w3.org/2000/svg'
-            width='20'
-            height='20'
+            className='w-5 h-5'
             viewBox='0 0 24 24'
             fill='none'
             stroke='currentColor'
@@ -230,6 +220,9 @@ export default function WorkspaceNoteEditorPage() {
             <path d='M15 18l-6-6 6-6' />
           </svg>
         </button>
+
+        {/* Spacer */}
+        <div className='flex-1'></div>
 
         {/* Status indicator */}
         <div className='flex items-center gap-3'>
@@ -251,7 +244,7 @@ export default function WorkspaceNoteEditorPage() {
         <button
           onClick={handleSave}
           disabled={saving || (!hasUnsavedChanges && noteId !== 'new')}
-          className='w-10 h-10 rounded-full bg-white/15 backdrop-blur-xl border border-white/20 text-white hover:bg-white/25 hover:scale-110 transition-all shadow-[0_8px_32px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.12)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.25),inset_0_1px_0_rgba(255,255,255,0.18)] flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100'
+          className='w-10 h-10 rounded-full bg-white/15 backdrop-blur-xl border border-white/20 text-white hover:bg-white/25 transition-all duration-300 shadow-[0_8px_32px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.12)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.25),inset_0_1px_0_rgba(255,255,255,0.18)] flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed'
         >
           {saving ? (
             <div className='animate-spin rounded-full h-5 w-5 border-b-2 border-white'></div>

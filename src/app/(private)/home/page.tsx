@@ -86,7 +86,9 @@ export default function HomePage() {
   return (
     <div
       className={`flex flex-col h-full transition-all duration-300 ${
-        isThreadSidebarOpen ? 'ml-80' : 'ml-0'
+        isThreadSidebarOpen 
+          ? 'translate-x-[240px] md:translate-x-0 md:ml-80' 
+          : 'translate-x-0'
       }`}
     >
       <ChatContainer

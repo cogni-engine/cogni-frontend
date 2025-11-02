@@ -79,8 +79,9 @@ export default function WorkspacePage() {
   }
 
   return (
-    <div className='min-h-screen bg-black'>
-      <div className='mx-auto flex w-full max-w-7xl flex-col gap-6 px-4 py-6 text-white'>
+    <div className='flex flex-col h-full bg-gradient-to-br from-slate-950 via-black to-slate-950 text-gray-100 relative overflow-hidden'>
+      {/* 固定ヘッダー（検索バー + 新規作成ボタン） */}
+      <div className='relative z-20 px-4 md:px-6 pt-4 md:pt-6 pb-4 bg-gradient-to-br from-slate-950 via-black to-slate-950'>
         <div className='flex items-center justify-between w-full gap-3'>
           <div className='flex items-center bg-white/8 backdrop-blur-xl text-white px-4 py-3 rounded-4xl flex-1 border border-black focus-within:border-black shadow-[0_8px_32px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.12)] focus-within:shadow-[0_12px_40px_rgba(0,0,0,0.25),inset_0_1px_0_rgba(255,255,255,0.18)] transition-all duration-300 w-full'>
             <svg
@@ -122,15 +123,23 @@ export default function WorkspacePage() {
           </div>
           <WorkspaceForm onSubmit={handleSubmit} isLoading={isLoading} />
         </div>
+      </div>
 
-        {/* Loading State */}
+      {/* スクロール可能エリア */}
+      <div
+        className='relative z-10 flex-1 overflow-y-auto px-4 md:px-6 pb-4'
+        style={{
+          willChange: 'scroll-position',
+          transform: 'translateZ(0)',
+          WebkitOverflowScrolling: 'touch',
+        }}
+      >
         {isLoading && (
           <div className='flex items-center justify-center py-12'>
-            <div className='text-gray-400 text-lg'>Loading workspaces...</div>
+            <div className='animate-spin rounded-full h-8 w-8 border-b-2 border-white'></div>
           </div>
         )}
 
-        {/* Workspace List */}
         {!isLoading &&
           workspaces &&
           (filteredWorkspaces.length > 0 || !isSearching) && (
@@ -142,7 +151,7 @@ export default function WorkspacePage() {
           filteredWorkspaces.length === 0 &&
           isSearching && (
             <div className='rounded-2xl border border-white/10 bg-white/5 p-8 text-center text-white/70'>
-              No workspaces found matching “{searchQuery.trim()}”.
+              No workspaces found matching "{searchQuery.trim()}".
             </div>
           )}
       </div>

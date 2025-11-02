@@ -8,12 +8,16 @@ type InputAreaProps = {
   onSend: (content: string) => void;
   onStop?: () => void;
   isLoading?: boolean;
+  placeholder?: string;
+  canStop?: boolean;
 };
 
 export default function InputArea({
   onSend,
   onStop,
   isLoading = false,
+  placeholder = 'Ask anything',
+  canStop = true,
 }: InputAreaProps) {
   return (
     <div className='bg-gradient-to-br from-slate-950 via-black to-slate-950 relative z-10 rounded-t-3xl'>
@@ -21,11 +25,12 @@ export default function InputArea({
       <div className='px-6 md:px-6 pb-1 md:pb-1 pt-2'>
         <DynamicInput
           suggestions={[]}
-          inputPlaceholder={'Ask anything'}
+          inputPlaceholder={placeholder}
           onSuggestionClick={onSend}
           onFreeTextSubmit={onSend}
           onStop={onStop}
           isLoading={isLoading}
+          canStop={canStop}
         />
       </div>
     </div>

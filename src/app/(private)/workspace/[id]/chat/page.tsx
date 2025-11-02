@@ -32,26 +32,29 @@ export default function WorkspaceChatPage() {
 
   return (
     <div className='flex flex-col h-full'>
-      {/* Connection Status */}
-      {!isConnected && (
-        <div className='p-2 bg-yellow-500/20 border-b border-yellow-500/30 text-center text-sm text-yellow-400'>
-          Connecting to real-time chat...
-        </div>
-      )}
-
       {/* Error Display */}
       {error && (
-        <div className='p-2 bg-red-500/20 border-b border-red-500/30 text-center text-sm text-red-400'>
+        <div className='px-4 py-2 mb-2 bg-white/8 backdrop-blur-xl border border-black rounded-4xl text-center text-sm text-white/80 shadow-[0_8px_32px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.12)]'>
           {error}
         </div>
       )}
 
       {/* Messages */}
       <div className='flex-1 overflow-y-auto p-4'>
+        {isConnected ? (
         <WorkspaceMessageList
           messages={messages}
           currentUserId={currentUserId}
         />
+        ) : (
+          <div className='flex-1 flex items-center justify-center'>
+            <div className='text-center'>
+              <p className='text-gray-400'>
+                Connecting to real-time chat...
+              </p>
+            </div>
+          </div>
+        )}
         <div ref={messagesEndRef} />
       </div>
 
@@ -60,6 +63,8 @@ export default function WorkspaceChatPage() {
         messages={messages}
         onSend={sendMessage}
         isLoading={isLoading}
+        placeholder='Enter a message'
+        canStop={false}
       />
     </div>
   );

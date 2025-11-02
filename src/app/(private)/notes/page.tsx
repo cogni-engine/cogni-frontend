@@ -50,15 +50,6 @@ export default function NotesPage() {
 
   return (
     <div className='flex flex-col h-full bg-gradient-to-br from-slate-950 via-black to-slate-950 text-gray-100 relative overflow-hidden'>
-      {/* 背景の星 */}
-      <div className='absolute inset-0 overflow-hidden pointer-events-none'>
-        <div className='absolute top-1/4 left-1/4 w-1 h-1 bg-white/20 rounded-full animate-pulse'></div>
-        <div className='absolute top-1/3 right-1/3 w-0.5 h-0.5 bg-white/30 rounded-full animate-pulse delay-1000'></div>
-        <div className='absolute bottom-1/4 left-1/3 w-0.5 h-0.5 bg-white/15 rounded-full animate-pulse delay-2000'></div>
-        <div className='absolute top-2/3 right-1/4 w-1 h-1 bg-white/25 rounded-full animate-pulse delay-500'></div>
-        <div className='absolute bottom-1/3 right-1/2 w-0.5 h-0.5 bg-white/20 rounded-full animate-pulse delay-1500'></div>
-      </div>
-
       {/* 固定ヘッダー（タイトル + 検索バー + 新規作成ボタン） */}
       <div className='relative z-20 px-4 md:px-6 pt-4 md:pt-6 pb-4 bg-gradient-to-br from-slate-950 via-black to-slate-950'>
         {/* 検索バー + 新規作成ボタン */}

@@ -22,7 +22,7 @@ export default function WorkspaceList({ workspaces }: WorkspaceListProps) {
   }
 
   return (
-    <div className='flex flex-col gap-4'>
+    <div className='flex flex-col gap-[14px]'>
       {workspaces.map(workspace => (
         <WorkspaceCard key={workspace.id} workspace={workspace} />
       ))}
@@ -47,11 +47,11 @@ function WorkspaceCard({ workspace }: WorkspaceCardProps) {
   return (
     <div
       onClick={handleCardClick}
-      className='bg-white/8 backdrop-blur-md hover:bg-white/12 transition-all rounded-2xl p-5 border border-white/15 shadow-[0_8px_32px_rgba(0,0,0,0.2)] hover:shadow-[0_8px_32px_rgba(0,0,0,0.3)] cursor-pointer'
+      className='bg-white/8 backdrop-blur-xl transition-all duration-300 rounded-[20px] px-5 py-[8px] border border-black shadow-[0_8px_32px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.12)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.25),inset_0_1px_0_rgba(255,255,255,0.18)] cursor-pointer'
     >
-      <div className='flex items-center justify-between gap-3'>
-        <div className='flex items-center gap-4 flex-1 min-w-0'>
-          <Avatar className='h-12 w-12 border border-white/10 bg-white/5 uppercase text-sm tracking-wide'>
+      <div className='flex items-center justify-between gap-3 py-2'>
+        <div className='flex items-center gap-3 flex-1 min-w-0'>
+          <Avatar className='h-10 w-10 border border-white/10 bg-white/5 uppercase text-sm tracking-wide'>
             {workspace.icon_url ? (
               <AvatarImage
                 src={workspace.icon_url}
@@ -59,25 +59,25 @@ function WorkspaceCard({ workspace }: WorkspaceCardProps) {
               />
             ) : (
               <AvatarFallback className='bg-white/5 text-white/70'>
-                <Building2 className='w-5 h-5' />
+                <Building2 className='w-4 h-4' />
               </AvatarFallback>
             )}
           </Avatar>
           <div className='flex-1 min-w-0'>
-            <h3 className='text-base font-semibold text-white mb-1 truncate'>
+            <h3 className='font-semibold text-white text-[17px] leading-[1.4] mb-1 truncate'>
               {workspace.title || 'Untitled Workspace'}
             </h3>
             <div className='flex items-center gap-2'>
               <span
-                className={`px-1.5 py-0.5 rounded text-xs font-medium ${
+                className={`px-2 py-0.5 rounded-full text-[10px] font-medium ${
                   workspace.type === 'personal'
-                    ? 'bg-blue-500/10 text-blue-400'
-                    : 'bg-purple-500/10 text-purple-400'
+                    ? 'bg-blue-500/20 text-blue-300'
+                    : 'bg-purple-600/20 text-purple-300'
                 }`}
               >
                 {workspace.type}
               </span>
-              <span className='text-xs text-gray-400'>
+              <span className='text-[11px] text-gray-400'>
                 {new Date(workspace.created_at).toLocaleDateString()}
               </span>
             </div>

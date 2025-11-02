@@ -97,7 +97,7 @@ export default function WorkspaceMembersPage() {
           <h2 className='text-xl font-semibold text-white'>Members</h2>
           <button
             onClick={() => setShowInviteModal(true)}
-            className='p-2 bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors'
+            className='p-2 bg-white/10 backdrop-blur-xl border border-black rounded-full hover:bg-white/15 transition-all duration-300 shadow-[0_8px_32px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.12)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.25),inset_0_1px_0_rgba(255,255,255,0.18)]'
             title='Invite Member'
           >
             <Plus className='w-5 h-5 text-white' />

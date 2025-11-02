@@ -1,6 +1,5 @@
 import { Message, AIMessage } from '@/types/chat';
 import { forwardRef } from 'react';
-import StarBackground from './StarBackground';
 import MessageList from './MessageList';
 
 type ChatContainerProps = {
@@ -16,8 +15,6 @@ const ChatContainer = forwardRef<HTMLDivElement, ChatContainerProps>(
   ({ messages, sendMessage }, ref) => {
     return (
       <div className='flex-1 bg-gradient-to-br from-slate-950 via-black to-slate-950 relative overflow-hidden'>
-        <StarBackground />
-
         {/* メッセージエリア - GPU最適化 */}
         <div
           ref={ref}

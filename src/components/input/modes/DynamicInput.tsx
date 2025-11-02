@@ -9,6 +9,7 @@ type DynamicInputProps = {
   onFreeTextSubmit: (text: string) => void;
   onStop?: () => void;
   isLoading?: boolean;
+  canStop?: boolean;
 };
 
 export default function DynamicInput({
@@ -16,6 +17,7 @@ export default function DynamicInput({
   onFreeTextSubmit,
   onStop,
   isLoading = false,
+  canStop = true,
 }: DynamicInputProps) {
   return (
     <div className='max-w-4xl mx-auto'>
@@ -24,6 +26,7 @@ export default function DynamicInput({
         onStop={onStop}
         isLoading={isLoading}
         placeholder={inputPlaceholder}
+        canStop={canStop}
       />
     </div>
   );

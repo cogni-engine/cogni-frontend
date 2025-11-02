@@ -11,7 +11,7 @@ import {
 } from 'react';
 import type { Area } from 'react-easy-crop';
 import type { Workspace } from '@/types/workspace';
-import { Plus } from 'lucide-react';
+import { Plus, PenSquare } from 'lucide-react';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';

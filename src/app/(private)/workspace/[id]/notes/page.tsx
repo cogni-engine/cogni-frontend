@@ -4,7 +4,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { useWorkspaceNotes, formatDate } from '@/hooks/useWorkspaceNotes';
 import type { NoteWithParsed } from '@/types/note';
-import { Search } from 'lucide-react';
+import { Search, PenSquare } from 'lucide-react';
 
 export default function WorkspaceNotesPage() {
   const params = useParams();
@@ -88,40 +88,35 @@ export default function WorkspaceNotesPage() {
   return (
     <div className='h-full flex flex-col'>
       {/* Header */}
-      <div className='flex p-6 border-b border-white/10 gap-3'>
+      <div className='flex gap-3 mb-4'>
         {/* Search */}
-        <div className='w-full relative'>
-          <Search className='text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2' />
+        <div className='flex items-center bg-white/8 backdrop-blur-xl text-white px-4 py-3 rounded-4xl flex-1 border border-black focus-within:border-black shadow-[0_8px_32px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.12)] focus-within:shadow-[0_12px_40px_rgba(0,0,0,0.25),inset_0_1px_0_rgba(255,255,255,0.18)] transition-all duration-300'>
+          <Search className='text-gray-400 mr-2 w-[18px] h-[18px]' />
           <input
             type='text'
             placeholder='Search notes...'
             value={searchQuery}
             onChange={e => handleSearch(e.target.value)}
-            className='w-full bg-white/8 border border-white/10 rounded-lg px-4 py-2 pl-10 text-white placeholder-gray-400 focus:outline-none focus:border-white/20'
+            className='bg-transparent outline-none text-sm text-white w-full placeholder-gray-500'
           />
         </div>
         <button
           onClick={handleCreateNote}
-          className='bg-white/15 hover:bg-white/25 text-white px-4 py-2 rounded-lg transition-colors flex items-center gap-2'
+          className='bg-white/10 backdrop-blur-xl border border-black p-3 rounded-full hover:bg-white/15 transition-all duration-300 shadow-[0_8px_32px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.12)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.25),inset_0_1px_0_rgba(255,255,255,0.18)]'
         >
-          <svg
-            xmlns='http://www.w3.org/2000/svg'
-            width='16'
-            height='16'
-            viewBox='0 0 24 24'
-            fill='none'
-            stroke='currentColor'
-            strokeWidth='2'
-            strokeLinecap='round'
-            strokeLinejoin='round'
-          >
-            <path d='M12 5v14M5 12h14' />
-          </svg>
+          <PenSquare className='w-5 h-5 text-white' />
         </button>
       </div>
 
       {/* Notes List */}
-      <div className='flex-1 overflow-y-auto p-6'>
+      <div
+        className='flex-1 overflow-y-auto'
+        style={{
+          willChange: 'scroll-position',
+          transform: 'translateZ(0)',
+          WebkitOverflowScrolling: 'touch',
+        }}
+      >
         {notes.length === 0 ? (
           <div className='text-center py-12'>
             <div className='text-gray-400 mb-4'>
@@ -162,49 +157,49 @@ export default function WorkspaceNotesPage() {
             )}
           </div>
         ) : (
-          <div className='grid gap-4'>
+          <div className='flex flex-col gap-[14px]'>
             {notes.map((note: NoteWithParsed) => (
               <div
                 key={note.id}
-                className='group bg-white/8 backdrop-blur-xl hover:bg-white/12 transition-all duration-300 rounded-lg p-4 border border-white/10 hover:border-white/15 cursor-pointer relative'
+                className='group bg-white/8 backdrop-blur-xl transition-all duration-300 rounded-[20px] px-5 py-[8px] border border-black shadow-[0_8px_32px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.12)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.25),inset_0_1px_0_rgba(255,255,255,0.18)] cursor-pointer relative'
                 onClick={() => handleNoteClick(note.id)}
               >
-                <div className='flex justify-between items-start gap-3'>
+                <div className='flex justify-between items-start gap-3 mb-1'>
                   <div className='flex-1 min-w-0'>
-                    <h3 className='font-semibold text-white text-lg leading-tight truncate mb-1'>
+                    <h3 className='font-semibold text-white text-[17px] leading-[1.4] line-clamp-2'>
                       {note.title || 'Untitled'}
                     </h3>
-                    <p className='text-gray-400 text-sm line-clamp-2 mb-2'>
-                      {note.preview || 'No content'}
-                    </p>
-                    <div className='text-xs text-gray-500'>
-                      Updated {formatDate(note.updated_at)}
-                    </div>
                   </div>
-                  <div className='flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity'>
-                    <button
-                      onClick={e => {
-                        e.stopPropagation();
-                        setShowDeleteConfirm(note.id);
-                      }}
-                      className='p-2 text-gray-400 hover:text-red-400 hover:bg-red-500/10 rounded-md transition-colors'
+                  <span className='text-[11px] text-gray-400 whitespace-nowrap mt-0.5'>
+                    {formatDate(note.updated_at)}
+                  </span>
+                </div>
+                <p className='text-[13px] text-gray-400 leading-[1.6] line-clamp-2 mb-1'>
+                  {note.preview || 'No content'}
+                </p>
+                <div className='flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity mt-2'>
+                  <button
+                    onClick={e => {
+                      e.stopPropagation();
+                      setShowDeleteConfirm(note.id);
+                    }}
+                    className='p-2 text-gray-400 hover:text-red-400 hover:bg-red-500/10 rounded-md transition-colors'
+                  >
+                    <svg
+                      xmlns='http://www.w3.org/2000/svg'
+                      width='16'
+                      height='16'
+                      viewBox='0 0 24 24'
+                      fill='none'
+                      stroke='currentColor'
+                      strokeWidth='2'
+                      strokeLinecap='round'
+                      strokeLinejoin='round'
                     >
-                      <svg
-                        xmlns='http://www.w3.org/2000/svg'
-                        width='16'
-                        height='16'
-                        viewBox='0 0 24 24'
-                        fill='none'
-                        stroke='currentColor'
-                        strokeWidth='2'
-                        strokeLinecap='round'
-                        strokeLinejoin='round'
-                      >
-                        <polyline points='3 6 5 6 21 6' />
-                        <path d='m19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6m3 0V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2' />
-                      </svg>
-                    </button>
-                  </div>
+                      <polyline points='3 6 5 6 21 6' />
+                      <path d='m19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6m3 0V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2' />
+                    </svg>
+                  </button>
                 </div>
               </div>
             ))}

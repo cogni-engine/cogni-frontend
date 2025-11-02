@@ -106,7 +106,7 @@ export default function Header() {
   };
 
   return (
-    <header className='flex items-center justify-between px-4 md:px-6 py-3 border-b border-white/10 bg-white/3 backdrop-blur-lg relative z-50'>
+    <header className='flex items-center justify-between px-4 md:px-6 py-3 border-b border-black bg-white/3 backdrop-blur-lg relative z-50'>
       {/* Left Side - Thread Controls + Logo */}
       <div className='flex items-center gap-4'>
         {isHomePage && isMounted && (
@@ -161,8 +161,12 @@ export default function Header() {
         )}
 
         {/* Logo */}
-        <h1 className='text-lg font-semibold text-white'>
-          Cogno{pageTitle ? ` | ${pageTitle}` : ''}
+        <h1 className={`text-lg font-semibold text-white ${pathname === '/workspace' || pathname === '/notes' ? 'ml-2' : ''}`}>
+          Cogno{pageTitle && (
+            <span className='text-base text-white/60 font-normal'>
+              {' '}| {pageTitle}
+            </span>
+          )}
         </h1>
       </div>
 
