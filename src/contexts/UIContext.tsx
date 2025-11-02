@@ -5,10 +5,12 @@ import { createContext, useContext, useState, ReactNode } from 'react';
 interface UIContextType {
   isThreadSidebarOpen: boolean;
   isNotificationPanelOpen: boolean;
+  isInputActive: boolean;
   toggleThreadSidebar: () => void;
   toggleNotificationPanel: () => void;
   closeThreadSidebar: () => void;
   closeNotificationPanel: () => void;
+  setInputActive: (active: boolean) => void;
 }
 
 const UIContext = createContext<UIContextType | undefined>(undefined);
@@ -16,6 +18,7 @@ const UIContext = createContext<UIContextType | undefined>(undefined);
 export function UIProvider({ children }: { children: ReactNode }) {
   const [isThreadSidebarOpen, setIsThreadSidebarOpen] = useState(false);
   const [isNotificationPanelOpen, setIsNotificationPanelOpen] = useState(false);
+  const [isInputActive, setIsInputActive] = useState(false);
 
   const toggleThreadSidebar = () => {
     setIsThreadSidebarOpen(prev => !prev);
@@ -31,16 +34,19 @@ export function UIProvider({ children }: { children: ReactNode }) {
 
   const closeThreadSidebar = () => setIsThreadSidebarOpen(false);
   const closeNotificationPanel = () => setIsNotificationPanelOpen(false);
+  const setInputActive = (active: boolean) => setIsInputActive(active);
 
   return (
     <UIContext.Provider
       value={{
         isThreadSidebarOpen,
         isNotificationPanelOpen,
+        isInputActive,
         toggleThreadSidebar,
         toggleNotificationPanel,
         closeThreadSidebar,
         closeNotificationPanel,
+        setInputActive,
       }}
     >
       {children}

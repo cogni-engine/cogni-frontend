@@ -22,7 +22,7 @@ export default function InputArea({
   return (
     <div className='bg-gradient-to-br from-slate-950 via-black to-slate-950 relative z-10 rounded-t-3xl'>
       {/* 入力UI */}
-      <div className='px-6 md:px-6 pb-1 md:pb-1 pt-2'>
+      <div className='px-2 md:px-6 pt-2'>
         <DynamicInput
           suggestions={[]}
           inputPlaceholder={placeholder}

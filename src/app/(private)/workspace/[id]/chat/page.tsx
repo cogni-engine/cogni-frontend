@@ -61,7 +61,7 @@ export default function WorkspaceChatPage() {
         messages={messages}
         onSend={sendMessage}
         isLoading={isLoading}
-        placeholder='Enter a message'
+        placeholder='Message'
         canStop={false}
       />
     </div>

@@ -20,7 +20,7 @@ export default function DynamicInput({
   canStop = true,
 }: DynamicInputProps) {
   return (
-    <div className='max-w-4xl mx-auto'>
+    <div className='w-full md:max-w-4xl md:mx-auto'>
       <FreeTextInput
         onSend={onFreeTextSubmit}
         onStop={onStop}

@@ -3,6 +3,7 @@
 import { useRef, useState, useEffect } from 'react';
 import { ArrowUp, Plus, Square } from 'lucide-react';
 import { VoiceInputButton } from '../VoiceInputButton';
+import { useUI } from '@/contexts/UIContext';
 
 type FreeTextInputProps = {
   onSend: (text: string) => void;
@@ -20,8 +21,10 @@ export default function FreeTextInput({
   canStop = true,
 }: FreeTextInputProps) {
   const [input, setInput] = useState('');
+  const [isFocused, setIsFocused] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const lastEnterPressRef = useRef<number>(0);
+  const { setInputActive } = useUI();
 
   const maxRows = 7;
 
@@ -43,6 +46,11 @@ export default function FreeTextInput({
       adjustHeight(textareaRef.current);
     }
   }, [input]);
+
+  // 入力中かどうかを検知してUIContextを更新（フォーカスまたは入力値がある場合）
+  useEffect(() => {
+    setInputActive(isFocused || input.trim().length > 0);
+  }, [isFocused, input, setInputActive]);
 
   const handleSend = () => {
     if (!input.trim() || isLoading) return;
@@ -99,6 +107,8 @@ export default function FreeTextInput({
           ref={textareaRef}
           value={input}
           onChange={e => setInput(e.target.value)}
+          onFocus={() => setIsFocused(true)}
+          onBlur={() => setIsFocused(false)}
           onKeyDown={handleKeyDown}
           onInput={e => adjustHeight(e.currentTarget)}
           placeholder={placeholder}
