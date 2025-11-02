@@ -161,10 +161,14 @@ export default function Header() {
         )}
 
         {/* Logo */}
-        <h1 className={`text-lg font-semibold text-white ${pathname === '/workspace' || pathname === '/notes' ? 'ml-2' : ''}`}>
-          Cogno{pageTitle && (
+        <h1
+          className={`text-lg font-semibold text-white ${pathname === '/workspace' || pathname === '/notes' ? 'ml-2' : ''}`}
+        >
+          Cogno
+          {pageTitle && (
             <span className='text-base text-white/60 font-normal'>
-              {' '}| {pageTitle}
+              {' '}
+              | {pageTitle}
             </span>
           )}
         </h1>

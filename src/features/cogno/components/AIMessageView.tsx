@@ -13,7 +13,10 @@ type AIMessageViewProps = {
 };
 
 // Extracted component to satisfy React Hooks rule (component names must be Capitalized)
-const PreBlock = ({ children, ...rest }: any) => {
+const PreBlock = ({
+  children,
+  ...rest
+}: React.HTMLAttributes<HTMLPreElement>) => {
   const [copied, setCopied] = useState(false);
 
   // preの中のcode要素からテキストを抽出

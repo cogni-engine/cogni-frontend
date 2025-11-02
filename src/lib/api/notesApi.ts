@@ -221,9 +221,26 @@ export async function assignNoteToMembers(
 /**
  * Get note assignment information
  */
+type NoteAssignmentItem = {
+  workspace_member_note_role: string;
+  workspace_member?: {
+    id?: number;
+    user_id?: string;
+    user_profiles?:
+      | {
+          id?: string;
+          name?: string;
+        }
+      | {
+          id?: string;
+          name?: string;
+        }[];
+  };
+};
+
 export async function getNoteAssignments(noteId: number): Promise<{
-  assigners: any[];
-  assignees: any[];
+  assigners: NoteAssignmentItem[];
+  assignees: NoteAssignmentItem[];
 }> {
   console.log('🔍 getNoteAssignments called with noteId:', noteId);
 
@@ -253,16 +270,19 @@ export async function getNoteAssignments(noteId: number): Promise<{
   console.log('📊 Data length:', data?.length);
 
   // Transform nested structure (same pattern as workspaceMessagesApi)
-  const transformedData = (data || []).map((item: any) => {
-    console.log('🔄 Transforming item:', item);
+  const transformedData = (data || []).map((item: unknown) => {
+    const typedItem = item as NoteAssignmentItem;
+    console.log('🔄 Transforming item:', typedItem);
     return {
-      workspace_member_note_role: item.workspace_member_note_role,
-      workspace_member: item.workspace_member
+      workspace_member_note_role: typedItem.workspace_member_note_role,
+      workspace_member: typedItem.workspace_member
         ? {
-            ...item.workspace_member,
-            user_profile: Array.isArray(item.workspace_member.user_profiles)
-              ? item.workspace_member.user_profiles[0]
-              : item.workspace_member.user_profiles,
+            ...typedItem.workspace_member,
+            user_profile: Array.isArray(
+              typedItem.workspace_member.user_profiles
+            )
+              ? typedItem.workspace_member.user_profiles[0]
+              : typedItem.workspace_member.user_profiles,
           }
         : undefined,
     };

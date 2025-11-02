@@ -151,7 +151,7 @@ export default function WorkspacePage() {
           filteredWorkspaces.length === 0 &&
           isSearching && (
             <div className='rounded-2xl border border-white/10 bg-white/5 p-8 text-center text-white/70'>
-              No workspaces found matching "{searchQuery.trim()}".
+              No workspaces found matching &quot;{searchQuery.trim()}&quot;.
             </div>
           )}
       </div>

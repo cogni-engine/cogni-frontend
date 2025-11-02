@@ -16,7 +16,7 @@ type TimerDisplayProps = {
 export const TimerDisplay: React.FC<TimerDisplayProps> = ({
   timer,
   sendMessage,
-  threadId,
+  threadId: _threadId,
 }) => {
   const [remainingSeconds, setRemainingSeconds] = useState<number>(0);
   const hasCompleted = useRef(false);

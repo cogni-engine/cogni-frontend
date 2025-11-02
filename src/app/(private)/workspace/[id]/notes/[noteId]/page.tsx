@@ -56,14 +56,14 @@ export default function WorkspaceNoteEditorPage() {
           console.log('🎉 Got assignments:', { assigners, assignees });
 
           const assignerIdsList = assigners
-            .map((a: any) => {
+            .map((a: { workspace_member?: { id?: number } }) => {
               console.log('👤 Assigner:', a);
               return a.workspace_member?.id;
             })
             .filter(Boolean);
 
           const assigneeIdsList = assignees
-            .map((a: any) => {
+            .map((a: { workspace_member?: { id?: number } }) => {
               console.log('👥 Assignee:', a);
               return a.workspace_member?.id;
             })
@@ -150,7 +150,7 @@ export default function WorkspaceNoteEditorPage() {
 
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [title, content]);
+  }, [title, content, handleSave]);
 
   // Auto-save functionality (optional)
   useEffect(() => {
@@ -163,7 +163,7 @@ export default function WorkspaceNoteEditorPage() {
     }, 2000); // Auto-save after 2 seconds of inactivity
 
     return () => clearTimeout(autoSaveTimer);
-  }, [title, content, hasUnsavedChanges, noteId]);
+  }, [title, content, hasUnsavedChanges, noteId, handleSave]);
 
   if (loading) {
     return (
