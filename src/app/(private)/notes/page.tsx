@@ -25,6 +25,7 @@ export default function NotesPage() {
     isGroupNote:
       note.workspace?.type === 'group' &&
       note.workspace_id !== personalWorkspaceId,
+    updated_at: note.updated_at,
   }));
 
   const handleCreateNote = async () => {

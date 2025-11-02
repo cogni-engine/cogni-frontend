@@ -25,17 +25,48 @@ export function combineNoteText(title: string, content: string): string {
 }
 
 /**
- * Get all notes for a specific workspace
+ * Get all notes for a specific workspace with assignments
  */
 export async function getNotes(workspaceId: number): Promise<Note[]> {
   const { data, error } = await supabase
     .from('notes')
-    .select('*')
+    .select(
+      `
+      *,
+      workspace_member_note(
+        workspace_member_note_role,
+        workspace_member:workspace_member_id(
+          id,
+          user_id,
+          user_profiles!user_id(id, name, avatar_url)
+        )
+      )
+    `
+    )
     .eq('workspace_id', workspaceId)
     .order('updated_at', { ascending: false });
 
   if (error) throw error;
-  return data || [];
+
+  // Transform the nested structure to match our types
+  return (data || []).map(note => ({
+    ...note,
+    workspace_member_note: (note.workspace_member_note || []).map(
+      (assignment: { workspace_member?: { user_profiles?: unknown } }) => ({
+        ...assignment,
+        workspace_member: assignment.workspace_member
+          ? {
+              ...assignment.workspace_member,
+              user_profiles: Array.isArray(
+                assignment.workspace_member.user_profiles
+              )
+                ? assignment.workspace_member.user_profiles[0]
+                : assignment.workspace_member.user_profiles,
+            }
+          : undefined,
+      })
+    ),
+  }));
 }
 
 /**
@@ -128,13 +159,45 @@ export async function searchNotes(
 
   const { data, error } = await supabase
     .from('notes')
-    .select('*')
+    .select(
+      `
+      *,
+      workspace:workspace_id(*),
+      workspace_member_note(
+        workspace_member_note_role,
+        workspace_member:workspace_member_id(
+          id,
+          user_id,
+          user_profiles!user_id(id, name, avatar_url)
+        )
+      )
+    `
+    )
     .eq('workspace_id', workspaceId)
     .ilike('text', `%${searchQuery}%`)
     .order('updated_at', { ascending: false });
 
   if (error) throw error;
-  return data || [];
+
+  // Transform the nested structure to match our types
+  return (data || []).map(note => ({
+    ...note,
+    workspace_member_note: (note.workspace_member_note || []).map(
+      (assignment: { workspace_member?: { user_profiles?: unknown } }) => ({
+        ...assignment,
+        workspace_member: assignment.workspace_member
+          ? {
+              ...assignment.workspace_member,
+              user_profiles: Array.isArray(
+                assignment.workspace_member.user_profiles
+              )
+                ? assignment.workspace_member.user_profiles[0]
+                : assignment.workspace_member.user_profiles,
+            }
+          : undefined,
+      })
+    ),
+  }));
 }
 
 /**
@@ -169,15 +232,47 @@ export async function getUserAssignedNotes(): Promise<Note[]> {
 
   const noteIds = [...new Set(assignments.map(a => a.note_id))];
 
-  // 3. Get notes with workspace info
+  // 3. Get notes with workspace info and assignments
   const { data, error } = await supabase
     .from('notes')
-    .select('*, workspace:workspace_id(*)')
+    .select(
+      `
+      *,
+      workspace:workspace_id(*),
+      workspace_member_note(
+        workspace_member_note_role,
+        workspace_member:workspace_member_id(
+          id,
+          user_id,
+          user_profiles!user_id(id, name, avatar_url)
+        )
+      )
+    `
+    )
     .in('id', noteIds)
     .order('updated_at', { ascending: false });
 
   if (error) throw error;
-  return data || [];
+
+  // Transform the nested structure to match our types
+  return (data || []).map(note => ({
+    ...note,
+    workspace_member_note: (note.workspace_member_note || []).map(
+      (assignment: { workspace_member?: { user_profiles?: unknown } }) => ({
+        ...assignment,
+        workspace_member: assignment.workspace_member
+          ? {
+              ...assignment.workspace_member,
+              user_profiles: Array.isArray(
+                assignment.workspace_member.user_profiles
+              )
+                ? assignment.workspace_member.user_profiles[0]
+                : assignment.workspace_member.user_profiles,
+            }
+          : undefined,
+      })
+    ),
+  }));
 }
 
 /**
@@ -242,8 +337,6 @@ export async function getNoteAssignments(noteId: number): Promise<{
   assigners: NoteAssignmentItem[];
   assignees: NoteAssignmentItem[];
 }> {
-  console.log('🔍 getNoteAssignments called with noteId:', noteId);
-
   const { data, error } = await supabase
     .from('workspace_member_note')
     .select(
@@ -258,21 +351,13 @@ export async function getNoteAssignments(noteId: number): Promise<{
     )
     .eq('note_id', noteId);
 
-  console.log('📦 Raw Supabase response:', { data, error });
-
   if (error) {
-    console.error('❌ Supabase error:', error);
-    console.error('❌ Error details:', JSON.stringify(error, null, 2));
     throw error;
   }
-
-  console.log('✅ Data received:', data);
-  console.log('📊 Data length:', data?.length);
 
   // Transform nested structure (same pattern as workspaceMessagesApi)
   const transformedData = (data || []).map((item: unknown) => {
     const typedItem = item as NoteAssignmentItem;
-    console.log('🔄 Transforming item:', typedItem);
     return {
       workspace_member_note_role: typedItem.workspace_member_note_role,
       workspace_member: typedItem.workspace_member
@@ -288,8 +373,6 @@ export async function getNoteAssignments(noteId: number): Promise<{
     };
   });
 
-  console.log('🎯 Transformed data:', transformedData);
-
   const result = {
     assigners:
       transformedData.filter(
@@ -300,8 +383,6 @@ export async function getNoteAssignments(noteId: number): Promise<{
         d => d.workspace_member_note_role === 'assignee'
       ) || [],
   };
-
-  console.log('📤 Final result:', result);
 
   return result;
 }

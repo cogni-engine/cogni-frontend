@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useNoteEditor } from '@/hooks/useNoteEditor';
 import {
   ArrowLeft,
@@ -14,11 +14,15 @@ import {
   Quote,
   Undo,
   Redo,
+  Users,
 } from 'lucide-react';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import { Markdown } from '@tiptap/markdown';
 import Placeholder from '@tiptap/extension-placeholder';
+import { getPersonalWorkspaceId } from '@/lib/cookies';
+import { useWorkspaceMembers } from '@/hooks/useWorkspace';
+import { assignNoteToMembers, getNoteAssignments } from '@/lib/api/notesApi';
 
 interface ToolbarButtonProps {
   onClick: () => void;
@@ -57,8 +61,93 @@ export default function NoteEditor({ noteId }: { noteId: string }) {
   const id = parseInt(noteId, 10);
   const isValidId = !isNaN(id);
 
-  const { note, title, content, saving, loading, error, setTitle, setContent } =
+  const { note, title, content, loading, error, setTitle, setContent } =
     useNoteEditor(isValidId ? id : null);
+
+  // Check if this is a group workspace note (not personal)
+  const personalWorkspaceId = getPersonalWorkspaceId();
+  const isGroupNote = note?.workspace_id !== personalWorkspaceId;
+
+  // Assignment state
+  const [showAssignmentDropdown, setShowAssignmentDropdown] = useState(false);
+  const [assigneeIds, setAssigneeIds] = useState<number[]>([]);
+  const [savingAssignment, setSavingAssignment] = useState(false);
+
+  // Fetch workspace members if this is a group note
+  const { members } = useWorkspaceMembers(
+    isGroupNote && note?.workspace_id ? note.workspace_id : 0
+  );
+
+  // Track initial loaded state to compare against
+  const [initialAssigneeIds, setInitialAssigneeIds] = useState<number[]>([]);
+  const [assignmentsLoaded, setAssignmentsLoaded] = useState(false);
+
+  // Load existing assignments
+  useEffect(() => {
+    if (isGroupNote && note?.id) {
+      getNoteAssignments(note.id)
+        .then(({ assignees }) => {
+          const assigneeIdsList = assignees
+            .map((a: { workspace_member?: { id?: number } }) => {
+              return a.workspace_member?.id;
+            })
+            .filter((id): id is number => typeof id === 'number');
+
+          setAssigneeIds(assigneeIdsList);
+          setInitialAssigneeIds(assigneeIdsList);
+          setAssignmentsLoaded(true);
+        })
+        .catch(err => {
+          console.error('Failed to load assignments:', err);
+          setAssignmentsLoaded(true);
+        });
+    }
+  }, [isGroupNote, note?.id]);
+
+  // Auto-save assignments when changed (only if different from initial)
+  useEffect(() => {
+    if (!isGroupNote || !note?.id || savingAssignment || !assignmentsLoaded)
+      return;
+
+    // Check if there's an actual change from the initial state
+    const hasChanged =
+      assigneeIds.length !== initialAssigneeIds.length ||
+      assigneeIds.some(id => !initialAssigneeIds.includes(id)) ||
+      initialAssigneeIds.some(id => !assigneeIds.includes(id));
+
+    if (!hasChanged) return;
+
+    const saveAssignments = async () => {
+      try {
+        setSavingAssignment(true);
+        await assignNoteToMembers(note.id, [], assigneeIds);
+        // Update initial state after successful save
+        setInitialAssigneeIds(assigneeIds);
+      } catch (err) {
+        console.error('Failed to save assignments:', err);
+      } finally {
+        setSavingAssignment(false);
+      }
+    };
+
+    const timeout = setTimeout(saveAssignments, 500);
+    return () => clearTimeout(timeout);
+  }, [
+    assigneeIds,
+    initialAssigneeIds,
+    isGroupNote,
+    note?.id,
+    savingAssignment,
+    assignmentsLoaded,
+  ]);
+
+  const toggleAssignee = (memberId: number) => {
+    if (assigneeIds.includes(memberId)) {
+      setAssigneeIds(assigneeIds.filter(id => id !== memberId));
+    } else {
+      setAssigneeIds([...assigneeIds, memberId]);
+    }
+  };
 
   // Initialize TipTap editor
   const editor = useEditor({
@@ -173,7 +262,7 @@ export default function NoteEditor({ noteId }: { noteId: string }) {
       }}
     >
       {/* ヘッダー */}
-      <header className='flex items-center gap-3 px-4 md:px-6 py-6 relative z-10'>
+      <header className='flex items-center gap-3 px-4 md:px-6 py-6 relative z-30'>
         {/* 戻るボタン - 丸く浮き出る */}
         <button
           onClick={() => router.back()}
@@ -186,12 +275,83 @@ export default function NoteEditor({ noteId }: { noteId: string }) {
           value={title}
           onChange={e => setTitle(e.target.value)}
           placeholder='タイトル'
-          className='text-2xl font-bold bg-transparent focus:outline-none text-white placeholder-gray-500'
+          className='flex-1 text-2xl font-bold bg-transparent focus:outline-none text-white placeholder-gray-500'
         />
-        {/* Saving indicator (subtle, replaces explicit save) */}
-        {saving && (
-          <div className='text-xs text-white/60 px-3 py-1 rounded-full bg-white/10 border border-white/15'>
-            Saving...
+        {/* Assignment button for group notes */}
+        {isGroupNote && (
+          <div className='relative'>
+            <button
+              onClick={() => setShowAssignmentDropdown(!showAssignmentDropdown)}
+              className='w-[50px] h-[50px] rounded-full bg-white/10 backdrop-blur-xl text-white border border-black transition-all duration-300 shadow-[0_8px_32px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.12)] hover:bg-white/15 hover:scale-102 hover:shadow-[0_12px_40px_rgba(0,0,0,0.25),inset_0_1px_0_rgba(255,255,255,0.18)] flex items-center justify-center relative'
+              title='担当者'
+            >
+              <Users className='w-5 h-5' />
+              {assigneeIds.length > 0 && (
+                <span className='absolute -top-1 -right-1 bg-blue-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-medium'>
+                  {assigneeIds.length}
+                </span>
+              )}
+            </button>
+
+            {/* Dropdown */}
+            {showAssignmentDropdown && (
+              <>
+                {/* Backdrop */}
+                <div
+                  className='fixed inset-0 z-30'
+                  onClick={() => setShowAssignmentDropdown(false)}
+                />
+                {/* Dropdown menu */}
+                <div className='absolute right-0 top-full mt-2 w-64 bg-white/10 backdrop-blur-xl border border-black rounded-[20px] shadow-[0_8px_32px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.12)] z-40 overflow-hidden'>
+                  <div className='px-4 py-3 border-b border-black'>
+                    <div className='text-sm font-medium text-white'>担当者</div>
+                  </div>
+                  <div className='max-h-64 overflow-y-auto'>
+                    {members.length === 0 ? (
+                      <div className='px-4 py-3 text-sm text-gray-400'>
+                        メンバーがいません
+                      </div>
+                    ) : (
+                      members.map(member => (
+                        <button
+                          key={member.id}
+                          type='button'
+                          onClick={() => toggleAssignee(member.id)}
+                          className='w-full px-4 py-2.5 text-left text-sm hover:bg-white/10 transition-colors flex items-center gap-3'
+                        >
+                          <div
+                            className={`w-5 h-5 border-2 rounded flex items-center justify-center flex-shrink-0 ${
+                              assigneeIds.includes(member.id)
+                                ? 'bg-blue-500 border-blue-500'
+                                : 'border-gray-600'
+                            }`}
+                          >
+                            {assigneeIds.includes(member.id) && (
+                              <svg
+                                className='w-3.5 h-3.5 text-white'
+                                fill='none'
+                                stroke='currentColor'
+                                viewBox='0 0 24 24'
+                              >
+                                <path
+                                  strokeLinecap='round'
+                                  strokeLinejoin='round'
+                                  strokeWidth={3}
+                                  d='M5 13l4 4L19 7'
+                                />
+                              </svg>
+                            )}
+                          </div>
+                          <span className='text-gray-300'>
+                            {member.user_profile?.name || 'Unknown'}
+                          </span>
+                        </button>
+                      ))
+                    )}
+                  </div>
+                </div>
+              </>
+            )}
           </div>
         )}
       </header>
