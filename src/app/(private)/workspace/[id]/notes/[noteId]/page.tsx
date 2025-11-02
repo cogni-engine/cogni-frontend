@@ -1,7 +1,7 @@
 'use client';
 
 import { useParams, useRouter } from 'next/navigation';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useWorkspaceNote } from '@/hooks/useWorkspaceNotes';
 import { useWorkspaceMembers } from '@/hooks/useWorkspace';
 import { assignNoteToMembers, getNoteAssignments } from '@/lib/api/notesApi';
@@ -60,14 +60,14 @@ export default function WorkspaceNoteEditorPage() {
               console.log('👤 Assigner:', a);
               return a.workspace_member?.id;
             })
-            .filter(Boolean);
+            .filter((id): id is number => typeof id === 'number');
 
           const assigneeIdsList = assignees
             .map((a: { workspace_member?: { id?: number } }) => {
               console.log('👥 Assignee:', a);
               return a.workspace_member?.id;
             })
-            .filter(Boolean);
+            .filter((id): id is number => typeof id === 'number');
 
           console.log('🆔 Assigner IDs:', assignerIdsList);
           console.log('🆔 Assignee IDs:', assigneeIdsList);
@@ -100,7 +100,7 @@ export default function WorkspaceNoteEditorPage() {
     }
   }, [title, content, note]);
 
-  const handleSave = async () => {
+  const handleSave = useCallback(async () => {
     if (!title.trim() && !content.trim()) {
       alert('Please enter a title or content for the note.');
       return;
@@ -125,7 +125,16 @@ export default function WorkspaceNoteEditorPage() {
     } finally {
       setSaving(false);
     }
-  };
+  }, [
+    title,
+    content,
+    saveNote,
+    assignerIds,
+    assigneeIds,
+    noteId,
+    workspaceId,
+    router,
+  ]);
 
   const handleBack = () => {
     if (hasUnsavedChanges) {

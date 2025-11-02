@@ -16,7 +16,7 @@ type TimerDisplayProps = {
 export const TimerDisplay: React.FC<TimerDisplayProps> = ({
   timer,
   sendMessage,
-  threadId: _threadId,
+  threadId: _threadId, // eslint-disable-line @typescript-eslint/no-unused-vars
 }) => {
   const [remainingSeconds, setRemainingSeconds] = useState<number>(0);
   const hasCompleted = useRef(false);
