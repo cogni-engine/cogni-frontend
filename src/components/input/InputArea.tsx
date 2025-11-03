@@ -10,6 +10,7 @@ type InputAreaProps = {
   isLoading?: boolean;
   placeholder?: string;
   canStop?: boolean;
+  ai_augmented_input?: boolean;
 };
 
 export default function InputArea({
@@ -18,6 +19,7 @@ export default function InputArea({
   isLoading = false,
   placeholder = 'Ask anything',
   canStop = true,
+  ai_augmented_input = true,
 }: InputAreaProps) {
   return (
     <div className='bg-gradient-to-br from-slate-950 via-black to-slate-950 relative z-10 rounded-t-3xl'>
@@ -31,6 +33,7 @@ export default function InputArea({
           onStop={onStop}
           isLoading={isLoading}
           canStop={canStop}
+          ai_augmented_input={ai_augmented_input}
         />
       </div>
     </div>

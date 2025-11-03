@@ -8,6 +8,7 @@ import { useCogno } from '@/hooks/useCogno';
 import { useThreadContext } from '@/contexts/ThreadContext';
 import { useThreads } from '@/hooks/useThreads';
 import { useUI } from '@/contexts/UIContext';
+import { useUserSettings } from '@/features/users/hooks/useUserSettings';
 
 export default function HomePage() {
   const { selectedThreadId, setSelectedThreadId } = useThreadContext();
@@ -18,7 +19,7 @@ export default function HomePage() {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const prevMessageCountRef = useRef(0);
   const hasInitialized = useRef(false);
-
+  const { enableAiSuggestion } = useUserSettings();
   // スレッドの自動選択と初回スレッド作成（1つのuseEffectに統合）
   useEffect(() => {
     if (threadsLoading || hasInitialized.current) return;
@@ -101,6 +102,7 @@ export default function HomePage() {
         onSend={sendMessage}
         onStop={stopStream}
         isLoading={isLoading}
+        ai_augmented_input={enableAiSuggestion}
       />
       {/* NotificationPanelにsendMessageを渡す */}
       <NotificationPanel sendMessage={sendMessage} />

@@ -7,6 +7,7 @@ import { createClient } from '@/lib/supabase/browserClient';
 import InputArea from '@/components/input/InputArea';
 import WorkspaceMessageList from '@/features/workspace/components/WorkspaceMessageList';
 import { ChevronDown } from 'lucide-react';
+import { useUserSettings } from '@/features/users/hooks/useUserSettings';
 
 export default function WorkspaceChatPage() {
   const params = useParams();
@@ -21,7 +22,7 @@ export default function WorkspaceChatPage() {
   const lastScrollTopRef = useRef(0);
   const hasScrolledUpRef = useRef(false);
   const prevMessagesRef = useRef<typeof messages>([]);
-
+  const { enableAiSuggestion } = useUserSettings();
   const {
     messages,
     sendMessage: originalSendMessage,
@@ -334,6 +335,7 @@ export default function WorkspaceChatPage() {
         isLoading={isLoading}
         placeholder='Message'
         canStop={false}
+        ai_augmented_input={enableAiSuggestion}
       />
     </div>
   );

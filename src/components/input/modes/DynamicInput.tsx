@@ -1,5 +1,6 @@
 'use client';
 
+import AiAugmentedInput from './AiAugmentedInput';
 import FreeTextInput from './FreeTextInput';
 
 type DynamicInputProps = {
@@ -10,6 +11,7 @@ type DynamicInputProps = {
   onStop?: () => void;
   isLoading?: boolean;
   canStop?: boolean;
+  ai_augmented_input?: boolean;
 };
 
 export default function DynamicInput({
@@ -18,16 +20,27 @@ export default function DynamicInput({
   onStop,
   isLoading = false,
   canStop = true,
+  ai_augmented_input = true,
 }: DynamicInputProps) {
   return (
     <div className='w-full md:max-w-4xl md:mx-auto'>
-      <FreeTextInput
-        onSend={onFreeTextSubmit}
-        onStop={onStop}
-        isLoading={isLoading}
-        placeholder={inputPlaceholder}
-        canStop={canStop}
-      />
+      {ai_augmented_input ? (
+        <AiAugmentedInput
+          onSend={onFreeTextSubmit}
+          onStop={onStop}
+          isLoading={isLoading}
+          placeholder={inputPlaceholder}
+          canStop={canStop}
+        />
+      ) : (
+        <FreeTextInput
+          onSend={onFreeTextSubmit}
+          onStop={onStop}
+          isLoading={isLoading}
+          placeholder={inputPlaceholder}
+          canStop={canStop}
+        />
+      )}
     </div>
   );
 }
