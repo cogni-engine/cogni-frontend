@@ -68,7 +68,8 @@ function transformMessageRow(
 
 export async function getWorkspaceMessages(
   workspaceId: number,
-  limit: number = 50
+  limit: number = 50,
+  beforeTimestamp?: string
 ): Promise<WorkspaceMessage[]> {
   const {
     data: { user },
@@ -78,7 +79,7 @@ export async function getWorkspaceMessages(
     throw new Error('User not authenticated');
   }
 
-  const { data, error } = await supabase
+  let query = supabase
     .from('workspace_messages')
     .select(
       `
@@ -100,7 +101,14 @@ export async function getWorkspaceMessages(
       )
     `
     )
-    .eq('workspace_id', workspaceId)
+    .eq('workspace_id', workspaceId);
+
+  // If beforeTimestamp is provided, get messages older than that timestamp
+  if (beforeTimestamp) {
+    query = query.lt('created_at', beforeTimestamp);
+  }
+
+  const { data, error } = await query
     .order('created_at', { ascending: false })
     .limit(limit);
 
