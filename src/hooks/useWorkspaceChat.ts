@@ -24,10 +24,12 @@ type RawMessage = {
 export function useWorkspaceChat(workspaceId: number) {
   const [messages, setMessages] = useState<WorkspaceMessage[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [workspaceMember, setWorkspaceMember] =
     useState<CurrentWorkspaceMember | null>(null);
   const [isConnected, setIsConnected] = useState(false);
+  const [hasMoreMessages, setHasMoreMessages] = useState(true);
   const supabase = createClient();
   const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
   const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -37,6 +39,7 @@ export function useWorkspaceChat(workspaceId: number) {
   const lastMarkedMessageIdRef = useRef<number | null>(null);
   const markInFlightRef = useRef(false);
   const workspaceMemberRef = useRef<CurrentWorkspaceMember | null>(null);
+  const oldestMessageTimestampRef = useRef<string | null>(null);
 
   const decorateMessages = useCallback(
     (
@@ -114,7 +117,7 @@ export function useWorkspaceChat(workspaceId: number) {
         workspaceMemberRef.current = member;
 
         // Fetch initial messages
-        const initialMessages = await getWorkspaceMessages(workspaceId);
+        const initialMessages = await getWorkspaceMessages(workspaceId, 50);
         if (!mounted) return;
 
         // Reverse to show oldest first
@@ -125,7 +128,13 @@ export function useWorkspaceChat(workspaceId: number) {
         if (reversedMessages.length > 0) {
           lastMessageIdRef.current =
             reversedMessages[reversedMessages.length - 1]?.id || null;
+          // Track oldest message timestamp for pagination
+          oldestMessageTimestampRef.current =
+            reversedMessages[0]?.created_at || null;
         }
+
+        // Check if there are more messages to load
+        setHasMoreMessages(initialMessages.length === 50);
       } catch (err) {
         if (!mounted) return;
         setError(
@@ -329,6 +338,59 @@ export function useWorkspaceChat(workspaceId: number) {
     [workspaceId, workspaceMember]
   );
 
+  // Load more messages (for infinite scroll)
+  const loadMoreMessages = useCallback(async () => {
+    if (
+      !hasMoreMessages ||
+      isLoadingMore ||
+      !oldestMessageTimestampRef.current
+    ) {
+      return;
+    }
+
+    setIsLoadingMore(true);
+    setError(null);
+
+    try {
+      const olderMessages = await getWorkspaceMessages(
+        workspaceId,
+        50,
+        oldestMessageTimestampRef.current
+      );
+
+      if (olderMessages.length === 0) {
+        setHasMoreMessages(false);
+        setIsLoadingMore(false);
+        return;
+      }
+
+      // Reverse to show oldest first
+      const reversedOlderMessages = [...olderMessages].reverse();
+
+      setMessages(prev => {
+        // Prepend older messages to the beginning
+        const allMessages = [...reversedOlderMessages, ...prev];
+        return decorateMessages(allMessages, workspaceMemberRef.current);
+      });
+
+      // Update oldest message timestamp
+      if (reversedOlderMessages.length > 0) {
+        oldestMessageTimestampRef.current =
+          reversedOlderMessages[0]?.created_at || null;
+      }
+
+      // Check if there are more messages to load
+      setHasMoreMessages(olderMessages.length === 50);
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : 'Failed to load older messages'
+      );
+      console.error('Error loading older messages:', err);
+    } finally {
+      setIsLoadingMore(false);
+    }
+  }, [workspaceId, hasMoreMessages, isLoadingMore, decorateMessages]);
+
   // Re-decorate messages when workspace member context changes
   useEffect(() => {
     workspaceMemberRef.current = workspaceMember;
@@ -445,8 +507,11 @@ export function useWorkspaceChat(workspaceId: number) {
     messages,
     sendMessage,
     isLoading,
+    isLoadingMore,
     error,
     isConnected,
     workspaceMember,
+    loadMoreMessages,
+    hasMoreMessages,
   };
 }
