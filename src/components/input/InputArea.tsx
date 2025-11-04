@@ -27,10 +27,10 @@ export default function InputArea({
 }: InputAreaProps) {
   return (
     <div className='bg-gradient-to-br from-slate-950 via-black to-slate-950 relative z-10 rounded-t-3xl'>
-      {/* Reply indicator */}
+      {/* Reply indicator - absolutely positioned above input */}
       {replyingTo && (
-        <div className='px-4 md:px-8 pt-3 pb-2 border-b border-white/10'>
-          <div className='flex items-center justify-between bg-white/8 backdrop-blur-xl border border-black rounded-2xl px-4 py-2'>
+        <div className='absolute bottom-full left-0 right-0 px-4 md:px-8 pb-2 pointer-events-auto'>
+          <div className='flex items-center justify-between bg-white/8 backdrop-blur-xl border border-black rounded-2xl px-4 py-2 shadow-[0_8px_32px_rgba(0,0,0,0.25),inset_0_1px_0_rgba(255,255,255,0.18)]'>
             <div className='flex-1 min-w-0'>
               <p className='text-xs text-white/60 mb-1'>
                 Replying to {replyingTo.authorName || 'message'}
