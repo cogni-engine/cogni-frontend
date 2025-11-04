@@ -9,6 +9,7 @@ import { useThreadContext } from '@/contexts/ThreadContext';
 import { useThreads } from '@/hooks/useThreads';
 import { useUI } from '@/contexts/UIContext';
 import { useUserSettings } from '@/features/users/hooks/useUserSettings';
+import { useCopilotReadable } from '@copilotkit/react-core';
 
 export default function HomePage() {
   const { selectedThreadId, setSelectedThreadId } = useThreadContext();
@@ -20,6 +21,16 @@ export default function HomePage() {
   const prevMessageCountRef = useRef(0);
   const hasInitialized = useRef(false);
   const { enableAiSuggestion } = useUserSettings();
+
+  useCopilotReadable({
+    description: 'cogni chat history',
+    value: messages
+      .slice(-5)
+      .map(message => message.content)
+      .join('\n'),
+    categories: ['cogni_chat'],
+  });
+
   // スレッドの自動選択と初回スレッド作成（1つのuseEffectに統合）
   useEffect(() => {
     if (threadsLoading || hasInitialized.current) return;

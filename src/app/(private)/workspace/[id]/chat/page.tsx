@@ -8,6 +8,7 @@ import InputArea from '@/components/input/InputArea';
 import WorkspaceMessageList from '@/features/workspace/components/WorkspaceMessageList';
 import { ChevronDown } from 'lucide-react';
 import { useUserSettings } from '@/features/users/hooks/useUserSettings';
+import { useCopilotReadable } from '@copilotkit/react-core';
 
 export default function WorkspaceChatPage() {
   const params = useParams();
@@ -33,6 +34,15 @@ export default function WorkspaceChatPage() {
     loadMoreMessages,
     hasMoreMessages,
   } = useWorkspaceChat(workspaceId);
+
+  useCopilotReadable({
+    description: 'workspace chat history',
+    value: messages
+      .slice(-20)
+      .map(message => message.text)
+      .join('\n'),
+    categories: ['workspace_chat'],
+  });
 
   // Scroll to bottom function
   // Note: With column-reverse, bottom is at scrollTop = 0

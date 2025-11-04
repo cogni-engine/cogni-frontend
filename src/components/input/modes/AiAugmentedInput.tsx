@@ -106,7 +106,8 @@ export default function AiAugmentedInput({
         <CopilotTextarea
           disableBranding={true}
           autosuggestionsConfig={{
-            textareaPurpose: `Assist me in replying to this email thread. Remember all important details.`,
+            textareaPurpose: `Assist me in replying to this chat thread. Remember all important details.`,
+            contextCategories: ['workspace_chat', 'cogni_chat'],
             chatApiConfigs: {},
             disableWhenEmpty: false,
             temporarilyDisableWhenMovingCursorWithoutChangingText: false,
