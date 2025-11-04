@@ -211,7 +211,10 @@ export default function WorkspaceMessageItem({
       (repliedMessage.text.length > 100 ? '...' : '');
 
     return (
-      <div className='mb-2 pl-3 border-l-2 border-white/20'>
+      <div
+        className='mb-2 pl-3 border-l-2 border-white/20'
+        style={{ pointerEvents: 'none' }}
+      >
         <p className='text-xs text-white/50 mb-1'>{repliedName}</p>
         <p className='text-xs text-white/40 whitespace-pre-wrap break-words'>
           {repliedText}
@@ -262,6 +265,10 @@ export default function WorkspaceMessageItem({
             <div
               ref={messageContentRef}
               className='bg-white/13 backdrop-blur-xl border border-black rounded-3xl px-4 py-2.5 shadow-[0_8px_32px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.12)]'
+              onTouchStart={handleTouchStart}
+              onTouchMove={handleTouchMove}
+              onTouchEnd={handleTouchEnd}
+              onTouchCancel={handleTouchCancel}
             >
               {message.replied_message && (
                 <RepliedMessagePreview
@@ -337,6 +344,10 @@ export default function WorkspaceMessageItem({
             <div
               ref={messageContentRef}
               className='bg-white/8 backdrop-blur-xl border border-black rounded-3xl px-4 py-2.5 shadow-[0_8px_32px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.12)]'
+              onTouchStart={handleTouchStart}
+              onTouchMove={handleTouchMove}
+              onTouchEnd={handleTouchEnd}
+              onTouchCancel={handleTouchCancel}
             >
               {message.replied_message && (
                 <RepliedMessagePreview
