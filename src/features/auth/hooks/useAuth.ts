@@ -10,7 +10,6 @@ import {
   setCurrentUserId,
   clearAllUserCookies,
 } from '@/lib/cookies';
-import { createClient } from '@/lib/supabase/browserClient';
 
 export function useAuth() {
   const [loading, setLoading] = useState(false);

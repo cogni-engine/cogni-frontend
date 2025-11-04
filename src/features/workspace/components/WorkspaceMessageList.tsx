@@ -4,11 +4,13 @@ import WorkspaceMessageItem from '@/features/workspace/components/WorkspaceMessa
 type Props = {
   messages: WorkspaceMessage[];
   currentUserId: string;
+  onReply?: (messageId: number) => void;
 };
 
 export default function WorkspaceMessageList({
   messages,
   currentUserId,
+  onReply,
 }: Props) {
   if (messages.length === 0) {
     return (
@@ -31,6 +33,7 @@ export default function WorkspaceMessageList({
             key={message.id}
             message={message}
             isOwnMessage={currentUserId === message.workspace_member?.user_id}
+            onReply={onReply}
           />
         ))}
     </div>

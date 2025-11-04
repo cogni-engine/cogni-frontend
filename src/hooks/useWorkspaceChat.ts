@@ -277,13 +277,18 @@ export function useWorkspaceChat(workspaceId: number) {
   }, [workspaceId, supabase, mutateMessages]);
 
   const sendMessage = useCallback(
-    async (text: string) => {
+    async (text: string, replyToId?: number | null) => {
       if (!workspaceMember?.id || !text.trim()) return;
 
       setSendError(null);
 
       try {
-        await sendWorkspaceMessage(workspaceId, workspaceMember.id, text);
+        await sendWorkspaceMessage(
+          workspaceId,
+          workspaceMember.id,
+          text,
+          replyToId
+        );
         // Revalidate messages to get the new one
         mutateMessages();
       } catch (err) {

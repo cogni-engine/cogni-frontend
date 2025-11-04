@@ -24,6 +24,11 @@ export default function WorkspaceChatPage() {
   const hasScrolledUpRef = useRef(false);
   const prevMessagesRef = useRef<typeof messages>([]);
   const { enableAiSuggestion } = useUserSettings();
+  const [replyingTo, setReplyingTo] = useState<{
+    id: number;
+    text: string;
+    authorName?: string;
+  } | null>(null);
   const {
     messages,
     sendMessage: originalSendMessage,
@@ -62,7 +67,10 @@ export default function WorkspaceChatPage() {
   const sendMessage = useCallback(
     async (text: string) => {
       sendingMessageRef.current = true;
-      await originalSendMessage(text);
+      const replyToId = replyingTo?.id ?? null;
+      await originalSendMessage(text, replyToId);
+      // Clear reply state after sending
+      setReplyingTo(null);
       // Scroll to bottom after sending message
       // Use a delay to ensure the message is in the DOM via realtime
       setTimeout(() => {
@@ -72,8 +80,30 @@ export default function WorkspaceChatPage() {
         sendingMessageRef.current = false;
       }, 100);
     },
-    [originalSendMessage]
+    [originalSendMessage, replyingTo]
   );
+
+  // Handle reply action
+  const handleReply = useCallback(
+    (messageId: number) => {
+      const message = messages.find(m => m.id === messageId);
+      if (message) {
+        const authorName =
+          message.workspace_member?.user_profile?.name ?? 'Unknown';
+        setReplyingTo({
+          id: message.id,
+          text: message.text,
+          authorName,
+        });
+      }
+    },
+    [messages]
+  );
+
+  // Cancel reply
+  const handleCancelReply = useCallback(() => {
+    setReplyingTo(null);
+  }, []);
 
   // Check if user is near bottom (within threshold)
   // Note: With column-reverse, scrollTop 0 or positive small values are at the bottom
@@ -316,6 +346,7 @@ export default function WorkspaceChatPage() {
             <WorkspaceMessageList
               messages={messages}
               currentUserId={currentUserId}
+              onReply={handleReply}
             />
           ) : (
             <div className='flex-1 flex items-center justify-center'>
@@ -354,6 +385,8 @@ export default function WorkspaceChatPage() {
         placeholder='Message'
         canStop={false}
         ai_augmented_input={enableAiSuggestion}
+        replyingTo={replyingTo}
+        onCancelReply={handleCancelReply}
       />
     </div>
   );
