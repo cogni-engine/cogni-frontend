@@ -6,6 +6,8 @@ import BottomNav from '@/components/layout/BottomNav';
 import ThreadSidebar from '@/features/thread/ThreadSidebar';
 import { ThreadProvider } from '@/contexts/ThreadContext';
 import { UIProvider, useUI } from '@/contexts/UIContext';
+import { CopilotKit } from '@copilotkit/react-core';
+import '@copilotkit/react-textarea/styles.css';
 
 function LayoutContent({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -64,7 +66,9 @@ export default function DashboardLayout({
   return (
     <ThreadProvider>
       <UIProvider>
-        <LayoutContent>{children}</LayoutContent>
+        <CopilotKit runtimeUrl='/api/copilotkit'>
+          <LayoutContent>{children}</LayoutContent>
+        </CopilotKit>
       </UIProvider>
     </ThreadProvider>
   );

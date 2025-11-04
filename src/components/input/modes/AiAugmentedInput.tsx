@@ -4,6 +4,7 @@ import { useRef, useState, useEffect } from 'react';
 import { ArrowUp, Plus, Square } from 'lucide-react';
 import { VoiceInputButton } from '../VoiceInputButton';
 import { useUI } from '@/contexts/UIContext';
+import { CopilotTextarea } from '@copilotkit/react-textarea';
 
 type TextInputProps = {
   onSend: (text: string) => void;
@@ -13,7 +14,7 @@ type TextInputProps = {
   canStop?: boolean;
 };
 
-export default function FreeTextInput({
+export default function AiAugmentedInput({
   onSend,
   onStop,
   isLoading = false,
@@ -102,7 +103,16 @@ export default function FreeTextInput({
         <Plus className='w-5 h-5' />
       </button>
       <div className='flex-1 relative ml-[55px]'>
-        <textarea
+        <CopilotTextarea
+          disableBranding={true}
+          autosuggestionsConfig={{
+            textareaPurpose: `Assist me in replying to this chat thread. Remember all important details.`,
+            contextCategories: ['workspace_chat', 'cogni_chat'],
+            chatApiConfigs: {},
+            disableWhenEmpty: false,
+            temporarilyDisableWhenMovingCursorWithoutChangingText: false,
+            temporarilyDisableNotTrustedEvents: false,
+          }}
           ref={textareaRef}
           value={input}
           onChange={handleChange}
@@ -116,7 +126,7 @@ export default function FreeTextInput({
           className='w-full bg-white/8 backdrop-blur-xl text-white px-5 py-3.5 pr-[140px] rounded-4xl border border-black focus:outline-none resize-none shadow-[0_8px_32px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.12)] focus:shadow-[0_12px_40px_rgba(0,0,0,0.25),inset_0_1px_0_rgba(255,255,255,0.18)] transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed overflow-y-auto'
         />
         {/* マイクボタン - 送信ボタンの左 */}
-        <div className='absolute right-[50px] bottom-2.5 z-10'>
+        <div className='absolute right-[50px] bottom-1.5 z-10'>
           <VoiceInputButton
             onTranscriptChange={text => setInput(text)}
             currentText={input}
@@ -128,7 +138,7 @@ export default function FreeTextInput({
         <button
           onClick={isLoading && canStop ? handleStop : handleSend}
           disabled={!isLoading && (!input.trim() || isLoading)}
-          className='absolute right-2.5 bottom-3 w-10 h-10 rounded-full bg-white/10 backdrop-blur-xl border border-black text-white flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed hover:bg-white/15 hover:scale-102 transition-all duration-300 shadow-[0_8px_32px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.12)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.25),inset_0_1px_0_rgba(255,255,255,0.18)]'
+          className='absolute right-2.5 bottom-1.5 w-10 h-10 rounded-full bg-white/10 backdrop-blur-xl border border-black text-white flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed hover:bg-white/15 hover:scale-102 transition-all duration-300 shadow-[0_8px_32px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.12)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.25),inset_0_1px_0_rgba(255,255,255,0.18)]'
         >
           {isLoading && canStop ? (
             <Square className='w-4 h-4 fill-current' />

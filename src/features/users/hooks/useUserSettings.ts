@@ -31,6 +31,9 @@ type UseUserSettingsReturn = {
   updateAvatar: (file: File, previousAvatarUrl?: string) => Promise<void>;
   removeAvatar: () => Promise<void>;
   setAvatarStatus: React.Dispatch<React.SetStateAction<StatusMessage | null>>;
+  enableAiSuggestion: boolean;
+  savingAiSuggestion: boolean;
+  toggleAiSuggestion: () => Promise<void>;
 };
 
 export function useUserSettings(): UseUserSettingsReturn {
@@ -46,6 +49,9 @@ export function useUserSettings(): UseUserSettingsReturn {
   const [savingAvatar, setSavingAvatar] = useState(false);
   const [removingAvatar, setRemovingAvatar] = useState(false);
   const [avatarStatus, setAvatarStatus] = useState<StatusMessage | null>(null);
+
+  const [enableAiSuggestion, setEnableAiSuggestion] = useState(false);
+  const [savingAiSuggestion, setSavingAiSuggestion] = useState(false);
 
   useEffect(() => {
     const loadInitialData = async () => {
@@ -70,6 +76,7 @@ export function useUserSettings(): UseUserSettingsReturn {
 
         setProfile(userProfile);
         setName(userProfile?.name ?? '');
+        setEnableAiSuggestion(userProfile?.enable_ai_suggestion ?? false);
       } catch (error) {
         console.error('Failed to load user profile', error);
       } finally {
@@ -160,6 +167,27 @@ export function useUserSettings(): UseUserSettingsReturn {
     }
   }, [profile?.avatar_url, userId]);
 
+  const toggleAiSuggestion = useCallback(async () => {
+    if (!userId || !profile) return;
+
+    const newValue = !enableAiSuggestion;
+
+    try {
+      setSavingAiSuggestion(true);
+      const updated = await updateUserProfile(userId, {
+        enable_ai_suggestion: newValue,
+      });
+      setProfile(updated);
+      setEnableAiSuggestion(newValue);
+    } catch (error) {
+      console.error('Failed to update AI suggestion setting', error);
+      // Revert the local state on error
+      setEnableAiSuggestion(enableAiSuggestion);
+    } finally {
+      setSavingAiSuggestion(false);
+    }
+  }, [enableAiSuggestion, profile, userId]);
+
   return {
     userId,
     profile,
@@ -177,5 +205,8 @@ export function useUserSettings(): UseUserSettingsReturn {
     updateAvatar,
     removeAvatar,
     setAvatarStatus,
+    enableAiSuggestion,
+    savingAiSuggestion,
+    toggleAiSuggestion,
   };
 }

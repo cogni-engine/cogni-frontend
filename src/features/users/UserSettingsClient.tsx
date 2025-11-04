@@ -6,6 +6,7 @@ import type { Area } from 'react-easy-crop';
 import { ProfileInfoForm } from './components/ProfileInfoForm';
 import { AvatarCard } from './components/AvatarCard';
 import { AvatarCropDialog } from './components/AvatarCropDialog';
+import { AiSuggestionToggle } from './components/AiSuggestionToggle';
 import { useUserSettings } from './hooks/useUserSettings';
 import {
   getCroppedImageBlob,
@@ -31,6 +32,9 @@ export default function UserSettingsClient() {
     updateAvatar,
     removeAvatar,
     setAvatarStatus,
+    enableAiSuggestion,
+    savingAiSuggestion,
+    toggleAiSuggestion,
   } = useUserSettings();
 
   const [avatarDialogOpen, setAvatarDialogOpen] = useState(false);
@@ -172,14 +176,22 @@ export default function UserSettingsClient() {
         </div>
       ) : (
         <div className='grid grid-cols-1 gap-6 lg:grid-cols-[1fr,auto]'>
-          <ProfileInfoForm
-            name={name}
-            onNameChange={handleNameChange}
-            onSubmit={handleNameSubmit}
-            saving={savingName}
-            disableSave={disableNameSave}
-            status={nameStatus}
-          />
+          <div className='flex flex-col gap-6'>
+            <ProfileInfoForm
+              name={name}
+              onNameChange={handleNameChange}
+              onSubmit={handleNameSubmit}
+              saving={savingName}
+              disableSave={disableNameSave}
+              status={nameStatus}
+            />
+
+            <AiSuggestionToggle
+              enabled={enableAiSuggestion}
+              onToggle={toggleAiSuggestion}
+              saving={savingAiSuggestion}
+            />
+          </div>
 
           <AvatarCard
             avatarUrl={profile?.avatar_url}
