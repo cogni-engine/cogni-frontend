@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
+import useSWR from 'swr';
 import { createClient } from '@/lib/supabase/browserClient';
 import type { WorkspaceMessage } from '@/types/workspace';
 import {
@@ -10,6 +11,22 @@ import {
   markWorkspaceMessagesAsRead,
   type CurrentWorkspaceMember,
 } from '@/lib/api/workspaceMessagesApi';
+
+// SWR keys
+const messagesKey = (
+  workspaceId: number,
+  limit?: number,
+  beforeTimestamp?: string
+) => {
+  const params = new URLSearchParams();
+  if (limit) params.set('limit', limit.toString());
+  if (beforeTimestamp) params.set('before', beforeTimestamp);
+  const query = params.toString();
+  return `/workspaces/${workspaceId}/messages${query ? `?${query}` : ''}`;
+};
+
+const workspaceMemberKey = (workspaceId: number) =>
+  `/workspaces/${workspaceId}/member`;
 
 // Raw message from DB without joins
 type RawMessage = {
@@ -22,25 +39,57 @@ type RawMessage = {
 };
 
 export function useWorkspaceChat(workspaceId: number) {
-  const [messages, setMessages] = useState<WorkspaceMessage[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [isLoadingMore, setIsLoadingMore] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [workspaceMember, setWorkspaceMember] =
-    useState<CurrentWorkspaceMember | null>(null);
-  const [isConnected, setIsConnected] = useState(false);
-  const [hasMoreMessages, setHasMoreMessages] = useState(true);
   const supabase = createClient();
   const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
   const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const pollIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const retryCountRef = useRef(0);
-  const lastMessageIdRef = useRef<number | null>(null);
   const lastMarkedMessageIdRef = useRef<number | null>(null);
   const markInFlightRef = useRef(false);
   const workspaceMemberRef = useRef<CurrentWorkspaceMember | null>(null);
   const oldestMessageTimestampRef = useRef<string | null>(null);
+  const [isConnected, setIsConnected] = useState(false);
+  const [hasMoreMessages, setHasMoreMessages] = useState(true);
+  const [localMessages, setLocalMessages] = useState<WorkspaceMessage[]>([]);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [sendError, setSendError] = useState<string | null>(null);
 
+  // Fetch workspace member using SWR
+  const {
+    data: workspaceMember,
+    error: memberError,
+    mutate: mutateMember,
+  } = useSWR<CurrentWorkspaceMember | null>(
+    workspaceMemberKey(workspaceId),
+    () => getCurrentWorkspaceMember(workspaceId),
+    {
+      revalidateOnFocus: false,
+      revalidateOnReconnect: true,
+    }
+  );
+
+  // Fetch initial messages using SWR
+  const {
+    data: initialMessages,
+    error: messagesError,
+    isLoading,
+    mutate: mutateMessages,
+  } = useSWR<WorkspaceMessage[]>(
+    messagesKey(workspaceId, 50),
+    () => getWorkspaceMessages(workspaceId, 50),
+    {
+      revalidateOnFocus: false,
+      revalidateOnReconnect: true,
+    }
+  );
+
+  // Update workspace member ref when it changes
+  useEffect(() => {
+    if (workspaceMember) {
+      workspaceMemberRef.current = workspaceMember;
+    }
+  }, [workspaceMember]);
+
+  // Decorate messages with read status
   const decorateMessages = useCallback(
     (
       rawMessages: WorkspaceMessage[],
@@ -71,87 +120,28 @@ export function useWorkspaceChat(workspaceId: number) {
     []
   );
 
-  // Polling fallback to ensure messages are loaded even if Realtime fails
-  const startPolling = useCallback(() => {
-    // Clear existing polling
-    if (pollIntervalRef.current) {
-      clearInterval(pollIntervalRef.current);
-      pollIntervalRef.current = null;
-    }
-
-    // Poll every 3 seconds
-    pollIntervalRef.current = setInterval(async () => {
-      try {
-        const msgs = await getWorkspaceMessages(workspaceId, 100);
-        setMessages(prev => {
-          const newMsgs = decorateMessages([...msgs].reverse());
-          // Only update if we have new messages or empty list
-          if (
-            prev.length === 0 ||
-            (newMsgs.length > 0 &&
-              newMsgs[newMsgs.length - 1]?.id !== prev[prev.length - 1]?.id)
-          ) {
-            return newMsgs;
-          }
-          return prev;
-        });
-      } catch (err) {
-        console.error('Polling error:', err);
-      }
-    }, 3000);
-  }, [workspaceId, decorateMessages]);
-
-  // Fetch initial messages and workspace member ID
+  // Initialize local messages from SWR data
   useEffect(() => {
-    let mounted = true;
+    if (initialMessages) {
+      const reversedMessages = [...initialMessages].reverse();
+      const decorated = decorateMessages(reversedMessages, workspaceMember);
+      setLocalMessages(decorated);
 
-    async function init() {
-      setIsLoading(true);
-      setError(null);
-
-      try {
-        // Fetch current workspace member ID
-        const member = await getCurrentWorkspaceMember(workspaceId);
-        if (!mounted) return;
-        setWorkspaceMember(member);
-        workspaceMemberRef.current = member;
-
-        // Fetch initial messages
-        const initialMessages = await getWorkspaceMessages(workspaceId, 50);
-        if (!mounted) return;
-
-        // Reverse to show oldest first
-        const reversedMessages = [...initialMessages].reverse();
-        setMessages(decorateMessages(reversedMessages, member));
-
-        // Track last message ID
-        if (reversedMessages.length > 0) {
-          lastMessageIdRef.current =
-            reversedMessages[reversedMessages.length - 1]?.id || null;
-          // Track oldest message timestamp for pagination
-          oldestMessageTimestampRef.current =
-            reversedMessages[0]?.created_at || null;
-        }
-
-        // Check if there are more messages to load
-        setHasMoreMessages(initialMessages.length === 50);
-      } catch (err) {
-        if (!mounted) return;
-        setError(
-          err instanceof Error ? err.message : 'Failed to initialize chat'
-        );
-        console.error('Error initializing chat:', err);
-      } finally {
-        if (mounted) setIsLoading(false);
+      // Track pagination state
+      if (reversedMessages.length > 0) {
+        oldestMessageTimestampRef.current =
+          reversedMessages[0]?.created_at || null;
       }
+      setHasMoreMessages(initialMessages.length === 50);
     }
+  }, [initialMessages, workspaceMember, decorateMessages]);
 
-    init();
-
-    return () => {
-      mounted = false;
-    };
-  }, [workspaceId, decorateMessages]);
+  // Re-decorate messages when workspace member changes
+  useEffect(() => {
+    if (workspaceMember) {
+      setLocalMessages(prev => decorateMessages(prev, workspaceMember));
+    }
+  }, [workspaceMember, decorateMessages]);
 
   // Set up Realtime subscription with retry logic
   useEffect(() => {
@@ -179,7 +169,6 @@ export function useWorkspaceChat(workspaceId: number) {
         if (!session || !mounted) {
           console.warn('No session available for Realtime');
           setIsConnected(false);
-          startPolling();
           return;
         }
 
@@ -193,36 +182,21 @@ export function useWorkspaceChat(workspaceId: number) {
         channel
           .on('broadcast', { event: 'INSERT' }, () => {
             if (!mounted) return;
-            // When broadcast is received, refresh the messages list
-            // This ensures we get the full message with nested relations
-            getWorkspaceMessages(workspaceId, 100)
-              .then(msgs => {
-                if (mounted) {
-                  setMessages(decorateMessages([...msgs].reverse()));
-                }
-              })
-              .catch(err => {
-                console.error('Error fetching messages after INSERT:', err);
-              });
+            // When broadcast is received, revalidate messages
+            mutateMessages();
           })
           .on('broadcast', { event: 'UPDATE' }, () => {
             if (!mounted) return;
-            // Refresh on update
-            getWorkspaceMessages(workspaceId, 100)
-              .then(msgs => {
-                if (mounted) {
-                  setMessages(decorateMessages([...msgs].reverse()));
-                }
-              })
-              .catch(err => {
-                console.error('Error fetching messages after UPDATE:', err);
-              });
+            // Revalidate on update
+            mutateMessages();
           })
           .on('broadcast', { event: 'DELETE' }, ({ payload }) => {
             if (!mounted) return;
             const deleted = payload.old as RawMessage;
             if (deleted && deleted.id) {
-              setMessages(prev => prev.filter(msg => msg.id !== deleted.id));
+              setLocalMessages(prev =>
+                prev.filter(msg => msg.id !== deleted.id)
+              );
             }
           })
           .subscribe((status, err) => {
@@ -233,19 +207,12 @@ export function useWorkspaceChat(workspaceId: number) {
             if (status === 'SUBSCRIBED') {
               setIsConnected(true);
               retryCountRef.current = 0;
-              // Stop polling when connected
-              if (pollIntervalRef.current) {
-                clearInterval(pollIntervalRef.current);
-                pollIntervalRef.current = null;
-              }
             } else if (
               status === 'CHANNEL_ERROR' ||
               status === 'TIMED_OUT' ||
               status === 'CLOSED'
             ) {
               setIsConnected(false);
-              // Start polling as fallback
-              startPolling();
 
               // Retry connection with exponential backoff
               const maxRetries = 5;
@@ -265,12 +232,7 @@ export function useWorkspaceChat(workspaceId: number) {
                   }
                 }, delay);
               } else {
-                console.error(
-                  'Max retries reached for Realtime connection. Using polling fallback.'
-                );
-                setError(
-                  'Real-time connection unavailable. Messages will refresh periodically.'
-                );
+                console.error('Max retries reached for Realtime connection.');
               }
             }
           });
@@ -280,8 +242,6 @@ export function useWorkspaceChat(workspaceId: number) {
         if (!mounted) return;
         console.error('Error setting up Realtime:', err);
         setIsConnected(false);
-        // Start polling as fallback
-        startPolling();
 
         // Retry after delay
         if (retryCountRef.current < 5) {
@@ -310,32 +270,31 @@ export function useWorkspaceChat(workspaceId: number) {
       if (reconnectTimeoutRef.current) {
         clearTimeout(reconnectTimeoutRef.current);
       }
-      if (pollIntervalRef.current) {
-        clearInterval(pollIntervalRef.current);
-      }
       if (channelRef.current) {
         supabase.removeChannel(channelRef.current);
       }
     };
-  }, [workspaceId, supabase, startPolling, decorateMessages]);
+  }, [workspaceId, supabase, mutateMessages]);
 
   const sendMessage = useCallback(
     async (text: string) => {
       if (!workspaceMember?.id || !text.trim()) return;
 
-      setIsLoading(true);
-      setError(null);
+      setSendError(null);
 
       try {
         await sendWorkspaceMessage(workspaceId, workspaceMember.id, text);
+        // Revalidate messages to get the new one
+        mutateMessages();
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to send message');
+        const errorMessage =
+          err instanceof Error ? err.message : 'Failed to send message';
+        setSendError(errorMessage);
         console.error('Error sending message:', err);
-      } finally {
-        setIsLoading(false);
+        throw err;
       }
     },
-    [workspaceId, workspaceMember]
+    [workspaceId, workspaceMember, mutateMessages]
   );
 
   // Load more messages (for infinite scroll)
@@ -349,7 +308,7 @@ export function useWorkspaceChat(workspaceId: number) {
     }
 
     setIsLoadingMore(true);
-    setError(null);
+    setSendError(null);
 
     try {
       const olderMessages = await getWorkspaceMessages(
@@ -367,7 +326,7 @@ export function useWorkspaceChat(workspaceId: number) {
       // Reverse to show oldest first
       const reversedOlderMessages = [...olderMessages].reverse();
 
-      setMessages(prev => {
+      setLocalMessages(prev => {
         // Prepend older messages to the beginning
         const allMessages = [...reversedOlderMessages, ...prev];
         return decorateMessages(allMessages, workspaceMemberRef.current);
@@ -382,25 +341,19 @@ export function useWorkspaceChat(workspaceId: number) {
       // Check if there are more messages to load
       setHasMoreMessages(olderMessages.length === 50);
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : 'Failed to load older messages'
-      );
+      const errorMessage =
+        err instanceof Error ? err.message : 'Failed to load older messages';
+      setSendError(errorMessage);
       console.error('Error loading older messages:', err);
     } finally {
       setIsLoadingMore(false);
     }
   }, [workspaceId, hasMoreMessages, isLoadingMore, decorateMessages]);
 
-  // Re-decorate messages when workspace member context changes
-  useEffect(() => {
-    workspaceMemberRef.current = workspaceMember;
-    setMessages(prev => decorateMessages(prev, workspaceMember));
-  }, [workspaceMember, decorateMessages]);
-
   // Mark messages as read when they appear
   useEffect(() => {
     if (!workspaceMember?.id) return;
-    if (messages.length === 0) return;
+    if (localMessages.length === 0) return;
     if (markInFlightRef.current) return;
 
     const lastRead =
@@ -408,7 +361,7 @@ export function useWorkspaceChat(workspaceId: number) {
       lastMarkedMessageIdRef.current ??
       0;
 
-    const unreadMessages = messages.filter(message => {
+    const unreadMessages = localMessages.filter(message => {
       if (message.workspace_member_id === workspaceMember.id) {
         return false;
       }
@@ -442,20 +395,20 @@ export function useWorkspaceChat(workspaceId: number) {
         lastMarkedMessageIdRef.current =
           newLastReadValue ?? lastMarkedMessageIdRef.current;
 
-        setWorkspaceMember(prev => {
-          if (!prev) return prev;
-          const nextValue: CurrentWorkspaceMember = {
-            ...prev,
+        // Update workspace member in SWR cache
+        mutateMember((current): CurrentWorkspaceMember | null => {
+          if (!current) return current ?? null;
+          return {
+            ...current,
             last_read_message_id:
-              newLastReadValue ?? prev.last_read_message_id ?? null,
+              newLastReadValue ?? current.last_read_message_id ?? null,
           };
-          workspaceMemberRef.current = nextValue;
-          return nextValue;
-        });
+        }, false);
 
+        // Update local messages state
         const messageIdSet = new Set(messageIds);
 
-        setMessages(prev =>
+        setLocalMessages(prev =>
           prev.map(message => {
             if (!messageIdSet.has(message.id)) {
               return message;
@@ -501,10 +454,18 @@ export function useWorkspaceChat(workspaceId: number) {
       cancelled = true;
       markInFlightRef.current = false;
     };
-  }, [messages, workspaceId, workspaceMember]);
+  }, [localMessages, workspaceId, workspaceMember, mutateMember]);
+
+  // Combine errors
+  const error =
+    memberError || messagesError
+      ? memberError?.message ||
+        messagesError?.message ||
+        'Failed to load chat data'
+      : sendError;
 
   return {
-    messages,
+    messages: localMessages,
     sendMessage,
     isLoading,
     isLoadingMore,

@@ -311,11 +311,19 @@ export default function WorkspaceChatPage() {
           </div>
         )}
 
-        {isConnected ? (
-          <WorkspaceMessageList
-            messages={messages}
-            currentUserId={currentUserId}
-          />
+        {isConnected || messages.length > 0 ? (
+          currentUserId ? (
+            <WorkspaceMessageList
+              messages={messages}
+              currentUserId={currentUserId}
+            />
+          ) : (
+            <div className='flex-1 flex items-center justify-center'>
+              <div className='text-center'>
+                <p className='text-gray-400'>Loading...</p>
+              </div>
+            </div>
+          )
         ) : (
           <div className='flex-1 flex items-center justify-center'>
             <div className='text-center'>

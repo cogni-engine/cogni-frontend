@@ -3,7 +3,7 @@ import WorkspaceMessageItem from '@/features/workspace/components/WorkspaceMessa
 
 type Props = {
   messages: WorkspaceMessage[];
-  currentUserId: string | null;
+  currentUserId: string;
 };
 
 export default function WorkspaceMessageList({
