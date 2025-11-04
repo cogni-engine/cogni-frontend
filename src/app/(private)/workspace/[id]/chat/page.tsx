@@ -4,7 +4,7 @@ import { useParams } from 'next/navigation';
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { useWorkspaceChat } from '@/hooks/useWorkspaceChat';
 import { createClient } from '@/lib/supabase/browserClient';
-import InputArea from '@/components/input/InputArea';
+import InputArea, { type InputAreaRef } from '@/components/input/InputArea';
 import WorkspaceMessageList from '@/features/workspace/components/WorkspaceMessageList';
 import { ChevronDown } from 'lucide-react';
 import { useUserSettings } from '@/features/users/hooks/useUserSettings';
@@ -23,6 +23,7 @@ export default function WorkspaceChatPage() {
   const lastScrollTopRef = useRef(0);
   const hasScrolledUpRef = useRef(false);
   const prevMessagesRef = useRef<typeof messages>([]);
+  const inputAreaRef = useRef<InputAreaRef>(null);
   const { enableAiSuggestion } = useUserSettings();
   const [replyingTo, setReplyingTo] = useState<{
     id: number;
@@ -95,6 +96,10 @@ export default function WorkspaceChatPage() {
           text: message.text,
           authorName,
         });
+        // Focus input after setting reply
+        setTimeout(() => {
+          inputAreaRef.current?.focus();
+        }, 100);
       }
     },
     [messages]
@@ -379,6 +384,7 @@ export default function WorkspaceChatPage() {
 
       {/* Input */}
       <InputArea
+        ref={inputAreaRef}
         messages={messages}
         onSend={sendMessage}
         isLoading={isLoading}

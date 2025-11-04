@@ -234,18 +234,23 @@ export default function WorkspaceMessageItem({
           onTouchCancel={handleTouchCancel}
           style={{ userSelect: 'none', WebkitUserSelect: 'none' }}
         >
-          <div className='flex gap-2 items-end justify-end min-w-0 max-w-full relative'>
-            {/* Arrow indicator on the right */}
-            {showSwipeIndicator && (
-              <div
-                className='absolute right-full mr-2 flex items-center transition-opacity duration-200'
-                style={{
-                  opacity: showSwipeIndicator ? 1 : 0,
-                }}
-              >
-                <Reply className='w-5 h-5 text-white/60' />
-              </div>
-            )}
+          {/* Reply icon indicator on the right side */}
+          {showSwipeIndicator && (
+            <div
+              className='absolute right-0 top-1/2 -translate-y-1/2 flex items-center transition-opacity duration-200 z-10'
+              style={{
+                opacity: showSwipeIndicator ? 1 : 0,
+              }}
+            >
+              <Reply className='w-5 h-5 text-white/60' />
+            </div>
+          )}
+          <div
+            className='flex gap-2 items-end justify-end min-w-0 max-w-full relative transition-transform duration-75'
+            style={{
+              transform: `translateX(${swipeOffset}px)`,
+            }}
+          >
             <div className='flex flex-col justify-end flex-shrink-0'>
               <div className='text-right'>
                 <ReadStatus readCount={readCount} />
@@ -256,10 +261,7 @@ export default function WorkspaceMessageItem({
             </div>
             <div
               ref={messageContentRef}
-              className='bg-white/13 backdrop-blur-xl border border-black rounded-3xl px-4 py-2.5 shadow-[0_8px_32px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.12)] transition-transform duration-75'
-              style={{
-                transform: `translateX(${swipeOffset}px)`,
-              }}
+              className='bg-white/13 backdrop-blur-xl border border-black rounded-3xl px-4 py-2.5 shadow-[0_8px_32px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.12)]'
             >
               {message.replied_message && (
                 <RepliedMessagePreview
@@ -297,7 +299,23 @@ export default function WorkspaceMessageItem({
         onTouchCancel={handleTouchCancel}
         style={{ userSelect: 'none', WebkitUserSelect: 'none' }}
       >
-        <div className='flex-shrink-0'>
+        {/* Reply icon indicator on the right side */}
+        {showSwipeIndicator && (
+          <div
+            className='absolute right-0 top-1/2 -translate-y-1/2 flex items-center transition-opacity duration-200 z-10'
+            style={{
+              opacity: showSwipeIndicator ? 1 : 0,
+            }}
+          >
+            <Reply className='w-5 h-5 text-white/60' />
+          </div>
+        )}
+        <div
+          className='flex gap-2 flex-shrink-0 transition-transform duration-75'
+          style={{
+            transform: `translateX(${swipeOffset}px)`,
+          }}
+        >
           <Avatar className='h-8 w-8 border border-white/15 bg-white/10 text-xs font-medium'>
             {avatarUrl ? (
               <AvatarImage src={avatarUrl} alt={name} />
@@ -308,26 +326,17 @@ export default function WorkspaceMessageItem({
             )}
           </Avatar>
         </div>
-        <div className='flex flex-col gap-1 min-w-0 relative flex-1'>
+        <div
+          className='flex flex-col gap-1 min-w-0 relative flex-1 transition-transform duration-75'
+          style={{
+            transform: `translateX(${swipeOffset}px)`,
+          }}
+        >
           <p className='text-xs text-gray-400 mb-1'>{name}</p>
-          <div className='flex gap-2 items-end relative'>
-            {/* Arrow indicator on the right */}
-            {showSwipeIndicator && (
-              <div
-                className='absolute right-full mr-2 flex items-center transition-opacity duration-200'
-                style={{
-                  opacity: showSwipeIndicator ? 1 : 0,
-                }}
-              >
-                <Reply className='w-5 h-5 text-white/60' />
-              </div>
-            )}
+          <div className='flex gap-2 items-end'>
             <div
               ref={messageContentRef}
-              className='bg-white/8 backdrop-blur-xl border border-black rounded-3xl px-4 py-2.5 shadow-[0_8px_32px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.12)] transition-transform duration-75'
-              style={{
-                transform: `translateX(${swipeOffset}px)`,
-              }}
+              className='bg-white/8 backdrop-blur-xl border border-black rounded-3xl px-4 py-2.5 shadow-[0_8px_32px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.12)]'
             >
               {message.replied_message && (
                 <RepliedMessagePreview

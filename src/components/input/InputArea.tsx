@@ -2,6 +2,7 @@
 
 import { Message, AIMessage } from '@/types/chat';
 import DynamicInput from './modes/DynamicInput';
+import { useEffect, useRef, useImperativeHandle, forwardRef } from 'react';
 
 type InputAreaProps = {
   messages?: Message[] | AIMessage[] | unknown[];
@@ -15,16 +16,41 @@ type InputAreaProps = {
   onCancelReply?: () => void;
 };
 
-export default function InputArea({
-  onSend,
-  onStop,
-  isLoading = false,
-  placeholder = 'Ask anything',
-  canStop = true,
-  ai_augmented_input = true,
-  replyingTo,
-  onCancelReply,
-}: InputAreaProps) {
+export type InputAreaRef = {
+  focus: () => void;
+};
+
+const InputArea = forwardRef<InputAreaRef, InputAreaProps>(function InputArea(
+  {
+    onSend,
+    onStop,
+    isLoading = false,
+    placeholder = 'Ask anything',
+    canStop = true,
+    ai_augmented_input = true,
+    replyingTo,
+    onCancelReply,
+  },
+  ref
+) {
+  const inputRef = useRef<{ focus: () => void } | null>(null);
+
+  useImperativeHandle(ref, () => ({
+    focus: () => {
+      inputRef.current?.focus();
+    },
+  }));
+
+  // Focus input when replying
+  useEffect(() => {
+    if (replyingTo) {
+      // Small delay to ensure DOM is ready
+      setTimeout(() => {
+        inputRef.current?.focus();
+      }, 100);
+    }
+  }, [replyingTo]);
+
   return (
     <div className='bg-gradient-to-br from-slate-950 via-black to-slate-950 relative z-10 rounded-t-3xl'>
       {/* Reply indicator - absolutely positioned above input */}
@@ -54,6 +80,7 @@ export default function InputArea({
       {/* 入力UI */}
       <div className='px-2 md:px-6 pt-2'>
         <DynamicInput
+          ref={inputRef}
           suggestions={[]}
           inputPlaceholder={placeholder}
           onSuggestionClick={onSend}
@@ -66,4 +93,6 @@ export default function InputArea({
       </div>
     </div>
   );
-}
+});
+
+export default InputArea;
