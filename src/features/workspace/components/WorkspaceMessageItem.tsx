@@ -1,7 +1,7 @@
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import type { WorkspaceMessage } from '@/types/workspace';
 import { format } from 'date-fns';
-import { User } from 'lucide-react';
+import { User, Reply } from 'lucide-react';
 import { useState, useRef, useEffect } from 'react';
 import MessageContextMenu from './MessageContextMenu';
 
@@ -26,7 +26,10 @@ export default function WorkspaceMessageItem({
     x: number;
     y: number;
   } | null>(null);
+  const [swipeOffset, setSwipeOffset] = useState(0);
+  const [showSwipeIndicator, setShowSwipeIndicator] = useState(false);
   const messageRef = useRef<HTMLDivElement>(null);
+  const messageContentRef = useRef<HTMLDivElement>(null);
   const touchStartX = useRef<number | null>(null);
   const touchStartY = useRef<number | null>(null);
   const touchStartTime = useRef<number | null>(null);
@@ -65,11 +68,15 @@ export default function WorkspaceMessageItem({
 
   // Handle touch interactions (mobile)
   const handleTouchStart = (e: React.TouchEvent) => {
+    // Prevent text selection
+    e.preventDefault();
     touchStartX.current = e.touches[0].clientX;
     touchStartY.current = e.touches[0].clientY;
     touchStartTime.current = Date.now();
     isSwiping.current = false;
     hasMoved.current = false;
+    setSwipeOffset(0);
+    setShowSwipeIndicator(false);
 
     // Start long press timer (500ms)
     longPressTimer.current = setTimeout(() => {
@@ -86,15 +93,18 @@ export default function WorkspaceMessageItem({
   };
 
   const handleTouchMove = (e: React.TouchEvent) => {
+    // Prevent text selection
+    e.preventDefault();
     if (touchStartX.current === null || touchStartY.current === null) return;
 
     const currentX = e.touches[0].clientX;
     const currentY = e.touches[0].clientY;
-    const deltaX = Math.abs(currentX - touchStartX.current);
+    const deltaX = currentX - touchStartX.current;
     const deltaY = Math.abs(currentY - touchStartY.current);
+    const absDeltaX = Math.abs(deltaX);
 
     // If moved more than 10px, cancel long press and mark as moved
-    if (deltaX > 10 || deltaY > 10) {
+    if (absDeltaX > 10 || deltaY > 10) {
       hasMoved.current = true;
       if (longPressTimer.current) {
         clearTimeout(longPressTimer.current);
@@ -103,14 +113,29 @@ export default function WorkspaceMessageItem({
     }
 
     // If horizontal movement is greater than vertical, it's likely a swipe
-    if (deltaX > deltaY && deltaX > 10) {
+    if (absDeltaX > deltaY && absDeltaX > 10) {
       isSwiping.current = true;
+
+      // Only allow left swipe (negative deltaX)
+      if (deltaX < 0) {
+        const swipeDistance = Math.min(Math.abs(deltaX), 120); // Max 120px
+        setSwipeOffset(-swipeDistance);
+        setShowSwipeIndicator(swipeDistance > 20);
+      } else {
+        // Reset if swiping right
+        setSwipeOffset(0);
+        setShowSwipeIndicator(false);
+      }
+
       // Prevent scrolling when swiping horizontally
       e.preventDefault();
     }
   };
 
   const handleTouchEnd = (e: React.TouchEvent) => {
+    // Prevent text selection
+    e.preventDefault();
+
     // Clear long press timer
     if (longPressTimer.current) {
       clearTimeout(longPressTimer.current);
@@ -126,27 +151,21 @@ export default function WorkspaceMessageItem({
 
     const touchEndX = e.changedTouches[0].clientX;
     const touchEndY = e.changedTouches[0].clientY;
-    const touchEndTime = Date.now();
-
     const deltaX = touchStartX.current - touchEndX;
     const deltaY = Math.abs(touchStartY.current - touchEndY);
-    const deltaTime = touchEndTime - touchStartTime.current;
 
     // Swipe left detection: directly reply without showing menu
     // - Must be horizontal swipe (deltaX > deltaY)
     // - Must swipe left at least 60px
-    // - Must complete in less than 400ms
     // - Must be more horizontal than vertical (deltaX > deltaY * 1.5)
-    if (
-      deltaX > 60 &&
-      deltaX > deltaY * 1.5 &&
-      deltaTime < 400 &&
-      isSwiping.current &&
-      onReply
-    ) {
+    if (deltaX > 60 && deltaX > deltaY * 1.5 && isSwiping.current && onReply) {
       // Directly trigger reply without showing menu
       handleReply();
     }
+
+    // Reset swipe visual state with animation
+    setSwipeOffset(0);
+    setShowSwipeIndicator(false);
 
     // Reset touch tracking
     touchStartX.current = null;
@@ -162,6 +181,9 @@ export default function WorkspaceMessageItem({
       clearTimeout(longPressTimer.current);
       longPressTimer.current = null;
     }
+    // Reset swipe visual state
+    setSwipeOffset(0);
+    setShowSwipeIndicator(false);
     // Reset touch tracking
     touchStartX.current = null;
     touchStartY.current = null;
@@ -204,14 +226,26 @@ export default function WorkspaceMessageItem({
       <>
         <div
           ref={messageRef}
-          className='flex justify-end items-end w-full'
+          className='flex justify-end items-end w-full relative'
           onContextMenu={handleContextMenu}
           onTouchStart={handleTouchStart}
           onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}
           onTouchCancel={handleTouchCancel}
+          style={{ userSelect: 'none', WebkitUserSelect: 'none' }}
         >
-          <div className='flex gap-2 items-end justify-end min-w-0 max-w-full'>
+          <div className='flex gap-2 items-end justify-end min-w-0 max-w-full relative'>
+            {/* Arrow indicator on the right */}
+            {showSwipeIndicator && (
+              <div
+                className='absolute right-full mr-2 flex items-center transition-opacity duration-200'
+                style={{
+                  opacity: showSwipeIndicator ? 1 : 0,
+                }}
+              >
+                <Reply className='w-5 h-5 text-white/60' />
+              </div>
+            )}
             <div className='flex flex-col justify-end flex-shrink-0'>
               <div className='text-right'>
                 <ReadStatus readCount={readCount} />
@@ -220,7 +254,13 @@ export default function WorkspaceMessageItem({
                 {format(new Date(message.created_at), 'HH:mm')}
               </p>
             </div>
-            <div className='bg-white/13 backdrop-blur-xl border border-black rounded-3xl px-4 py-2.5 shadow-[0_8px_32px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.12)]'>
+            <div
+              ref={messageContentRef}
+              className='bg-white/13 backdrop-blur-xl border border-black rounded-3xl px-4 py-2.5 shadow-[0_8px_32px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.12)] transition-transform duration-75'
+              style={{
+                transform: `translateX(${swipeOffset}px)`,
+              }}
+            >
               {message.replied_message && (
                 <RepliedMessagePreview
                   repliedMessage={message.replied_message}
@@ -249,11 +289,13 @@ export default function WorkspaceMessageItem({
     <>
       <div
         ref={messageRef}
-        className='flex gap-2'
+        className='flex gap-2 relative'
         onContextMenu={handleContextMenu}
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
+        onTouchCancel={handleTouchCancel}
+        style={{ userSelect: 'none', WebkitUserSelect: 'none' }}
       >
         <div className='flex-shrink-0'>
           <Avatar className='h-8 w-8 border border-white/15 bg-white/10 text-xs font-medium'>
@@ -266,10 +308,27 @@ export default function WorkspaceMessageItem({
             )}
           </Avatar>
         </div>
-        <div className='flex flex-col gap-1 min-w-0'>
+        <div className='flex flex-col gap-1 min-w-0 relative flex-1'>
           <p className='text-xs text-gray-400 mb-1'>{name}</p>
-          <div className='flex gap-2 items-end'>
-            <div className='bg-white/8 backdrop-blur-xl border border-black rounded-3xl px-4 py-2.5 shadow-[0_8px_32px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.12)]'>
+          <div className='flex gap-2 items-end relative'>
+            {/* Arrow indicator on the right */}
+            {showSwipeIndicator && (
+              <div
+                className='absolute right-full mr-2 flex items-center transition-opacity duration-200'
+                style={{
+                  opacity: showSwipeIndicator ? 1 : 0,
+                }}
+              >
+                <Reply className='w-5 h-5 text-white/60' />
+              </div>
+            )}
+            <div
+              ref={messageContentRef}
+              className='bg-white/8 backdrop-blur-xl border border-black rounded-3xl px-4 py-2.5 shadow-[0_8px_32px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.12)] transition-transform duration-75'
+              style={{
+                transform: `translateX(${swipeOffset}px)`,
+              }}
+            >
               {message.replied_message && (
                 <RepliedMessagePreview
                   repliedMessage={message.replied_message}
