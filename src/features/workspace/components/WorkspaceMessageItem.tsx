@@ -28,13 +28,26 @@ export default function WorkspaceMessageItem({
   } | null>(null);
   const messageRef = useRef<HTMLDivElement>(null);
   const touchStartX = useRef<number | null>(null);
+  const touchStartY = useRef<number | null>(null);
   const touchStartTime = useRef<number | null>(null);
+  const isSwiping = useRef(false);
+  const longPressTimer = useRef<NodeJS.Timeout | null>(null);
+  const hasMoved = useRef(false);
 
   // Close context menu on scroll
   useEffect(() => {
     const handleScroll = () => setContextMenu(null);
     window.addEventListener('scroll', handleScroll, true);
     return () => window.removeEventListener('scroll', handleScroll, true);
+  }, []);
+
+  // Cleanup long press timer on unmount
+  useEffect(() => {
+    return () => {
+      if (longPressTimer.current) {
+        clearTimeout(longPressTimer.current);
+      }
+    };
   }, []);
 
   if (!message) return null;
@@ -50,33 +63,111 @@ export default function WorkspaceMessageItem({
     setContextMenu({ x: e.clientX, y: e.clientY });
   };
 
-  // Handle swipe left (mobile)
+  // Handle touch interactions (mobile)
   const handleTouchStart = (e: React.TouchEvent) => {
     touchStartX.current = e.touches[0].clientX;
+    touchStartY.current = e.touches[0].clientY;
     touchStartTime.current = Date.now();
+    isSwiping.current = false;
+    hasMoved.current = false;
+
+    // Start long press timer (500ms)
+    longPressTimer.current = setTimeout(() => {
+      if (!hasMoved.current && !isSwiping.current) {
+        const rect = messageRef.current?.getBoundingClientRect();
+        if (rect) {
+          setContextMenu({
+            x: Math.min(rect.right - 150, window.innerWidth - 200),
+            y: rect.top,
+          });
+        }
+      }
+    }, 500);
   };
 
-  const handleTouchEnd = (e: React.TouchEvent) => {
-    if (touchStartX.current === null || touchStartTime.current === null) return;
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (touchStartX.current === null || touchStartY.current === null) return;
 
-    const touchEndX = e.changedTouches[0].clientX;
-    const touchEndTime = Date.now();
-    const deltaX = touchStartX.current - touchEndX;
-    const deltaTime = touchEndTime - touchStartTime.current;
+    const currentX = e.touches[0].clientX;
+    const currentY = e.touches[0].clientY;
+    const deltaX = Math.abs(currentX - touchStartX.current);
+    const deltaY = Math.abs(currentY - touchStartY.current);
 
-    // Swipe left: deltaX > 50px and completed in < 300ms
-    if (deltaX > 50 && deltaTime < 300 && onReply) {
-      const rect = messageRef.current?.getBoundingClientRect();
-      if (rect) {
-        setContextMenu({
-          x: rect.right - 150,
-          y: rect.top,
-        });
+    // If moved more than 10px, cancel long press and mark as moved
+    if (deltaX > 10 || deltaY > 10) {
+      hasMoved.current = true;
+      if (longPressTimer.current) {
+        clearTimeout(longPressTimer.current);
+        longPressTimer.current = null;
       }
     }
 
+    // If horizontal movement is greater than vertical, it's likely a swipe
+    if (deltaX > deltaY && deltaX > 10) {
+      isSwiping.current = true;
+      // Prevent scrolling when swiping horizontally
+      e.preventDefault();
+    }
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    // Clear long press timer
+    if (longPressTimer.current) {
+      clearTimeout(longPressTimer.current);
+      longPressTimer.current = null;
+    }
+
+    if (
+      touchStartX.current === null ||
+      touchStartY.current === null ||
+      touchStartTime.current === null
+    )
+      return;
+
+    const touchEndX = e.changedTouches[0].clientX;
+    const touchEndY = e.changedTouches[0].clientY;
+    const touchEndTime = Date.now();
+
+    const deltaX = touchStartX.current - touchEndX;
+    const deltaY = Math.abs(touchStartY.current - touchEndY);
+    const deltaTime = touchEndTime - touchStartTime.current;
+
+    // Swipe left detection: directly reply without showing menu
+    // - Must be horizontal swipe (deltaX > deltaY)
+    // - Must swipe left at least 60px
+    // - Must complete in less than 400ms
+    // - Must be more horizontal than vertical (deltaX > deltaY * 1.5)
+    if (
+      deltaX > 60 &&
+      deltaX > deltaY * 1.5 &&
+      deltaTime < 400 &&
+      isSwiping.current &&
+      onReply
+    ) {
+      // Directly trigger reply without showing menu
+      handleReply();
+    }
+
+    // Reset touch tracking
     touchStartX.current = null;
+    touchStartY.current = null;
     touchStartTime.current = null;
+    isSwiping.current = false;
+    hasMoved.current = false;
+  };
+
+  const handleTouchCancel = () => {
+    // Clear long press timer on touch cancel
+    if (longPressTimer.current) {
+      clearTimeout(longPressTimer.current);
+      longPressTimer.current = null;
+    }
+    // Reset touch tracking
+    touchStartX.current = null;
+    touchStartY.current = null;
+    touchStartTime.current = null;
+    isSwiping.current = false;
+    hasMoved.current = false;
   };
 
   const handleReply = () => {
@@ -116,7 +207,9 @@ export default function WorkspaceMessageItem({
           className='flex justify-end items-end w-full'
           onContextMenu={handleContextMenu}
           onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}
+          onTouchCancel={handleTouchCancel}
         >
           <div className='flex gap-2 items-end justify-end min-w-0 max-w-full'>
             <div className='flex flex-col justify-end flex-shrink-0'>
@@ -159,6 +252,7 @@ export default function WorkspaceMessageItem({
         className='flex gap-2'
         onContextMenu={handleContextMenu}
         onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
       >
         <div className='flex-shrink-0'>
