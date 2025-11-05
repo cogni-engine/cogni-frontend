@@ -41,7 +41,9 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
         }
 
         // Fetch and set personal workspace if not already set
-        const personalWorkspaceId = getCookie(COOKIE_KEYS.PERSONAL_WORKSPACE_ID);
+        const personalWorkspaceId = getCookie(
+          COOKIE_KEYS.PERSONAL_WORKSPACE_ID
+        );
         if (!personalWorkspaceId) {
           try {
             const personalWorkspace = await getPersonalWorkspace();

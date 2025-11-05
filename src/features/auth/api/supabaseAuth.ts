@@ -31,9 +31,7 @@ export async function signIn(email: string, password: string) {
   return data;
 }
 
-export async function signInWithGoogle(
-  emailRedirectTo?: string
-) {
+export async function signInWithGoogle(emailRedirectTo?: string) {
   const redirectTo =
     emailRedirectTo ||
     (typeof window !== 'undefined'

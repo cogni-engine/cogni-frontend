@@ -37,7 +37,7 @@ export async function GET(request: NextRequest) {
       console.error('Error exchanging code for session:', error);
       return NextResponse.redirect(new URL('/auth/error', origin));
     }
-    
+
     // If OAuth was successful, set user ID and fetch personal workspace
     if (data?.user?.id) {
       // The session is now set in cookies, so we can proceed with redirect
