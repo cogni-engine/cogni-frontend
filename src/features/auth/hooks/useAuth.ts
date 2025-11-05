@@ -5,9 +5,10 @@ import { signIn, signUp, signOut } from '../api/supabaseAuth';
 import { getPersonalWorkspace } from '@/lib/api/workspaceApi';
 import {
   setCookie,
-  deleteCookie,
   COOKIE_KEYS,
   getPendingInviteToken,
+  setCurrentUserId,
+  clearAllUserCookies,
 } from '@/lib/cookies';
 
 export function useAuth() {
@@ -48,7 +49,12 @@ export function useAuth() {
     setError(null);
     try {
       // Sign in the user
-      await signIn(email, password);
+      const { user } = await signIn(email, password);
+
+      // Store current user ID in cookie
+      if (user?.id) {
+        setCurrentUserId(user.id);
+      }
 
       // Fetch and store personal workspace ID
       try {
@@ -77,10 +83,8 @@ export function useAuth() {
     setError(null);
     try {
       await signOut();
-      // Clear the personal workspace ID cookie
-      deleteCookie(COOKIE_KEYS.PERSONAL_WORKSPACE_ID);
-      // Clear any pending invite tokens
-      deleteCookie(COOKIE_KEYS.PENDING_INVITE_TOKEN);
+      // Clear all user-related cookies
+      clearAllUserCookies();
     } catch (e) {
       setError(
         e instanceof Error ? e.message : 'An error occurred during sign out'

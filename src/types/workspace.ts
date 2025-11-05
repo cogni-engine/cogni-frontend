@@ -80,10 +80,12 @@ export interface WorkspaceMessage {
   text: string;
   created_at: string;
   updated_at: string;
+  reply_to_id?: number | null;
   workspace_member?: {
     user_id?: string;
     user_profile?: WorkspaceProfile | null;
   };
+  replied_message?: WorkspaceMessage | null;
   reads?: WorkspaceMessageRead[];
   read_count?: number;
   is_read_by_current_user?: boolean;
