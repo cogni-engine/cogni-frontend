@@ -2,13 +2,15 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import type { WorkspaceMessage } from '@/types/workspace';
 import { format } from 'date-fns';
 import { User, Reply } from 'lucide-react';
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import MessageContextMenu from './MessageContextMenu';
 
 type Props = {
   message: WorkspaceMessage;
   isOwnMessage: boolean;
   onReply?: (messageId: number) => void;
+  onJumpToMessage?: (messageId: number) => void;
+  isHighlighted?: boolean;
 };
 
 function ReadStatus({ readCount }: { readCount: number }) {
@@ -21,6 +23,8 @@ export default function WorkspaceMessageItem({
   message,
   isOwnMessage,
   onReply,
+  onJumpToMessage,
+  isHighlighted = false,
 }: Props) {
   const [contextMenu, setContextMenu] = useState<{
     x: number;
@@ -33,6 +37,7 @@ export default function WorkspaceMessageItem({
   const touchStartX = useRef<number | null>(null);
   const touchStartY = useRef<number | null>(null);
   const touchStartTime = useRef<number | null>(null);
+  const touchStartTarget = useRef<HTMLElement | null>(null);
   const isSwiping = useRef(false);
   const longPressTimer = useRef<NodeJS.Timeout | null>(null);
   const hasMoved = useRef(false);
@@ -53,127 +58,224 @@ export default function WorkspaceMessageItem({
     };
   }, []);
 
-  if (!message) return null;
-
-  const profile = message.workspace_member?.user_profile ?? null;
-  const name = profile?.name ?? 'Unknown';
-  const avatarUrl = profile?.avatar_url ?? '';
-  const readCount = message.read_count ?? message.reads?.length ?? 0;
-
   // Handle right-click (desktop)
   const handleContextMenu = (e: React.MouseEvent) => {
     e.preventDefault();
     setContextMenu({ x: e.clientX, y: e.clientY });
   };
 
-  // Handle touch interactions (mobile)
-  const handleTouchStart = (e: React.TouchEvent) => {
-    // Prevent text selection
-    e.preventDefault();
-    touchStartX.current = e.touches[0].clientX;
-    touchStartY.current = e.touches[0].clientY;
+  const handleReply = useCallback(() => {
+    if (onReply) {
+      onReply(message.id);
+    }
+    setContextMenu(null);
+  }, [onReply, message.id]);
+
+  // Unified touch handler - differentiates between tap and swipe
+  const handleTouchStart = useCallback((e: TouchEvent | React.TouchEvent) => {
+    const touchEvent = e as TouchEvent;
+    const target = touchEvent.target as HTMLElement;
+    const isRepliedPreview = target?.closest('[data-replied-preview]') !== null;
+
+    // Store initial touch info
+    touchStartX.current = touchEvent.touches[0].clientX;
+    touchStartY.current = touchEvent.touches[0].clientY;
     touchStartTime.current = Date.now();
+    touchStartTarget.current = target;
     isSwiping.current = false;
     hasMoved.current = false;
     setSwipeOffset(0);
     setShowSwipeIndicator(false);
 
-    // Start long press timer (500ms)
-    longPressTimer.current = setTimeout(() => {
-      if (!hasMoved.current && !isSwiping.current) {
-        const rect = messageRef.current?.getBoundingClientRect();
-        if (rect) {
-          setContextMenu({
-            x: Math.min(rect.right - 150, window.innerWidth - 200),
-            y: rect.top,
-          });
-        }
-      }
-    }, 500);
-  };
+    // If touching replied preview, don't prevent default (allow click)
+    if (!isRepliedPreview) {
+      touchEvent.preventDefault();
+    }
 
-  const handleTouchMove = (e: React.TouchEvent) => {
-    // Prevent text selection
-    e.preventDefault();
+    // Start long press timer (500ms) - only for non-replied-preview areas
+    if (!isRepliedPreview) {
+      longPressTimer.current = setTimeout(() => {
+        if (!hasMoved.current && !isSwiping.current) {
+          const rect = messageRef.current?.getBoundingClientRect();
+          if (rect) {
+            setContextMenu({
+              x: Math.min(rect.right - 150, window.innerWidth - 200),
+              y: rect.top,
+            });
+          }
+        }
+      }, 500);
+    }
+  }, []);
+
+  const handleTouchMove = useCallback((e: TouchEvent | React.TouchEvent) => {
     if (touchStartX.current === null || touchStartY.current === null) return;
 
-    const currentX = e.touches[0].clientX;
-    const currentY = e.touches[0].clientY;
+    const touchEvent = e as TouchEvent;
+    const target = touchEvent.target as HTMLElement;
+    const isRepliedPreview = target?.closest('[data-replied-preview]') !== null;
+    const startedOnRepliedPreview =
+      touchStartTarget.current?.closest('[data-replied-preview]') !== null;
+
+    const currentX = touchEvent.touches[0].clientX;
+    const currentY = touchEvent.touches[0].clientY;
     const deltaX = currentX - touchStartX.current;
     const deltaY = Math.abs(currentY - touchStartY.current);
     const absDeltaX = Math.abs(deltaX);
 
-    // If moved more than 10px, cancel long press and mark as moved
-    if (absDeltaX > 10 || deltaY > 10) {
+    // If started on replied preview and moved significantly, it's a swipe (not a tap)
+    if (startedOnRepliedPreview && (absDeltaX > 10 || deltaY > 10)) {
+      // User is swiping, treat as swipe gesture
       hasMoved.current = true;
+
+      // Check if it's a horizontal swipe
+      if (absDeltaX > deltaY && absDeltaX > 10) {
+        isSwiping.current = true;
+
+        // Only allow left swipe (negative deltaX)
+        if (deltaX < 0) {
+          const swipeDistance = Math.min(Math.abs(deltaX), 120);
+          setSwipeOffset(-swipeDistance);
+          setShowSwipeIndicator(swipeDistance > 20);
+        } else {
+          // Reset if swiping right
+          setSwipeOffset(0);
+          setShowSwipeIndicator(false);
+          isSwiping.current = false;
+        }
+
+        // Prevent scrolling when swiping horizontally
+        touchEvent.preventDefault();
+      } else {
+        // Vertical movement - don't treat as swipe, but still mark as moved
+        isSwiping.current = false;
+        setSwipeOffset(0);
+        setShowSwipeIndicator(false);
+      }
+      return;
+    }
+
+    // For non-replied-preview areas, handle normally
+    if (!isRepliedPreview && !startedOnRepliedPreview) {
+      // If moved more than 10px, cancel long press and mark as moved
+      if (absDeltaX > 10 || deltaY > 10) {
+        hasMoved.current = true;
+        if (longPressTimer.current) {
+          clearTimeout(longPressTimer.current);
+          longPressTimer.current = null;
+        }
+      }
+
+      // If horizontal movement is greater than vertical, it's likely a swipe
+      if (absDeltaX > deltaY && absDeltaX > 10) {
+        isSwiping.current = true;
+
+        // Only allow left swipe (negative deltaX)
+        if (deltaX < 0) {
+          const swipeDistance = Math.min(Math.abs(deltaX), 120);
+          setSwipeOffset(-swipeDistance);
+          setShowSwipeIndicator(swipeDistance > 20);
+        } else {
+          // Reset if swiping right
+          setSwipeOffset(0);
+          setShowSwipeIndicator(false);
+        }
+
+        // Prevent scrolling when swiping horizontally
+        touchEvent.preventDefault();
+      }
+    }
+  }, []);
+
+  const handleTouchEnd = useCallback(
+    (e: TouchEvent | React.TouchEvent) => {
+      if (
+        touchStartX.current === null ||
+        touchStartY.current === null ||
+        touchStartTime.current === null
+      ) {
+        return;
+      }
+
+      const touchEvent = e as TouchEvent;
+      const startedOnRepliedPreview =
+        touchStartTarget.current?.closest('[data-replied-preview]') !== null;
+
+      const touchEndX = touchEvent.changedTouches[0].clientX;
+      const touchEndY = touchEvent.changedTouches[0].clientY;
+      const deltaX = touchStartX.current - touchEndX;
+      const deltaY = Math.abs(touchStartY.current - touchEndY);
+      const absDeltaX = Math.abs(deltaX);
+      const deltaTime = Date.now() - touchStartTime.current;
+
+      // Clear long press timer
       if (longPressTimer.current) {
         clearTimeout(longPressTimer.current);
         longPressTimer.current = null;
       }
-    }
 
-    // If horizontal movement is greater than vertical, it's likely a swipe
-    if (absDeltaX > deltaY && absDeltaX > 10) {
-      isSwiping.current = true;
-
-      // Only allow left swipe (negative deltaX)
-      if (deltaX < 0) {
-        const swipeDistance = Math.min(Math.abs(deltaX), 120); // Max 120px
-        setSwipeOffset(-swipeDistance);
-        setShowSwipeIndicator(swipeDistance > 20);
-      } else {
-        // Reset if swiping right
+      // Handle tap on replied preview (jump to message)
+      // Only if it's a clear tap (no significant movement, quick, and not a swipe)
+      if (
+        startedOnRepliedPreview &&
+        absDeltaX < 10 &&
+        deltaY < 10 &&
+        deltaTime < 300 &&
+        !isSwiping.current &&
+        !hasMoved.current &&
+        onJumpToMessage
+      ) {
+        // It's a tap on replied preview - jump to message
+        const repliedMessage = message.replied_message;
+        if (repliedMessage?.id) {
+          onJumpToMessage(repliedMessage.id);
+        }
+        // Reset and return early
+        touchStartX.current = null;
+        touchStartY.current = null;
+        touchStartTime.current = null;
+        touchStartTarget.current = null;
+        isSwiping.current = false;
+        hasMoved.current = false;
         setSwipeOffset(0);
         setShowSwipeIndicator(false);
+        return;
       }
 
-      // Prevent scrolling when swiping horizontally
-      e.preventDefault();
-    }
-  };
+      // Prevent text selection for non-tap interactions
+      if (!startedOnRepliedPreview || hasMoved.current || isSwiping.current) {
+        touchEvent.preventDefault();
+      }
 
-  const handleTouchEnd = (e: React.TouchEvent) => {
-    // Prevent text selection
-    e.preventDefault();
+      // Swipe left detection: directly reply without showing menu
+      // - Must be horizontal swipe (deltaX > deltaY)
+      // - Must swipe left at least 60px
+      // - Must be more horizontal than vertical (deltaX > deltaY * 1.5)
+      // Works regardless of where swipe started (replied preview or message content)
+      if (
+        deltaX > 60 &&
+        deltaX > deltaY * 1.5 &&
+        isSwiping.current &&
+        onReply
+      ) {
+        // Directly trigger reply without showing menu
+        handleReply();
+      }
 
-    // Clear long press timer
-    if (longPressTimer.current) {
-      clearTimeout(longPressTimer.current);
-      longPressTimer.current = null;
-    }
+      // Reset swipe visual state with animation
+      setSwipeOffset(0);
+      setShowSwipeIndicator(false);
 
-    if (
-      touchStartX.current === null ||
-      touchStartY.current === null ||
-      touchStartTime.current === null
-    )
-      return;
-
-    const touchEndX = e.changedTouches[0].clientX;
-    const touchEndY = e.changedTouches[0].clientY;
-    const deltaX = touchStartX.current - touchEndX;
-    const deltaY = Math.abs(touchStartY.current - touchEndY);
-
-    // Swipe left detection: directly reply without showing menu
-    // - Must be horizontal swipe (deltaX > deltaY)
-    // - Must swipe left at least 60px
-    // - Must be more horizontal than vertical (deltaX > deltaY * 1.5)
-    if (deltaX > 60 && deltaX > deltaY * 1.5 && isSwiping.current && onReply) {
-      // Directly trigger reply without showing menu
-      handleReply();
-    }
-
-    // Reset swipe visual state with animation
-    setSwipeOffset(0);
-    setShowSwipeIndicator(false);
-
-    // Reset touch tracking
-    touchStartX.current = null;
-    touchStartY.current = null;
-    touchStartTime.current = null;
-    isSwiping.current = false;
-    hasMoved.current = false;
-  };
+      // Reset touch tracking
+      touchStartX.current = null;
+      touchStartY.current = null;
+      touchStartTime.current = null;
+      touchStartTarget.current = null;
+      isSwiping.current = false;
+      hasMoved.current = false;
+    },
+    [message, onJumpToMessage, onReply, handleReply]
+  );
 
   const handleTouchCancel = () => {
     // Clear long press timer on touch cancel
@@ -188,16 +290,60 @@ export default function WorkspaceMessageItem({
     touchStartX.current = null;
     touchStartY.current = null;
     touchStartTime.current = null;
+    touchStartTarget.current = null;
     isSwiping.current = false;
     hasMoved.current = false;
   };
 
-  const handleReply = () => {
-    if (onReply) {
-      onReply(message.id);
-    }
-    setContextMenu(null);
-  };
+  // Add non-passive touch listeners to enable preventDefault
+  useEffect(() => {
+    const messageElement = messageRef.current;
+    if (!messageElement) return;
+
+    const touchStartHandler = (e: TouchEvent) => {
+      handleTouchStart(e);
+    };
+
+    const touchMoveHandler = (e: TouchEvent) => {
+      handleTouchMove(e);
+    };
+
+    const touchEndHandler = (e: TouchEvent) => {
+      handleTouchEnd(e);
+    };
+
+    const touchCancelHandler = () => {
+      handleTouchCancel();
+    };
+
+    // Add listeners with { passive: false } to allow preventDefault
+    messageElement.addEventListener('touchstart', touchStartHandler, {
+      passive: false,
+    });
+    messageElement.addEventListener('touchmove', touchMoveHandler, {
+      passive: false,
+    });
+    messageElement.addEventListener('touchend', touchEndHandler, {
+      passive: false,
+    });
+    messageElement.addEventListener('touchcancel', touchCancelHandler, {
+      passive: false,
+    });
+
+    return () => {
+      messageElement.removeEventListener('touchstart', touchStartHandler);
+      messageElement.removeEventListener('touchmove', touchMoveHandler);
+      messageElement.removeEventListener('touchend', touchEndHandler);
+      messageElement.removeEventListener('touchcancel', touchCancelHandler);
+    };
+  }, [handleTouchStart, handleTouchMove, handleTouchEnd]);
+
+  if (!message) return null;
+
+  const profile = message.workspace_member?.user_profile ?? null;
+  const name = profile?.name ?? 'Unknown';
+  const avatarUrl = profile?.avatar_url ?? '';
+  const readCount = message.read_count ?? message.reads?.length ?? 0;
 
   const RepliedMessagePreview = ({
     repliedMessage,
@@ -210,10 +356,20 @@ export default function WorkspaceMessageItem({
       repliedMessage.text.slice(0, 100) +
       (repliedMessage.text.length > 100 ? '...' : '');
 
+    // Desktop click handler
+    const handleClick = (e: React.MouseEvent) => {
+      e.stopPropagation();
+      if (onJumpToMessage && repliedMessage.id) {
+        onJumpToMessage(repliedMessage.id);
+      }
+    };
+
     return (
       <div
-        className='mb-2 pl-3 border-l-2 border-white/20'
-        style={{ pointerEvents: 'none' }}
+        data-replied-preview
+        className='mb-2 pl-3 border-l-2 border-white/20 cursor-pointer hover:bg-white/5 rounded transition-colors'
+        onClick={handleClick}
+        style={{ pointerEvents: 'auto' }}
       >
         <p className='text-xs text-white/50 mb-1'>{repliedName}</p>
         <p className='text-xs text-white/40 whitespace-pre-wrap break-words'>
@@ -229,12 +385,11 @@ export default function WorkspaceMessageItem({
       <>
         <div
           ref={messageRef}
-          className='flex justify-end items-end w-full relative'
+          data-message-id={message.id}
+          className={`flex justify-end items-end w-full relative transition-transform duration-300 ${
+            isHighlighted ? 'animate-bounce-x-right' : ''
+          }`}
           onContextMenu={handleContextMenu}
-          onTouchStart={handleTouchStart}
-          onTouchMove={handleTouchMove}
-          onTouchEnd={handleTouchEnd}
-          onTouchCancel={handleTouchCancel}
           style={{ userSelect: 'none', WebkitUserSelect: 'none' }}
         >
           {/* Reply icon indicator on the right side */}
@@ -265,10 +420,6 @@ export default function WorkspaceMessageItem({
             <div
               ref={messageContentRef}
               className='bg-white/13 backdrop-blur-xl border border-black rounded-3xl px-4 py-2.5 shadow-[0_8px_32px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.12)]'
-              onTouchStart={handleTouchStart}
-              onTouchMove={handleTouchMove}
-              onTouchEnd={handleTouchEnd}
-              onTouchCancel={handleTouchCancel}
             >
               {message.replied_message && (
                 <RepliedMessagePreview
@@ -298,12 +449,11 @@ export default function WorkspaceMessageItem({
     <>
       <div
         ref={messageRef}
-        className='flex gap-2 relative'
+        data-message-id={message.id}
+        className={`flex gap-2 relative transition-transform duration-300 ${
+          isHighlighted ? 'animate-bounce-x-left' : ''
+        }`}
         onContextMenu={handleContextMenu}
-        onTouchStart={handleTouchStart}
-        onTouchMove={handleTouchMove}
-        onTouchEnd={handleTouchEnd}
-        onTouchCancel={handleTouchCancel}
         style={{ userSelect: 'none', WebkitUserSelect: 'none' }}
       >
         {/* Reply icon indicator on the right side */}
@@ -344,10 +494,6 @@ export default function WorkspaceMessageItem({
             <div
               ref={messageContentRef}
               className='bg-white/8 backdrop-blur-xl border border-black rounded-3xl px-4 py-2.5 shadow-[0_8px_32px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.12)]'
-              onTouchStart={handleTouchStart}
-              onTouchMove={handleTouchMove}
-              onTouchEnd={handleTouchEnd}
-              onTouchCancel={handleTouchCancel}
             >
               {message.replied_message && (
                 <RepliedMessagePreview

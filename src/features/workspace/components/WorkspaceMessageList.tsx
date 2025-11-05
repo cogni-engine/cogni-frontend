@@ -5,12 +5,16 @@ type Props = {
   messages: WorkspaceMessage[];
   currentUserId: string;
   onReply?: (messageId: number) => void;
+  onJumpToMessage?: (messageId: number) => void;
+  highlightedMessageId?: number | null;
 };
 
 export default function WorkspaceMessageList({
   messages,
   currentUserId,
   onReply,
+  onJumpToMessage,
+  highlightedMessageId,
 }: Props) {
   if (messages.length === 0) {
     return (
@@ -34,6 +38,8 @@ export default function WorkspaceMessageList({
             message={message}
             isOwnMessage={currentUserId === message.workspace_member?.user_id}
             onReply={onReply}
+            onJumpToMessage={onJumpToMessage}
+            isHighlighted={highlightedMessageId === message.id}
           />
         ))}
     </div>
