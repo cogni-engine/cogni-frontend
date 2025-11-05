@@ -31,3 +31,37 @@ body {
 * {
   overscroll-behavior: contain;
 }
+
+@keyframes bounce-x-left {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(4px);
+  }
+  75% {
+    transform: translateX(-2px);
+  }
+}
+
+@keyframes bounce-x-right {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-4px);
+  }
+  75% {
+    transform: translateX(2px);
+  }
+}
+
+.animate-bounce-x-left {
+  animation: bounce-x-left 0.5s ease-in-out;
+}
+
+.animate-bounce-x-right {
+  animation: bounce-x-right 0.5s ease-in-out;
+}

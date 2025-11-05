@@ -24,6 +24,9 @@ export default function WorkspaceChatPage() {
   const hasScrolledUpRef = useRef(false);
   const prevMessagesRef = useRef<typeof messages>([]);
   const inputAreaRef = useRef<InputAreaRef>(null);
+  const [highlightedMessageId, setHighlightedMessageId] = useState<
+    number | null
+  >(null);
   const { enableAiSuggestion } = useUserSettings();
   const [replyingTo, setReplyingTo] = useState<{
     id: number;
@@ -108,6 +111,57 @@ export default function WorkspaceChatPage() {
   // Cancel reply
   const handleCancelReply = useCallback(() => {
     setReplyingTo(null);
+  }, []);
+
+  // Scroll to a specific message by ID
+  const scrollToMessage = useCallback((messageId: number) => {
+    if (!scrollContainerRef.current) return;
+
+    // Find the message element by data attribute
+    const messageElement = scrollContainerRef.current.querySelector(
+      `[data-message-id="${messageId}"]`
+    ) as HTMLElement;
+
+    if (!messageElement) return;
+
+    // Check if the message is already in view
+    const container = scrollContainerRef.current;
+    const containerRect = container.getBoundingClientRect();
+    const elementRect = messageElement.getBoundingClientRect();
+
+    // Check if element is visible within the container viewport
+    const isInView =
+      elementRect.top >= containerRect.top &&
+      elementRect.bottom <= containerRect.bottom &&
+      elementRect.left >= containerRect.left &&
+      elementRect.right <= containerRect.right;
+
+    // Only scroll if not already in view
+    if (!isInView) {
+      // Use scrollIntoView with block: 'center' to center the message
+      // This works well with column-reverse layout
+      messageElement.scrollIntoView({
+        behavior: 'smooth',
+        block: 'center',
+        inline: 'nearest',
+      });
+
+      // Trigger bounce animation after scroll has started (longer delay for scrolling)
+      setTimeout(() => {
+        setHighlightedMessageId(messageId);
+        // Clear highlight after animation completes
+        setTimeout(() => {
+          setHighlightedMessageId(null);
+        }, 600);
+      }, 300);
+    } else {
+      // Message is already in view - trigger bounce immediately
+      setHighlightedMessageId(messageId);
+      // Clear highlight after animation completes
+      setTimeout(() => {
+        setHighlightedMessageId(null);
+      }, 600);
+    }
   }, []);
 
   // Check if user is near bottom (within threshold)
@@ -352,6 +406,8 @@ export default function WorkspaceChatPage() {
               messages={messages}
               currentUserId={currentUserId}
               onReply={handleReply}
+              onJumpToMessage={scrollToMessage}
+              highlightedMessageId={highlightedMessageId}
             />
           ) : (
             <div className='flex-1 flex items-center justify-center'>
