@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { signIn, signUp, signOut } from '../api/supabaseAuth';
+import { signIn, signUp, signOut, signInWithGoogle } from '../api/supabaseAuth';
 import { getPersonalWorkspace } from '@/lib/api/workspaceApi';
 import {
   setCookie,
@@ -78,6 +78,33 @@ export function useAuth() {
     }
   };
 
+  const handleSignInWithGoogle = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      // Check if there's a pending invite token
+      const inviteToken = getPendingInviteToken();
+
+      // Build redirect URL based on whether user is signing in from invite
+      const redirectUrl =
+        typeof window !== 'undefined'
+          ? inviteToken
+            ? `${window.location.origin}/auth/callback?invite=${inviteToken}`
+            : `${window.location.origin}/auth/callback`
+          : undefined;
+
+      await signInWithGoogle(redirectUrl);
+      // Note: The redirect will happen automatically, so we don't need to handle navigation here
+    } catch (e) {
+      setError(
+        e instanceof Error
+          ? e.message
+          : 'An error occurred during Google sign in'
+      );
+      setLoading(false);
+    }
+  };
+
   const handleSignOut = async () => {
     setLoading(true);
     setError(null);
@@ -94,5 +121,12 @@ export function useAuth() {
     }
   };
 
-  return { handleSignUp, handleSignIn, handleSignOut, loading, error };
+  return {
+    handleSignUp,
+    handleSignIn,
+    handleSignInWithGoogle,
+    handleSignOut,
+    loading,
+    error,
+  };
 }

@@ -8,11 +8,61 @@ import { ThreadProvider } from '@/contexts/ThreadContext';
 import { UIProvider, useUI } from '@/contexts/UIContext';
 import { CopilotKit } from '@copilotkit/react-core';
 import '@copilotkit/react-textarea/styles.css';
+import { createClient } from '@/lib/supabase/browserClient';
+import {
+  setCurrentUserId,
+  getCurrentUserId,
+  getCookie,
+  setCookie,
+  COOKIE_KEYS,
+} from '@/lib/cookies';
+import { getPersonalWorkspace } from '@/lib/api/workspaceApi';
 
 function LayoutContent({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const { isInputActive } = useUI();
   const [isMobile, setIsMobile] = useState(false);
+  const supabase = createClient();
+
+  // Setup user session after OAuth login
+  useEffect(() => {
+    const setupUserSession = async () => {
+      try {
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+
+        if (!user) return;
+
+        // Set user ID if not already set
+        const currentUserId = getCurrentUserId();
+        if (!currentUserId && user.id) {
+          setCurrentUserId(user.id);
+        }
+
+        // Fetch and set personal workspace if not already set
+        const personalWorkspaceId = getCookie(COOKIE_KEYS.PERSONAL_WORKSPACE_ID);
+        if (!personalWorkspaceId) {
+          try {
+            const personalWorkspace = await getPersonalWorkspace();
+            if (personalWorkspace?.id) {
+              setCookie(
+                COOKIE_KEYS.PERSONAL_WORKSPACE_ID,
+                personalWorkspace.id.toString()
+              );
+            }
+          } catch (error) {
+            // Log but don't fail - workspace might not exist yet
+            console.warn('Failed to fetch personal workspace:', error);
+          }
+        }
+      } catch (error) {
+        console.error('Error setting up user session:', error);
+      }
+    };
+
+    setupUserSession();
+  }, []);
 
   const showTopLevelChrome =
     pathname === '/home' ||
