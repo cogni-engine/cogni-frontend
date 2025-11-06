@@ -501,7 +501,7 @@ export default function WorkspaceMessageItem({
         >
           <p className='text-xs text-gray-400 mb-1'>{name}</p>
           <div className='flex gap-2 items-end'>
-            <div className='flex flex-col gap-2'>
+            <div className='flex flex-col gap-2 min-w-0'>
               {(message.text || message.replied_message) && (
                 <div
                   ref={messageContentRef}
