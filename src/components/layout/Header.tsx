@@ -54,13 +54,16 @@ export default function Header() {
   useEffect(() => {
     const updateTime = () => {
       const now = new Date();
-      const formatted = now.toLocaleDateString('en-US', {
-        weekday: 'short',
-        month: 'short',
-        day: 'numeric',
-        hour: 'numeric',
-        minute: '2-digit',
-      });
+      const formatted = now
+        .toLocaleString('en-US', {
+          weekday: 'short',
+          month: 'short',
+          day: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: false,
+        })
+        .replace(/,/g, '');
       setCurrentTime(formatted);
     };
 

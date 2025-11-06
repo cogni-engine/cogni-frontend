@@ -36,7 +36,8 @@ export function useCogno(threadId: number | null) {
       // threadIdがnullの場合はメッセージをクリア
       setMessages([]);
     }
-  }, [threadId, fetchMessages]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [threadId]); // fetchMessagesはuseCallbackで固定されているため依存配列から除外
 
   // ストリーム停止関数
   const stopStream = useCallback(() => {
@@ -119,6 +120,8 @@ export function useCogno(threadId: number | null) {
 
         let accumulatedContent = '';
         let buffer = '';
+        let lastUpdateTime = 0;
+        const UPDATE_THROTTLE = 50; // 50msごとに更新
 
         while (true) {
           // 中断された場合はループを抜ける
@@ -141,17 +144,32 @@ export function useCogno(threadId: number | null) {
               if (data === '[DONE]') continue;
               const parsedData = JSON.parse(data);
               accumulatedContent += parsedData.data;
-              // ストリーム中の仮AIメッセージを更新
-              setMessages(prev =>
-                prev.map(msg =>
-                  msg.id === tempAIMsg.id
-                    ? { ...msg, content: accumulatedContent }
-                    : msg
-                )
-              );
+
+              // スロットリング: 最後の更新から50ms経過した場合のみ更新
+              const now = Date.now();
+              if (now - lastUpdateTime >= UPDATE_THROTTLE) {
+                // ストリーム中の仮AIメッセージを更新
+                setMessages(prev =>
+                  prev.map(msg =>
+                    msg.id === tempAIMsg.id
+                      ? { ...msg, content: accumulatedContent }
+                      : msg
+                  )
+                );
+                lastUpdateTime = now;
+              }
             }
           }
         }
+
+        // ループ終了後、最後の更新を確実に反映
+        setMessages(prev =>
+          prev.map(msg =>
+            msg.id === tempAIMsg.id
+              ? { ...msg, content: accumulatedContent }
+              : msg
+          )
+        );
 
         // 中断された場合は仮メッセージを削除せず、そのまま残す
         if (abortController.signal.aborted) {
