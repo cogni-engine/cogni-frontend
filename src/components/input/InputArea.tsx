@@ -6,7 +6,7 @@ import { useEffect, useRef, useImperativeHandle, forwardRef } from 'react';
 
 type InputAreaProps = {
   messages?: Message[] | AIMessage[] | unknown[];
-  onSend: (content: string) => void;
+  onSend: (content: string, workspaceFileIds?: number[]) => void;
   onStop?: () => void;
   isLoading?: boolean;
   placeholder?: string;
@@ -14,6 +14,7 @@ type InputAreaProps = {
   ai_augmented_input?: boolean;
   replyingTo?: { id: number; text: string; authorName?: string } | null;
   onCancelReply?: () => void;
+  workspaceId?: number;
 };
 
 export type InputAreaRef = {
@@ -30,6 +31,7 @@ const InputArea = forwardRef<InputAreaRef, InputAreaProps>(function InputArea(
     ai_augmented_input = true,
     replyingTo,
     onCancelReply,
+    workspaceId,
   },
   ref
 ) {
@@ -83,12 +85,13 @@ const InputArea = forwardRef<InputAreaRef, InputAreaProps>(function InputArea(
           ref={inputRef}
           suggestions={[]}
           inputPlaceholder={placeholder}
-          onSuggestionClick={onSend}
+          onSuggestionClick={text => onSend(text)}
           onFreeTextSubmit={onSend}
           onStop={onStop}
           isLoading={isLoading}
           canStop={canStop}
           ai_augmented_input={ai_augmented_input}
+          workspaceId={workspaceId}
         />
       </div>
     </div>

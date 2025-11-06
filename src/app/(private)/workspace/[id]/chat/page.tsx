@@ -69,10 +69,10 @@ export default function WorkspaceChatPage() {
 
   // Wrap sendMessage to scroll to bottom after sending
   const sendMessage = useCallback(
-    async (text: string) => {
+    async (text: string, workspaceFileIds?: number[]) => {
       sendingMessageRef.current = true;
       const replyToId = replyingTo?.id ?? null;
-      await originalSendMessage(text, replyToId);
+      await originalSendMessage(text, replyToId, workspaceFileIds);
       // Clear reply state after sending
       setReplyingTo(null);
       // Scroll to bottom after sending message
@@ -449,6 +449,7 @@ export default function WorkspaceChatPage() {
         ai_augmented_input={enableAiSuggestion}
         replyingTo={replyingTo}
         onCancelReply={handleCancelReply}
+        workspaceId={workspaceId}
       />
     </div>
   );

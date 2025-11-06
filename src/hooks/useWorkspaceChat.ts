@@ -277,8 +277,15 @@ export function useWorkspaceChat(workspaceId: number) {
   }, [workspaceId, supabase, mutateMessages]);
 
   const sendMessage = useCallback(
-    async (text: string, replyToId?: number | null) => {
-      if (!workspaceMember?.id || !text.trim()) return;
+    async (
+      text: string,
+      replyToId?: number | null,
+      workspaceFileIds?: number[]
+    ) => {
+      if (!workspaceMember?.id) return;
+      // Allow sending if there's text or files
+      if (!text.trim() && (!workspaceFileIds || workspaceFileIds.length === 0))
+        return;
 
       setSendError(null);
 
@@ -287,7 +294,8 @@ export function useWorkspaceChat(workspaceId: number) {
           workspaceId,
           workspaceMember.id,
           text,
-          replyToId
+          replyToId,
+          workspaceFileIds
         );
         // Revalidate messages to get the new one
         mutateMessages();

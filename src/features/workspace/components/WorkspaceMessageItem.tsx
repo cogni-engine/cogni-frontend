@@ -4,6 +4,7 @@ import { format } from 'date-fns';
 import { User, Reply } from 'lucide-react';
 import { useState, useRef, useEffect, useCallback } from 'react';
 import MessageContextMenu from './MessageContextMenu';
+import MessageFiles from './MessageFiles';
 
 type Props = {
   message: WorkspaceMessage;
@@ -429,6 +430,9 @@ export default function WorkspaceMessageItem({
               <p className='text-sm text-white whitespace-pre-wrap break-words'>
                 {message.text}
               </p>
+              {message.files && message.files.length > 0 && (
+                <MessageFiles files={message.files} />
+              )}
             </div>
           </div>
         </div>
@@ -503,6 +507,9 @@ export default function WorkspaceMessageItem({
               <p className='text-sm text-white whitespace-pre-wrap break-words'>
                 {message.text}
               </p>
+              {message.files && message.files.length > 0 && (
+                <MessageFiles files={message.files} />
+              )}
             </div>
             <p className='text-xs text-gray-500 mt-1'>
               {format(new Date(message.created_at), 'HH:mm')}

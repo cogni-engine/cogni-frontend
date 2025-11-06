@@ -6,17 +6,25 @@ import {
   useEffect,
   useImperativeHandle,
   forwardRef,
+  useCallback,
 } from 'react';
-import { ArrowUp, Plus, Square } from 'lucide-react';
+import { ArrowUp, Square } from 'lucide-react';
 import { VoiceInputButton } from '../VoiceInputButton';
 import { useUI } from '@/contexts/UIContext';
+import FileUploadMenu from '../FileUploadMenu';
+import FileUploadPreview, { type FileUploadItem } from '../FileUploadPreview';
+import {
+  uploadWorkspaceFile,
+  type UploadedFile,
+} from '@/lib/api/workspaceFilesApi';
 
 type TextInputProps = {
-  onSend: (text: string) => void;
+  onSend: (text: string, workspaceFileIds?: number[]) => void;
   onStop?: () => void;
   isLoading?: boolean;
   placeholder?: string;
   canStop?: boolean;
+  workspaceId?: number;
 };
 
 export type FreeTextInputRef = {
@@ -31,11 +39,14 @@ const FreeTextInput = forwardRef<FreeTextInputRef, TextInputProps>(
       isLoading = false,
       placeholder = 'メッセージを入力...',
       canStop = true,
+      workspaceId,
     },
     ref
   ) {
     const [input, setInput] = useState('');
     const [isFocused, setIsFocused] = useState(false);
+    const [uploadItems, setUploadItems] = useState<FileUploadItem[]>([]);
+    const [isUploading, setIsUploading] = useState(false);
     const textareaRef = useRef<HTMLTextAreaElement>(null);
     const { setInputActive } = useUI();
 
@@ -66,10 +77,49 @@ const FreeTextInput = forwardRef<FreeTextInputRef, TextInputProps>(
       setInputActive(isFocused || input.trim().length > 0);
     }, [isFocused, input, setInputActive]);
 
-    const handleSend = () => {
-      if (!input.trim() || isLoading) return;
-      onSend(input);
+    const handleSend = async () => {
+      if (isLoading || isUploading) return;
+
+      // Allow sending if there's text or files
+      const hasText = input.trim().length > 0;
+      const hasFiles = uploadItems.length > 0;
+
+      if (!hasText && !hasFiles) return;
+
+      // Upload files first if any
+      let workspaceFileIds: number[] = [];
+      if (uploadItems.length > 0 && workspaceId) {
+        setIsUploading(true);
+        try {
+          const uploadPromises = uploadItems.map(async item => {
+            if (item.uploaded) {
+              return item.uploaded.id;
+            }
+            // Upload file (creates entry in workspace_files and returns id)
+            const uploaded = await uploadWorkspaceFile(workspaceId, item.file);
+            return uploaded.id;
+          });
+
+          workspaceFileIds = await Promise.all(uploadPromises);
+        } catch (error) {
+          console.error('Error uploading files:', error);
+          alert('Failed to upload files. Please try again.');
+          setIsUploading(false);
+          return;
+        }
+        setIsUploading(false);
+      }
+
+      // Send message with workspace file IDs
+      onSend(
+        input.trim() || '',
+        workspaceFileIds.length > 0 ? workspaceFileIds : undefined
+      );
+
+      // Clear input and files
       setInput('');
+      setUploadItems([]);
+
       // 高さをリセット（1行表示に戻す）
       if (textareaRef.current) {
         textareaRef.current.style.height = '';
@@ -112,15 +162,88 @@ const FreeTextInput = forwardRef<FreeTextInputRef, TextInputProps>(
       }
     };
 
+    const handleFilesSelected = useCallback(
+      (files: File[]) => {
+        if (!workspaceId) return;
+
+        const newItems: FileUploadItem[] = files.map(file => {
+          const id = `${Date.now()}-${Math.random()}`;
+          const isImage = file.type.startsWith('image/');
+          let preview: string | undefined;
+
+          if (isImage) {
+            preview = URL.createObjectURL(file);
+          }
+
+          return {
+            file,
+            id,
+            preview,
+            uploading: false,
+            progress: 0,
+          };
+        });
+
+        setUploadItems(prev => {
+          const combined = [...prev, ...newItems];
+          // Limit to 4 files
+          return combined.slice(0, 4);
+        });
+      },
+      [workspaceId]
+    );
+
+    const handleRemoveFile = useCallback((id: string) => {
+      setUploadItems(prev => {
+        const item = prev.find(item => item.id === id);
+        // Clean up preview URL
+        if (item?.preview) {
+          URL.revokeObjectURL(item.preview);
+        }
+        return prev.filter(item => item.id !== id);
+      });
+    }, []);
+
+    const handleUploadComplete = useCallback(
+      (id: string, uploadedFile: UploadedFile) => {
+        setUploadItems(prev =>
+          prev.map(item =>
+            item.id === id ? { ...item, uploaded: uploadedFile } : item
+          )
+        );
+      },
+      []
+    );
+
+    const handleUploadError = useCallback((id: string, error: string) => {
+      setUploadItems(prev =>
+        prev.map(item =>
+          item.id === id ? { ...item, error, uploading: false } : item
+        )
+      );
+    }, []);
+
+    // Cleanup preview URLs on unmount
+    useEffect(() => {
+      return () => {
+        uploadItems.forEach(item => {
+          if (item.preview) {
+            URL.revokeObjectURL(item.preview);
+          }
+        });
+      };
+    }, [uploadItems]);
+
     return (
       <div className='relative'>
-        {/* プラスボタン - 入力欄の下端に固定 */}
-        <button
-          className='absolute left-0 bottom-2 bg-white/8 backdrop-blur-xl text-white/80 rounded-full border border-black transition-all duration-300 shadow-[0_8px_32px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.12)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.25),inset_0_1px_0_rgba(255,255,255,0.18)] flex items-center justify-center w-[50px] h-[50px] p-0 z-10'
-          type='button'
-        >
-          <Plus className='w-5 h-5' />
-        </button>
+        {/* File Upload Menu - Plus button */}
+        {workspaceId && (
+          <FileUploadMenu
+            onFilesSelected={handleFilesSelected}
+            maxFiles={4}
+            disabled={isLoading || isUploading || uploadItems.length >= 4}
+          />
+        )}
         <div className='flex-1 relative ml-[55px]'>
           <textarea
             ref={textareaRef}
@@ -147,7 +270,11 @@ const FreeTextInput = forwardRef<FreeTextInputRef, TextInputProps>(
           {/* 送信ボタン / 停止ボタン */}
           <button
             onClick={isLoading && canStop ? handleStop : handleSend}
-            disabled={!isLoading && (!input.trim() || isLoading)}
+            disabled={
+              isLoading ||
+              isUploading ||
+              (!input.trim() && uploadItems.length === 0)
+            }
             className='absolute right-2.5 bottom-3 w-10 h-10 rounded-full bg-white/10 backdrop-blur-xl border border-black text-white flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed hover:bg-white/15 hover:scale-102 transition-all duration-300 shadow-[0_8px_32px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.12)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.25),inset_0_1px_0_rgba(255,255,255,0.18)]'
           >
             {isLoading && canStop ? (
@@ -157,6 +284,16 @@ const FreeTextInput = forwardRef<FreeTextInputRef, TextInputProps>(
             )}
           </button>
         </div>
+        {/* File Upload Preview */}
+        {workspaceId && uploadItems.length > 0 && (
+          <FileUploadPreview
+            files={uploadItems}
+            workspaceId={workspaceId}
+            onRemove={handleRemoveFile}
+            onUploadComplete={handleUploadComplete}
+            onUploadError={handleUploadError}
+          />
+        )}
       </div>
     );
   }
