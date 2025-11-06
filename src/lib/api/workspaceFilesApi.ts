@@ -31,7 +31,7 @@ export async function uploadWorkspaceFile(
   // Generate a UUID for the storage path (not the database ID)
   const storageUuid = crypto.randomUUID();
   const sanitizedFilename = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
-  
+
   // Storage path: workspace-files/{workspace_id}/uploads/{uuid}/{original_filename}
   const filePath = `${workspaceId}/uploads/${storageUuid}/${sanitizedFilename}`;
 

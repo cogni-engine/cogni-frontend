@@ -39,10 +39,13 @@ export default function MessageFiles({ files }: MessageFilesProps) {
   useEffect(() => {
     const loadImageUrls = async () => {
       const imageFiles = files.filter(file => isImage(file.mime_type));
-      
+
       for (const file of imageFiles) {
         // Skip if already loaded or loading
-        if (loadedFilesRef.current.has(file.id) || loadingFilesRef.current.has(file.id)) {
+        if (
+          loadedFilesRef.current.has(file.id) ||
+          loadingFilesRef.current.has(file.id)
+        ) {
           continue;
         }
 
@@ -51,13 +54,16 @@ export default function MessageFiles({ files }: MessageFilesProps) {
 
         try {
           // Get signed URL for private bucket (valid for 1 hour)
-          const { data: signedUrlData, error: signedUrlError } = await supabase.storage
-            .from(WORKSPACE_FILES_BUCKET)
-            .createSignedUrl(file.file_path, 3600);
+          const { data: signedUrlData, error: signedUrlError } =
+            await supabase.storage
+              .from(WORKSPACE_FILES_BUCKET)
+              .createSignedUrl(file.file_path, 3600);
 
           if (!signedUrlError && signedUrlData?.signedUrl) {
             loadedFilesRef.current.add(file.id);
-            setImageUrls(prev => new Map(prev).set(file.id, signedUrlData.signedUrl));
+            setImageUrls(prev =>
+              new Map(prev).set(file.id, signedUrlData.signedUrl)
+            );
           }
         } catch (error) {
           console.error('Error loading image URL:', error);
@@ -87,9 +93,10 @@ export default function MessageFiles({ files }: MessageFilesProps) {
     if (!imageUrls.has(file.id)) {
       try {
         // Get signed URL for private bucket (valid for 1 hour)
-        const { data: signedUrlData, error: signedUrlError } = await supabase.storage
-          .from(WORKSPACE_FILES_BUCKET)
-          .createSignedUrl(file.file_path, 3600);
+        const { data: signedUrlData, error: signedUrlError } =
+          await supabase.storage
+            .from(WORKSPACE_FILES_BUCKET)
+            .createSignedUrl(file.file_path, 3600);
 
         if (signedUrlError) {
           console.error('Error creating signed URL:', signedUrlError);
@@ -97,7 +104,9 @@ export default function MessageFiles({ files }: MessageFilesProps) {
         }
 
         if (signedUrlData?.signedUrl) {
-          setImageUrls(prev => new Map(prev).set(file.id, signedUrlData.signedUrl));
+          setImageUrls(prev =>
+            new Map(prev).set(file.id, signedUrlData.signedUrl)
+          );
           setSelectedImage(signedUrlData.signedUrl);
         }
       } catch (error) {
@@ -111,9 +120,10 @@ export default function MessageFiles({ files }: MessageFilesProps) {
   const handleDownload = async (file: MessageFile) => {
     try {
       // Get signed URL for private bucket (valid for 1 hour)
-      const { data: signedUrlData, error: signedUrlError } = await supabase.storage
-        .from(WORKSPACE_FILES_BUCKET)
-        .createSignedUrl(file.file_path, 3600);
+      const { data: signedUrlData, error: signedUrlError } =
+        await supabase.storage
+          .from(WORKSPACE_FILES_BUCKET)
+          .createSignedUrl(file.file_path, 3600);
 
       if (signedUrlError) {
         console.error('Error creating signed URL:', signedUrlError);
@@ -139,7 +149,7 @@ export default function MessageFiles({ files }: MessageFilesProps) {
 
   return (
     <>
-      <div className='flex flex-wrap gap-2 mt-2'>
+      <div className='flex flex-wrap gap-2 mt-2 max-w-full'>
         {files.map(file => {
           const isImg = isImage(file.mime_type);
           const imageUrl = imageUrls.get(file.id);
