@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { useRef } from 'react';
 import { Image, File as FileIcon } from 'lucide-react';
 import {
   DropdownMenu,
@@ -20,11 +20,13 @@ export default function FileUploadMenu({
   maxFiles = 4,
   disabled = false,
 }: FileUploadMenuProps) {
-  const [open, setOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const imageInputRef = useRef<HTMLInputElement>(null);
 
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileSelect = (
+    e: React.ChangeEvent<HTMLInputElement>,
+    accept: string
+  ) => {
     const files = Array.from(e.target.files || []);
 
     if (files.length === 0) return;
@@ -45,13 +47,12 @@ export default function FileUploadMenu({
 
   const triggerFileInput = (accept: string) => {
     const input = accept.startsWith('image/') ? imageInputRef : fileInputRef;
-    setOpen(false); // Close dropdown
     input.current?.click();
   };
 
   return (
     <>
-      <DropdownMenu open={open} onOpenChange={setOpen}>
+      <DropdownMenu>
         <DropdownMenuTrigger asChild disabled={disabled}>
           <button
             type='button'
@@ -74,30 +75,19 @@ export default function FileUploadMenu({
             </svg>
           </button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent
-          align='start'
-          side='top'
-          sideOffset={8}
-          className='z-50'
-        >
+        <DropdownMenuContent align='start' side='top' sideOffset={8}>
           <DropdownMenuItem
-            onSelect={e => {
-              e.preventDefault();
-              triggerFileInput('image/*');
-            }}
+            onClick={() => triggerFileInput('image/*')}
             className='cursor-pointer'
           >
-            <Image className='mr-2 h-4 w-4' aria-hidden='true' />
+            <Image className='mr-2 h-4 w-4' />
             <span>Upload Images</span>
           </DropdownMenuItem>
           <DropdownMenuItem
-            onSelect={e => {
-              e.preventDefault();
-              triggerFileInput('*/*');
-            }}
+            onClick={() => triggerFileInput('*/*')}
             className='cursor-pointer'
           >
-            <FileIcon className='mr-2 h-4 w-4' aria-hidden='true' />
+            <FileIcon className='mr-2 h-4 w-4' />
             <span>Upload Files</span>
           </DropdownMenuItem>
         </DropdownMenuContent>
@@ -110,14 +100,14 @@ export default function FileUploadMenu({
         accept='image/*'
         multiple
         className='hidden'
-        onChange={handleFileSelect}
+        onChange={e => handleFileSelect(e, 'image/*')}
       />
       <input
         ref={fileInputRef}
         type='file'
         multiple
         className='hidden'
-        onChange={handleFileSelect}
+        onChange={e => handleFileSelect(e, '*/*')}
       />
     </>
   );

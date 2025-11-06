@@ -244,6 +244,16 @@ const FreeTextInput = forwardRef<FreeTextInputRef, TextInputProps>(
             disabled={isLoading || isUploading || uploadItems.length >= 4}
           />
         )}
+        {/* File Upload Preview */}
+        {workspaceId && uploadItems.length > 0 && (
+          <FileUploadPreview
+            files={uploadItems}
+            workspaceId={workspaceId}
+            onRemove={handleRemoveFile}
+            onUploadComplete={handleUploadComplete}
+            onUploadError={handleUploadError}
+          />
+        )}
         <div className='flex-1 relative ml-[55px]'>
           <textarea
             ref={textareaRef}
@@ -284,16 +294,6 @@ const FreeTextInput = forwardRef<FreeTextInputRef, TextInputProps>(
             )}
           </button>
         </div>
-        {/* File Upload Preview */}
-        {workspaceId && uploadItems.length > 0 && (
-          <FileUploadPreview
-            files={uploadItems}
-            workspaceId={workspaceId}
-            onRemove={handleRemoveFile}
-            onUploadComplete={handleUploadComplete}
-            onUploadError={handleUploadError}
-          />
-        )}
       </div>
     );
   }
