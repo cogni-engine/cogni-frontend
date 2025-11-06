@@ -110,7 +110,10 @@ export default function HomePage() {
       />
       <InputArea
         messages={messages}
-        onSend={sendMessage}
+        onSend={(content: string) => {
+          // Wrapper to match InputArea's expected signature
+          void sendMessage(content);
+        }}
         onStop={stopStream}
         isLoading={isLoading}
         ai_augmented_input={enableAiSuggestion}

@@ -4,6 +4,7 @@ import {
   type SupabaseProfile,
 } from '@/lib/api/profileUtils';
 import type { WorkspaceMessage } from '@/types/workspace';
+import { linkFilesToMessage } from './workspaceFilesApi';
 
 const supabase = createClient();
 
@@ -22,10 +23,23 @@ type RawWorkspaceMessageRead = {
   workspace_member?: RawWorkspaceMember | null;
 };
 
+type RawWorkspaceMessageFile = {
+  id: number;
+  workspace_file_id: number; // bigint (foreign key to workspace_files.id)
+  workspace_file?: {
+    id: number; // bigint (database primary key)
+    orginal_file_name: string;
+    file_path: string; // Contains UUID in path: {workspace_id}/uploads/{uuid}/{filename}
+    mime_type: string;
+    file_size: number;
+  } | null;
+};
+
 type RawWorkspaceMessage = WorkspaceMessage & {
   workspace_member?: RawWorkspaceMember | null;
   workspace_message_reads?: RawWorkspaceMessageRead[] | null;
   replied_message?: RawWorkspaceMessage | null;
+  workspace_message_files?: RawWorkspaceMessageFile[] | null;
 };
 
 function transformMessageRow(
@@ -39,6 +53,7 @@ function transformMessageRow(
     workspace_member,
     workspace_message_reads,
     replied_message,
+    workspace_message_files,
     ...rest
   } = row;
 
@@ -69,12 +84,24 @@ function transformMessageRow(
     ? transformMessageRow(replied_message)
     : null;
 
+  // Transform files - join through workspace_files table
+  const files = (workspace_message_files ?? [])
+    .filter(fileLink => fileLink.workspace_file)
+    .map(fileLink => ({
+      id: fileLink.workspace_file!.id,
+      original_filename: fileLink.workspace_file!.orginal_file_name, // Note: schema typo
+      file_path: fileLink.workspace_file!.file_path,
+      mime_type: fileLink.workspace_file!.mime_type,
+      file_size: fileLink.workspace_file!.file_size,
+    }));
+
   return {
     ...rest,
     workspace_member: workspaceMember,
     replied_message: transformedRepliedMessage,
     reads,
     read_count: reads.length,
+    files: files.length > 0 ? files : undefined,
   };
 }
 
@@ -121,6 +148,17 @@ export async function getWorkspaceMessages(
           user_id,
           user_profile:user_id(id, name, avatar_url)
         )
+      ),
+      workspace_message_files(
+        id,
+        workspace_file_id,
+        workspace_file:workspace_file_id(
+          id,
+          orginal_file_name,
+          file_path,
+          mime_type,
+          file_size
+        )
       )
     `
     )
@@ -145,7 +183,8 @@ export async function sendWorkspaceMessage(
   workspaceId: number,
   workspaceMemberId: number,
   text: string,
-  replyToId?: number | null
+  replyToId?: number | null,
+  workspaceFileIds?: number[]
 ): Promise<WorkspaceMessage> {
   const { data, error } = await supabase
     .from('workspace_messages')
@@ -189,6 +228,16 @@ export async function sendWorkspaceMessage(
     .single();
 
   if (error) throw error;
+
+  // Link files to message if any
+  if (workspaceFileIds && workspaceFileIds.length > 0) {
+    try {
+      await linkFilesToMessage(data.id, workspaceFileIds);
+    } catch (fileError) {
+      console.error('Error linking files to message:', fileError);
+      // Don't throw - message was created successfully, just file linking failed
+    }
+  }
 
   // Transform nested structure
   return transformMessageRow(data);

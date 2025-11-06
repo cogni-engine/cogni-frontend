@@ -73,6 +73,14 @@ export interface WorkspaceInviteLink {
   created_at: string;
 }
 
+export interface WorkspaceMessageFile {
+  id: number; // bigint (database primary key from workspace_files)
+  original_filename: string;
+  file_path: string; // Contains UUID in path: {workspace_id}/uploads/{uuid}/{filename}
+  mime_type: string;
+  file_size: number;
+}
+
 export interface WorkspaceMessage {
   id: number;
   workspace_id: number;
@@ -89,4 +97,5 @@ export interface WorkspaceMessage {
   reads?: WorkspaceMessageRead[];
   read_count?: number;
   is_read_by_current_user?: boolean;
+  files?: WorkspaceMessageFile[];
 }

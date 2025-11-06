@@ -8,11 +8,12 @@ type DynamicInputProps = {
   suggestions: string[]; // 互換性のため残す（未使用）
   inputPlaceholder?: string;
   onSuggestionClick: (suggestion: string) => void; // 互換性のため残す（未使用）
-  onFreeTextSubmit: (text: string) => void;
+  onFreeTextSubmit: (text: string, workspaceFileIds?: number[]) => void;
   onStop?: () => void;
   isLoading?: boolean;
   canStop?: boolean;
   ai_augmented_input?: boolean;
+  workspaceId?: number;
 };
 
 export type DynamicInputRef = {
@@ -28,6 +29,7 @@ const DynamicInput = forwardRef<DynamicInputRef, DynamicInputProps>(
       isLoading = false,
       canStop = true,
       ai_augmented_input = true,
+      workspaceId,
     },
     ref
   ) {
@@ -41,6 +43,7 @@ const DynamicInput = forwardRef<DynamicInputRef, DynamicInputProps>(
             isLoading={isLoading}
             placeholder={inputPlaceholder}
             canStop={canStop}
+            workspaceId={workspaceId}
           />
         ) : (
           <FreeTextInput
@@ -50,6 +53,7 @@ const DynamicInput = forwardRef<DynamicInputRef, DynamicInputProps>(
             isLoading={isLoading}
             placeholder={inputPlaceholder}
             canStop={canStop}
+            workspaceId={workspaceId}
           />
         )}
       </div>

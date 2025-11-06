@@ -4,6 +4,7 @@ import { format } from 'date-fns';
 import { User, Reply } from 'lucide-react';
 import { useState, useRef, useEffect, useCallback } from 'react';
 import MessageContextMenu from './MessageContextMenu';
+import MessageFiles from './MessageFiles';
 
 type Props = {
   message: WorkspaceMessage;
@@ -417,18 +418,27 @@ export default function WorkspaceMessageItem({
                 {format(new Date(message.created_at), 'HH:mm')}
               </p>
             </div>
-            <div
-              ref={messageContentRef}
-              className='bg-white/13 backdrop-blur-xl border border-black rounded-3xl px-4 py-2.5 shadow-[0_8px_32px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.12)]'
-            >
-              {message.replied_message && (
-                <RepliedMessagePreview
-                  repliedMessage={message.replied_message}
-                />
+            <div className='flex flex-col gap-2 items-end'>
+              {(message.text || message.replied_message) && (
+                <div
+                  ref={messageContentRef}
+                  className='inline-block bg-white/13 backdrop-blur-xl border border-black rounded-3xl px-4 py-2.5 shadow-[0_8px_32px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.12)]'
+                >
+                  {message.replied_message && (
+                    <RepliedMessagePreview
+                      repliedMessage={message.replied_message}
+                    />
+                  )}
+                  {message.text && (
+                    <p className='text-sm text-white whitespace-pre-wrap break-words'>
+                      {message.text}
+                    </p>
+                  )}
+                </div>
               )}
-              <p className='text-sm text-white whitespace-pre-wrap break-words'>
-                {message.text}
-              </p>
+              {message.files && message.files.length > 0 && (
+                <MessageFiles files={message.files} />
+              )}
             </div>
           </div>
         </div>
@@ -491,18 +501,27 @@ export default function WorkspaceMessageItem({
         >
           <p className='text-xs text-gray-400 mb-1'>{name}</p>
           <div className='flex gap-2 items-end'>
-            <div
-              ref={messageContentRef}
-              className='bg-white/8 backdrop-blur-xl border border-black rounded-3xl px-4 py-2.5 shadow-[0_8px_32px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.12)]'
-            >
-              {message.replied_message && (
-                <RepliedMessagePreview
-                  repliedMessage={message.replied_message}
-                />
+            <div className='flex flex-col gap-2 min-w-0'>
+              {(message.text || message.replied_message) && (
+                <div
+                  ref={messageContentRef}
+                  className='inline-block bg-white/8 backdrop-blur-xl border border-black rounded-3xl px-4 py-2.5 shadow-[0_8px_32px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.12)]'
+                >
+                  {message.replied_message && (
+                    <RepliedMessagePreview
+                      repliedMessage={message.replied_message}
+                    />
+                  )}
+                  {message.text && (
+                    <p className='text-sm text-white whitespace-pre-wrap break-words'>
+                      {message.text}
+                    </p>
+                  )}
+                </div>
               )}
-              <p className='text-sm text-white whitespace-pre-wrap break-words'>
-                {message.text}
-              </p>
+              {message.files && message.files.length > 0 && (
+                <MessageFiles files={message.files} />
+              )}
             </div>
             <p className='text-xs text-gray-500 mt-1'>
               {format(new Date(message.created_at), 'HH:mm')}
