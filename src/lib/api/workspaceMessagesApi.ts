@@ -25,6 +25,7 @@ type RawWorkspaceMessageRead = {
 type RawWorkspaceMessage = WorkspaceMessage & {
   workspace_member?: RawWorkspaceMember | null;
   workspace_message_reads?: RawWorkspaceMessageRead[] | null;
+  replied_message?: RawWorkspaceMessage | null;
 };
 
 function transformMessageRow(
@@ -34,7 +35,12 @@ function transformMessageRow(
     return row as unknown as WorkspaceMessage;
   }
 
-  const { workspace_member, workspace_message_reads, ...rest } = row;
+  const {
+    workspace_member,
+    workspace_message_reads,
+    replied_message,
+    ...rest
+  } = row;
 
   const workspaceMember = workspace_member
     ? {
@@ -58,9 +64,15 @@ function transformMessageRow(
       : undefined,
   }));
 
+  // Transform replied message if it exists
+  const transformedRepliedMessage = replied_message
+    ? transformMessageRow(replied_message)
+    : null;
+
   return {
     ...rest,
     workspace_member: workspaceMember,
+    replied_message: transformedRepliedMessage,
     reads,
     read_count: reads.length,
   };
@@ -98,6 +110,17 @@ export async function getWorkspaceMessages(
           user_id,
           user_profile:user_id(id, name, avatar_url)
         )
+      ),
+      replied_message:reply_to_id(
+        id,
+        text,
+        created_at,
+        workspace_member_id,
+        workspace_member:workspace_member_id(
+          id,
+          user_id,
+          user_profile:user_id(id, name, avatar_url)
+        )
       )
     `
     )
@@ -121,7 +144,8 @@ export async function getWorkspaceMessages(
 export async function sendWorkspaceMessage(
   workspaceId: number,
   workspaceMemberId: number,
-  text: string
+  text: string,
+  replyToId?: number | null
 ): Promise<WorkspaceMessage> {
   const { data, error } = await supabase
     .from('workspace_messages')
@@ -129,6 +153,7 @@ export async function sendWorkspaceMessage(
       workspace_id: workspaceId,
       workspace_member_id: workspaceMemberId,
       text,
+      reply_to_id: replyToId ?? null,
     })
     .select(
       `
@@ -142,6 +167,17 @@ export async function sendWorkspaceMessage(
         workspace_message_id,
         workspace_member_id,
         created_at,
+        workspace_member:workspace_member_id(
+          id,
+          user_id,
+          user_profile:user_id(id, name, avatar_url)
+        )
+      ),
+      replied_message:reply_to_id(
+        id,
+        text,
+        created_at,
+        workspace_member_id,
         workspace_member:workspace_member_id(
           id,
           user_id,
@@ -178,6 +214,17 @@ export async function updateWorkspaceMessage(
         workspace_message_id,
         workspace_member_id,
         created_at,
+        workspace_member:workspace_member_id(
+          id,
+          user_id,
+          user_profile:user_id(id, name, avatar_url)
+        )
+      ),
+      replied_message:reply_to_id(
+        id,
+        text,
+        created_at,
+        workspace_member_id,
         workspace_member:workspace_member_id(
           id,
           user_id,
