@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import {
@@ -236,11 +237,14 @@ export default function MessageFiles({ files }: MessageFilesProps) {
                     }}
                   >
                     {imageUrl ? (
-                      <img
+                      <Image
                         src={imageUrl}
                         alt={file.original_filename}
-                        className='w-full h-full object-cover pointer-events-none'
+                        fill
+                        sizes='128px'
+                        className='object-cover pointer-events-none select-none'
                         draggable={false}
+                        loading='lazy'
                       />
                     ) : loadingImages.has(file.id) ? (
                       <div className='w-full h-full flex items-center justify-center'>
@@ -286,17 +290,20 @@ export default function MessageFiles({ files }: MessageFilesProps) {
             >
               <X className='w-5 h-5 text-white' />
             </button>
-            <img
-              src={selectedImage}
-              alt='Preview'
-              className='w-full h-full object-contain'
-              style={{
-                width: '100vw',
-                height: '100vh',
-                objectFit: 'contain',
-              }}
+            <div
+              className='relative w-full h-full'
+              style={{ width: '100vw', height: '100vh' }}
               onClick={e => e.stopPropagation()}
-            />
+            >
+              <Image
+                src={selectedImage}
+                alt='Preview'
+                fill
+                sizes='100vw'
+                className='object-contain'
+                priority
+              />
+            </div>
           </div>,
           document.body
         )}

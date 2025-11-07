@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import { X, File as FileIcon, Loader2 } from 'lucide-react';
 import { type UploadedFile } from '@/lib/api/workspaceFilesApi';
 
@@ -21,13 +22,9 @@ type FileUploadPreviewProps = {
   onUploadError: (id: string, error: string) => void;
 };
 
-export default function FileUploadPreview({
-  files,
-  workspaceId,
-  onRemove,
-  onUploadComplete,
-  onUploadError,
-}: FileUploadPreviewProps) {
+export default function FileUploadPreview(props: FileUploadPreviewProps) {
+  const { files, onRemove } = props;
+
   if (files.length === 0) return null;
 
   const formatFileSize = (bytes: number): string => {
@@ -71,10 +68,13 @@ export default function FileUploadPreview({
               {/* Preview */}
               <div className='w-20 h-20 relative'>
                 {isImg && item.preview ? (
-                  <img
+                  <Image
                     src={item.preview}
                     alt={item.file.name}
-                    className='w-full h-full object-cover'
+                    fill
+                    sizes='80px'
+                    className='object-cover'
+                    unoptimized
                   />
                 ) : (
                   <div className='w-full h-full flex items-center justify-center bg-white/5'>

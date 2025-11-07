@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import { useParams, useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { useWorkspaceNotes, formatDate } from '@/hooks/useWorkspaceNotes';
@@ -203,8 +204,7 @@ export default function WorkspaceNotesPage() {
                             >
                               {assignment.workspace_member?.user_profiles
                                 ?.avatar_url ? (
-                                // eslint-disable-next-line @next/next/no-img-element
-                                <img
+                                <Image
                                   src={
                                     assignment.workspace_member.user_profiles
                                       .avatar_url
@@ -213,7 +213,9 @@ export default function WorkspaceNotesPage() {
                                     assignment.workspace_member.user_profiles
                                       .name || 'User'
                                   }
-                                  className='w-full h-full rounded-full object-cover'
+                                  width={24}
+                                  height={24}
+                                  className='h-full w-full rounded-full object-cover'
                                 />
                               ) : (
                                 assignment.workspace_member?.user_profiles?.name
