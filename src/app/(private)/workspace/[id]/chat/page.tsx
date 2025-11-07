@@ -167,13 +167,17 @@ export default function WorkspaceChatPage() {
   // Check if user is near bottom (within threshold)
   // Note: With column-reverse, scrollTop 0 or positive small values are at the bottom
   const isNearBottom = useCallback(() => {
-    if (!scrollContainerRef.current) return true;
+    if (!scrollContainerRef.current) {
+      return true;
+    }
     const container = scrollContainerRef.current;
-    const threshold = 200;
+    const threshold = 1000;
     const scrollTop = container.scrollTop;
+    const scrollTopAbs = Math.abs(scrollTop);
     // With column-reverse, bottom is at scrollTop = 0 or small positive values
     // Negative values mean we're scrolled away from bottom (toward top)
-    return scrollTop >= 0 && scrollTop < threshold;
+    const result = scrollTopAbs <= threshold;
+    return result;
   }, []);
 
   // Check if user is near top (within 800px - triggers earlier for faster loading)
