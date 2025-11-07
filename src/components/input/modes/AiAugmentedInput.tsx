@@ -26,6 +26,7 @@ type TextInputProps = {
   placeholder?: string;
   canStop?: boolean;
   workspaceId?: number;
+  disableCopilot?: boolean;
 };
 
 export type AiAugmentedInputRef = {
@@ -41,6 +42,7 @@ const AiAugmentedInput = forwardRef<AiAugmentedInputRef, TextInputProps>(
       placeholder = 'メッセージを入力...',
       canStop = true,
       workspaceId,
+      disableCopilot = false,
     },
     ref
   ) {
@@ -236,74 +238,76 @@ const AiAugmentedInput = forwardRef<AiAugmentedInputRef, TextInputProps>(
     }, [uploadItems]);
 
     return (
-      <div className='relative'>
-        {/* File Upload Menu - Plus button */}
-        {workspaceId && (
-          <FileUploadMenu
-            onFilesSelected={handleFilesSelected}
-            maxFiles={4}
-            disabled={isLoading || isUploading || uploadItems.length >= 4}
-          />
-        )}
-        <div className='flex-1 relative ml-[55px]'>
-          <CopilotTextarea
-            disableBranding={true}
-            autosuggestionsConfig={{
-              textareaPurpose: `Assist me in replying to this chat thread. Remember all important details.`,
-              contextCategories: ['workspace_chat', 'cogni_chat'],
-              chatApiConfigs: {},
-              disableWhenEmpty: false,
-              temporarilyDisableWhenMovingCursorWithoutChangingText: false,
-              temporarilyDisableNotTrustedEvents: false,
-            }}
-            ref={textareaRef}
-            value={input}
-            onChange={handleChange}
-            onKeyDown={handleKeyDown}
-            onFocus={() => setIsFocused(true)}
-            onBlur={() => setIsFocused(false)}
-            placeholder={placeholder}
-            autoFocus
-            disabled={isLoading}
-            rows={1}
-            className='w-full bg-white/8 backdrop-blur-xl text-white px-5 py-3.5 pr-[140px] rounded-4xl border border-black focus:outline-none resize-none shadow-[0_8px_32px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.12)] focus:shadow-[0_12px_40px_rgba(0,0,0,0.25),inset_0_1px_0_rgba(255,255,255,0.18)] transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed overflow-y-auto'
-          />
-          {/* マイクボタン - 送信ボタンの左 */}
-          <div className='absolute right-[50px] bottom-1.5 z-10'>
-            <VoiceInputButton
-              onTranscriptChange={text => setInput(text)}
-              currentText={input}
-              disabled={isLoading}
-              className='w-11 h-11 rounded-full bg-transparent border-0 text-white hover:scale-102 transition-all duration-300'
+      <div className='w-full md:max-w-4xl md:mx-auto'>
+        <div className='relative'>
+          {/* File Upload Menu - Plus button */}
+          {workspaceId && (
+            <FileUploadMenu
+              onFilesSelected={handleFilesSelected}
+              maxFiles={4}
+              disabled={isLoading || isUploading || uploadItems.length >= 4}
             />
+          )}
+          <div className='flex-1 relative ml-[55px]'>
+            <CopilotTextarea
+              disableBranding={true}
+              autosuggestionsConfig={{
+                textareaPurpose: `Assist me in replying to this chat thread. Remember all important details.`,
+                contextCategories: ['workspace_chat', 'cogni_chat'],
+                chatApiConfigs: {},
+                disableWhenEmpty: false,
+                temporarilyDisableWhenMovingCursorWithoutChangingText: false,
+                temporarilyDisableNotTrustedEvents: false,
+              }}
+              ref={textareaRef}
+              value={input}
+              onChange={handleChange}
+              onKeyDown={handleKeyDown}
+              onFocus={() => setIsFocused(true)}
+              onBlur={() => setIsFocused(false)}
+              placeholder={placeholder}
+              autoFocus
+              disabled={isLoading || isUploading || disableCopilot}
+              rows={1}
+              className='w-full bg-white/8 backdrop-blur-xl text-white px-5 py-3.5 pr-[140px] rounded-4xl border border-black focus:outline-none resize-none shadow-[0_8px_32px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.12)] focus:shadow-[0_12px_40px_rgba(0,0,0,0.25),inset_0_1px_0_rgba(255,255,255,0.18)] transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed overflow-y-auto'
+            />
+            {/* マイクボタン - 送信ボタンの左 */}
+            <div className='absolute right-[50px] bottom-1.5 z-10'>
+              <VoiceInputButton
+                onTranscriptChange={text => setInput(text)}
+                currentText={input}
+                disabled={isLoading}
+                className='w-11 h-11 rounded-full bg-transparent border-0 text-white hover:scale-102 transition-all duration-300'
+              />
+            </div>
+            {/* 送信ボタン / 停止ボタン */}
+            <button
+              onClick={isLoading && canStop ? handleStop : handleSend}
+              disabled={
+                isLoading ||
+                isUploading ||
+                (!input.trim() && uploadItems.length === 0)
+              }
+              className='absolute right-2.5 bottom-1.5 w-10 h-10 rounded-full bg-white/10 backdrop-blur-xl border border-black text-white flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed hover:bg-white/15 hover:scale-102 transition-all duration-300 shadow-[0_8px_32px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.12)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.25),inset_0_1px_0_rgba(255,255,255,0.18)]'
+            >
+              {isLoading && canStop ? (
+                <Square className='w-4 h-4 fill-current' />
+              ) : (
+                <ArrowUp className='w-4 h-4' />
+              )}
+            </button>
           </div>
-          {/* 送信ボタン / 停止ボタン */}
-          <button
-            onClick={isLoading && canStop ? handleStop : handleSend}
-            disabled={
-              isLoading ||
-              isUploading ||
-              (!input.trim() && uploadItems.length === 0)
-            }
-            className='absolute right-2.5 bottom-1.5 w-10 h-10 rounded-full bg-white/10 backdrop-blur-xl border border-black text-white flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed hover:bg-white/15 hover:scale-102 transition-all duration-300 shadow-[0_8px_32px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.12)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.25),inset_0_1px_0_rgba(255,255,255,0.18)]'
-          >
-            {isLoading && canStop ? (
-              <Square className='w-4 h-4 fill-current' />
-            ) : (
-              <ArrowUp className='w-4 h-4' />
-            )}
-          </button>
+          {/* File Upload Preview */}
+          {workspaceId && uploadItems.length > 0 && (
+            <FileUploadPreview
+              files={uploadItems}
+              workspaceId={workspaceId}
+              onRemove={handleRemoveFile}
+              onUploadComplete={handleUploadComplete}
+              onUploadError={handleUploadError}
+            />
+          )}
         </div>
-        {/* File Upload Preview */}
-        {workspaceId && uploadItems.length > 0 && (
-          <FileUploadPreview
-            files={uploadItems}
-            workspaceId={workspaceId}
-            onRemove={handleRemoveFile}
-            onUploadComplete={handleUploadComplete}
-            onUploadError={handleUploadError}
-          />
-        )}
       </div>
     );
   }

@@ -4,7 +4,7 @@ import { useParams } from 'next/navigation';
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { useWorkspaceChat } from '@/hooks/useWorkspaceChat';
 import { createClient } from '@/lib/supabase/browserClient';
-import InputArea, { type InputAreaRef } from '@/components/input/InputArea';
+import { ChatInput, type ChatInputRef } from '@/components/chat-input';
 import WorkspaceMessageList from '@/features/workspace/components/WorkspaceMessageList';
 import { ChevronDown } from 'lucide-react';
 import { useUserSettings } from '@/features/users/hooks/useUserSettings';
@@ -23,7 +23,7 @@ export default function WorkspaceChatPage() {
   const lastScrollTopRef = useRef(0);
   const hasScrolledUpRef = useRef(false);
   const prevMessagesRef = useRef<typeof messages>([]);
-  const inputAreaRef = useRef<InputAreaRef>(null);
+  const chatInputRef = useRef<ChatInputRef>(null);
   const [highlightedMessageId, setHighlightedMessageId] = useState<
     number | null
   >(null);
@@ -69,10 +69,10 @@ export default function WorkspaceChatPage() {
 
   // Wrap sendMessage to scroll to bottom after sending
   const sendMessage = useCallback(
-    async (text: string, workspaceFileIds?: number[]) => {
+    async (text: string) => {
       sendingMessageRef.current = true;
       const replyToId = replyingTo?.id ?? null;
-      await originalSendMessage(text, replyToId, workspaceFileIds);
+      await originalSendMessage(text, replyToId);
       // Clear reply state after sending
       setReplyingTo(null);
       // Scroll to bottom after sending message
@@ -101,7 +101,7 @@ export default function WorkspaceChatPage() {
         });
         // Focus input after setting reply
         setTimeout(() => {
-          inputAreaRef.current?.focus();
+          chatInputRef.current?.focus();
         }, 100);
       }
     },
@@ -439,8 +439,8 @@ export default function WorkspaceChatPage() {
       )}
 
       {/* Input */}
-      <InputArea
-        ref={inputAreaRef}
+      <ChatInput
+        ref={chatInputRef}
         messages={messages}
         onSend={sendMessage}
         isLoading={isLoading}

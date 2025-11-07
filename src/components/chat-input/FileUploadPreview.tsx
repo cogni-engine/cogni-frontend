@@ -1,11 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { X, Image as ImageIcon, File as FileIcon, Loader2 } from 'lucide-react';
-import {
-  uploadWorkspaceFile,
-  type UploadedFile,
-} from '@/lib/api/workspaceFilesApi';
+import { X, File as FileIcon, Loader2 } from 'lucide-react';
+import { type UploadedFile } from '@/lib/api/workspaceFilesApi';
 
 export interface FileUploadItem {
   file: File;

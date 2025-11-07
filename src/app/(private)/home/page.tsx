@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from 'react';
 import ChatContainer from '@/features/cogno/components/ChatContainer';
-import InputArea from '@/components/input/InputArea';
+import ChatInput from '@/components/chat-input/ChatInput';
 import NotificationPanel from '@/features/notifications/components/NotificationPanel';
 import { useCogno } from '@/hooks/useCogno';
 import { useThreadContext } from '@/contexts/ThreadContext';
@@ -108,7 +108,7 @@ export default function HomePage() {
         messages={messages}
         sendMessage={sendMessage}
       />
-      <InputArea
+      <ChatInput
         messages={messages}
         onSend={(content: string) => {
           // Wrapper to match InputArea's expected signature
