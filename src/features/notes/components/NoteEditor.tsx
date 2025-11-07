@@ -1,28 +1,34 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useNoteEditor } from '@/hooks/useNoteEditor';
 import {
   ArrowLeft,
   Bold,
   Italic,
   Strikethrough,
-  Code,
   List,
   ListOrdered,
   Quote,
   Undo,
   Redo,
   Users,
+  Image as ImageIcon,
+  Loader2,
+  CheckSquare,
 } from 'lucide-react';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import { Markdown } from '@tiptap/markdown';
 import Placeholder from '@tiptap/extension-placeholder';
+import Image from '@tiptap/extension-image';
+import TaskList from '@tiptap/extension-task-list';
+import TaskItem from '@tiptap/extension-task-item';
 import { getPersonalWorkspaceId } from '@/lib/cookies';
 import { useWorkspaceMembers } from '@/hooks/useWorkspace';
 import { assignNoteToMembers, getNoteAssignments } from '@/lib/api/notesApi';
+import { uploadWorkspaceFile, getFileUrl } from '@/lib/api/workspaceFilesApi';
 
 interface ToolbarButtonProps {
   onClick: () => void;
@@ -31,6 +37,18 @@ interface ToolbarButtonProps {
   icon: React.ReactNode;
   title: string;
 }
+
+type ToggleCommand = {
+  run: () => void;
+};
+
+type TaskListChain = {
+  toggleTaskList?: () => ToggleCommand;
+};
+
+type StrikeChain = {
+  toggleStrike?: () => ToggleCommand;
+};
 
 function ToolbarButton({
   onClick,
@@ -72,6 +90,10 @@ export default function NoteEditor({ noteId }: { noteId: string }) {
   const [showAssignmentDropdown, setShowAssignmentDropdown] = useState(false);
   const [assigneeIds, setAssigneeIds] = useState<number[]>([]);
   const [savingAssignment, setSavingAssignment] = useState(false);
+
+  // Image upload state
+  const imageInputRef = useRef<HTMLInputElement>(null);
+  const [uploadingImage, setUploadingImage] = useState(false);
 
   // Fetch workspace members if this is a group note
   const { members } = useWorkspaceMembers(
@@ -149,6 +171,74 @@ export default function NoteEditor({ noteId }: { noteId: string }) {
     }
   };
 
+  // Handle image upload
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !editor || !note?.workspace_id) return;
+
+    // Validate it's an image
+    if (!file.type.startsWith('image/')) {
+      alert('Please select an image file');
+      e.target.value = '';
+      return;
+    }
+
+    setUploadingImage(true);
+    try {
+      // Upload to workspace storage
+      const uploaded = await uploadWorkspaceFile(note.workspace_id, file);
+
+      // Insert image into editor at current cursor position
+      // Store file ID in data attribute for later URL refresh
+      const { state, view } = editor;
+      const { from } = state.selection;
+
+      // Insert image with all attributes including data-file-id
+      const imageNode = state.schema.nodes.image.create({
+        src: uploaded.url,
+        alt: uploaded.original_filename,
+        'data-file-id': uploaded.id.toString(),
+      });
+
+      const tr = state.tr.insert(from, imageNode);
+      view.dispatch(tr);
+      editor.commands.focus();
+
+      // Reset input
+      e.target.value = '';
+    } catch (error) {
+      console.error('Error uploading image:', error);
+      alert('Failed to upload image. Please try again.');
+    } finally {
+      setUploadingImage(false);
+    }
+  };
+
+  const triggerImageInput = () => {
+    imageInputRef.current?.click();
+  };
+
+  const handleToggleTaskList = () => {
+    if (!editor) return;
+
+    const chain = editor.chain().focus() as unknown as TaskListChain;
+
+    if (typeof chain.toggleTaskList === 'function') {
+      chain.toggleTaskList().run();
+      return;
+    }
+
+    const commands = editor.commands as unknown as {
+      toggleTaskList?: () => boolean;
+    };
+
+    if (typeof commands.toggleTaskList === 'function') {
+      commands.toggleTaskList();
+    } else {
+      console.warn('Task list command not available');
+    }
+  };
+
   // Initialize TipTap editor
   const editor = useEditor({
     immediatelyRender: false,
@@ -157,9 +247,46 @@ export default function NoteEditor({ noteId }: { noteId: string }) {
         heading: {
           levels: [1, 2, 3],
         },
+        code: false,
       }),
       Placeholder.configure({
         placeholder: 'メモを入力...',
+      }),
+      Image.extend({
+        addAttributes() {
+          return {
+            ...this.parent?.(),
+            'data-file-id': {
+              default: null,
+              parseHTML: element => element.getAttribute('data-file-id'),
+              renderHTML: attributes => {
+                if (!attributes['data-file-id']) {
+                  return {};
+                }
+                return {
+                  'data-file-id': attributes['data-file-id'],
+                };
+              },
+            },
+          };
+        },
+      }).configure({
+        inline: true,
+        allowBase64: false,
+        HTMLAttributes: {
+          class: 'editor-image',
+        },
+      }),
+      TaskList.configure({
+        HTMLAttributes: {
+          class: 'task-list',
+        },
+      }),
+      TaskItem.configure({
+        nested: true,
+        HTMLAttributes: {
+          class: 'task-item',
+        },
       }),
       Markdown,
     ],
@@ -184,6 +311,47 @@ export default function NoteEditor({ noteId }: { noteId: string }) {
       // Only update if the content is actually different to avoid cursor jumps
       if (currentMarkdown !== content) {
         editor.commands.setContent(content || '', { contentType: 'markdown' });
+
+        // Refresh image URLs after content is loaded (for expired signed URLs)
+        const refreshImageUrls = async () => {
+          const images: Array<{
+            node: { attrs: Record<string, unknown> };
+            pos: number;
+            fileId: number;
+          }> = [];
+
+          editor.state.doc.descendants((node, pos) => {
+            if (node.type.name === 'image') {
+              const fileId = node.attrs['data-file-id'];
+              if (fileId) {
+                images.push({ node, pos, fileId: parseInt(fileId, 10) });
+              }
+            }
+          });
+
+          if (images.length === 0) return;
+
+          // Refresh URLs for all images with file IDs
+          for (const { node, pos, fileId } of images) {
+            try {
+              const newUrl = await getFileUrl(fileId);
+              if (newUrl && newUrl !== node.attrs.src) {
+                // Update the image at this position
+                const tr = editor.state.tr;
+                tr.setNodeMarkup(pos, undefined, {
+                  ...node.attrs,
+                  src: newUrl,
+                });
+                editor.view.dispatch(tr);
+              }
+            } catch (error) {
+              console.error('Error refreshing image URL:', error);
+            }
+          }
+        };
+
+        // Small delay to ensure content is fully loaded
+        setTimeout(refreshImageUrls, 500);
       }
     }
   }, [content, editor]);
@@ -356,7 +524,7 @@ export default function NoteEditor({ noteId }: { noteId: string }) {
         )}
       </header>
       {/* Toolbar */}
-      <div className='sticky top-0 z-20 flex flex-wrap gap-2 mb-4 p-3 border-b border-white/10 bg-slate-950/90 backdrop-blur-sm shadow-[0_6px_20px_rgba(0,0,0,0.35)]'>
+      <div className='sticky top-0 z-20 flex flex-wrap gap-2 mx-2 px-3 py-3 rounded-2xl border border-white/10 bg-white/8 backdrop-blur-xl shadow-[0_10px_40px_rgba(0,0,0,0.35),inset_0_1px_0_rgba(255,255,255,0.12)]'>
         <ToolbarButton
           onClick={() => editor.chain().focus().toggleBold().run()}
           isActive={editor.isActive('bold')}
@@ -370,16 +538,15 @@ export default function NoteEditor({ noteId }: { noteId: string }) {
           title='Italic'
         />
         <ToolbarButton
-          onClick={() => editor.chain().focus().toggleStrike().run()}
+          onClick={() => {
+            const chain = editor.chain().focus() as StrikeChain;
+            if (chain.toggleStrike) {
+              chain.toggleStrike().run();
+            }
+          }}
           isActive={editor.isActive('strike')}
           icon={<Strikethrough className='w-4 h-4' />}
           title='Strikethrough'
-        />
-        <ToolbarButton
-          onClick={() => editor.chain().focus().toggleCode().run()}
-          isActive={editor.isActive('code')}
-          icon={<Code className='w-4 h-4' />}
-          title='Inline code'
         />
         <div className='w-px h-6 bg-white/10 my-auto' />
         <ToolbarButton
@@ -395,10 +562,29 @@ export default function NoteEditor({ noteId }: { noteId: string }) {
           title='Numbered list'
         />
         <ToolbarButton
+          onClick={handleToggleTaskList}
+          isActive={editor.isActive('taskList')}
+          icon={<CheckSquare className='w-4 h-4' />}
+          title='Task list'
+        />
+        <ToolbarButton
           onClick={() => editor.chain().focus().toggleBlockquote().run()}
           isActive={editor.isActive('blockquote')}
           icon={<Quote className='w-4 h-4' />}
           title='Quote'
+        />
+        <div className='w-px h-6 bg-white/10 my-auto' />
+        <ToolbarButton
+          onClick={triggerImageInput}
+          disabled={uploadingImage || !note?.workspace_id}
+          icon={
+            uploadingImage ? (
+              <Loader2 className='w-4 h-4 animate-spin' />
+            ) : (
+              <ImageIcon className='w-4 h-4' />
+            )
+          }
+          title='Insert Image'
         />
         <div className='w-px h-6 bg-white/10 my-auto' />
         <ToolbarButton
@@ -429,6 +615,15 @@ export default function NoteEditor({ noteId }: { noteId: string }) {
           <EditorContent editor={editor} />
         </div>
       </div>
+
+      {/* Hidden image input */}
+      <input
+        ref={imageInputRef}
+        type='file'
+        accept='image/*'
+        className='hidden'
+        onChange={handleImageUpload}
+      />
 
       <style jsx global>{`
         .ProseMirror {
@@ -485,12 +680,59 @@ export default function NoteEditor({ noteId }: { noteId: string }) {
         .ProseMirror li {
           margin: 0.25em 0;
         }
+        .ProseMirror ul.task-list,
         .ProseMirror ul[data-type='taskList'] {
           list-style: none !important;
-          padding: 0;
+          padding-left: 0 !important;
+          margin: 0.75em 0;
         }
-        .ProseMirror ul[data-type='taskList'] li {
+        .ProseMirror ul.task-list > li,
+        .ProseMirror ul[data-type='taskList'] > li {
+          list-style: none !important;
+          display: flex !important;
+          align-items: flex-start;
+          gap: 0.6em;
+          margin: 0.3em 0;
+        }
+        .ProseMirror ul.task-list > li::marker,
+        .ProseMirror ul[data-type='taskList'] > li::marker {
+          content: '';
+        }
+        .ProseMirror li.task-item,
+        .ProseMirror li[data-type='taskItem'] {
           display: flex;
+          align-items: flex-start;
+          gap: 0.6em;
+        }
+        .ProseMirror li.task-item > label,
+        .ProseMirror li[data-type='taskItem'] > label {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          flex-shrink: 0;
+          cursor: pointer;
+          user-select: none;
+          margin-top: 0.15em;
+        }
+        .ProseMirror li.task-item > label input[type='checkbox'],
+        .ProseMirror li[data-type='taskItem'] > label input[type='checkbox'] {
+          width: 1.1em;
+          height: 1.1em;
+          cursor: pointer;
+          accent-color: rgba(59, 130, 246, 0.8);
+          border-radius: 0.25em;
+          margin: 0;
+        }
+        .ProseMirror li.task-item > div,
+        .ProseMirror li[data-type='taskItem'] > div {
+          flex: 1;
+          min-width: 0;
+        }
+        .ProseMirror li.task-item[data-checked='true'] > div,
+        .ProseMirror li[data-type='taskItem'][data-checked='true'] > div {
+          text-decoration: line-through;
+          opacity: 0.7;
+          color: rgba(255, 255, 255, 0.5);
         }
         .ProseMirror blockquote {
           border-left: 3px solid rgba(255, 255, 255, 0.2);
@@ -498,24 +740,6 @@ export default function NoteEditor({ noteId }: { noteId: string }) {
           margin: 1em 0;
           font-style: italic;
           color: rgba(255, 255, 255, 0.7);
-        }
-        .ProseMirror code {
-          background: rgba(255, 255, 255, 0.1);
-          padding: 0.2em 0.4em;
-          border-radius: 0.25em;
-          font-size: 0.9em;
-          font-family: 'Courier New', monospace;
-        }
-        .ProseMirror pre {
-          background: rgba(255, 255, 255, 0.05);
-          padding: 1em;
-          border-radius: 0.5em;
-          margin: 1em 0;
-          overflow-x: auto;
-        }
-        .ProseMirror pre code {
-          background: transparent;
-          padding: 0;
         }
         .ProseMirror strong {
           font-weight: 600;
@@ -532,6 +756,22 @@ export default function NoteEditor({ noteId }: { noteId: string }) {
           color: rgba(156, 163, 175, 0.6);
           pointer-events: none;
           height: 0;
+        }
+        .ProseMirror img.editor-image {
+          max-width: 100%;
+          height: auto;
+          border-radius: 0.5rem;
+          margin: 1em 0;
+          display: block;
+          cursor: pointer;
+          border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .ProseMirror img.editor-image:hover {
+          border-color: rgba(255, 255, 255, 0.2);
+        }
+        .ProseMirror img.editor-image.ProseMirror-selectednode {
+          outline: 2px solid rgba(59, 130, 246, 0.5);
+          outline-offset: 2px;
         }
       `}</style>
     </div>
