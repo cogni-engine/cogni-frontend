@@ -368,14 +368,27 @@ export default function WorkspaceMessageItem({
     return (
       <div
         data-replied-preview
-        className='mb-2 pl-3 border-l-2 border-white/20 cursor-pointer hover:bg-white/5 rounded transition-colors'
+        className='mb-2 border-white/20 cursor-pointer hover:bg-white/5 rounded transition-colors'
         onClick={handleClick}
         style={{ pointerEvents: 'auto' }}
       >
-        <p className='text-xs text-white/50 mb-1'>{repliedName}</p>
-        <p className='text-xs text-white/40 whitespace-pre-wrap break-words'>
-          {repliedText}
-        </p>
+        <div className='flex items-start gap-2'>
+          <Avatar className='h-6 w-6 border border-white/15 bg-white/10 text-[10px] font-medium flex-shrink-0'>
+            {repliedProfile?.avatar_url ? (
+              <AvatarImage src={repliedProfile.avatar_url} alt={repliedName} />
+            ) : (
+              <AvatarFallback>
+                <User className='h-3.5 w-3.5' />
+              </AvatarFallback>
+            )}
+          </Avatar>
+          <div className='min-w-0 flex-1'>
+            <p className='text-xs text-white/50 mb-1'>{repliedName}</p>
+            <p className='text-xs text-white/40 whitespace-pre-wrap break-words'>
+              {repliedText}
+            </p>
+          </div>
+        </div>
       </div>
     );
   };
