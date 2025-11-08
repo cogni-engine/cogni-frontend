@@ -17,6 +17,7 @@ export interface Note {
   updated_at: string;
   text: string;
   workspace_id: number;
+  deleted_at?: string | null;
   workspace?: {
     id: number;
     title: string;

@@ -5,18 +5,46 @@ import { useNotes, formatDate, useNoteMutations } from '@/hooks/useNotes';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { getPersonalWorkspaceId } from '@/lib/cookies';
-import { PenSquare } from 'lucide-react';
+import { PenSquare, Trash2 } from 'lucide-react';
+import SearchBar from '@/components/SearchBar';
+import GlassButton from '@/components/glass-card/GlassButton';
+import GlassCard from '@/components/glass-card/GlassCard';
+import NoteContextMenu from '@/features/workspace/components/NoteContextMenu';
 
 export default function NotesPage() {
   const router = useRouter();
-  const { notes, loading, error, searchNotes } = useNotes();
+  const {
+    notes,
+    loading,
+    error,
+    searchNotes,
+    softDeleteNote,
+    deleteNote,
+    restoreNote,
+    duplicateNote,
+    emptyTrash,
+  } = useNotes();
   const { create } = useNoteMutations();
   const [searchQuery, setSearchQuery] = useState('');
   const [isCreating, setIsCreating] = useState(false);
+  const [contextMenu, setContextMenu] = useState<{
+    x: number;
+    y: number;
+    noteId: string;
+    isDeleted: boolean;
+  } | null>(null);
+  const [showHardDeleteConfirm, setShowHardDeleteConfirm] = useState<
+    string | null
+  >(null);
+  const [showEmptyTrashConfirm, setShowEmptyTrashConfirm] = useState(false);
 
   const personalWorkspaceId = getPersonalWorkspaceId();
 
-  const formattedNotes = notes.map(note => ({
+  // Separate active and deleted notes
+  const activeNotes = notes.filter(note => !note.deleted_at);
+  const deletedNotes = notes.filter(note => note.deleted_at);
+
+  const formattedActiveNotes = activeNotes.map(note => ({
     id: note.id.toString(),
     title: note.title,
     date: formatDate(note.updated_at),
@@ -26,6 +54,20 @@ export default function NotesPage() {
       note.workspace?.type === 'group' &&
       note.workspace_id !== personalWorkspaceId,
     updated_at: note.updated_at,
+    deleted_at: note.deleted_at,
+  }));
+
+  const formattedDeletedNotes = deletedNotes.map(note => ({
+    id: note.id.toString(),
+    title: note.title,
+    date: formatDate(note.updated_at),
+    preview: note.preview,
+    workspace: note.workspace,
+    isGroupNote:
+      note.workspace?.type === 'group' &&
+      note.workspace_id !== personalWorkspaceId,
+    updated_at: note.updated_at,
+    deleted_at: note.deleted_at,
   }));
 
   const handleCreateNote = async () => {
@@ -49,67 +91,94 @@ export default function NotesPage() {
     }
   };
 
+  const handleNoteClick = (id: string) => {
+    router.push(`/notes/${id}`);
+  };
+
+  const handleContextMenu = (
+    e: React.MouseEvent,
+    noteId: string,
+    isDeleted: boolean
+  ) => {
+    e.preventDefault();
+    setContextMenu({
+      x: e.clientX,
+      y: e.clientY,
+      noteId,
+      isDeleted,
+    });
+  };
+
+  const handleSoftDelete = async (noteId: string) => {
+    try {
+      await softDeleteNote(parseInt(noteId));
+    } catch (err) {
+      console.error('Failed to soft delete note:', err);
+    }
+  };
+
+  const handleHardDelete = async (noteId: string) => {
+    try {
+      await deleteNote(parseInt(noteId));
+      setShowHardDeleteConfirm(null);
+    } catch (err) {
+      console.error('Failed to permanently delete note:', err);
+    }
+  };
+
+  const handleRestore = async (noteId: string) => {
+    try {
+      await restoreNote(parseInt(noteId));
+    } catch (err) {
+      console.error('Failed to restore note:', err);
+    }
+  };
+
+  const handleDuplicate = async (noteId: string) => {
+    try {
+      await duplicateNote(parseInt(noteId));
+    } catch (err) {
+      console.error('Failed to duplicate note:', err);
+    }
+  };
+
+  const handleEmptyTrash = async () => {
+    try {
+      await emptyTrash();
+      setShowEmptyTrashConfirm(false);
+    } catch (err) {
+      console.error('Failed to empty trash:', err);
+    }
+  };
+
   return (
-    <div className='flex flex-col h-full bg-gradient-to-br from-slate-950 via-black to-slate-950 text-gray-100 relative overflow-hidden'>
+    <div className='flex flex-col h-full text-gray-100 relative overflow-hidden'>
       {/* 固定ヘッダー（タイトル + 検索バー + 新規作成ボタン） */}
-      <div className='relative z-20 px-4 md:px-6 pt-4 md:pt-6 pb-4 bg-gradient-to-br from-slate-950 via-black to-slate-950'>
+      <div className='relative z-20 px-4 md:px-6 pt-4 md:pt-6 pb-4'>
         {/* 検索バー + 新規作成ボタン */}
-        <div className='flex items-center justify-between w-full gap-3'>
-          {/* Search Box */}
-          <div className='flex items-center bg-white/8 backdrop-blur-xl text-white px-4 py-3 rounded-4xl flex-1 border border-black focus-within:border-black shadow-[0_8px_32px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.12)] focus-within:shadow-[0_12px_40px_rgba(0,0,0,0.25),inset_0_1px_0_rgba(255,255,255,0.18)] transition-all duration-300'>
-            <svg
-              width='18'
-              height='18'
-              viewBox='0 0 24 24'
-              fill='none'
-              stroke='currentColor'
-              strokeWidth='2'
-              strokeLinecap='round'
-              strokeLinejoin='round'
-              className='text-gray-400 mr-2'
-            >
-              <circle cx='11' cy='11' r='8'></circle>
-              <path d='m21 21-4.35-4.35'></path>
-            </svg>
-            <input
-              type='text'
-              placeholder='Search notes...'
-              value={searchQuery}
-              onChange={e => {
-                setSearchQuery(e.target.value);
-                searchNotes(e.target.value);
-              }}
-              className='bg-transparent outline-none text-sm text-white w-full placeholder-gray-500'
-            />
-            <svg
-              width='18'
-              height='18'
-              viewBox='0 0 24 24'
-              fill='none'
-              stroke='currentColor'
-              strokeWidth='2'
-              strokeLinecap='round'
-              strokeLinejoin='round'
-              className='text-gray-400 ml-2'
-            >
-              <path d='M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z'></path>
-              <path d='M19 10v2a7 7 0 0 1-14 0v-2'></path>
-              <line x1='12' y1='19' x2='12' y2='22'></line>
-            </svg>
-          </div>
+        <div className='flex w-full items-center justify-between gap-3'>
+          <SearchBar
+            placeholder='Search notes...'
+            value={searchQuery}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+              setSearchQuery(e.target.value);
+              searchNotes(e.target.value);
+            }}
+          />
 
           {/* 新規作成ボタン */}
-          <button
+          <GlassButton
             onClick={handleCreateNote}
             disabled={isCreating}
-            className='bg-white/10 backdrop-blur-xl border border-black p-3 rounded-full hover:bg-white/15 transition-all duration-300 shadow-[0_8px_32px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.12)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.25),inset_0_1px_0_rgba(255,255,255,0.18)] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:shadow-[0_8px_32px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.12)]'
+            size='icon'
+            className='size-11 disabled:cursor-not-allowed'
           >
             {isCreating ? (
               <div className='animate-spin rounded-full h-5 w-5 border-b-2 border-gray-300'></div>
             ) : (
               <PenSquare className='w-5 h-5 text-white' />
             )}
-          </button>
+          </GlassButton>
         </div>
       </div>
 
@@ -134,8 +203,131 @@ export default function NotesPage() {
           </div>
         )}
 
-        {!loading && !error && <NoteList notes={formattedNotes} />}
+        {!loading && !error && (
+          <>
+            <NoteList
+              notes={formattedActiveNotes}
+              onNoteClick={handleNoteClick}
+              onContextMenu={handleContextMenu}
+            />
+
+            {/* Trash Section */}
+            {deletedNotes.length > 0 && (
+              <div className='mt-6'>
+                <div className='flex items-center justify-between mb-3 px-1'>
+                  <h3 className='text-sm font-medium text-gray-400 flex items-center gap-2'>
+                    <Trash2 className='w-4 h-4' />
+                    Trash ({deletedNotes.length})
+                  </h3>
+                  <button
+                    onClick={() => setShowEmptyTrashConfirm(true)}
+                    className='text-xs text-red-400 hover:text-red-300 px-3 py-1.5 rounded-lg hover:bg-red-500/10 transition-all duration-200 font-medium'
+                  >
+                    Empty Trash
+                  </button>
+                </div>
+                <div className='flex flex-col gap-[14px]'>
+                  <NoteList
+                    notes={formattedDeletedNotes}
+                    onNoteClick={handleNoteClick}
+                    onContextMenu={handleContextMenu}
+                  />
+                </div>
+              </div>
+            )}
+          </>
+        )}
       </div>
+
+      {/* Context Menu */}
+      {contextMenu && (
+        <NoteContextMenu
+          x={contextMenu.x}
+          y={contextMenu.y}
+          onClose={() => setContextMenu(null)}
+          isDeleted={contextMenu.isDeleted}
+          onSoftDelete={
+            !contextMenu.isDeleted
+              ? () => handleSoftDelete(contextMenu.noteId)
+              : undefined
+          }
+          onHardDelete={
+            contextMenu.isDeleted
+              ? () => setShowHardDeleteConfirm(contextMenu.noteId)
+              : undefined
+          }
+          onDuplicate={
+            !contextMenu.isDeleted
+              ? () => handleDuplicate(contextMenu.noteId)
+              : undefined
+          }
+          onRestore={
+            contextMenu.isDeleted
+              ? () => handleRestore(contextMenu.noteId)
+              : undefined
+          }
+        />
+      )}
+
+      {/* Hard Delete Confirmation Modal */}
+      {showHardDeleteConfirm && (
+        <div className='fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4'>
+          <GlassCard className='p-6 max-w-sm w-full rounded-2xl'>
+            <h3 className='text-lg font-semibold text-white mb-2'>
+              Delete Permanently
+            </h3>
+            <p className='text-gray-400 mb-6 text-sm leading-relaxed'>
+              Are you sure you want to permanently delete this note? This action
+              cannot be undone.
+            </p>
+            <div className='flex gap-3'>
+              <button
+                onClick={() => setShowHardDeleteConfirm(null)}
+                className='flex-1 px-4 py-2.5 bg-white/10 hover:bg-white/20 text-white rounded-lg transition-all duration-200 font-medium'
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => handleHardDelete(showHardDeleteConfirm)}
+                className='flex-1 px-4 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-all duration-200 font-medium shadow-lg shadow-red-500/20'
+              >
+                Delete
+              </button>
+            </div>
+          </GlassCard>
+        </div>
+      )}
+
+      {/* Empty Trash Confirmation Modal */}
+      {showEmptyTrashConfirm && (
+        <div className='fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4'>
+          <GlassCard className='p-6 max-w-sm w-full rounded-2xl'>
+            <h3 className='text-lg font-semibold text-white mb-2'>
+              Empty Trash
+            </h3>
+            <p className='text-gray-400 mb-6 text-sm leading-relaxed'>
+              Are you sure you want to permanently delete all{' '}
+              {deletedNotes.length} note
+              {deletedNotes.length !== 1 ? 's' : ''} in the trash? This action
+              cannot be undone.
+            </p>
+            <div className='flex gap-3'>
+              <button
+                onClick={() => setShowEmptyTrashConfirm(false)}
+                className='flex-1 px-4 py-2.5 bg-white/10 hover:bg-white/20 text-white rounded-lg transition-all duration-200 font-medium'
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleEmptyTrash}
+                className='flex-1 px-4 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-all duration-200 font-medium shadow-lg shadow-red-500/20'
+              >
+                Empty Trash
+              </button>
+            </div>
+          </GlassCard>
+        </div>
+      )}
     </div>
   );
 }

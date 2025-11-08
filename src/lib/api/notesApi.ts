@@ -26,9 +26,14 @@ export function combineNoteText(title: string, content: string): string {
 
 /**
  * Get all notes for a specific workspace with assignments
+ * @param workspaceId - The workspace ID
+ * @param includeDeleted - Include soft-deleted notes (default: true)
  */
-export async function getNotes(workspaceId: number): Promise<Note[]> {
-  const { data, error } = await supabase
+export async function getNotes(
+  workspaceId: number,
+  includeDeleted = true
+): Promise<Note[]> {
+  let query = supabase
     .from('notes')
     .select(
       `
@@ -43,8 +48,14 @@ export async function getNotes(workspaceId: number): Promise<Note[]> {
       )
     `
     )
-    .eq('workspace_id', workspaceId)
-    .order('updated_at', { ascending: false });
+    .eq('workspace_id', workspaceId);
+
+  // Filter by deleted_at if not including deleted
+  if (!includeDeleted) {
+    query = query.is('deleted_at', null);
+  }
+
+  const { data, error } = await query.order('updated_at', { ascending: false });
 
   if (error) throw error;
 
@@ -138,10 +149,85 @@ export async function updateNote(
 }
 
 /**
- * Delete a note
+ * Soft delete a note (move to trash)
+ */
+export async function softDeleteNote(id: number): Promise<Note> {
+  const { data, error } = await supabase
+    .from('notes')
+    .update({ deleted_at: new Date().toISOString() })
+    .eq('id', id)
+    .select()
+    .single();
+
+  if (error) throw error;
+  return data;
+}
+
+/**
+ * Restore a soft-deleted note
+ */
+export async function restoreNote(id: number): Promise<Note> {
+  const { data, error } = await supabase
+    .from('notes')
+    .update({ deleted_at: null })
+    .eq('id', id)
+    .select()
+    .single();
+
+  if (error) throw error;
+  return data;
+}
+
+/**
+ * Permanently delete a note (hard delete)
  */
 export async function deleteNote(id: number): Promise<void> {
   const { error } = await supabase.from('notes').delete().eq('id', id);
+
+  if (error) throw error;
+}
+
+/**
+ * Duplicate a note
+ */
+export async function duplicateNote(id: number): Promise<Note> {
+  // First, get the note to duplicate
+  const { data: originalNote, error: fetchError } = await supabase
+    .from('notes')
+    .select('*')
+    .eq('id', id)
+    .single();
+
+  if (fetchError) throw fetchError;
+
+  // Parse the original title
+  const { title, content } = parseNoteText(originalNote.text);
+  const newTitle = `${title} (Copy)`;
+  const newText = combineNoteText(newTitle, content);
+
+  // Create the duplicate
+  const { data, error } = await supabase
+    .from('notes')
+    .insert({
+      workspace_id: originalNote.workspace_id,
+      text: newText,
+    })
+    .select()
+    .single();
+
+  if (error) throw error;
+  return data;
+}
+
+/**
+ * Empty trash (permanently delete all soft-deleted notes in a workspace)
+ */
+export async function emptyTrash(workspaceId: number): Promise<void> {
+  const { error } = await supabase
+    .from('notes')
+    .delete()
+    .eq('workspace_id', workspaceId)
+    .not('deleted_at', 'is', null);
 
   if (error) throw error;
 }

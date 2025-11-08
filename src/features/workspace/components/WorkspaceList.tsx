@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import type { Workspace } from '@/types/workspace';
 import { Building2 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import GlassCard from '@/components/glass-card/GlassCard';
 
 interface WorkspaceListProps {
   workspaces: Workspace[];
@@ -45,9 +46,9 @@ function WorkspaceCard({ workspace }: WorkspaceCardProps) {
   };
 
   return (
-    <div
+    <GlassCard
       onClick={handleCardClick}
-      className='bg-white/8 backdrop-blur-xl transition-all duration-300 rounded-[20px] px-5 py-[8px] border border-black shadow-[0_8px_32px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.12)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.25),inset_0_1px_0_rgba(255,255,255,0.18)] cursor-pointer'
+      className='cursor-pointer rounded-[20px] px-5 py-[8px] '
     >
       <div className='flex items-center justify-between gap-3 py-2'>
         <div className='flex items-center gap-3 flex-1 min-w-0'>
@@ -96,6 +97,6 @@ function WorkspaceCard({ workspace }: WorkspaceCardProps) {
           </span>
         </div>
       </div>
-    </div>
+    </GlassCard>
   );
 }
