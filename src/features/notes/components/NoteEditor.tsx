@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
 import { useNoteEditor } from '@/hooks/useNoteEditor';
 import {
   ArrowLeft,
@@ -27,8 +27,18 @@ import TaskList from '@tiptap/extension-task-list';
 import TaskItem from '@tiptap/extension-task-item';
 import { getPersonalWorkspaceId } from '@/lib/cookies';
 import { useWorkspaceMembers } from '@/hooks/useWorkspace';
+import { useWorkspaceNotes } from '@/hooks/useWorkspaceNotes';
 import { assignNoteToMembers, getNoteAssignments } from '@/lib/api/notesApi';
 import { uploadWorkspaceFile, getFileUrl } from '@/lib/api/workspaceFilesApi';
+import { CustomMention } from '@/lib/tiptap/MentionExtension';
+import { createMentionSuggestion } from '@/lib/tiptap/mentionSuggestion';
+import { NoteMention } from '@/lib/tiptap/NoteMentionExtension';
+import { createNoteMentionSuggestion } from '@/lib/tiptap/noteMentionSuggestion';
+import {
+  syncNoteMemberMentions,
+  syncNoteToNoteMentions,
+} from '@/lib/api/mentionsApi';
+import { createClient } from '@/lib/supabase/browserClient';
 
 interface ToolbarButtonProps {
   onClick: () => void;
@@ -100,9 +110,43 @@ export default function NoteEditor({ noteId }: { noteId: string }) {
     isGroupNote && note?.workspace_id ? note.workspace_id : 0
   );
 
+  // Fetch workspace notes for note mentions
+  const { notes: workspaceNotes } = useWorkspaceNotes(note?.workspace_id || 0);
+
   // Track initial loaded state to compare against
   const [initialAssigneeIds, setInitialAssigneeIds] = useState<number[]>([]);
   const [assignmentsLoaded, setAssignmentsLoaded] = useState(false);
+
+  // Mention state
+  const [currentMemberId, setCurrentMemberId] = useState<number | null>(null);
+  const supabase = createClient();
+
+  // Use a ref to always get the latest members for mention suggestions
+  const membersRef = useRef<typeof members>([]);
+  membersRef.current = members;
+
+  // Use a ref to always get the latest notes for note mention suggestions
+  // Filter out the current note from the suggestions
+  const notesRef = useRef<typeof workspaceNotes>([]);
+  notesRef.current = workspaceNotes.filter(n => n.id !== id);
+
+  // Get current user's workspace member ID
+  useEffect(() => {
+    if (isGroupNote && note?.workspace_id && members.length > 0) {
+      const getCurrentMember = async () => {
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+        if (user) {
+          const member = members.find(m => m.user_id === user.id);
+          if (member) {
+            setCurrentMemberId(member.id);
+          }
+        }
+      };
+      getCurrentMember();
+    }
+  }, [isGroupNote, note?.workspace_id, members, supabase.auth]);
 
   // Load existing assignments
   useEffect(() => {
@@ -288,6 +332,24 @@ export default function NoteEditor({ noteId }: { noteId: string }) {
           class: 'task-item',
         },
       }),
+      // Add member mention extension only for group notes
+      ...(isGroupNote
+        ? [
+            CustomMention.configure({
+              HTMLAttributes: {
+                class: 'mention',
+              },
+              suggestion: createMentionSuggestion(() => membersRef.current),
+            }),
+          ]
+        : []),
+      // Add note mention extension (available in all workspaces)
+      NoteMention.configure({
+        HTMLAttributes: {
+          class: 'note-mention',
+        },
+        suggestion: createNoteMentionSuggestion(() => notesRef.current),
+      }),
       Markdown,
     ],
     content: content || '',
@@ -303,6 +365,34 @@ export default function NoteEditor({ noteId }: { noteId: string }) {
       setContent(markdown);
     },
   });
+
+  // Function to extract mentioned member IDs from editor content
+  const extractMemberMentions = useCallback(() => {
+    if (!editor) return [];
+
+    const mentionedIds: number[] = [];
+    editor.state.doc.descendants(node => {
+      if (node.type.name === 'mention' && node.attrs.workspaceMemberId) {
+        mentionedIds.push(node.attrs.workspaceMemberId);
+      }
+    });
+
+    return [...new Set(mentionedIds)]; // Remove duplicates
+  }, [editor]);
+
+  // Function to extract mentioned note IDs from editor content
+  const extractNoteMentions = useCallback(() => {
+    if (!editor) return [];
+
+    const mentionedNoteIds: number[] = [];
+    editor.state.doc.descendants(node => {
+      if (node.type.name === 'noteMention' && node.attrs.noteId) {
+        mentionedNoteIds.push(node.attrs.noteId);
+      }
+    });
+
+    return [...new Set(mentionedNoteIds)]; // Remove duplicates
+  }, [editor]);
 
   // Update editor content when content from hook changes (e.g., after loading)
   useEffect(() => {
@@ -355,6 +445,72 @@ export default function NoteEditor({ noteId }: { noteId: string }) {
       }
     }
   }, [content, editor]);
+
+  // Auto-save member mentions when content changes
+  useEffect(() => {
+    if (
+      !isGroupNote ||
+      !note?.id ||
+      !note?.workspace_id ||
+      !currentMemberId ||
+      !editor
+    )
+      return;
+
+    const saveMemberMentions = async () => {
+      try {
+        const mentionedMemberIds = extractMemberMentions();
+        await syncNoteMemberMentions(
+          note.id,
+          note.workspace_id,
+          mentionedMemberIds,
+          currentMemberId
+        );
+      } catch (err) {
+        console.error('Failed to save member mentions:', err);
+      }
+    };
+
+    const timeout = setTimeout(saveMemberMentions, 1000);
+    return () => clearTimeout(timeout);
+  }, [
+    content,
+    isGroupNote,
+    note?.id,
+    note?.workspace_id,
+    currentMemberId,
+    extractMemberMentions,
+    editor,
+  ]);
+
+  // Auto-save note mentions when content changes
+  useEffect(() => {
+    if (!note?.id || !note?.workspace_id || !currentMemberId || !editor) return;
+
+    const saveNoteMentions = async () => {
+      try {
+        const mentionedNoteIds = extractNoteMentions();
+        await syncNoteToNoteMentions(
+          note.id,
+          note.workspace_id,
+          mentionedNoteIds,
+          currentMemberId
+        );
+      } catch (err) {
+        console.error('Failed to save note mentions:', err);
+      }
+    };
+
+    const timeout = setTimeout(saveNoteMentions, 1000);
+    return () => clearTimeout(timeout);
+  }, [
+    content,
+    note?.id,
+    note?.workspace_id,
+    currentMemberId,
+    extractNoteMentions,
+    editor,
+  ]);
 
   // Validate that noteId is a valid number (after hooks)
   if (!isValidId) {
@@ -772,6 +928,32 @@ export default function NoteEditor({ noteId }: { noteId: string }) {
         .ProseMirror img.editor-image.ProseMirror-selectednode {
           outline: 2px solid rgba(59, 130, 246, 0.5);
           outline-offset: 2px;
+        }
+        /* Member mention styles */
+        .ProseMirror .mention {
+          background-color: rgba(59, 130, 246, 0.2);
+          border-radius: 0.25rem;
+          padding: 0.125rem 0.25rem;
+          color: rgb(147, 197, 253);
+          font-weight: 500;
+          cursor: pointer;
+          transition: background-color 0.2s;
+        }
+        .ProseMirror .mention:hover {
+          background-color: rgba(59, 130, 246, 0.3);
+        }
+        /* Note mention styles */
+        .ProseMirror .note-mention {
+          background-color: rgba(34, 197, 94, 0.2);
+          border-radius: 0.25rem;
+          padding: 0.125rem 0.25rem;
+          color: rgb(134, 239, 172);
+          font-weight: 500;
+          cursor: pointer;
+          transition: background-color 0.2s;
+        }
+        .ProseMirror .note-mention:hover {
+          background-color: rgba(34, 197, 94, 0.3);
         }
       `}</style>
     </div>

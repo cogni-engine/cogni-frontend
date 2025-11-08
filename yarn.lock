@@ -2703,7 +2703,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@popperjs/core@npm:^2.11.8":
+"@popperjs/core@npm:^2.11.8, @popperjs/core@npm:^2.9.0":
   version: 2.11.8
   resolution: "@popperjs/core@npm:2.11.8"
   checksum: 10c0/4681e682abc006d25eb380d0cf3efc7557043f53b6aea7a5057d0d1e7df849a00e281cd8ea79c902a35a414d7919621fc2ba293ecec05f413598e0b23d5a1e63
@@ -4725,6 +4725,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@tiptap/extension-mention@npm:^3.10.4":
+  version: 3.10.4
+  resolution: "@tiptap/extension-mention@npm:3.10.4"
+  peerDependencies:
+    "@tiptap/core": ^3.10.4
+    "@tiptap/pm": ^3.10.4
+    "@tiptap/suggestion": ^3.10.4
+  checksum: 10c0/99a52904e204ae57d378c3fbeceb8983967c23367e132d4f85bfbe7e4739a904ca6bd3cdb26791a0fbf8a3c68bc2748b4a75ffd83647a20970f41f6f2aa79665
+  languageName: node
+  linkType: hard
+
 "@tiptap/extension-ordered-list@npm:^3.10.2":
   version: 3.10.2
   resolution: "@tiptap/extension-ordered-list@npm:3.10.2"
@@ -4899,6 +4910,16 @@ __metadata:
     "@tiptap/extensions": "npm:^3.10.2"
     "@tiptap/pm": "npm:^3.10.2"
   checksum: 10c0/481d026ee447d1d8c770495d6fa208fa672a0d6371ca46812837f2a4f3f574bb03d7fb2cc6b12f463669ab36ba0c3105ff3cd2fbecc04cbeffd6c887127b7265
+  languageName: node
+  linkType: hard
+
+"@tiptap/suggestion@npm:^3.10.4":
+  version: 3.10.4
+  resolution: "@tiptap/suggestion@npm:3.10.4"
+  peerDependencies:
+    "@tiptap/core": ^3.10.4
+    "@tiptap/pm": ^3.10.4
+  checksum: 10c0/d897ad69b0bd44f664c3e3d83958a133651206f15fab2240a4bb6290fe781e46be246e003f7c15f465a7ef54f1d7c9aaed1f982a9293511c6a2ea2efa5c31acc
   languageName: node
   linkType: hard
 
@@ -6311,6 +6332,7 @@ __metadata:
     "@tailwindcss/postcss": "npm:^4"
     "@tiptap/core": "npm:^3.10.2"
     "@tiptap/extension-image": "npm:^3.10.2"
+    "@tiptap/extension-mention": "npm:^3.10.4"
     "@tiptap/extension-placeholder": "npm:^3.10.2"
     "@tiptap/extension-task-item": "npm:^3.10.2"
     "@tiptap/extension-task-list": "npm:^3.10.2"
@@ -6319,6 +6341,7 @@ __metadata:
     "@tiptap/pm": "npm:^3.10.2"
     "@tiptap/react": "npm:^3.10.2"
     "@tiptap/starter-kit": "npm:^3.10.2"
+    "@tiptap/suggestion": "npm:^3.10.4"
     "@types/node": "npm:^20"
     "@types/react": "npm:^19"
     "@types/react-dom": "npm:^19"
@@ -6353,6 +6376,7 @@ __metadata:
     tailwind-merge: "npm:^2.5.1"
     tailwindcss: "npm:^4"
     tailwindcss-animate: "npm:^1.0.7"
+    tippy.js: "npm:^6.3.7"
     typescript: "npm:^5"
     uuid: "npm:^11.0.3"
     zod: "npm:^4.1.12"
@@ -12584,6 +12608,15 @@ __metadata:
     fdir: "npm:^6.5.0"
     picomatch: "npm:^4.0.3"
   checksum: 10c0/869c31490d0d88eedb8305d178d4c75e7463e820df5a9b9d388291daf93e8b1eb5de1dad1c1e139767e4269fe75f3b10d5009b2cc14db96ff98986920a186844
+  languageName: node
+  linkType: hard
+
+"tippy.js@npm:^6.3.7":
+  version: 6.3.7
+  resolution: "tippy.js@npm:6.3.7"
+  dependencies:
+    "@popperjs/core": "npm:^2.9.0"
+  checksum: 10c0/ec3677beb8caec791ee1f715663f28f42d60e0f7250074a047d13d5e6db95fdb6d26d8a3ac16cecb4ebcaf33ae919dbc889cf97948d115e8d3c81518c911b379
   languageName: node
   linkType: hard
 
