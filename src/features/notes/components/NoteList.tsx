@@ -1,7 +1,7 @@
 'use client';
 
 import Image from 'next/image';
-import Link from 'next/link';
+import { useRef } from 'react';
 
 import GlassCard from '@/components/glass-card/GlassCard';
 
@@ -18,6 +18,13 @@ type NoteListItem = {
   };
   isGroupNote?: boolean;
   updated_at: string;
+  deleted_at?: string | null;
+};
+
+type NoteListProps = {
+  notes: NoteListItem[];
+  onNoteClick?: (id: string) => void;
+  onContextMenu?: (e: React.MouseEvent, id: string, isDeleted: boolean) => void;
 };
 
 type GroupedNotes = {
@@ -115,9 +122,124 @@ function sortGroupKeys(keys: string[]): string[] {
   });
 }
 
-export default function NoteList({ notes }: { notes: NoteListItem[] }) {
+export default function NoteList({
+  notes,
+  onNoteClick,
+  onContextMenu,
+}: NoteListProps) {
   const groupedNotes = groupNotesByTime(notes);
   const sortedGroups = sortGroupKeys(Object.keys(groupedNotes));
+
+  // Note card component with touch handlers
+  const NoteCard = ({ note }: { note: NoteListItem }) => {
+    const touchTimerRef = useRef<NodeJS.Timeout | null>(null);
+    const touchStartRef = useRef<{ x: number; y: number } | null>(null);
+    const isDeleted = !!note.deleted_at;
+
+    const handleTouchStart = (e: React.TouchEvent) => {
+      const touch = e.touches[0];
+      touchStartRef.current = { x: touch.clientX, y: touch.clientY };
+
+      // Start long press timer
+      touchTimerRef.current = setTimeout(() => {
+        // Trigger context menu after 500ms
+        if (onContextMenu) {
+          onContextMenu(
+            {
+              preventDefault: () => {},
+              clientX: touch.clientX,
+              clientY: touch.clientY,
+            } as React.MouseEvent,
+            note.id,
+            isDeleted
+          );
+        }
+      }, 500);
+    };
+
+    const handleTouchMove = (e: React.TouchEvent) => {
+      // Cancel long press if user moves finger too much
+      if (touchStartRef.current && touchTimerRef.current) {
+        const touch = e.touches[0];
+        const deltaX = Math.abs(touch.clientX - touchStartRef.current.x);
+        const deltaY = Math.abs(touch.clientY - touchStartRef.current.y);
+
+        if (deltaX > 10 || deltaY > 10) {
+          clearTimeout(touchTimerRef.current);
+          touchTimerRef.current = null;
+        }
+      }
+    };
+
+    const handleTouchEnd = () => {
+      // Clear the timer if touch ends before long press threshold
+      if (touchTimerRef.current) {
+        clearTimeout(touchTimerRef.current);
+        touchTimerRef.current = null;
+      }
+      touchStartRef.current = null;
+    };
+
+    const handleClick = () => {
+      if (!isDeleted && onNoteClick) {
+        onNoteClick(note.id);
+      }
+    };
+
+    const handleContextMenuEvent = (e: React.MouseEvent) => {
+      if (onContextMenu) {
+        onContextMenu(e, note.id, isDeleted);
+      }
+    };
+
+    return (
+      <GlassCard
+        className={`group relative rounded-[20px] px-5 py-[8px] cursor-pointer select-none ${
+          isDeleted ? 'opacity-60' : ''
+        }`}
+        onClick={handleClick}
+        onContextMenu={handleContextMenuEvent}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+        onTouchCancel={handleTouchEnd}
+      >
+        <div className='flex justify-between items-start gap-3 mb-1'>
+          <div className='flex-1 min-w-0'>
+            <h2 className='font-semibold text-white text-[17px] leading-[1.4] line-clamp-2'>
+              {note.title}
+            </h2>
+            {note.isGroupNote && note.workspace?.title && (
+              <div className='flex items-center gap-1.5 mt-1'>
+                {note.workspace.icon_url ? (
+                  <Image
+                    src={note.workspace.icon_url}
+                    alt={note.workspace.title}
+                    width={16}
+                    height={16}
+                    className='w-4 h-4 rounded-md object-cover'
+                  />
+                ) : (
+                  <div className='w-4 h-4 rounded-md bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-[8px] text-white font-bold'>
+                    {note.workspace.title.charAt(0).toUpperCase()}
+                  </div>
+                )}
+                <span className='text-[11px] text-purple-300'>
+                  {note.workspace.title}
+                </span>
+              </div>
+            )}
+          </div>
+          <span className='text-[11px] text-gray-400 whitespace-nowrap mt-0.5'>
+            {note.date}
+          </span>
+        </div>
+        <p className='text-[13px] text-gray-400 leading-[1.6] line-clamp-2'>
+          {note.preview}
+        </p>
+      </GlassCard>
+    );
+  };
 
   return (
     <div className='flex flex-col gap-6'>
@@ -130,43 +252,7 @@ export default function NoteList({ notes }: { notes: NoteListItem[] }) {
           {/* Notes in this group */}
           <div className='flex flex-col gap-[14px]'>
             {groupedNotes[group].map(note => (
-              <Link key={note.id} href={`/notes/${note.id}`} className='block'>
-                <GlassCard className='group relative rounded-[20px] px-5 py-[8px]'>
-                  <div className='flex justify-between items-start gap-3 mb-1'>
-                    <div className='flex-1 min-w-0'>
-                      <h2 className='font-semibold text-white text-[17px] leading-[1.4] line-clamp-2'>
-                        {note.title}
-                      </h2>
-                      {note.isGroupNote && note.workspace?.title && (
-                        <div className='flex items-center gap-1.5 mt-1'>
-                          {note.workspace.icon_url ? (
-                            <Image
-                              src={note.workspace.icon_url}
-                              alt={note.workspace.title}
-                              width={16}
-                              height={16}
-                              className='w-4 h-4 rounded-md object-cover'
-                            />
-                          ) : (
-                            <div className='w-4 h-4 rounded-md bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-[8px] text-white font-bold'>
-                              {note.workspace.title.charAt(0).toUpperCase()}
-                            </div>
-                          )}
-                          <span className='text-[11px] text-purple-300'>
-                            {note.workspace.title}
-                          </span>
-                        </div>
-                      )}
-                    </div>
-                    <span className='text-[11px] text-gray-400 whitespace-nowrap mt-0.5'>
-                      {note.date}
-                    </span>
-                  </div>
-                  <p className='text-[13px] text-gray-400 leading-[1.6] line-clamp-2'>
-                    {note.preview}
-                  </p>
-                </GlassCard>
-              </Link>
+              <NoteCard key={note.id} note={note} />
             ))}
           </div>
         </div>

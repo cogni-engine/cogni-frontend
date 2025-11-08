@@ -8,6 +8,10 @@ import {
   createNote,
   updateNote,
   deleteNote,
+  softDeleteNote,
+  restoreNote,
+  duplicateNote,
+  emptyTrash,
   searchNotes,
   parseNoteText,
   getUserAssignedNotes,
@@ -155,6 +159,69 @@ export function useNotes() {
     }
   }, []);
 
+  const softDeleteExistingNote = useCallback(async (id: number) => {
+    try {
+      setError(null);
+
+      const deletedNote = await softDeleteNote(id);
+      const parsedNote = parseNote(deletedNote);
+      setNotes(prev => prev.map(note => (note.id === id ? parsedNote : note)));
+      return parsedNote;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to delete note');
+      console.error('Error soft deleting note:', err);
+      throw err;
+    }
+  }, []);
+
+  const restoreExistingNote = useCallback(async (id: number) => {
+    try {
+      setError(null);
+
+      const restoredNote = await restoreNote(id);
+      const parsedNote = parseNote(restoredNote);
+      setNotes(prev => prev.map(note => (note.id === id ? parsedNote : note)));
+      return parsedNote;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to restore note');
+      console.error('Error restoring note:', err);
+      throw err;
+    }
+  }, []);
+
+  const duplicateExistingNote = useCallback(async (id: number) => {
+    try {
+      setError(null);
+
+      const newNote = await duplicateNote(id);
+      const parsedNote = parseNote(newNote);
+      setNotes(prev => [parsedNote, ...prev]);
+      return parsedNote;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to duplicate note');
+      console.error('Error duplicating note:', err);
+      throw err;
+    }
+  }, []);
+
+  const emptyPersonalTrash = useCallback(async () => {
+    try {
+      setError(null);
+
+      const workspaceId = getPersonalWorkspaceId();
+      if (!workspaceId) {
+        throw new Error('No personal workspace found');
+      }
+
+      await emptyTrash(workspaceId);
+      setNotes(prev => prev.filter(note => !note.deleted_at));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to empty trash');
+      console.error('Error emptying trash:', err);
+      throw err;
+    }
+  }, []);
+
   useEffect(() => {
     fetchNotes();
   }, [fetchNotes]);
@@ -168,6 +235,10 @@ export function useNotes() {
     createNote: createNewNote,
     updateNote: updateExistingNote,
     deleteNote: deleteExistingNote,
+    softDeleteNote: softDeleteExistingNote,
+    restoreNote: restoreExistingNote,
+    duplicateNote: duplicateExistingNote,
+    emptyTrash: emptyPersonalTrash,
   };
 }
 
