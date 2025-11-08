@@ -2,7 +2,7 @@
 
 import Image from 'next/image';
 import { useParams, useRouter } from 'next/navigation';
-import { useState, useRef } from 'react';
+import { useState, useRef, memo } from 'react';
 import { useWorkspaceNotes, formatDate } from '@/hooks/useWorkspaceNotes';
 import type { NoteWithParsed } from '@/types/note';
 import { PenSquare, Trash2 } from 'lucide-react';
@@ -226,8 +226,8 @@ export default function WorkspaceNotesPage() {
     }
   };
 
-  // Helper component for rendering a note card
-  const NoteCard = ({
+  // Helper component for rendering a note card - memoized to prevent flickering
+  const NoteCardComponent = ({
     note,
     isDeleted = false,
   }: {
@@ -365,6 +365,8 @@ export default function WorkspaceNotesPage() {
       </GlassCard>
     );
   };
+
+  const NoteCard = memo(NoteCardComponent);
 
   if (loading && !isSearching) {
     return (

@@ -1,7 +1,7 @@
 'use client';
 
 import Image from 'next/image';
-import { useRef } from 'react';
+import { useRef, memo } from 'react';
 
 import GlassCard from '@/components/glass-card/GlassCard';
 
@@ -130,8 +130,8 @@ export default function NoteList({
   const groupedNotes = groupNotesByTime(notes);
   const sortedGroups = sortGroupKeys(Object.keys(groupedNotes));
 
-  // Note card component with touch handlers
-  const NoteCard = ({ note }: { note: NoteListItem }) => {
+  // Note card component with touch handlers - memoized to prevent flickering
+  const NoteCardComponent = ({ note }: { note: NoteListItem }) => {
     const touchTimerRef = useRef<NodeJS.Timeout | null>(null);
     const touchStartRef = useRef<{ x: number; y: number } | null>(null);
     const isDeleted = !!note.deleted_at;
@@ -240,6 +240,8 @@ export default function NoteList({
       </GlassCard>
     );
   };
+
+  const NoteCard = memo(NoteCardComponent);
 
   return (
     <div className='flex flex-col gap-6'>
