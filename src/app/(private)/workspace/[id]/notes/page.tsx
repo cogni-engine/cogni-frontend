@@ -5,7 +5,105 @@ import { useParams, useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { useWorkspaceNotes, formatDate } from '@/hooks/useWorkspaceNotes';
 import type { NoteWithParsed } from '@/types/note';
-import { Search, PenSquare, Trash } from 'lucide-react';
+import { PenSquare, Trash2 } from 'lucide-react';
+import NoteContextMenu from '@/features/workspace/components/NoteContextMenu';
+import SearchBar from '@/components/SearchBar';
+import GlassButton from '@/components/glass-card/GlassButton';
+import GlassCard from '@/components/glass-card/GlassCard';
+
+// Helper functions for date grouping (same as in NoteList.tsx)
+function getTimeGroup(dateString: string): string {
+  const now = new Date();
+  const date = new Date(dateString);
+
+  // Reset time to midnight for date comparison
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const noteDate = new Date(
+    date.getFullYear(),
+    date.getMonth(),
+    date.getDate()
+  );
+
+  // Today
+  if (noteDate.getTime() === today.getTime()) {
+    return '今日';
+  }
+
+  // This week (last 7 days)
+  const weekAgo = new Date(today);
+  weekAgo.setDate(weekAgo.getDate() - 7);
+  if (noteDate > weekAgo) {
+    return '今週';
+  }
+
+  // This month
+  if (
+    date.getMonth() === now.getMonth() &&
+    date.getFullYear() === now.getFullYear()
+  ) {
+    return '今月';
+  }
+
+  // Previous months in the same year
+  if (date.getFullYear() === now.getFullYear()) {
+    return `${date.getMonth() + 1}月`;
+  }
+
+  // Previous years
+  return `${date.getFullYear()}年`;
+}
+
+function groupNotesByTime(
+  notes: NoteWithParsed[]
+): Record<string, NoteWithParsed[]> {
+  const grouped: Record<string, NoteWithParsed[]> = {};
+
+  notes.forEach(note => {
+    const group = getTimeGroup(note.updated_at);
+    if (!grouped[group]) {
+      grouped[group] = [];
+    }
+    grouped[group].push(note);
+  });
+
+  return grouped;
+}
+
+function sortGroupKeys(keys: string[]): string[] {
+  const order = ['今日', '今週', '今月'];
+
+  return keys.sort((a, b) => {
+    // Priority order
+    const aIndex = order.indexOf(a);
+    const bIndex = order.indexOf(b);
+
+    if (aIndex !== -1 && bIndex !== -1) {
+      return aIndex - bIndex;
+    }
+    if (aIndex !== -1) return -1;
+    if (bIndex !== -1) return 1;
+
+    // Month comparison (e.g., "10月", "11月")
+    const aMonth = a.match(/^(\d+)月$/);
+    const bMonth = b.match(/^(\d+)月$/);
+    if (aMonth && bMonth) {
+      return parseInt(bMonth[1]) - parseInt(aMonth[1]); // Descending
+    }
+
+    // Year comparison (e.g., "2024年", "2023年")
+    const aYear = a.match(/^(\d+)年$/);
+    const bYear = b.match(/^(\d+)年$/);
+    if (aYear && bYear) {
+      return parseInt(bYear[1]) - parseInt(aYear[1]); // Descending
+    }
+
+    // Months come before years
+    if (aMonth) return -1;
+    if (bMonth) return 1;
+
+    return 0;
+  });
+}
 
 export default function WorkspaceNotesPage() {
   const params = useParams();
@@ -13,9 +111,16 @@ export default function WorkspaceNotesPage() {
   const workspaceId = parseInt(params.id as string);
 
   const [searchQuery, setSearchQuery] = useState('');
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState<number | null>(
-    null
-  );
+  const [contextMenu, setContextMenu] = useState<{
+    x: number;
+    y: number;
+    noteId: number;
+    isDeleted: boolean;
+  } | null>(null);
+  const [showHardDeleteConfirm, setShowHardDeleteConfirm] = useState<
+    number | null
+  >(null);
+  const [showEmptyTrashConfirm, setShowEmptyTrashConfirm] = useState(false);
 
   const {
     notes,
@@ -24,10 +129,22 @@ export default function WorkspaceNotesPage() {
     refetch,
     searchNotes,
     createNote,
+    softDeleteNote,
     deleteNote,
+    restoreNote,
+    duplicateNote,
+    emptyTrash,
   } = useWorkspaceNotes(workspaceId);
 
   const [isSearching, setIsSearching] = useState(false);
+
+  // Separate active and deleted notes
+  const activeNotes = notes.filter(note => !note.deleted_at);
+  const deletedNotes = notes.filter(note => note.deleted_at);
+
+  // Group active notes by date
+  const groupedNotes = groupNotesByTime(activeNotes);
+  const sortedGroups = sortGroupKeys(Object.keys(groupedNotes));
 
   const handleSearch = async (query: string) => {
     setSearchQuery(query);
@@ -49,18 +166,148 @@ export default function WorkspaceNotesPage() {
     }
   };
 
-  const handleDeleteNote = async (noteId: number) => {
-    try {
-      await deleteNote(noteId);
-      setShowDeleteConfirm(null);
-    } catch (err) {
-      console.error('Failed to delete note:', err);
-    }
-  };
-
   const handleNoteClick = (noteId: number) => {
     router.push(`/notes/${noteId}`);
   };
+
+  const handleContextMenu = (
+    e: React.MouseEvent,
+    noteId: number,
+    isDeleted: boolean
+  ) => {
+    e.preventDefault();
+    setContextMenu({
+      x: e.clientX,
+      y: e.clientY,
+      noteId,
+      isDeleted,
+    });
+  };
+
+  const handleSoftDelete = async (noteId: number) => {
+    try {
+      await softDeleteNote(noteId);
+    } catch (err) {
+      console.error('Failed to soft delete note:', err);
+    }
+  };
+
+  const handleHardDelete = async (noteId: number) => {
+    try {
+      await deleteNote(noteId);
+      setShowHardDeleteConfirm(null);
+    } catch (err) {
+      console.error('Failed to permanently delete note:', err);
+    }
+  };
+
+  const handleRestore = async (noteId: number) => {
+    try {
+      await restoreNote(noteId);
+    } catch (err) {
+      console.error('Failed to restore note:', err);
+    }
+  };
+
+  const handleDuplicate = async (noteId: number) => {
+    try {
+      await duplicateNote(noteId);
+    } catch (err) {
+      console.error('Failed to duplicate note:', err);
+    }
+  };
+
+  const handleEmptyTrash = async () => {
+    try {
+      await emptyTrash();
+      setShowEmptyTrashConfirm(false);
+    } catch (err) {
+      console.error('Failed to empty trash:', err);
+    }
+  };
+
+  // Helper component for rendering a note card
+  const NoteCard = ({
+    note,
+    isDeleted = false,
+  }: {
+    note: NoteWithParsed;
+    isDeleted?: boolean;
+  }) => (
+    <GlassCard
+      key={note.id}
+      className={`group relative rounded-[20px] px-5 py-[8px] cursor-pointer ${
+        isDeleted ? 'opacity-60' : ''
+      }`}
+      onClick={() => !isDeleted && handleNoteClick(note.id)}
+      onContextMenu={e => handleContextMenu(e, note.id, isDeleted)}
+    >
+      <div className='flex justify-between items-start gap-3 mb-1'>
+        <div className='flex-1 min-w-0'>
+          <h2 className='font-semibold text-white text-[17px] leading-[1.4] line-clamp-2'>
+            {note.title || 'Untitled'}
+          </h2>
+        </div>
+        <span className='text-[11px] text-gray-400 whitespace-nowrap mt-0.5'>
+          {formatDate(note.updated_at)}
+        </span>
+      </div>
+      <p className='text-[13px] text-gray-400 leading-[1.6] line-clamp-2 mb-1'>
+        {note.preview || 'No content'}
+      </p>
+      {/* Assigned Members */}
+      {note.workspace_member_note && note.workspace_member_note.length > 0 && (
+        <div className='flex items-center gap-1.5 mt-2 mb-1'>
+          <div className='flex -space-x-2'>
+            {note.workspace_member_note
+              .filter(
+                assignment =>
+                  assignment.workspace_member_note_role === 'assignee'
+              )
+              .slice(0, 3)
+              .map((assignment, index) => (
+                <div
+                  key={assignment.workspace_member?.id || `temp-${index}`}
+                  className='w-6 h-6 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 border-2 border-gray-900 flex items-center justify-center text-white text-xs font-medium'
+                  title={
+                    assignment.workspace_member?.user_profiles?.name ||
+                    'Unknown'
+                  }
+                >
+                  {assignment.workspace_member?.user_profiles?.avatar_url ? (
+                    <Image
+                      src={assignment.workspace_member.user_profiles.avatar_url}
+                      alt={
+                        assignment.workspace_member.user_profiles.name || 'User'
+                      }
+                      width={24}
+                      height={24}
+                      className='h-full w-full rounded-full object-cover'
+                    />
+                  ) : (
+                    assignment.workspace_member?.user_profiles?.name
+                      ?.charAt(0)
+                      .toUpperCase() || '?'
+                  )}
+                </div>
+              ))}
+            {note.workspace_member_note.filter(
+              assignment => assignment.workspace_member_note_role === 'assignee'
+            ).length > 3 && (
+              <div className='w-6 h-6 rounded-full bg-gray-700 border-2 border-gray-900 flex items-center justify-center text-white text-xs font-medium'>
+                +
+                {note.workspace_member_note.filter(
+                  assignment =>
+                    assignment.workspace_member_note_role === 'assignee'
+                ).length - 3}
+              </div>
+            )}
+          </div>
+          <span className='text-xs text-gray-500'>担当者</span>
+        </div>
+      )}
+    </GlassCard>
+  );
 
   if (loading && !isSearching) {
     return (
@@ -87,59 +334,37 @@ export default function WorkspaceNotesPage() {
   }
 
   return (
-    <div className='h-full flex flex-col'>
+    <div className='flex flex-col h-full text-gray-100 relative overflow-hidden'>
       {/* Header */}
-      <div className='flex gap-3 mb-4'>
-        {/* Search */}
-        <div className='flex items-center bg-white/8 backdrop-blur-xl text-white px-4 py-3 rounded-4xl flex-1 border border-black focus-within:border-black shadow-[0_8px_32px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.12)] focus-within:shadow-[0_12px_40px_rgba(0,0,0,0.25),inset_0_1px_0_rgba(255,255,255,0.18)] transition-all duration-300'>
-          <Search className='text-gray-400 mr-2 w-[18px] h-[18px]' />
-          <input
-            type='text'
+      <div className='relative z-20 px-4 md:px-6 pt-4 md:pt-6 pb-4'>
+        <div className='flex w-full items-center justify-between gap-3'>
+          <SearchBar
             placeholder='Search notes...'
             value={searchQuery}
             onChange={e => handleSearch(e.target.value)}
-            className='bg-transparent outline-none text-sm text-white w-full placeholder-gray-500'
           />
+
+          <GlassButton
+            onClick={handleCreateNote}
+            size='icon'
+            className='size-11'
+          >
+            <PenSquare className='w-5 h-5 text-white' />
+          </GlassButton>
         </div>
-        <button
-          onClick={handleCreateNote}
-          className='bg-white/10 backdrop-blur-xl border border-black p-3 rounded-full hover:bg-white/15 transition-all duration-300 shadow-[0_8px_32px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.12)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.25),inset_0_1px_0_rgba(255,255,255,0.18)]'
-        >
-          <PenSquare className='w-5 h-5 text-white' />
-        </button>
       </div>
 
       {/* Notes List */}
       <div
-        className='flex-1 overflow-y-auto'
+        className='relative z-10 flex-1 overflow-y-auto px-4 md:px-6 pb-4'
         style={{
           willChange: 'scroll-position',
           transform: 'translateZ(0)',
           WebkitOverflowScrolling: 'touch',
         }}
       >
-        {notes.length === 0 ? (
+        {activeNotes.length === 0 && deletedNotes.length === 0 ? (
           <div className='text-center py-12'>
-            <div className='text-gray-400 mb-4'>
-              <svg
-                xmlns='http://www.w3.org/2000/svg'
-                width='48'
-                height='48'
-                viewBox='0 0 24 24'
-                fill='none'
-                stroke='currentColor'
-                strokeWidth='1'
-                strokeLinecap='round'
-                strokeLinejoin='round'
-                className='mx-auto mb-4'
-              >
-                <path d='M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z' />
-                <polyline points='14 2 14 8 20 8' />
-                <line x1='16' y1='13' x2='8' y2='13' />
-                <line x1='16' y1='17' x2='8' y2='17' />
-                <polyline points='10 9 9 9 8 9' />
-              </svg>
-            </div>
             <h3 className='text-lg font-medium text-white mb-2'>
               {searchQuery ? 'No notes found' : 'No notes yet'}
             </h3>
@@ -149,142 +374,145 @@ export default function WorkspaceNotesPage() {
                 : 'Create your first note to get started'}
             </p>
             {!searchQuery && (
-              <button
+              <GlassButton
                 onClick={handleCreateNote}
-                className='bg-white/15 hover:bg-white/25 text-white px-6 py-3 rounded-lg transition-colors'
+                className='px-6 py-2.5 rounded-xl'
               >
                 Create Note
-              </button>
+              </GlassButton>
             )}
           </div>
         ) : (
-          <div className='flex flex-col gap-[14px]'>
-            {notes.map((note: NoteWithParsed) => (
-              <div
-                key={note.id}
-                className='group bg-white/8 backdrop-blur-xl transition-all duration-300 rounded-[20px] px-5 py-[8px] border border-black shadow-[0_8px_32px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.12)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.25),inset_0_1px_0_rgba(255,255,255,0.18)] cursor-pointer relative'
-                onClick={() => handleNoteClick(note.id)}
-              >
-                <div className='flex justify-between items-start gap-3 mb-1'>
-                  <div className='flex-1 min-w-0'>
-                    <h3 className='font-semibold text-white text-[17px] leading-[1.4] line-clamp-2'>
-                      {note.title || 'Untitled'}
-                    </h3>
-                  </div>
-                  <span className='text-[11px] text-gray-400 whitespace-nowrap mt-0.5'>
-                    {formatDate(note.updated_at)}
-                  </span>
-                </div>
-                <p className='text-[13px] text-gray-400 leading-[1.6] line-clamp-2 mb-1'>
-                  {note.preview || 'No content'}
-                </p>
-                {/* Assigned Members */}
-                {note.workspace_member_note &&
-                  note.workspace_member_note.length > 0 && (
-                    <div className='flex items-center gap-1.5 mt-2 mb-1'>
-                      <div className='flex -space-x-2'>
-                        {note.workspace_member_note
-                          .filter(
-                            assignment =>
-                              assignment.workspace_member_note_role ===
-                              'assignee'
-                          )
-                          .slice(0, 3)
-                          .map((assignment, index) => (
-                            <div
-                              key={
-                                assignment.workspace_member?.id ||
-                                `temp-${index}`
-                              }
-                              className='w-6 h-6 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 border-2 border-gray-900 flex items-center justify-center text-white text-xs font-medium'
-                              title={
-                                assignment.workspace_member?.user_profiles
-                                  ?.name || 'Unknown'
-                              }
-                            >
-                              {assignment.workspace_member?.user_profiles
-                                ?.avatar_url ? (
-                                <Image
-                                  src={
-                                    assignment.workspace_member.user_profiles
-                                      .avatar_url
-                                  }
-                                  alt={
-                                    assignment.workspace_member.user_profiles
-                                      .name || 'User'
-                                  }
-                                  width={24}
-                                  height={24}
-                                  className='h-full w-full rounded-full object-cover'
-                                />
-                              ) : (
-                                assignment.workspace_member?.user_profiles?.name
-                                  ?.charAt(0)
-                                  .toUpperCase() || '?'
-                              )}
-                            </div>
-                          ))}
-                        {note.workspace_member_note.filter(
-                          assignment =>
-                            assignment.workspace_member_note_role === 'assignee'
-                        ).length > 3 && (
-                          <div className='w-6 h-6 rounded-full bg-gray-700 border-2 border-gray-900 flex items-center justify-center text-white text-xs font-medium'>
-                            +
-                            {note.workspace_member_note.filter(
-                              assignment =>
-                                assignment.workspace_member_note_role ===
-                                'assignee'
-                            ).length - 3}
-                          </div>
-                        )}
-                      </div>
-                      <span className='text-xs text-gray-500'>担当者</span>
-                    </div>
-                  )}
-                {/* Delete button - always at bottom right */}
-                <div className='absolute bottom-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity'>
-                  <button
-                    onClick={e => {
-                      e.stopPropagation();
-                      setShowDeleteConfirm(note.id);
-                    }}
-                    className='p-2 text-gray-400 hover:text-red-400 hover:bg-red-500/10 rounded-md transition-colors'
-                  >
-                    <Trash className='w-4 h-4' />
-                  </button>
+          <div className='flex flex-col gap-6'>
+            {/* Active Notes by Date Groups */}
+            {sortedGroups.map(group => (
+              <div key={group}>
+                {/* Group Header */}
+                <h3 className='text-sm font-medium text-gray-400 mb-3 px-1'>
+                  {group}
+                </h3>
+                {/* Notes in this group */}
+                <div className='flex flex-col gap-[14px]'>
+                  {groupedNotes[group].map(note => (
+                    <NoteCard key={note.id} note={note} />
+                  ))}
                 </div>
               </div>
             ))}
+
+            {/* Trash Section */}
+            {deletedNotes.length > 0 && (
+              <div className='mt-6'>
+                <div className='flex items-center justify-between mb-3 px-1'>
+                  <h3 className='text-sm font-medium text-gray-400 flex items-center gap-2'>
+                    <Trash2 className='w-4 h-4' />
+                    Trash ({deletedNotes.length})
+                  </h3>
+                  <button
+                    onClick={() => setShowEmptyTrashConfirm(true)}
+                    className='text-xs text-red-400 hover:text-red-300 px-3 py-1.5 rounded-lg hover:bg-red-500/10 transition-all duration-200 font-medium'
+                  >
+                    Empty Trash
+                  </button>
+                </div>
+                <div className='flex flex-col gap-[14px]'>
+                  {deletedNotes.map(note => (
+                    <NoteCard key={note.id} note={note} isDeleted={true} />
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>
 
-      {/* Delete Confirmation Modal */}
-      {showDeleteConfirm && (
-        <div className='fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4'>
-          <div className='bg-gray-900 rounded-lg p-6 max-w-sm w-full border border-white/10'>
+      {/* Context Menu */}
+      {contextMenu && (
+        <NoteContextMenu
+          x={contextMenu.x}
+          y={contextMenu.y}
+          onClose={() => setContextMenu(null)}
+          isDeleted={contextMenu.isDeleted}
+          onSoftDelete={
+            !contextMenu.isDeleted
+              ? () => handleSoftDelete(contextMenu.noteId)
+              : undefined
+          }
+          onHardDelete={
+            contextMenu.isDeleted
+              ? () => setShowHardDeleteConfirm(contextMenu.noteId)
+              : undefined
+          }
+          onDuplicate={
+            !contextMenu.isDeleted
+              ? () => handleDuplicate(contextMenu.noteId)
+              : undefined
+          }
+          onRestore={
+            contextMenu.isDeleted
+              ? () => handleRestore(contextMenu.noteId)
+              : undefined
+          }
+        />
+      )}
+
+      {/* Hard Delete Confirmation Modal */}
+      {showHardDeleteConfirm && (
+        <div className='fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4'>
+          <GlassCard className='p-6 max-w-sm w-full rounded-2xl'>
             <h3 className='text-lg font-semibold text-white mb-2'>
-              Delete Note
+              Delete Permanently
             </h3>
-            <p className='text-gray-400 mb-6'>
-              Are you sure you want to delete this note? This action cannot be
-              undone.
+            <p className='text-gray-400 mb-6 text-sm leading-relaxed'>
+              Are you sure you want to permanently delete this note? This action
+              cannot be undone.
             </p>
             <div className='flex gap-3'>
               <button
-                onClick={() => setShowDeleteConfirm(null)}
-                className='flex-1 px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-lg transition-colors'
+                onClick={() => setShowHardDeleteConfirm(null)}
+                className='flex-1 px-4 py-2.5 bg-white/10 hover:bg-white/20 text-white rounded-lg transition-all duration-200 font-medium'
               >
                 Cancel
               </button>
               <button
-                onClick={() => handleDeleteNote(showDeleteConfirm)}
-                className='flex-1 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors'
+                onClick={() => handleHardDelete(showHardDeleteConfirm)}
+                className='flex-1 px-4 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-all duration-200 font-medium shadow-lg shadow-red-500/20'
               >
                 Delete
               </button>
             </div>
-          </div>
+          </GlassCard>
+        </div>
+      )}
+
+      {/* Empty Trash Confirmation Modal */}
+      {showEmptyTrashConfirm && (
+        <div className='fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4'>
+          <GlassCard className='p-6 max-w-sm w-full rounded-2xl'>
+            <h3 className='text-lg font-semibold text-white mb-2'>
+              Empty Trash
+            </h3>
+            <p className='text-gray-400 mb-6 text-sm leading-relaxed'>
+              Are you sure you want to permanently delete all{' '}
+              {deletedNotes.length} note
+              {deletedNotes.length !== 1 ? 's' : ''} in the trash? This action
+              cannot be undone.
+            </p>
+            <div className='flex gap-3'>
+              <button
+                onClick={() => setShowEmptyTrashConfirm(false)}
+                className='flex-1 px-4 py-2.5 bg-white/10 hover:bg-white/20 text-white rounded-lg transition-all duration-200 font-medium'
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleEmptyTrash}
+                className='flex-1 px-4 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-all duration-200 font-medium shadow-lg shadow-red-500/20'
+              >
+                Empty Trash
+              </button>
+            </div>
+          </GlassCard>
         </div>
       )}
     </div>
