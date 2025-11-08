@@ -2,7 +2,7 @@
 
 import Image from 'next/image';
 import { useParams, useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useWorkspaceNotes, formatDate } from '@/hooks/useWorkspaceNotes';
 import type { NoteWithParsed } from '@/types/note';
 import { PenSquare, Trash2 } from 'lucide-react';
@@ -233,81 +233,138 @@ export default function WorkspaceNotesPage() {
   }: {
     note: NoteWithParsed;
     isDeleted?: boolean;
-  }) => (
-    <GlassCard
-      key={note.id}
-      className={`group relative rounded-[20px] px-5 py-[8px] cursor-pointer ${
-        isDeleted ? 'opacity-60' : ''
-      }`}
-      onClick={() => !isDeleted && handleNoteClick(note.id)}
-      onContextMenu={e => handleContextMenu(e, note.id, isDeleted)}
-    >
-      <div className='flex justify-between items-start gap-3 mb-1'>
-        <div className='flex-1 min-w-0'>
-          <h2 className='font-semibold text-white text-[17px] leading-[1.4] line-clamp-2'>
-            {note.title || 'Untitled'}
-          </h2>
+  }) => {
+    const touchTimerRef = useRef<NodeJS.Timeout | null>(null);
+    const touchStartRef = useRef<{ x: number; y: number } | null>(null);
+
+    const handleTouchStart = (e: React.TouchEvent) => {
+      const touch = e.touches[0];
+      touchStartRef.current = { x: touch.clientX, y: touch.clientY };
+
+      // Start long press timer
+      touchTimerRef.current = setTimeout(() => {
+        // Trigger context menu after 500ms
+        handleContextMenu(
+          {
+            preventDefault: () => {},
+            clientX: touch.clientX,
+            clientY: touch.clientY,
+          } as React.MouseEvent,
+          note.id,
+          isDeleted
+        );
+      }, 500);
+    };
+
+    const handleTouchMove = (e: React.TouchEvent) => {
+      // Cancel long press if user moves finger too much
+      if (touchStartRef.current && touchTimerRef.current) {
+        const touch = e.touches[0];
+        const deltaX = Math.abs(touch.clientX - touchStartRef.current.x);
+        const deltaY = Math.abs(touch.clientY - touchStartRef.current.y);
+
+        if (deltaX > 10 || deltaY > 10) {
+          clearTimeout(touchTimerRef.current);
+          touchTimerRef.current = null;
+        }
+      }
+    };
+
+    const handleTouchEnd = () => {
+      // Clear the timer if touch ends before long press threshold
+      if (touchTimerRef.current) {
+        clearTimeout(touchTimerRef.current);
+        touchTimerRef.current = null;
+      }
+      touchStartRef.current = null;
+    };
+
+    return (
+      <GlassCard
+        key={note.id}
+        className={`group relative rounded-[20px] px-5 py-[8px] cursor-pointer select-none ${
+          isDeleted ? 'opacity-60' : ''
+        }`}
+        onClick={() => !isDeleted && handleNoteClick(note.id)}
+        onContextMenu={e => handleContextMenu(e, note.id, isDeleted)}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+        onTouchCancel={handleTouchEnd}
+      >
+        <div className='flex justify-between items-start gap-3 mb-1'>
+          <div className='flex-1 min-w-0'>
+            <h2 className='font-semibold text-white text-[17px] leading-[1.4] line-clamp-2'>
+              {note.title || 'Untitled'}
+            </h2>
+          </div>
+          <span className='text-[11px] text-gray-400 whitespace-nowrap mt-0.5'>
+            {formatDate(note.updated_at)}
+          </span>
         </div>
-        <span className='text-[11px] text-gray-400 whitespace-nowrap mt-0.5'>
-          {formatDate(note.updated_at)}
-        </span>
-      </div>
-      <p className='text-[13px] text-gray-400 leading-[1.6] line-clamp-2 mb-1'>
-        {note.preview || 'No content'}
-      </p>
-      {/* Assigned Members */}
-      {note.workspace_member_note && note.workspace_member_note.length > 0 && (
-        <div className='flex items-center gap-1.5 mt-2 mb-1'>
-          <div className='flex -space-x-2'>
-            {note.workspace_member_note
-              .filter(
-                assignment =>
-                  assignment.workspace_member_note_role === 'assignee'
-              )
-              .slice(0, 3)
-              .map((assignment, index) => (
-                <div
-                  key={assignment.workspace_member?.id || `temp-${index}`}
-                  className='w-6 h-6 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 border-2 border-gray-900 flex items-center justify-center text-white text-xs font-medium'
-                  title={
-                    assignment.workspace_member?.user_profiles?.name ||
-                    'Unknown'
-                  }
-                >
-                  {assignment.workspace_member?.user_profiles?.avatar_url ? (
-                    <Image
-                      src={assignment.workspace_member.user_profiles.avatar_url}
-                      alt={
-                        assignment.workspace_member.user_profiles.name || 'User'
+        <p className='text-[13px] text-gray-400 leading-[1.6] line-clamp-2 mb-1'>
+          {note.preview || 'No content'}
+        </p>
+        {/* Assigned Members */}
+        {note.workspace_member_note &&
+          note.workspace_member_note.length > 0 && (
+            <div className='flex items-center gap-1.5 mt-2 mb-1'>
+              <div className='flex -space-x-2'>
+                {note.workspace_member_note
+                  .filter(
+                    assignment =>
+                      assignment.workspace_member_note_role === 'assignee'
+                  )
+                  .slice(0, 3)
+                  .map((assignment, index) => (
+                    <div
+                      key={assignment.workspace_member?.id || `temp-${index}`}
+                      className='w-6 h-6 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 border-2 border-gray-900 flex items-center justify-center text-white text-xs font-medium'
+                      title={
+                        assignment.workspace_member?.user_profiles?.name ||
+                        'Unknown'
                       }
-                      width={24}
-                      height={24}
-                      className='h-full w-full rounded-full object-cover'
-                    />
-                  ) : (
-                    assignment.workspace_member?.user_profiles?.name
-                      ?.charAt(0)
-                      .toUpperCase() || '?'
-                  )}
-                </div>
-              ))}
-            {note.workspace_member_note.filter(
-              assignment => assignment.workspace_member_note_role === 'assignee'
-            ).length > 3 && (
-              <div className='w-6 h-6 rounded-full bg-gray-700 border-2 border-gray-900 flex items-center justify-center text-white text-xs font-medium'>
-                +
+                    >
+                      {assignment.workspace_member?.user_profiles
+                        ?.avatar_url ? (
+                        <Image
+                          src={
+                            assignment.workspace_member.user_profiles.avatar_url
+                          }
+                          alt={
+                            assignment.workspace_member.user_profiles.name ||
+                            'User'
+                          }
+                          width={24}
+                          height={24}
+                          className='h-full w-full rounded-full object-cover'
+                        />
+                      ) : (
+                        assignment.workspace_member?.user_profiles?.name
+                          ?.charAt(0)
+                          .toUpperCase() || '?'
+                      )}
+                    </div>
+                  ))}
                 {note.workspace_member_note.filter(
                   assignment =>
                     assignment.workspace_member_note_role === 'assignee'
-                ).length - 3}
+                ).length > 3 && (
+                  <div className='w-6 h-6 rounded-full bg-gray-700 border-2 border-gray-900 flex items-center justify-center text-white text-xs font-medium'>
+                    +
+                    {note.workspace_member_note.filter(
+                      assignment =>
+                        assignment.workspace_member_note_role === 'assignee'
+                    ).length - 3}
+                  </div>
+                )}
               </div>
-            )}
-          </div>
-          <span className='text-xs text-gray-500'>担当者</span>
-        </div>
-      )}
-    </GlassCard>
-  );
+              <span className='text-xs text-gray-500'>担当者</span>
+            </div>
+          )}
+      </GlassCard>
+    );
+  };
 
   if (loading && !isSearching) {
     return (
