@@ -4,7 +4,7 @@ import { useParams } from 'next/navigation';
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { useWorkspaceChat } from '@/hooks/useWorkspaceChat';
 import { createClient } from '@/lib/supabase/browserClient';
-import InputArea, { type InputAreaRef } from '@/components/input/InputArea';
+import { ChatInput, type ChatInputRef } from '@/components/chat-input';
 import WorkspaceMessageList from '@/features/workspace/components/WorkspaceMessageList';
 import { ChevronDown } from 'lucide-react';
 import { useUserSettings } from '@/features/users/hooks/useUserSettings';
@@ -23,7 +23,7 @@ export default function WorkspaceChatPage() {
   const lastScrollTopRef = useRef(0);
   const hasScrolledUpRef = useRef(false);
   const prevMessagesRef = useRef<typeof messages>([]);
-  const inputAreaRef = useRef<InputAreaRef>(null);
+  const chatInputRef = useRef<ChatInputRef>(null);
   const [highlightedMessageId, setHighlightedMessageId] = useState<
     number | null
   >(null);
@@ -69,10 +69,10 @@ export default function WorkspaceChatPage() {
 
   // Wrap sendMessage to scroll to bottom after sending
   const sendMessage = useCallback(
-    async (text: string, workspaceFileIds?: number[]) => {
+    async (text: string) => {
       sendingMessageRef.current = true;
       const replyToId = replyingTo?.id ?? null;
-      await originalSendMessage(text, replyToId, workspaceFileIds);
+      await originalSendMessage(text, replyToId);
       // Clear reply state after sending
       setReplyingTo(null);
       // Scroll to bottom after sending message
@@ -101,7 +101,7 @@ export default function WorkspaceChatPage() {
         });
         // Focus input after setting reply
         setTimeout(() => {
-          inputAreaRef.current?.focus();
+          chatInputRef.current?.focus();
         }, 100);
       }
     },
@@ -167,13 +167,17 @@ export default function WorkspaceChatPage() {
   // Check if user is near bottom (within threshold)
   // Note: With column-reverse, scrollTop 0 or positive small values are at the bottom
   const isNearBottom = useCallback(() => {
-    if (!scrollContainerRef.current) return true;
+    if (!scrollContainerRef.current) {
+      return true;
+    }
     const container = scrollContainerRef.current;
-    const threshold = 200;
+    const threshold = 1000;
     const scrollTop = container.scrollTop;
+    const scrollTopAbs = Math.abs(scrollTop);
     // With column-reverse, bottom is at scrollTop = 0 or small positive values
     // Negative values mean we're scrolled away from bottom (toward top)
-    return scrollTop >= 0 && scrollTop < threshold;
+    const result = scrollTopAbs <= threshold;
+    return result;
   }, []);
 
   // Check if user is near top (within 800px - triggers earlier for faster loading)
@@ -439,8 +443,8 @@ export default function WorkspaceChatPage() {
       )}
 
       {/* Input */}
-      <InputArea
-        ref={inputAreaRef}
+      <ChatInput
+        ref={chatInputRef}
         messages={messages}
         onSend={sendMessage}
         isLoading={isLoading}

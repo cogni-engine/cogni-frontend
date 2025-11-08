@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import Link from 'next/link';
 
 type NoteListItem = {
@@ -140,10 +141,11 @@ export default function NoteList({ notes }: { notes: NoteListItem[] }) {
                     {note.isGroupNote && note.workspace?.title && (
                       <div className='flex items-center gap-1.5 mt-1'>
                         {note.workspace.icon_url ? (
-                          // eslint-disable-next-line @next/next/no-img-element
-                          <img
+                          <Image
                             src={note.workspace.icon_url}
                             alt={note.workspace.title}
+                            width={16}
+                            height={16}
                             className='w-4 h-4 rounded-md object-cover'
                           />
                         ) : (

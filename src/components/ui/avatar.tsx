@@ -2,6 +2,7 @@
 
 import * as React from 'react';
 import * as AvatarPrimitive from '@radix-ui/react-avatar';
+import NextImage from 'next/image';
 
 import { cn } from '@/lib/utils';
 
@@ -20,17 +21,66 @@ const Avatar = React.forwardRef<
 ));
 Avatar.displayName = AvatarPrimitive.Root.displayName;
 
-const AvatarImage = React.forwardRef<
+type AvatarImageProps = React.ComponentPropsWithoutRef<
+  typeof AvatarPrimitive.Image
+> & {
+  src: string;
+  alt: string;
+  priority?: boolean;
+  sizes?: string;
+  quality?: number;
+};
+
+const AvatarImageComponent = React.forwardRef<
   React.ElementRef<typeof AvatarPrimitive.Image>,
-  React.ComponentPropsWithoutRef<typeof AvatarPrimitive.Image>
->(({ className, ...props }, ref) => (
-  <AvatarPrimitive.Image
-    ref={ref}
-    className={cn('aspect-square h-full w-full', className)}
-    {...props}
-  />
-));
-AvatarImage.displayName = AvatarPrimitive.Image.displayName;
+  AvatarImageProps
+>(
+  (
+    {
+      className,
+      src,
+      alt,
+      priority = false,
+      sizes = '40px',
+      quality = 85,
+      ...props
+    },
+    ref
+  ) => (
+    <AvatarPrimitive.Image
+      ref={ref}
+      asChild
+      src={src}
+      alt={alt}
+      className={cn('relative block h-full w-full overflow-hidden', className)}
+      {...props}
+    >
+      <NextImage
+        src={src}
+        alt={alt}
+        fill
+        sizes={sizes}
+        priority={priority}
+        quality={quality}
+        loading={priority ? undefined : 'lazy'}
+        className='object-cover'
+      />
+    </AvatarPrimitive.Image>
+  )
+);
+
+AvatarImageComponent.displayName = AvatarPrimitive.Image.displayName;
+
+const AvatarImage = React.memo(
+  AvatarImageComponent,
+  (prev, next) =>
+    prev.src === next.src &&
+    prev.alt === next.alt &&
+    prev.priority === next.priority &&
+    prev.sizes === next.sizes &&
+    prev.quality === next.quality &&
+    prev.className === next.className
+);
 
 const AvatarFallback = React.forwardRef<
   React.ElementRef<typeof AvatarPrimitive.Fallback>,
