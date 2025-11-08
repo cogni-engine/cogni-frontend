@@ -3,6 +3,8 @@
 import Image from 'next/image';
 import Link from 'next/link';
 
+import GlassCard from '@/components/glass-card/GlassCard';
+
 type NoteListItem = {
   id: string;
   title: string;
@@ -128,44 +130,42 @@ export default function NoteList({ notes }: { notes: NoteListItem[] }) {
           {/* Notes in this group */}
           <div className='flex flex-col gap-[14px]'>
             {groupedNotes[group].map(note => (
-              <Link
-                key={note.id}
-                href={`/notes/${note.id}`}
-                className='group bg-white/8 backdrop-blur-xl transition-all duration-300 rounded-[20px] px-5 py-[8px] border border-black shadow-[0_8px_32px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.12)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.25),inset_0_1px_0_rgba(255,255,255,0.18)] relative'
-              >
-                <div className='flex justify-between items-start gap-3 mb-1'>
-                  <div className='flex-1 min-w-0'>
-                    <h2 className='font-semibold text-white text-[17px] leading-[1.4] line-clamp-2'>
-                      {note.title}
-                    </h2>
-                    {note.isGroupNote && note.workspace?.title && (
-                      <div className='flex items-center gap-1.5 mt-1'>
-                        {note.workspace.icon_url ? (
-                          <Image
-                            src={note.workspace.icon_url}
-                            alt={note.workspace.title}
-                            width={16}
-                            height={16}
-                            className='w-4 h-4 rounded-md object-cover'
-                          />
-                        ) : (
-                          <div className='w-4 h-4 rounded-md bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-[8px] text-white font-bold'>
-                            {note.workspace.title.charAt(0).toUpperCase()}
-                          </div>
-                        )}
-                        <span className='text-[11px] text-purple-300'>
-                          {note.workspace.title}
-                        </span>
-                      </div>
-                    )}
+              <Link key={note.id} href={`/notes/${note.id}`} className='block'>
+                <GlassCard className='group relative rounded-[20px] px-5 py-[8px]'>
+                  <div className='flex justify-between items-start gap-3 mb-1'>
+                    <div className='flex-1 min-w-0'>
+                      <h2 className='font-semibold text-white text-[17px] leading-[1.4] line-clamp-2'>
+                        {note.title}
+                      </h2>
+                      {note.isGroupNote && note.workspace?.title && (
+                        <div className='flex items-center gap-1.5 mt-1'>
+                          {note.workspace.icon_url ? (
+                            <Image
+                              src={note.workspace.icon_url}
+                              alt={note.workspace.title}
+                              width={16}
+                              height={16}
+                              className='w-4 h-4 rounded-md object-cover'
+                            />
+                          ) : (
+                            <div className='w-4 h-4 rounded-md bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-[8px] text-white font-bold'>
+                              {note.workspace.title.charAt(0).toUpperCase()}
+                            </div>
+                          )}
+                          <span className='text-[11px] text-purple-300'>
+                            {note.workspace.title}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                    <span className='text-[11px] text-gray-400 whitespace-nowrap mt-0.5'>
+                      {note.date}
+                    </span>
                   </div>
-                  <span className='text-[11px] text-gray-400 whitespace-nowrap mt-0.5'>
-                    {note.date}
-                  </span>
-                </div>
-                <p className='text-[13px] text-gray-400 leading-[1.6] line-clamp-2'>
-                  {note.preview}
-                </p>
+                  <p className='text-[13px] text-gray-400 leading-[1.6] line-clamp-2'>
+                    {note.preview}
+                  </p>
+                </GlassCard>
               </Link>
             ))}
           </div>

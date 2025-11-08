@@ -5,6 +5,7 @@ import { useEffect, useRef, useState, useCallback } from 'react';
 import { useWorkspaceChat } from '@/hooks/useWorkspaceChat';
 import { createClient } from '@/lib/supabase/browserClient';
 import { ChatInput, type ChatInputRef } from '@/components/chat-input';
+import GlassButton from '@/components/glass-card/GlassButton';
 import WorkspaceMessageList from '@/features/workspace/components/WorkspaceMessageList';
 import { ChevronDown } from 'lucide-react';
 import { useUserSettings } from '@/features/users/hooks/useUserSettings';
@@ -437,13 +438,15 @@ export default function WorkspaceChatPage() {
       {/* Scroll to Bottom Button */}
       {showScrollButton && (
         <div className='absolute bottom-24 right-4 z-10'>
-          <button
+          <GlassButton
+            type='button'
             onClick={() => scrollToBottom('smooth')}
-            className='w-10 h-10 rounded-full bg-white/10 backdrop-blur-xl border border-black text-white flex items-center justify-center hover:bg-white/15 hover:scale-102 transition-all duration-300 shadow-[0_8px_32px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.12)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.25),inset_0_1px_0_rgba(255,255,255,0.18)]'
+            size='icon'
+            className='size-10 hover:scale-102'
             aria-label='Scroll to bottom'
           >
             <ChevronDown className='h-5 w-5' />
-          </button>
+          </GlassButton>
         </div>
       )}
 
