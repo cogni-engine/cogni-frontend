@@ -69,20 +69,25 @@ export default function WorkspaceChatPage() {
 
   // Wrap sendMessage to scroll to bottom after sending
   const sendMessage = useCallback(
-    async (text: string) => {
+    async (text: string, workspaceFileIds?: number[]) => {
       sendingMessageRef.current = true;
       const replyToId = replyingTo?.id ?? null;
-      await originalSendMessage(text, replyToId);
-      // Clear reply state after sending
-      setReplyingTo(null);
-      // Scroll to bottom after sending message
-      // Use a delay to ensure the message is in the DOM via realtime
-      setTimeout(() => {
-        if (scrollContainerRef.current) {
-          scrollContainerRef.current.scrollTop = 0;
-        }
+      try {
+        await originalSendMessage(text, replyToId, workspaceFileIds);
+        // Clear reply state after sending
+        setReplyingTo(null);
+        // Scroll to bottom after sending message
+        // Use a delay to ensure the message is in the DOM via realtime
+        setTimeout(() => {
+          if (scrollContainerRef.current) {
+            scrollContainerRef.current.scrollTop = 0;
+          }
+          sendingMessageRef.current = false;
+        }, 100);
+      } catch (error) {
         sendingMessageRef.current = false;
-      }, 100);
+        throw error;
+      }
     },
     [originalSendMessage, replyingTo]
   );
