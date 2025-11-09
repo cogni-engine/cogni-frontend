@@ -82,10 +82,11 @@ export default function NotificationPanel({
     try {
       setLoading(true);
       const fetchedNotifications = await getPastDueNotifications(userId);
-      setNotifications(fetchedNotifications);
+      const uniqueByTask = dedupeByTask(fetchedNotifications);
+      setNotifications(uniqueByTask);
 
       // Mark scheduled notifications as sent
-      const scheduledIds = fetchedNotifications
+      const scheduledIds = uniqueByTask
         .filter(
           n => n.status === 'scheduled' && new Date(n.due_date) < new Date()
         )
@@ -94,12 +95,15 @@ export default function NotificationPanel({
       if (scheduledIds.length > 0) {
         const updatedNotifications =
           await markMultipleNotificationsAsSent(scheduledIds);
-        setNotifications(prev =>
-          prev.map(n => {
-            const updated = updatedNotifications.find(u => u.id === n.id);
-            return updated || n;
-          })
-        );
+        setNotifications(prev => {
+          const merged = prev.map(notification => {
+            const updated = updatedNotifications.find(
+              u => u.id === notification.id
+            );
+            return updated || notification;
+          });
+          return dedupeByTask(merged);
+        });
       }
     } catch (error) {
       console.error('Failed to load notifications:', error);
@@ -141,25 +145,43 @@ export default function NotificationPanel({
     }
   };
 
+  function dedupeByTask(notifications: Notification[]): Notification[] {
+    const lookup = notifications.reduce<Record<number, Notification>>(
+      (acc, notification) => {
+        const existing = acc[notification.task_id];
+        if (!existing) {
+          acc[notification.task_id] = notification;
+          return acc;
+        }
+
+        const existingTime = new Date(existing.due_date).getTime();
+        const currentTime = new Date(notification.due_date).getTime();
+
+        if (currentTime >= existingTime) {
+          acc[notification.task_id] = notification;
+        }
+
+        return acc;
+      },
+      {}
+    );
+
+    return Object.values(lookup);
+  }
   return (
     <div
       ref={panelRef}
-      className={`fixed top-16 right-4 w-80 max-h-96 bg-black/80 backdrop-blur-lg border border-white/10 rounded-2xl shadow-2xl transition-all duration-300 ease-in-out z-50 ${
+      className={`fixed right-4 w-94 max-h-100 bg-black/30 backdrop-blur-sm border border-black/10 rounded-2xl shadow-2xl transition-all duration-300 ease-in-out z-50 ${
         isNotificationPanelOpen
           ? 'opacity-100 translate-y-0'
           : 'opacity-0 -translate-y-4 pointer-events-none'
       }`}
     >
-      {/* Header */}
-      <div className='p-4 border-b border-white/10'>
-        <h3 className='text-sm font-semibold text-white'>Notifications</h3>
-      </div>
-
       {/* Content */}
-      <div className='overflow-y-auto max-h-80 p-3'>
+      <div className='overflow-y-auto max-h-100 p-3'>
         {loading ? (
           <div className='flex justify-center items-center py-8'>
-            <div className='animate-spin rounded-full h-6 w-6 border-b-2 border-white'></div>
+            <div className='animate-spin rounded-full h-6 w-6 border-b-2 border-black'></div>
           </div>
         ) : notifications.length === 0 ? (
           <div className='text-center py-8'>
@@ -173,7 +195,7 @@ export default function NotificationPanel({
             {notifications.map(notification => (
               <div
                 key={notification.id}
-                className='p-3 rounded-lg bg-white/5 hover:bg-white/10 transition-colors border border-white/5 cursor-pointer'
+                className='p-3 rounded-2xl bg-white/5 hover:bg-white/10 transition-colors border border-white/5 cursor-pointer'
                 onClick={() => handleNotificationClick(notification.id)}
               >
                 <div className='flex items-start justify-between gap-2'>
