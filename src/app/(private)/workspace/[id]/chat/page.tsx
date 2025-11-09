@@ -8,8 +8,9 @@ import { ChatInput, type ChatInputRef } from '@/components/chat-input';
 import GlassButton from '@/components/glass-card/GlassButton';
 import WorkspaceMessageList from '@/features/workspace/components/WorkspaceMessageList';
 import { ChevronDown } from 'lucide-react';
-import { useUserSettings } from '@/features/users/hooks/useUserSettings';
 import { useCopilotReadable } from '@copilotkit/react-core';
+import { useWorkspaceMembers } from '@/hooks/useWorkspace';
+import { useWorkspaceNotes } from '@/hooks/useWorkspaceNotes';
 
 export default function WorkspaceChatPage() {
   const params = useParams();
@@ -28,7 +29,6 @@ export default function WorkspaceChatPage() {
   const [highlightedMessageId, setHighlightedMessageId] = useState<
     number | null
   >(null);
-  const { enableAiSuggestion } = useUserSettings();
   const [replyingTo, setReplyingTo] = useState<{
     id: number;
     text: string;
@@ -44,6 +44,12 @@ export default function WorkspaceChatPage() {
     loadMoreMessages,
     hasMoreMessages,
   } = useWorkspaceChat(workspaceId);
+
+  // Fetch workspace members for mentions
+  const { members } = useWorkspaceMembers(workspaceId);
+
+  // Fetch workspace notes for note mentions
+  const { notes: workspaceNotes } = useWorkspaceNotes(workspaceId);
 
   useCopilotReadable({
     description: 'workspace chat history',
@@ -70,11 +76,22 @@ export default function WorkspaceChatPage() {
 
   // Wrap sendMessage to scroll to bottom after sending
   const sendMessage = useCallback(
-    async (text: string, workspaceFileIds?: number[]) => {
+    async (
+      text: string,
+      workspaceFileIds?: number[],
+      mentionedMemberIds?: number[],
+      mentionedNoteIds?: number[]
+    ) => {
       sendingMessageRef.current = true;
       const replyToId = replyingTo?.id ?? null;
       try {
-        await originalSendMessage(text, replyToId, workspaceFileIds);
+        await originalSendMessage(
+          text,
+          replyToId,
+          workspaceFileIds,
+          mentionedMemberIds,
+          mentionedNoteIds
+        );
         // Clear reply state after sending
         setReplyingTo(null);
         // Scroll to bottom after sending message
@@ -418,6 +435,8 @@ export default function WorkspaceChatPage() {
               onReply={handleReply}
               onJumpToMessage={scrollToMessage}
               highlightedMessageId={highlightedMessageId}
+              workspaceMembers={members}
+              workspaceNotes={workspaceNotes}
             />
           ) : (
             <div className='flex-1 flex items-center justify-center'>
@@ -453,15 +472,15 @@ export default function WorkspaceChatPage() {
       {/* Input */}
       <ChatInput
         ref={chatInputRef}
-        messages={messages}
         onSend={sendMessage}
         isLoading={isLoading}
         placeholder='Message'
         canStop={false}
-        ai_augmented_input={enableAiSuggestion}
         replyingTo={replyingTo}
         onCancelReply={handleCancelReply}
         workspaceId={workspaceId}
+        workspaceMembers={members}
+        workspaceNotes={workspaceNotes}
       />
     </div>
   );

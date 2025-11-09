@@ -280,7 +280,9 @@ export function useWorkspaceChat(workspaceId: number) {
     async (
       text: string,
       replyToId?: number | null,
-      workspaceFileIds?: number[]
+      workspaceFileIds?: number[],
+      mentionedMemberIds?: number[],
+      mentionedNoteIds?: number[]
     ) => {
       if (!workspaceMember?.id) return;
       // Allow sending if there's text or files
@@ -295,7 +297,9 @@ export function useWorkspaceChat(workspaceId: number) {
           workspaceMember.id,
           text,
           replyToId,
-          workspaceFileIds
+          workspaceFileIds,
+          mentionedMemberIds,
+          mentionedNoteIds
         );
         // Revalidate messages to get the new one
         mutateMessages();

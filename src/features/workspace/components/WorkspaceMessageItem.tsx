@@ -6,6 +6,9 @@ import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { useDrag } from '@use-gesture/react';
 import MessageContextMenu from './MessageContextMenu';
 import MessageFiles from './MessageFiles';
+import { TiptapRenderer } from '@/components/tiptap/TiptapRenderer';
+import type { WorkspaceMember } from '@/types/workspace';
+import type { Note } from '@/types/note';
 
 type Props = {
   message: WorkspaceMessage;
@@ -13,6 +16,8 @@ type Props = {
   onReply?: (messageId: number) => void;
   onJumpToMessage?: (messageId: number) => void;
   isHighlighted?: boolean;
+  workspaceMembers?: WorkspaceMember[];
+  workspaceNotes?: Note[];
 };
 
 function ReadStatus({ readCount }: { readCount: number }) {
@@ -27,6 +32,8 @@ export default function WorkspaceMessageItem({
   onReply,
   onJumpToMessage,
   isHighlighted = false,
+  workspaceMembers = [],
+  workspaceNotes = [],
 }: Props) {
   const [contextMenu, setContextMenu] = useState<{
     x: number;
@@ -281,9 +288,17 @@ export default function WorkspaceMessageItem({
           </Avatar>
           <div className='min-w-0 flex-1'>
             <p className='text-xs text-white/50 mb-1'>{repliedName}</p>
-            <p className='text-xs text-white/40 whitespace-pre-wrap break-words'>
-              {repliedText}
-            </p>
+            <div className='text-xs text-white/40'>
+              <TiptapRenderer
+                content={repliedText}
+                contentType='markdown'
+                enableMemberMentions={true}
+                enableNoteMentions={true}
+                workspaceMembers={workspaceMembers}
+                workspaceNotes={workspaceNotes}
+                className='tiptap-reply-preview'
+              />
+            </div>
           </div>
         </div>
       </div>
@@ -338,9 +353,17 @@ export default function WorkspaceMessageItem({
                     />
                   )}
                   {message.text && (
-                    <p className='text-sm text-white whitespace-pre-wrap break-words'>
-                      {message.text}
-                    </p>
+                    <div className='text-sm text-white'>
+                      <TiptapRenderer
+                        content={message.text}
+                        contentType='markdown'
+                        enableMemberMentions={true}
+                        enableNoteMentions={true}
+                        workspaceMembers={workspaceMembers}
+                        workspaceNotes={workspaceNotes}
+                        className='tiptap-message-content'
+                      />
+                    </div>
                   )}
                 </div>
               )}
@@ -419,9 +442,17 @@ export default function WorkspaceMessageItem({
                     />
                   )}
                   {message.text && (
-                    <p className='text-sm text-white whitespace-pre-wrap break-words'>
-                      {message.text}
-                    </p>
+                    <div className='text-sm text-white'>
+                      <TiptapRenderer
+                        content={message.text}
+                        contentType='markdown'
+                        enableMemberMentions={true}
+                        enableNoteMentions={true}
+                        workspaceMembers={workspaceMembers}
+                        workspaceNotes={workspaceNotes}
+                        className='tiptap-message-content'
+                      />
+                    </div>
                   )}
                 </div>
               )}

@@ -5,6 +5,10 @@ import {
 } from '@/lib/api/profileUtils';
 import type { WorkspaceMessage } from '@/types/workspace';
 import { linkFilesToMessage } from './workspaceFilesApi';
+import {
+  syncWorkspaceMessageMentions,
+  syncWorkspaceMessageNoteMentions,
+} from './mentionsApi';
 
 const supabase = createClient();
 
@@ -184,7 +188,9 @@ export async function sendWorkspaceMessage(
   workspaceMemberId: number,
   text: string,
   replyToId?: number | null,
-  workspaceFileIds?: number[]
+  workspaceFileIds?: number[],
+  mentionedMemberIds?: number[],
+  mentionedNoteIds?: number[]
 ): Promise<WorkspaceMessage> {
   const { data, error } = await supabase
     .from('workspace_messages')
@@ -236,6 +242,36 @@ export async function sendWorkspaceMessage(
     } catch (fileError) {
       console.error('Error linking files to message:', fileError);
       // Don't throw - message was created successfully, just file linking failed
+    }
+  }
+
+  // Sync member mentions if any
+  if (mentionedMemberIds && mentionedMemberIds.length > 0) {
+    try {
+      await syncWorkspaceMessageMentions(
+        data.id,
+        workspaceId,
+        mentionedMemberIds,
+        workspaceMemberId
+      );
+    } catch (mentionError) {
+      console.error('Error syncing member mentions:', mentionError);
+      // Don't throw - message was created successfully, just mention syncing failed
+    }
+  }
+
+  // Sync note mentions if any
+  if (mentionedNoteIds && mentionedNoteIds.length > 0) {
+    try {
+      await syncWorkspaceMessageNoteMentions(
+        data.id,
+        workspaceId,
+        mentionedNoteIds,
+        workspaceMemberId
+      );
+    } catch (mentionError) {
+      console.error('Error syncing note mentions:', mentionError);
+      // Don't throw - message was created successfully, just mention syncing failed
     }
   }
 
