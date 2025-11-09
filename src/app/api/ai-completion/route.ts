@@ -56,19 +56,38 @@ export async function POST(req: NextRequest) {
         messages: [
           {
             role: 'system',
-            content: `You are an intelligent writing assistant. Help the user write well structured meaningful notes.
-
-The completion should:
-- write markdown so as to prompt the user to write in a certain format
-- Match the writing style and tone
-- you should propose different markdown components such as the h1, h2, bullet, numbered, checklist, etc 
-- the completions should aid the user in writing faster
-
-Only return the completion text, nothing else. Do not include explanations or repeat the context.`,
+            content: `あなたは知的なライティングアシスタントです。ユーザーが構造化された意味のあるノートを書けるよう支援してください。`,
           },
           {
             role: 'user',
-            content: `Guess what the user might write after this text:\n\n${context} \n\n dont repeat what is already written`,
+            content: `次のテキストの後にユーザーが書きそうな内容を推測し、続きの文章を提案してください。\n\n${context} {{fill in here}} \n\n 
+            完成文は次の条件を満たしてください:
+- ユーザーの文章の書式に合わせる
+- h3 見出し、箇条書き、番号付きリスト、チェックリストなど、異なるマークダウン要素を提案する
+- ユーザーがより速く執筆できるよう支援する
+- とても短くまとめる（1〜2文のみ）
+- すでに書かれている内容を繰り返さず、元のテキストと重複させない
+
+以下は完成文で利用できるマークダウンの例です:
+
+## 見出し3の例
+### 主要なポイント
+
+- 箇条書きの例
+
+1. 番号付きリストの例
+
+- [ ] チェックリストの例
+
+**太字の例**
+
+*斜体の例*
+
+~~取り消し線の例~~
+
+これらの書式を組み合わせて、ユーザーのノートに構造化された続きの提案を行ってください。
+
+完成文のみを返し、それ以外の説明や元の文脈の繰り返しは含めないでください。`,
           },
         ],
         temperature: 0.7,

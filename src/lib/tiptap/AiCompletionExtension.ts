@@ -1,4 +1,5 @@
 import { Extension } from '@tiptap/core';
+import { DOMSerializer, Fragment, Slice } from '@tiptap/pm/model';
 import { Plugin, PluginKey } from '@tiptap/pm/state';
 import { Decoration, DecorationSet } from '@tiptap/pm/view';
 
@@ -85,7 +86,73 @@ export const AiCompletion = Extension.create<AiCompletionOptions>({
             // Create a widget decoration for the ghost text
             const widget = document.createElement('span');
             widget.className = 'ai-completion-ghost-text';
-            widget.textContent = suggestion;
+            const editorAttributes =
+              extensionThis.editor?.options?.editorProps?.attributes;
+            if (editorAttributes) {
+              const resolvedAttributes =
+                typeof editorAttributes === 'function'
+                  ? editorAttributes(extensionThis.editor?.state)
+                  : editorAttributes;
+              const className = resolvedAttributes?.class;
+              if (className) {
+                widget.className += ` ${className}`;
+              }
+            }
+            const applyMarkdownRendering = () => {
+              try {
+                const editor = extensionThis.editor;
+
+                if (!editor) {
+                  widget.textContent = suggestion;
+                  return;
+                }
+
+                const markdownManager = editor.storage?.markdown?.manager;
+                const schema = editor.schema;
+
+                if (!markdownManager) {
+                  widget.textContent = suggestion;
+                  return;
+                }
+
+                const parsed = markdownManager.parse(suggestion);
+
+                if (!parsed || parsed.type !== 'doc') {
+                  widget.textContent = suggestion;
+                  return;
+                }
+
+                const docNode = schema.nodeFromJSON(parsed);
+                const serializer = DOMSerializer.fromSchema(schema);
+
+                widget.textContent = '';
+
+                let appendedChild = false;
+
+                docNode.forEach((child, _offset, index) => {
+                  const fragment =
+                    child.type.name === 'paragraph'
+                      ? serializer.serializeFragment(child.content)
+                      : serializer.serializeFragment(Fragment.from(child));
+
+                  widget.appendChild(fragment);
+                  appendedChild = true;
+
+                  if (index < docNode.childCount - 1) {
+                    widget.appendChild(document.createElement('br'));
+                  }
+                });
+
+                if (!appendedChild) {
+                  widget.textContent = suggestion;
+                }
+              } catch (error) {
+                console.error('Failed to render AI completion markdown', error);
+                widget.textContent = suggestion;
+              }
+            };
+
+            applyMarkdownRendering();
             widget.setAttribute('data-suggestion', suggestion);
             widget.style.cssText = `
               color: rgb(156, 163, 175) !important;
@@ -133,7 +200,90 @@ export const AiCompletion = Extension.create<AiCompletionOptions>({
               event.preventDefault();
               event.stopPropagation();
 
-              // Insert the suggestion directly
+              const editor = extensionThis.editor;
+              if (editor) {
+                const handled = editor
+                  .chain()
+                  .focus()
+                  .command(({ state, tr, dispatch, editor }) => {
+                    if (!dispatch) {
+                      return true;
+                    }
+
+                    const { from, to } = state.selection;
+                    let transaction = tr;
+                    let inserted = false;
+
+                    const markdownManager = editor.storage?.markdown?.manager;
+
+                    if (markdownManager) {
+                      try {
+                        const parsed = markdownManager.parse(suggestion);
+
+                        if (parsed?.type === 'doc') {
+                          const docNode = editor.schema.nodeFromJSON(parsed);
+
+                          if (
+                            docNode.childCount === 1 &&
+                            docNode.firstChild?.type?.name === 'paragraph'
+                          ) {
+                            const inlineFragment = docNode.firstChild.content;
+
+                            if (inlineFragment.childCount > 0) {
+                              if (from !== to) {
+                                transaction = transaction.deleteRange(from, to);
+                              }
+                              const insertPos = transaction.mapping.map(from);
+                              transaction = transaction.insert(
+                                insertPos,
+                                inlineFragment
+                              );
+                              inserted = true;
+                            }
+                          } else if (docNode.content.childCount > 0) {
+                            const slice = new Slice(docNode.content, 0, 0);
+                            transaction = transaction.replaceRange(
+                              from,
+                              to,
+                              slice
+                            );
+                            inserted = true;
+                          }
+                        }
+                      } catch (error) {
+                        console.error(
+                          'Failed to insert AI completion markdown',
+                          error
+                        );
+                      }
+                    }
+
+                    if (!inserted) {
+                      transaction = transaction.insertText(
+                        suggestion,
+                        from,
+                        to
+                      );
+                    }
+
+                    transaction.setMeta('aiCompletionSuggestion', null);
+                    transaction.setMeta('aiCompletionEnabled', enabled);
+                    dispatch(transaction);
+                    return true;
+                  })
+                  .run();
+
+                if (handled) {
+                  try {
+                    extensionThis.options.onAccept();
+                  } catch (e) {
+                    console.error('Error calling onAccept:', e);
+                  }
+                  return true;
+                }
+              }
+
+              // Fallback if editor instance is unavailable
               const { from } = view.state.selection;
               const tr = view.state.tr;
               tr.insertText(suggestion, from);
@@ -141,7 +291,6 @@ export const AiCompletion = Extension.create<AiCompletionOptions>({
               tr.setMeta('aiCompletionEnabled', enabled);
               view.dispatch(tr);
 
-              // Also call the callback to clear React state
               try {
                 extensionThis.options.onAccept();
               } catch (e) {
