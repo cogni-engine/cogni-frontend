@@ -1,4 +1,4 @@
-import { mergeAttributes } from '@tiptap/core';
+import { createInlineMarkdownSpec, mergeAttributes } from '@tiptap/core';
 import Mention from '@tiptap/extension-mention';
 
 export interface MentionNodeAttrs {
@@ -14,8 +14,8 @@ export const CustomMention = Mention.extend({
     return {
       id: {
         default: null,
-        parseHTML: element => element.getAttribute('data-id'),
-        renderHTML: attributes => {
+        parseHTML: (element: HTMLElement) => element.getAttribute('data-id'),
+        renderHTML: (attributes: { id: string }) => {
           if (!attributes.id) {
             return {};
           }
@@ -26,8 +26,8 @@ export const CustomMention = Mention.extend({
       },
       label: {
         default: null,
-        parseHTML: element => element.getAttribute('data-label'),
-        renderHTML: attributes => {
+        parseHTML: (element: HTMLElement) => element.getAttribute('data-label'),
+        renderHTML: (attributes: { label: string }) => {
           if (!attributes.label) {
             return {};
           }
@@ -38,11 +38,11 @@ export const CustomMention = Mention.extend({
       },
       workspaceMemberId: {
         default: null,
-        parseHTML: element => {
+        parseHTML: (element: HTMLElement) => {
           const id = element.getAttribute('data-workspace-member-id');
           return id ? parseInt(id, 10) : null;
         },
-        renderHTML: attributes => {
+        renderHTML: (attributes: { workspaceMemberId: number }) => {
           if (!attributes.workspaceMemberId) {
             return {};
           }
@@ -62,7 +62,13 @@ export const CustomMention = Mention.extend({
     ];
   },
 
-  renderHTML({ node, HTMLAttributes }) {
+  renderHTML({
+    node,
+    HTMLAttributes,
+  }: {
+    node: Node;
+    HTMLAttributes: { [key: string]: string };
+  }) {
     return [
       'span',
       mergeAttributes(
@@ -74,9 +80,17 @@ export const CustomMention = Mention.extend({
     ];
   },
 
-  renderText({ node }) {
+  renderText({ node }: { node: any }) {
     return `@${node.attrs.label}`;
   },
+
+  // Markdown support using Tiptap utility
+  ...createInlineMarkdownSpec({
+    nodeName: 'mention',
+    name: '@',
+    selfClosing: true,
+    allowedAttributes: ['id', 'label', 'workspaceMemberId'],
+  }),
 
   addKeyboardShortcuts() {
     return {
