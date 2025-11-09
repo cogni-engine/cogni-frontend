@@ -8,7 +8,6 @@ import { useCogno } from '@/hooks/useCogno';
 import { useThreadContext } from '@/contexts/ThreadContext';
 import { useThreads } from '@/hooks/useThreads';
 import { useUI } from '@/contexts/UIContext';
-import { useUserSettings } from '@/features/users/hooks/useUserSettings';
 import { useCopilotReadable } from '@copilotkit/react-core';
 
 export default function HomePage() {
@@ -20,7 +19,6 @@ export default function HomePage() {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const prevMessageCountRef = useRef(0);
   const hasInitialized = useRef(false);
-  const { enableAiSuggestion } = useUserSettings();
 
   useCopilotReadable({
     description: 'cogni chat history',
@@ -109,14 +107,12 @@ export default function HomePage() {
         sendMessage={sendMessage}
       />
       <ChatInput
-        messages={messages}
         onSend={(content: string) => {
           // Wrapper to match InputArea's expected signature
           void sendMessage(content);
         }}
         onStop={stopStream}
         isLoading={isLoading}
-        ai_augmented_input={enableAiSuggestion}
       />
       {/* NotificationPanelにsendMessageを渡す */}
       <NotificationPanel sendMessage={sendMessage} />

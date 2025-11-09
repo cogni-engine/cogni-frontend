@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
 import { useNoteEditor } from '@/hooks/useNoteEditor';
 import {
   ArrowLeft,
@@ -17,6 +17,7 @@ import {
   Image as ImageIcon,
   Loader2,
   CheckSquare,
+  Sparkles,
 } from 'lucide-react';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
@@ -27,8 +28,21 @@ import TaskList from '@tiptap/extension-task-list';
 import TaskItem from '@tiptap/extension-task-item';
 import { getPersonalWorkspaceId } from '@/lib/cookies';
 import { useWorkspaceMembers } from '@/hooks/useWorkspace';
+import { useWorkspaceNotes } from '@/hooks/useWorkspaceNotes';
 import { assignNoteToMembers, getNoteAssignments } from '@/lib/api/notesApi';
 import { uploadWorkspaceFile, getFileUrl } from '@/lib/api/workspaceFilesApi';
+import { CustomMention } from '@/lib/tiptap/MentionExtension';
+import { createMentionSuggestion } from '@/lib/tiptap/mentionSuggestion';
+import { NoteMention } from '@/lib/tiptap/NoteMentionExtension';
+import { createNoteMentionSuggestion } from '@/lib/tiptap/noteMentionSuggestion';
+import {
+  syncNoteMemberMentions,
+  syncNoteToNoteMentions,
+} from '@/lib/api/mentionsApi';
+import { createClient } from '@/lib/supabase/browserClient';
+import { useAICompletion } from '@/hooks/useAICompletion';
+import { AiCompletion } from '@/lib/tiptap/AiCompletionExtension';
+import { useCopilotReadable } from '@copilotkit/react-core';
 
 interface ToolbarButtonProps {
   onClick: () => void;
@@ -95,14 +109,58 @@ export default function NoteEditor({ noteId }: { noteId: string }) {
   const imageInputRef = useRef<HTMLInputElement>(null);
   const [uploadingImage, setUploadingImage] = useState(false);
 
+  // AI Completion state
+  const [aiSuggestionsEnabled, setAiSuggestionsEnabled] = useState(() => {
+    // Load from localStorage
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('aiSuggestionsEnabled');
+      return saved !== null ? saved === 'true' : true; // Default to enabled
+    }
+    return true;
+  });
+
   // Fetch workspace members if this is a group note
   const { members } = useWorkspaceMembers(
     isGroupNote && note?.workspace_id ? note.workspace_id : 0
   );
 
+  // Fetch workspace notes for note mentions
+  const { notes: workspaceNotes } = useWorkspaceNotes(note?.workspace_id || 0);
+
   // Track initial loaded state to compare against
   const [initialAssigneeIds, setInitialAssigneeIds] = useState<number[]>([]);
   const [assignmentsLoaded, setAssignmentsLoaded] = useState(false);
+
+  // Mention state
+  const [currentMemberId, setCurrentMemberId] = useState<number | null>(null);
+  const supabase = createClient();
+
+  // Use a ref to always get the latest members for mention suggestions
+  const membersRef = useRef<typeof members>([]);
+  membersRef.current = members;
+
+  // Use a ref to always get the latest notes for note mention suggestions
+  // Filter out the current note from the suggestions
+  const notesRef = useRef<typeof workspaceNotes>([]);
+  notesRef.current = workspaceNotes.filter(n => n.id !== id);
+
+  // Get current user's workspace member ID
+  useEffect(() => {
+    if (isGroupNote && note?.workspace_id && members.length > 0) {
+      const getCurrentMember = async () => {
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+        if (user) {
+          const member = members.find(m => m.user_id === user.id);
+          if (member) {
+            setCurrentMemberId(member.id);
+          }
+        }
+      };
+      getCurrentMember();
+    }
+  }, [isGroupNote, note?.workspace_id, members, supabase.auth]);
 
   // Load existing assignments
   useEffect(() => {
@@ -243,6 +301,13 @@ export default function NoteEditor({ noteId }: { noteId: string }) {
   const editor = useEditor({
     immediatelyRender: false,
     extensions: [
+      // AI Completion FIRST - needs to capture Tab before other extensions
+      AiCompletion.configure({
+        suggestion: null,
+        onAccept: () => {},
+        onDismiss: () => {},
+        enabled: aiSuggestionsEnabled,
+      }),
       StarterKit.configure({
         heading: {
           levels: [1, 2, 3],
@@ -288,6 +353,24 @@ export default function NoteEditor({ noteId }: { noteId: string }) {
           class: 'task-item',
         },
       }),
+      // Add member mention extension only for group notes
+      ...(isGroupNote
+        ? [
+            CustomMention.configure({
+              HTMLAttributes: {
+                class: 'mention',
+              },
+              suggestion: createMentionSuggestion(() => membersRef.current),
+            }),
+          ]
+        : []),
+      // Add note mention extension (available in all workspaces)
+      NoteMention.configure({
+        HTMLAttributes: {
+          class: 'note-mention',
+        },
+        suggestion: createNoteMentionSuggestion(() => notesRef.current),
+      }),
       Markdown,
     ],
     content: content || '',
@@ -303,6 +386,186 @@ export default function NoteEditor({ noteId }: { noteId: string }) {
       setContent(markdown);
     },
   });
+
+  // Store note title in a ref for AI context
+  const noteTitleRef = useRef(title);
+  useEffect(() => {
+    noteTitleRef.current = title;
+  }, [title]);
+
+  // Expose editor to window for debugging (optional, can be removed in production)
+  useEffect(() => {
+    if (editor && typeof window !== 'undefined') {
+      (window as any).__TIPTAP_EDITOR__ = editor;
+    }
+  }, [editor]);
+
+  // AI Completion hook
+  const {
+    suggestion,
+    isLoading: isSuggestionLoading,
+    acceptSuggestion,
+    dismissSuggestion,
+    requestSuggestion,
+  } = useAICompletion({
+    editor,
+    noteTitle: title,
+    noteId: note?.id,
+    workspaceId: note?.workspace_id,
+    enabled: aiSuggestionsEnabled,
+    debounceMs: 1000, // 1 second after user stops typing
+  });
+
+  // Clear suggestion when cursor moves
+  const lastCursorPosRef = useRef<number | null>(null);
+  useEffect(() => {
+    if (!editor || !aiSuggestionsEnabled) return;
+
+    const updateHandler = () => {
+      const currentPos = editor.state.selection.from;
+
+      // If cursor moved and we have a suggestion, clear it
+      if (
+        lastCursorPosRef.current !== null &&
+        lastCursorPosRef.current !== currentPos &&
+        suggestion
+      ) {
+        console.log('🔄 Cursor moved, clearing suggestion');
+        dismissSuggestion();
+      }
+
+      lastCursorPosRef.current = currentPos;
+    };
+
+    editor.on('selectionUpdate', updateHandler);
+    return () => {
+      editor.off('selectionUpdate', updateHandler);
+    };
+  }, [editor, suggestion, dismissSuggestion, aiSuggestionsEnabled]);
+
+  // Update AI completion extension options when suggestion changes
+  useEffect(() => {
+    if (editor && !editor.isDestroyed) {
+      // Store callbacks in extension options
+      const aiCompletionExt = editor.extensionManager.extensions.find(
+        ext => ext.name === 'aiCompletion'
+      );
+      if (aiCompletionExt) {
+        aiCompletionExt.options.onAccept = acceptSuggestion;
+        aiCompletionExt.options.onDismiss = dismissSuggestion;
+      }
+
+      // Pass suggestion through transaction metadata
+      const tr = editor.state.tr;
+      tr.setMeta('aiCompletionSuggestion', suggestion);
+      tr.setMeta('aiCompletionEnabled', aiSuggestionsEnabled);
+      editor.view.dispatch(tr);
+    }
+  }, [
+    editor,
+    suggestion,
+    acceptSuggestion,
+    dismissSuggestion,
+    aiSuggestionsEnabled,
+  ]);
+
+  // Trigger AI suggestions on content change
+  useEffect(() => {
+    console.log('🔍 AI suggestion effect triggered', {
+      hasEditor: !!editor,
+      aiEnabled: aiSuggestionsEnabled,
+      isLoading: isSuggestionLoading,
+      hasSuggestion: !!suggestion,
+    });
+
+    if (!editor || !aiSuggestionsEnabled || isSuggestionLoading) {
+      console.log('⏹️ Skipping - disabled or loading');
+      return;
+    }
+
+    // Don't request new suggestions if we already have one showing (saves tokens)
+    if (suggestion) {
+      console.log('⏹️ Skipping - suggestion already showing');
+      return;
+    }
+
+    // Get text around cursor for context
+    const { from } = editor.state.selection;
+    const textBefore = editor.state.doc.textBetween(
+      Math.max(0, from - 500),
+      from,
+      '\n'
+    );
+
+    console.log('📝 Text context:', {
+      length: textBefore.trim().length,
+      preview: textBefore.slice(-50),
+    });
+
+    if (textBefore.trim().length > 10) {
+      console.log('✅ Requesting AI suggestion');
+      requestSuggestion(textBefore, noteTitleRef.current);
+    } else {
+      console.log('❌ Text too short for suggestion');
+    }
+  }, [
+    content,
+    editor,
+    aiSuggestionsEnabled,
+    isSuggestionLoading,
+    requestSuggestion,
+    suggestion,
+  ]);
+
+  // Persist AI suggestions setting to localStorage
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(
+        'aiSuggestionsEnabled',
+        String(aiSuggestionsEnabled)
+      );
+    }
+  }, [aiSuggestionsEnabled]);
+
+  // Provide context to CopilotKit
+  useCopilotReadable({
+    description: 'Current note being edited in the editor',
+    value: JSON.stringify({
+      title: title || 'Untitled',
+      content: content?.substring(0, 1000) || '',
+      workspaceId: note?.workspace_id,
+      noteId: note?.id,
+    }),
+    categories: ['note_editor'],
+  });
+
+  // Function to extract mentioned member IDs from editor content
+  const extractMemberMentions = useCallback(() => {
+    if (!editor) return [];
+
+    const mentionedIds: number[] = [];
+    editor.state.doc.descendants(node => {
+      if (node.type.name === 'mention' && node.attrs.workspaceMemberId) {
+        mentionedIds.push(node.attrs.workspaceMemberId);
+      }
+    });
+
+    return [...new Set(mentionedIds)]; // Remove duplicates
+  }, [editor]);
+
+  // Function to extract mentioned note IDs from editor content
+  const extractNoteMentions = useCallback(() => {
+    if (!editor) return [];
+
+    const mentionedNoteIds: number[] = [];
+    editor.state.doc.descendants(node => {
+      if (node.type.name === 'noteMention' && node.attrs.noteId) {
+        mentionedNoteIds.push(node.attrs.noteId);
+      }
+    });
+
+    return [...new Set(mentionedNoteIds)]; // Remove duplicates
+  }, [editor]);
 
   // Update editor content when content from hook changes (e.g., after loading)
   useEffect(() => {
@@ -355,6 +618,72 @@ export default function NoteEditor({ noteId }: { noteId: string }) {
       }
     }
   }, [content, editor]);
+
+  // Auto-save member mentions when content changes
+  useEffect(() => {
+    if (
+      !isGroupNote ||
+      !note?.id ||
+      !note?.workspace_id ||
+      !currentMemberId ||
+      !editor
+    )
+      return;
+
+    const saveMemberMentions = async () => {
+      try {
+        const mentionedMemberIds = extractMemberMentions();
+        await syncNoteMemberMentions(
+          note.id,
+          note.workspace_id,
+          mentionedMemberIds,
+          currentMemberId
+        );
+      } catch (err) {
+        console.error('Failed to save member mentions:', err);
+      }
+    };
+
+    const timeout = setTimeout(saveMemberMentions, 1000);
+    return () => clearTimeout(timeout);
+  }, [
+    content,
+    isGroupNote,
+    note?.id,
+    note?.workspace_id,
+    currentMemberId,
+    extractMemberMentions,
+    editor,
+  ]);
+
+  // Auto-save note mentions when content changes
+  useEffect(() => {
+    if (!note?.id || !note?.workspace_id || !currentMemberId || !editor) return;
+
+    const saveNoteMentions = async () => {
+      try {
+        const mentionedNoteIds = extractNoteMentions();
+        await syncNoteToNoteMentions(
+          note.id,
+          note.workspace_id,
+          mentionedNoteIds,
+          currentMemberId
+        );
+      } catch (err) {
+        console.error('Failed to save note mentions:', err);
+      }
+    };
+
+    const timeout = setTimeout(saveNoteMentions, 1000);
+    return () => clearTimeout(timeout);
+  }, [
+    content,
+    note?.id,
+    note?.workspace_id,
+    currentMemberId,
+    extractNoteMentions,
+    editor,
+  ]);
 
   // Validate that noteId is a valid number (after hooks)
   if (!isValidId) {
@@ -599,6 +928,19 @@ export default function NoteEditor({ noteId }: { noteId: string }) {
           icon={<Redo className='w-4 h-4' />}
           title='Redo'
         />
+        <div className='w-px h-6 bg-white/10 my-auto' />
+        <ToolbarButton
+          onClick={() => setAiSuggestionsEnabled(!aiSuggestionsEnabled)}
+          isActive={aiSuggestionsEnabled}
+          icon={
+            isSuggestionLoading ? (
+              <Loader2 className='w-4 h-4 animate-spin' />
+            ) : (
+              <Sparkles className='w-4 h-4' />
+            )
+          }
+          title={`AI Suggestions (${aiSuggestionsEnabled ? 'On' : 'Off'}) - Press Tab to accept`}
+        />
       </div>
 
       {/* エディタ */}
@@ -772,6 +1114,40 @@ export default function NoteEditor({ noteId }: { noteId: string }) {
         .ProseMirror img.editor-image.ProseMirror-selectednode {
           outline: 2px solid rgba(59, 130, 246, 0.5);
           outline-offset: 2px;
+        }
+        /* Member mention styles */
+        .ProseMirror .mention {
+          background-color: rgba(59, 130, 246, 0.2);
+          border-radius: 0.25rem;
+          padding: 0.125rem 0.25rem;
+          color: rgb(147, 197, 253);
+          font-weight: 500;
+          cursor: pointer;
+          transition: background-color 0.2s;
+        }
+        .ProseMirror .mention:hover {
+          background-color: rgba(59, 130, 246, 0.3);
+        }
+        /* Note mention styles */
+        .ProseMirror .note-mention {
+          background-color: rgba(34, 197, 94, 0.2);
+          border-radius: 0.25rem;
+          padding: 0.125rem 0.25rem;
+          color: rgb(134, 239, 172);
+          font-weight: 500;
+          cursor: pointer;
+          transition: background-color 0.2s;
+        }
+        .ProseMirror .note-mention:hover {
+          background-color: rgba(34, 197, 94, 0.3);
+        }
+        /* AI Completion ghost text styles */
+        .ProseMirror .ai-completion-ghost-text {
+          color: rgb(156, 163, 175);
+          opacity: 0.5;
+          pointer-events: none;
+          user-select: none;
+          font-style: italic;
         }
       `}</style>
     </div>

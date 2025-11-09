@@ -1,7 +1,6 @@
 'use client';
 
-import { Message, AIMessage } from '@/types/chat';
-import AiAugmentedInput from './AiAugmentedInput';
+import TiptapChatInput from './TiptapChatInput';
 import {
   useEffect,
   useRef,
@@ -17,22 +16,30 @@ import {
   type UploadedFile,
 } from '@/lib/api/workspaceFilesApi';
 import { ReplyIndicator } from './ReplyIndicator';
+import type { WorkspaceMember } from '@/types/workspace';
+import type { Note } from '@/types/note';
 
 type ChatInputProps = {
-  messages?: Message[] | AIMessage[] | unknown[];
-  onSend: (content: string, workspaceFileIds?: number[]) => void;
+  onSend: (
+    content: string,
+    workspaceFileIds?: number[],
+    mentionedMemberIds?: number[],
+    mentionedNoteIds?: number[]
+  ) => void;
   onStop?: () => void;
   isLoading?: boolean;
   placeholder?: string;
   canStop?: boolean;
-  ai_augmented_input?: boolean;
   replyingTo?: { id: number; text: string; authorName?: string } | null;
   onCancelReply?: () => void;
   workspaceId?: number;
+  workspaceMembers?: WorkspaceMember[];
+  workspaceNotes?: Note[];
 };
 
 export type ChatInputRef = {
   focus: () => void;
+  clearContent: () => void;
 };
 
 const ChatInput = forwardRef<ChatInputRef, ChatInputProps>(function ChatInput(
@@ -42,14 +49,18 @@ const ChatInput = forwardRef<ChatInputRef, ChatInputProps>(function ChatInput(
     isLoading = false,
     placeholder = 'Ask anything',
     canStop = true,
-    ai_augmented_input = true,
     replyingTo,
     onCancelReply,
     workspaceId,
+    workspaceMembers = [],
+    workspaceNotes = [],
   },
   ref
 ) {
-  const inputRef = useRef<{ focus: () => void } | null>(null);
+  const inputRef = useRef<{
+    focus: () => void;
+    clearContent: () => void;
+  } | null>(null);
   const [uploadItems, setUploadItems] = useState<FileUploadItem[]>([]);
   const [isUploading, setIsUploading] = useState(false);
 
@@ -58,6 +69,9 @@ const ChatInput = forwardRef<ChatInputRef, ChatInputProps>(function ChatInput(
   useImperativeHandle(ref, () => ({
     focus: () => {
       inputRef.current?.focus();
+    },
+    clearContent: () => {
+      inputRef.current?.clearContent();
     },
   }));
 
@@ -142,7 +156,11 @@ const ChatInput = forwardRef<ChatInputRef, ChatInputProps>(function ChatInput(
   }, [uploadItems]);
 
   const handleSend = useCallback(
-    async (content: string) => {
+    async (
+      content: string,
+      mentionedMemberIds?: number[],
+      mentionedNoteIds?: number[]
+    ) => {
       if (isLoading || isUploading) return;
 
       // Allow sending if there's text or files
@@ -177,7 +195,9 @@ const ChatInput = forwardRef<ChatInputRef, ChatInputProps>(function ChatInput(
 
       onSend(
         trimmed || '',
-        workspaceFileIds.length ? workspaceFileIds : undefined
+        workspaceFileIds.length ? workspaceFileIds : undefined,
+        mentionedMemberIds,
+        mentionedNoteIds
       );
 
       setUploadItems(prev => {
@@ -227,16 +247,17 @@ const ChatInput = forwardRef<ChatInputRef, ChatInputProps>(function ChatInput(
                 />
               </div>
             )}
-            <AiAugmentedInput
+            <TiptapChatInput
               ref={inputRef}
               placeholder={placeholder}
               onSend={handleSend}
               onStop={onStop}
               isLoading={isLoading}
               canStop={canStop}
-              disableCopilot={!ai_augmented_input}
               isUploading={isUploading}
               hasAttachments={hasAttachments}
+              workspaceMembers={workspaceMembers}
+              workspaceNotes={workspaceNotes}
             />
           </div>
         </div>

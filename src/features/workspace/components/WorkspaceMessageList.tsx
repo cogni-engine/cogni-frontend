@@ -1,5 +1,6 @@
-import type { WorkspaceMessage } from '@/types/workspace';
+import type { WorkspaceMessage, WorkspaceMember } from '@/types/workspace';
 import WorkspaceMessageItem from '@/features/workspace/components/WorkspaceMessageItem';
+import type { Note } from '@/types/note';
 
 type Props = {
   messages: WorkspaceMessage[];
@@ -7,6 +8,8 @@ type Props = {
   onReply?: (messageId: number) => void;
   onJumpToMessage?: (messageId: number) => void;
   highlightedMessageId?: number | null;
+  workspaceMembers?: WorkspaceMember[];
+  workspaceNotes?: Note[];
 };
 
 export default function WorkspaceMessageList({
@@ -15,6 +18,8 @@ export default function WorkspaceMessageList({
   onReply,
   onJumpToMessage,
   highlightedMessageId,
+  workspaceMembers = [],
+  workspaceNotes = [],
 }: Props) {
   if (messages.length === 0) {
     return (
@@ -40,6 +45,8 @@ export default function WorkspaceMessageList({
             onReply={onReply}
             onJumpToMessage={onJumpToMessage}
             isHighlighted={highlightedMessageId === message.id}
+            workspaceMembers={workspaceMembers}
+            workspaceNotes={workspaceNotes}
           />
         ))}
     </div>
