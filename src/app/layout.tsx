@@ -21,9 +21,9 @@ export const metadata: Metadata = {
     'Cogni keeps your team aligned with collaborative workspaces, notes, and AI assistance.',
   manifest: '/manifest.json',
   icons: {
-    icon: '/favicon.jpg',
-    shortcut: '/favicon.jpg',
-    apple: '/favicon.jpg',
+    icon: '/favicon.svg',
+    shortcut: '/favicon.svg',
+    apple: '/favicon.svg',
   },
   appleWebApp: {
     capable: true,
