@@ -10,6 +10,19 @@ const compat = new FlatCompat({
 });
 
 const eslintConfig = [
+  {
+    ignores: [
+      '**/node_modules/**',
+      '**/.next/**',
+      '**/out/**',
+      '**/build/**',
+      '**/dist/**',
+      '**/.turbo/**',
+      '**/next-env.d.ts',
+      '**/.vercel/**',
+      '**/coverage/**',
+    ],
+  },
   ...compat.extends('next/core-web-vitals', 'next/typescript'),
   ...compat.extends('prettier'), // Disables ESLint rules that conflict with Prettier
   {
@@ -25,15 +38,6 @@ const eslintConfig = [
       'no-var': 'error',
       '@typescript-eslint/quotes': 'off',
     },
-  },
-  {
-    ignores: [
-      'node_modules/**',
-      '.next/**',
-      'out/**',
-      'build/**',
-      'next-env.d.ts',
-    ],
   },
 ];
 
