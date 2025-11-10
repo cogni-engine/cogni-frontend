@@ -1,0 +1,38 @@
+{
+  "version": 3,
+  "middleware": {
+    "/": {
+      "files": [
+        "server/edge/chunks/code_cogni_cogni-frontend_1d29c0cc._.js",
+        "server/edge/chunks/fff4b_@opentelemetry_api_build_esm_069fc69e._.js",
+        "server/edge/chunks/6f473_@supabase_realtime-js_dist_module_2beadaaa._.js",
+        "server/edge/chunks/01436_@supabase_storage-js_dist_module_5eefc5ab._.js",
+        "server/edge/chunks/6eda8_@supabase_auth-js_dist_module_90476429._.js",
+        "server/edge/chunks/5fd8e__pnpm_c9c5e368._.js",
+        "server/edge/chunks/[root-of-the-server]__a60c2161._.js",
+        "server/edge/chunks/turbopack-code_cogni_cogni-frontend_apps_web_edge-wrapper_af3ccf37.js"
+      ],
+      "name": "middleware",
+      "page": "/",
+      "matchers": [
+        {
+          "regexp": "^(?:\\/(_next\\/data\\/[^/]{1,}))?(?:\\/((?!_next\\/static|_next\\/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*))(\\\\.json)?[\\/#\\?]?$",
+          "originalSource": "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)"
+        }
+      ],
+      "wasm": [],
+      "assets": [],
+      "env": {
+        "__NEXT_BUILD_ID": "development",
+        "NEXT_SERVER_ACTIONS_ENCRYPTION_KEY": "cEPqvNzZrOtcEgMaxzqYLe22Pyh+o2IFeXZ0u0akqdw=",
+        "__NEXT_PREVIEW_MODE_ID": "bec0c57ad8737bb7c162870f3d830a68",
+        "__NEXT_PREVIEW_MODE_ENCRYPTION_KEY": "a8ec2842efbb2932683ee669315ae1bd69d3fd177ffa4fd449a4909f12f8e093",
+        "__NEXT_PREVIEW_MODE_SIGNING_KEY": "7da94e4a6ef3e3fb883af6283e0e046941c13d332cce49f1dca3b0e0569490e2"
+      }
+    }
+  },
+  "sortedMiddleware": [
+    "/"
+  ],
+  "functions": {}
+}

@@ -1,0 +1,3 @@
+{
+  "/(private)/notes/[id]/page": "app/(private)/notes/[id]/page.js"
+}

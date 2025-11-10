@@ -1,0 +1,217 @@
+
+> web@0.1.0 dev /Users/air13/code/cogni/cogni-frontend/apps/web
+> next dev --turbopack
+
+ ⚠ Warning: Next.js inferred your workspace root, but it may not be correct.
+ We detected multiple lockfiles and selected the directory of /Users/air13/pnpm-lock.yaml as the root directory.
+ To silence this warning, set `turbopack.root` in your Next.js config, or consider removing one of the lockfiles if it's not needed.
+   See https://nextjs.org/docs/app/api-reference/config/next-config-js/turbopack#root-directory for more information.
+ Detected additional lockfiles: 
+   * /Users/air13/code/cogni/cogni-frontend/pnpm-lock.yaml
+
+   ▲ Next.js 15.5.4 (Turbopack)
+   - Local:        http://localhost:3000
+   - Network:      http://192.168.3.27:3000
+
+ ✓ Starting...
+ ✓ Compiled middleware in 260ms
+ ✓ Ready in 1341ms
+ ⨯ Error: Your project's URL and Key are required to create a Supabase client!
+
+Check your Supabase project's API settings to find these values
+
+https://supabase.com/dashboard/project/_/settings/api
+    at <unknown> (https://supabase.com/dashboard/project/_/settings/api)
+    at <unknown> (https://supabase.com/dashboard/project/_/settings/api)
+    at createServerClient (../../src/createServerClient.ts:139:11)
+    at updateSession (code/cogni/cogni-frontend/apps/web/src/lib/supabase/middleware.ts:7:38)
+    at middleware (code/cogni/cogni-frontend/apps/web/src/middleware.ts:6:49)
+   5 |   const response = NextResponse.next({ request: { headers: request.headers } });
+   6 |
+>  7 |   const supabase = createServerClient(
+     |                                      ^
+   8 |     process.env.NEXT_PUBLIC_SUPABASE_URL!,
+   9 |     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+  10 |     {
+ ○ Compiling /_error ...
+ ✓ Compiled /_error in 1035ms
+ GET / 404 in 6ms
+ ○ Compiling /_not-found/page ...
+ ✓ Compiled /_not-found/page in 2.6s
+   Reload env: .env
+ ○ Compiling / ...
+ ✓ Compiled in 1887ms
+ ✓ Compiled / in 1463ms
+ GET / 307 in 1555ms
+ ○ Compiling /home ...
+ ✓ Compiled /home in 6.1s
+ GET /home 200 in 6585ms
+ ○ Compiling /api/copilotkit ...
+ GET /workspace 200 in 3874ms
+ ✓ Compiled /api/copilotkit in 7.4s
+user {
+  id: '8cd371ba-b178-485e-bbfd-e05306b5b159',
+  aud: 'authenticated',
+  role: 'authenticated',
+  email: 'cogno1024@gmail.com',
+  email_confirmed_at: '2025-10-26T10:59:53.912206Z',
+  phone: '',
+  confirmation_sent_at: '2025-10-26T10:59:25.591603Z',
+  confirmed_at: '2025-10-26T10:59:53.912206Z',
+  recovery_sent_at: '2025-11-10T08:56:54.225937Z',
+  last_sign_in_at: '2025-11-10T08:57:44.644776Z',
+  app_metadata: { provider: 'google', providers: [ 'google', 'email' ] },
+  user_metadata: {
+    avatar_url: 'https://lh3.googleusercontent.com/a/ACg8ocLlIylWS9winu9XpLGJgHgI314LJio4176V-eHIZwMPwNUh_g=s96-c',
+    email: 'cogno1024@gmail.com',
+    email_verified: true,
+    full_name: 'Yusei Moriwaki',
+    iss: 'https://accounts.google.com',
+    name: 'Yusei Moriwaki',
+    phone_verified: false,
+    picture: 'https://lh3.googleusercontent.com/a/ACg8ocLlIylWS9winu9XpLGJgHgI314LJio4176V-eHIZwMPwNUh_g=s96-c',
+    provider_id: '104281194326270050409',
+    sub: '104281194326270050409'
+  },
+  identities: [
+    {
+      identity_id: 'c72db9f7-b0a9-407c-bbae-3037dba4a1dd',
+      id: '104281194326270050409',
+      user_id: '8cd371ba-b178-485e-bbfd-e05306b5b159',
+      identity_data: [Object],
+      provider: 'google',
+      last_sign_in_at: '2025-11-05T08:54:23.387572Z',
+      created_at: '2025-11-05T08:54:23.387642Z',
+      updated_at: '2025-11-05T08:54:23.387642Z',
+      email: 'cogno1024@gmail.com'
+    },
+    {
+      identity_id: 'ef0bc9e3-c306-4c2d-a26f-406b5aa88f95',
+      id: '8cd371ba-b178-485e-bbfd-e05306b5b159',
+      user_id: '8cd371ba-b178-485e-bbfd-e05306b5b159',
+      identity_data: [Object],
+      provider: 'email',
+      last_sign_in_at: '2025-10-26T10:59:25.560165Z',
+      created_at: '2025-10-26T10:59:25.560838Z',
+      updated_at: '2025-10-26T10:59:25.560838Z',
+      email: 'cogno1024@gmail.com'
+    }
+  ],
+  created_at: '2025-10-26T10:59:25.453731Z',
+  updated_at: '2025-11-10T16:25:14.468141Z',
+  is_anonymous: false
+}
+ POST /api/copilotkit 200 in 8403ms
+ ✓ Compiled /notes in 368ms
+ GET /notes 200 in 417ms
+ GET /notes 200 in 126ms
+user {
+  id: '8cd371ba-b178-485e-bbfd-e05306b5b159',
+  aud: 'authenticated',
+  role: 'authenticated',
+  email: 'cogno1024@gmail.com',
+  email_confirmed_at: '2025-10-26T10:59:53.912206Z',
+  phone: '',
+  confirmation_sent_at: '2025-10-26T10:59:25.591603Z',
+  confirmed_at: '2025-10-26T10:59:53.912206Z',
+  recovery_sent_at: '2025-11-10T08:56:54.225937Z',
+  last_sign_in_at: '2025-11-10T08:57:44.644776Z',
+  app_metadata: { provider: 'google', providers: [ 'google', 'email' ] },
+  user_metadata: {
+    avatar_url: 'https://lh3.googleusercontent.com/a/ACg8ocLlIylWS9winu9XpLGJgHgI314LJio4176V-eHIZwMPwNUh_g=s96-c',
+    email: 'cogno1024@gmail.com',
+    email_verified: true,
+    full_name: 'Yusei Moriwaki',
+    iss: 'https://accounts.google.com',
+    name: 'Yusei Moriwaki',
+    phone_verified: false,
+    picture: 'https://lh3.googleusercontent.com/a/ACg8ocLlIylWS9winu9XpLGJgHgI314LJio4176V-eHIZwMPwNUh_g=s96-c',
+    provider_id: '104281194326270050409',
+    sub: '104281194326270050409'
+  },
+  identities: [
+    {
+      identity_id: 'c72db9f7-b0a9-407c-bbae-3037dba4a1dd',
+      id: '104281194326270050409',
+      user_id: '8cd371ba-b178-485e-bbfd-e05306b5b159',
+      identity_data: [Object],
+      provider: 'google',
+      last_sign_in_at: '2025-11-05T08:54:23.387572Z',
+      created_at: '2025-11-05T08:54:23.387642Z',
+      updated_at: '2025-11-05T08:54:23.387642Z',
+      email: 'cogno1024@gmail.com'
+    },
+    {
+      identity_id: 'ef0bc9e3-c306-4c2d-a26f-406b5aa88f95',
+      id: '8cd371ba-b178-485e-bbfd-e05306b5b159',
+      user_id: '8cd371ba-b178-485e-bbfd-e05306b5b159',
+      identity_data: [Object],
+      provider: 'email',
+      last_sign_in_at: '2025-10-26T10:59:25.560165Z',
+      created_at: '2025-10-26T10:59:25.560838Z',
+      updated_at: '2025-10-26T10:59:25.560838Z',
+      email: 'cogno1024@gmail.com'
+    }
+  ],
+  created_at: '2025-10-26T10:59:25.453731Z',
+  updated_at: '2025-11-10T16:25:14.468141Z',
+  is_anonymous: false
+}
+ POST /api/copilotkit 200 in 309ms
+ ○ Compiling /notes/[id] ...
+ ✓ Compiled /notes/[id] in 510ms
+ GET /notes/59 200 in 1005ms
+ GET /notes/61 200 in 61ms
+ ✓ Compiled in 55.6s
+ GET /notes 200 in 998ms
+ ✓ Compiled in 61ms
+user {
+  id: '8cd371ba-b178-485e-bbfd-e05306b5b159',
+  aud: 'authenticated',
+  role: 'authenticated',
+  email: 'cogno1024@gmail.com',
+  email_confirmed_at: '2025-10-26T10:59:53.912206Z',
+  phone: '',
+  confirmation_sent_at: '2025-10-26T10:59:25.591603Z',
+  confirmed_at: '2025-10-26T10:59:53.912206Z',
+  recovery_sent_at: '2025-11-10T08:56:54.225937Z',
+  last_sign_in_at: '2025-11-10T08:57:44.644776Z',
+  app_metadata: { provider: 'google', providers: [ 'google', 'email' ] },
+  user_metadata: {
+    avatar_url: 'https://lh3.googleusercontent.com/a/ACg8ocLlIylWS9winu9XpLGJgHgI314LJio4176V-eHIZwMPwNUh_g=s96-c',
+    email: 'cogno1024@gmail.com',
+    email_verified: true,
+    full_name: 'Yusei Moriwaki',
+    iss: 'https://accounts.google.com',
+    name: 'Yusei Moriwaki',
+    phone_verified: false,
+    picture: 'https://lh3.googleusercontent.com/a/ACg8ocLlIylWS9winu9XpLGJgHgI314LJio4176V-eHIZwMPwNUh_g=s96-c',
+    provider_id: '104281194326270050409',
+    sub: '104281194326270050409'
+  },
+  identities: [
+    {
+      identity_id: 'c72db9f7-b0a9-407c-bbae-3037dba4a1dd',
+      id: '104281194326270050409',
+      user_id: '8cd371ba-b178-485e-bbfd-e05306b5b159',
+      identity_data: [Object],
+      provider: 'google',
+      last_sign_in_at: '2025-11-05T08:54:23.387572Z',
+      created_at: '2025-11-05T08:54:23.387642Z',
+      updated_at: '2025-11-05T08:54:23.387642Z',
+      email: 'cogno1024@gmail.com'
+    },
+    {
+      identity_id: 'ef0bc9e3-c306-4c2d-a26f-406b5aa88f95',
+      id: '8cd371ba-b178-485e-bbfd-e05306b5b159',
+      user_id: '8cd371ba-b178-485e-bbfd-e05306b5b159',
+      identity_data: [Object],
+      provider: 'email',
+      last_sign_in_at: '2025-10-26T10:59:25.560165Z',
+      created_at: '2025-10-26T10:59:25.560838Z',
+      updated_at: '2025-10-26T10:59:25.560838Z',
+      email: 'cogno1024@gmail.com'
+    }
+  ],
+  created_at: '2025-10-26T10:59:25.453731Z',
+  updated_at: '2025-11-10T16:25:14.468141Z',
