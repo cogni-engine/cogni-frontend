@@ -1,50 +1,104 @@
-# Welcome to your Expo app 👋
+# # Cogni Mobile App
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+This is a React Native mobile app built with [Expo](https://expo.dev) that embeds the Cogni web application using a WebView.
 
-## Get started
+## Overview
 
-1. Install dependencies
+This mobile app provides a native wrapper around the Cogni web application (https://cogno.studio), giving users a seamless mobile experience while maintaining all the functionality of the web app.
 
-   ```bash
-   npm install
-   ```
+## Get Started
 
-2. Start the app
+1. **Install dependencies**
 
    ```bash
-   npx expo start
+   pnpm install
    ```
 
-In the output, you'll find options to open the app in a
+2. **Start the development server**
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+   ```bash
+   pnpm start
+   ```
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+3. **Run on your device**
 
-## Get a fresh project
+   - Press `i` for iOS simulator
+   - Press `a` for Android emulator
+   - Scan the QR code with Expo Go app (development)
 
-When you're ready, run:
+## Configuration
 
-```bash
-npm run reset-project
+The web app URL is configured in `constants/config.ts`. By default, it points to `https://cogno.studio`.
+
+### Using a Custom URL
+
+To use a different URL (e.g., for local development), add this to `app.json`:
+
+```json
+{
+  "expo": {
+    "extra": {
+      "webAppUrl": "http://localhost:3000"
+    }
+  }
+}
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+**Note:** For local development:
+- iOS Simulator: use `http://localhost:3000`
+- Android Emulator: use `http://10.0.2.2:3000`
+- Physical Device: use your computer's local IP (e.g., `http://192.168.1.100:3000`)
 
-## Learn more
+## Building for Production
 
-To learn more about developing your project with Expo, look at the following resources:
+### Development Build
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+For full native features, create a development build:
 
-## Join the community
+```bash
+npx expo prebuild
+npx expo run:ios
+npx expo run:android
+```
 
-Join our community of developers creating universal apps.
+### Production Build
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+```bash
+eas build --platform ios
+eas build --platform android
+```
+
+## Features
+
+- Full web app embedded in native container
+- Native splash screen and app icon
+- Automatic handling of dark/light modes
+- Error handling with retry functionality
+- Loading indicators
+- Works offline with proper error messages
+
+## Troubleshooting
+
+### Connection Errors
+
+If you see connection errors:
+
+1. Verify the URL is accessible in your browser
+2. Check network permissions in `app.json`
+3. For iOS, ensure App Transport Security settings are configured
+4. Try reloading the app or using the retry button
+
+### Need Full Rebuild
+
+If you modify `app.json` or add native modules:
+
+```bash
+npx expo prebuild --clean
+npx expo run:ios
+```
+
+## Learn More
+
+- [Expo Documentation](https://docs.expo.dev/)
+- [React Native WebView](https://github.com/react-native-webview/react-native-webview)
+- [Cogni Platform](https://cogno.studio)
