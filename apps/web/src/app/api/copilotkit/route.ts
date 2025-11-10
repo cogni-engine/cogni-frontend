@@ -7,8 +7,12 @@ import {
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
 
+// Configure route for streaming
+export const maxDuration = 60; // 60 seconds for AI streaming
+export const runtime = 'nodejs'; // Use Node.js runtime
+
 const serviceAdapter = new OpenAIAdapter();
-const runtime = new CopilotRuntime();
+const copilotRuntimeInstance = new CopilotRuntime();
 
 export const POST = async (req: NextRequest) => {
   // Verify user is authenticated - create client directly from request (faster than await cookies())
@@ -36,7 +40,7 @@ export const POST = async (req: NextRequest) => {
   }
 
   const { handleRequest } = copilotRuntimeNextJSAppRouterEndpoint({
-    runtime,
+    runtime: copilotRuntimeInstance,
     serviceAdapter,
     endpoint: '/api/copilotkit',
   });

@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
 
+// Configure route for AI completion
+export const maxDuration = 60; // 60 seconds for AI API calls
 export const runtime = 'edge';
 
 export async function POST(req: NextRequest) {
