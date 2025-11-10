@@ -1,0 +1,13 @@
+# Ignore mobile app during web deployment
+apps/mobile/
+
+# Ignore docs
+docs/
+
+# Ignore shared packages source (only dist/ is needed)
+packages/*/src/
+packages/*/tests/
+
+# Turbo cache
+.turbo/
+
