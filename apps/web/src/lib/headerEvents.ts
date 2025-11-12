@@ -3,6 +3,7 @@ export const HEADER_EVENTS = {
   CREATE_THREAD: 'header:createThread',
   TOGGLE_THREAD_SIDEBAR: 'header:toggleThreadSidebar',
   TOGGLE_NOTIFICATION_PANEL: 'header:toggleNotificationPanel',
+  REFRESH_NOTIFICATION_COUNT: 'header:refreshNotificationCount',
 } as const;
 
 export type HeaderEventType =

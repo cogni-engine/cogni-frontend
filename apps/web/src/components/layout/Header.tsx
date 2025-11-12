@@ -7,7 +7,11 @@ import { createClient } from '@/lib/supabase/browserClient';
 import type { User } from '@supabase/supabase-js';
 import { UserMenu } from '@/components/layout/UserMenu';
 import { BellIcon, Menu, PenSquare } from 'lucide-react';
-import { dispatchHeaderEvent, HEADER_EVENTS } from '@/lib/headerEvents';
+import {
+  dispatchHeaderEvent,
+  HEADER_EVENTS,
+  onHeaderEvent,
+} from '@/lib/headerEvents';
 
 export default function Header() {
   const pathname = usePathname();
@@ -80,18 +84,24 @@ export default function Header() {
     return () => clearInterval(interval);
   }, [isMobile]);
 
-  // Poll for unread notifications every 30 seconds
+  // Fetch unread notifications when user detected
   useEffect(() => {
     if (!userId) return;
-
     fetchUnreadCount();
-    const interval = setInterval(() => {
-      fetchUnreadCount();
-    }, 30000);
+  }, [userId, fetchUnreadCount]);
 
-    return () => clearInterval(interval);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [userId]);
+  useEffect(() => {
+    const unsubscribe = onHeaderEvent(
+      HEADER_EVENTS.REFRESH_NOTIFICATION_COUNT,
+      () => {
+        if (userId) {
+          fetchUnreadCount();
+        }
+      }
+    );
+
+    return unsubscribe;
+  }, [userId, fetchUnreadCount]);
 
   const handleCreateThread = () => {
     dispatchHeaderEvent(HEADER_EVENTS.CREATE_THREAD);
@@ -163,9 +173,7 @@ export default function Header() {
               <div className='absolute top-1/2 left-0 w-6 h-0.5 bg-gradient-to-r from-white/50 via-white/20 to-transparent transform -translate-y-1/2'></div> */}
               {/* Unread Badge */}
               {unreadCount > 0 && (
-                <span className='absolute -top-1 -right-1 bg-red-500 text-white text-[9px] font-bold rounded-full min-w-[14px] h-[14px] flex items-center justify-center px-0.5 border border-black/50'>
-                  {unreadCount > 9 ? '9+' : unreadCount}
-                </span>
+                <span className='absolute -top-3 right-0 h-2 w-2 rounded-full bg-red-500 border border-black/50' />
               )}
             </div>
           </button>

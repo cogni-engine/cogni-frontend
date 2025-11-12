@@ -54,10 +54,21 @@ export async function getPastDueNotifications(
     .eq('user_id', userId)
     .in('status', ['scheduled', 'sent'])
     .lt('due_date', now)
-    .order('due_date', { ascending: true });
+    .order('due_date', { ascending: false });
 
   if (error) throw error;
-  return data || [];
+  if (!data) return [];
+
+  const latestByTask = data.reduce<Map<number, Notification>>((acc, notification) => {
+    if (!acc.has(notification.task_id)) {
+      acc.set(notification.task_id, notification);
+    }
+    return acc;
+  }, new Map());
+
+  return Array.from(latestByTask.values()).sort(
+    (a, b) => new Date(a.due_date).getTime() - new Date(b.due_date).getTime()
+  );
 }
 
 /**
@@ -145,11 +156,18 @@ export async function updateNotificationStatus(
   return data;
 }
 
-/**
- * Delete a notification
- */
-export async function deleteNotification(id: number): Promise<void> {
-  const { error } = await supabase.from('notifications').delete().eq('id', id);
+export async function resolveNotificationsByTask(
+  userId: string,
+  taskId: number
+): Promise<void> {
+  const { error } = await supabase
+    .from('notifications')
+    .update({
+      status: 'resolved' as NotificationStatus,
+      updated_at: new Date().toISOString(),
+    })
+    .eq('user_id', userId)
+    .eq('task_id', taskId);
 
   if (error) throw error;
 }
@@ -162,39 +180,37 @@ export async function getUnreadNotificationCount(
 ): Promise<number> {
   const now = new Date().toISOString();
 
-  const { count, error } = await supabase
+  const { data, error } = await supabase
     .from('notifications')
-    .select('*', { count: 'exact', head: true })
+    .select('task_id, status, due_date')
     .eq('user_id', userId)
-    .eq('status', 'scheduled')
-    .lt('due_date', now);
+    .in('status', ['scheduled', 'sent'])
+    .lt('due_date', now)
+    .order('due_date', { ascending: false });
 
   if (error) throw error;
-  return count || 0;
+  if (!data) return 0;
+
+  const latestByTask = data.reduce<Map<number, NotificationStatus>>(
+    (acc, notification) => {
+      if (!acc.has(notification.task_id)) {
+        acc.set(notification.task_id, notification.status as NotificationStatus);
+      }
+      return acc;
+    },
+    new Map()
+  );
+
+  return Array.from(latestByTask.values()).filter(
+    status => status === 'scheduled'
+  ).length;
 }
 
 /**
- * Trigger notification - generates AI conversation response and marks as resolved
+ * Delete a notification
  */
-export async function triggerNotification(
-  notificationId: number,
-  threadId: number
-): Promise<void> {
-  const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://0.0.0.0:8000'}/api/cogno/notification/trigger`,
-    {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        notification_id: notificationId,
-        thread_id: threadId,
-      }),
-    }
-  );
+export async function deleteNotification(id: number): Promise<void> {
+  const { error } = await supabase.from('notifications').delete().eq('id', id);
 
-  if (!response.ok) {
-    throw new Error('Failed to trigger notification');
-  }
+  if (error) throw error;
 }
