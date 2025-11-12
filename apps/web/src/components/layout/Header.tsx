@@ -106,7 +106,7 @@ export default function Header() {
   };
 
   return (
-    <header className='flex items-center justify-between px-4 md:px-6 py-3 border-b border-black bg-white/3 backdrop-blur-lg relative z-50'>
+    <header className='flex items-center justify-between px-4 md:px-6 pt-3 border-b border-black bg-white/3 backdrop-blur-lg relative z-50'>
       {/* Left Side - Thread Controls + Logo */}
       <div className='flex items-center gap-4'>
         {isHomePage && isMounted && (

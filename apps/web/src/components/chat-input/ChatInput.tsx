@@ -213,7 +213,7 @@ const ChatInput = forwardRef<ChatInputRef, ChatInputProps>(function ChatInput(
   );
 
   return (
-    <div className='bg-gradient-to-br from-slate-950 via-black to-slate-950 relative z-10 rounded-t-3xl'>
+    <div className='relative z-10 rounded-t-3xl'>
       {/* Reply indicator - absolutely positioned above input */}
       {replyingTo && (
         <div className='absolute bottom-full left-0 right-0 px-4 md:px-8 pb-2 pointer-events-auto'>
@@ -234,7 +234,7 @@ const ChatInput = forwardRef<ChatInputRef, ChatInputProps>(function ChatInput(
         />
       )}
       {/* 入力UI */}
-      <div className='px-2 md:px-6 pt-2'>
+      <div className='px-4 md:px-6 py-2'>
         <div className='w-full md:max-w-4xl md:mx-auto'>
           <div className='relative'>
             {/* File Upload Menu - Plus button */}

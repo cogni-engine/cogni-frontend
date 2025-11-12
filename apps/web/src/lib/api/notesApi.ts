@@ -107,7 +107,8 @@ export async function getNote(id: number): Promise<Note | null> {
 export async function createNote(
   workspaceId: number,
   title: string,
-  content: string
+  content: string,
+  folderId?: number | null
 ): Promise<Note> {
   const text = combineNoteText(title, content);
 
@@ -116,6 +117,7 @@ export async function createNote(
     .insert({
       workspace_id: workspaceId,
       text,
+      note_folder_id: folderId,
     })
     .select()
     .single();

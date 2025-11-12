@@ -36,7 +36,7 @@ const ChatContainer = forwardRef<HTMLDivElement, ChatContainerProps>(
         {/* メッセージエリア - GPU最適化 */}
         <div
           ref={ref}
-          className='h-full overflow-y-auto relative z-10 p-6 md:p-8 space-y-6 scroll-smooth'
+          className='h-full overflow-y-auto relative z-10 p-6 md:p-8 pb-32 md:pb-40 space-y-6 scroll-smooth'
           style={{
             willChange: 'scroll-position',
             transform: 'translateZ(0)',

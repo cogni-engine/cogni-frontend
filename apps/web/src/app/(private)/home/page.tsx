@@ -13,7 +13,7 @@ import { useCopilotReadable } from '@copilotkit/react-core';
 export default function HomePage() {
   const { selectedThreadId, setSelectedThreadId } = useThreadContext();
   const { threads, loading: threadsLoading, createThread } = useThreads();
-  const { messages, sendMessage, isLoading, error, stopStream } =
+  const { messages, sendMessage, isLoading, stopStream } =
     useCogno(selectedThreadId);
   const { isThreadSidebarOpen } = useHomeUI();
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -116,7 +116,7 @@ export default function HomePage() {
 
   return (
     <div
-      className={`flex flex-col h-full transition-all duration-300 ${
+      className={`relative flex flex-col h-full transition-all duration-300 ${
         isThreadSidebarOpen
           ? 'translate-x-[240px] md:translate-x-0 md:ml-80'
           : 'translate-x-0'
@@ -128,14 +128,21 @@ export default function HomePage() {
         sendMessage={sendMessage}
         streamingContainerRef={streamingContainerRef}
       />
-      <ChatInput
-        onSend={(content: string) => {
-          // Wrapper to match InputArea's expected signature
-          void sendMessage(content);
-        }}
-        onStop={stopStream}
-        isLoading={isLoading}
-      />
+
+      {/* Absolutely positioned ChatInput with glass-morphism background */}
+      <div className='absolute bottom-0 left-0 right-0 z-30'>
+        <div className='relative'>
+          <ChatInput
+            onSend={(content: string) => {
+              // Wrapper to match InputArea's expected signature
+              void sendMessage(content);
+            }}
+            onStop={stopStream}
+            isLoading={isLoading}
+          />
+        </div>
+      </div>
+
       {/* NotificationPanelにsendMessageを渡す */}
       <NotificationPanel sendMessage={sendMessage} />
     </div>
