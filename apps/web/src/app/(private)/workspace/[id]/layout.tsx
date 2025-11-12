@@ -11,6 +11,7 @@ import {
   Settings,
 } from 'lucide-react';
 import { useWorkspaceNotes } from '@/hooks/useWorkspaceNotes';
+import GlassCard from '@/components/glass-card/GlassCard';
 
 type ViewType = 'chat' | 'notes' | 'members' | 'menu';
 
@@ -84,7 +85,7 @@ export default function WorkspaceLayout({
   const basePath = `/workspace/${workspaceId}`;
 
   return (
-    <div className='flex flex-col h-full bg-gradient-to-br from-slate-950 via-black to-slate-950 text-gray-100 p-4 md:p-6 relative overflow-hidden'>
+    <div className='flex flex-col h-full p-4 md:p-6 relative overflow-hidden'>
       <div className='relative z-10 flex flex-col h-full'>
         <div className='flex flex-col gap-3'>
           {/* Header */}
@@ -96,7 +97,7 @@ export default function WorkspaceLayout({
             >
               <ArrowLeft className='w-5 h-5 text-white' />
             </button>
-            <h1 className='flex-1 min-w-0 text-xl font-bold bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent truncate'>
+            <h1 className='flex-1 min-w-0 text-xl font-bold bg-linear-to-r from-white to-gray-300 bg-clip-text text-transparent truncate'>
               {workspace ? workspace.title : 'Workspace'}
             </h1>
             <div className='relative' ref={menuRef}>
@@ -142,16 +143,16 @@ export default function WorkspaceLayout({
             </div>
           </div>
 
-          {/* Navigation Tabs */}
+          {/* Navigation Tabs - Absolutely Positioned */}
           {(currentView === 'chat' || currentView === 'notes') && (
-            <div className='relative flex w-full mb-4'>
-              <div className='flex w-full divide-x divide-white/15 overflow-hidden rounded-3xl border border-black bg-white/10 backdrop-blur-xl shadow-[0_8px_32px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.12)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.25),inset_0_1px_0_rgba(255,255,255,0.18)] transition-all duration-300'>
+            <div className='absolute w-full top-14 left-1/2 -translate-x-1/2 z-20 pointer-events-none'>
+              <GlassCard className='flex w-full divide-x divide-white/10 overflow-hidden rounded-3xl border backdrop-blur-md shadow-lg pointer-events-auto'>
                 <button
                   onClick={() => handleViewChange('chat')}
-                  className={`flex flex-1 items-center justify-center gap-2 px-6 py-2 text-sm font-medium transition-all duration-300 ${
+                  className={`flex flex-1 items-center justify-center gap-2 px-8 py-2.5 text-sm font-medium transition-all duration-300 ${
                     currentView === 'chat'
                       ? 'text-white bg-white/10'
-                      : 'text-gray-400 hover:text-white'
+                      : 'text-gray-400 hover:text-white hover:bg-white/5'
                   }`}
                   aria-current={currentView === 'chat' ? 'page' : undefined}
                 >
@@ -160,17 +161,17 @@ export default function WorkspaceLayout({
                 </button>
                 <button
                   onClick={() => handleViewChange('notes')}
-                  className={`flex flex-1 items-center justify-center gap-2 px-6 py-2 text-sm font-medium transition-all duration-300 ${
+                  className={`flex flex-1 items-center justify-center gap-2 px-8 py-2.5 text-sm font-medium transition-all duration-300 ${
                     currentView === 'notes'
                       ? 'text-white bg-white/10'
-                      : 'text-gray-400 hover:text-white'
+                      : 'text-gray-400 hover:text-white hover:bg-white/5'
                   }`}
                   aria-current={currentView === 'notes' ? 'page' : undefined}
                 >
                   <FileText className='w-4 h-4' />
                   Notes
                 </button>
-              </div>
+              </GlassCard>
             </div>
           )}
         </div>

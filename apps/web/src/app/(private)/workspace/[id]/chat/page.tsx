@@ -415,7 +415,7 @@ export default function WorkspaceChatPage() {
       {/* Using flex-direction: column-reverse makes the list naturally start at bottom */}
       <div
         ref={scrollContainerRef}
-        className='flex-1 overflow-y-auto relative flex flex-col-reverse'
+        className='flex-1 overflow-y-auto relative flex flex-col-reverse pb-32 md:pb-40'
       >
         {/* Loading indicator for older messages - appears at top when scrolling up */}
         {isLoadingMore && (
@@ -469,19 +469,21 @@ export default function WorkspaceChatPage() {
         </div>
       )}
 
-      {/* Input */}
-      <ChatInput
-        ref={chatInputRef}
-        onSend={sendMessage}
-        isLoading={isLoading}
-        placeholder='Message'
-        canStop={false}
-        replyingTo={replyingTo}
-        onCancelReply={handleCancelReply}
-        workspaceId={workspaceId}
-        workspaceMembers={members}
-        workspaceNotes={workspaceNotes}
-      />
+      {/* Absolutely positioned ChatInput with transparent background */}
+      <div className='absolute bottom-0 left-0 right-0 z-30'>
+        <ChatInput
+          ref={chatInputRef}
+          onSend={sendMessage}
+          isLoading={isLoading}
+          placeholder='Message'
+          canStop={false}
+          replyingTo={replyingTo}
+          onCancelReply={handleCancelReply}
+          workspaceId={workspaceId}
+          workspaceMembers={members}
+          workspaceNotes={workspaceNotes}
+        />
+      </div>
     </div>
   );
 }
