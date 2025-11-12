@@ -1,22 +1,11 @@
 'use client';
 
 import { usePathname, useRouter } from 'next/navigation';
-import { useEffect } from 'react';
-import { useUI } from '@/contexts/UIContext';
-import { HomeIcon, MessageSquare } from 'lucide-react';
-import { Notebook } from 'lucide-react';
+import { HomeIcon, MessageSquare, Notebook } from 'lucide-react';
 
 export default function BottomNav() {
   const pathname = usePathname();
   const router = useRouter();
-  const { closeThreadSidebar } = useUI();
-
-  // パスが/home以外になったらスレッドサイドバーを閉じる
-  useEffect(() => {
-    if (!pathname.startsWith('/home')) {
-      closeThreadSidebar();
-    }
-  }, [pathname, closeThreadSidebar]);
 
   const tabs = [
     {
