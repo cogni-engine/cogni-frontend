@@ -5,7 +5,8 @@ export const HEADER_EVENTS = {
   TOGGLE_NOTIFICATION_PANEL: 'header:toggleNotificationPanel',
 } as const;
 
-export type HeaderEventType = (typeof HEADER_EVENTS)[keyof typeof HEADER_EVENTS];
+export type HeaderEventType =
+  (typeof HEADER_EVENTS)[keyof typeof HEADER_EVENTS];
 
 // Dispatch a header event
 export function dispatchHeaderEvent(eventType: HeaderEventType) {
@@ -22,4 +23,3 @@ export function onHeaderEvent(
   window.addEventListener(eventType, handler);
   return () => window.removeEventListener(eventType, handler);
 }
-

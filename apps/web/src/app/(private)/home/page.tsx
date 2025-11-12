@@ -17,6 +17,7 @@ export default function HomePage() {
     useCogno(selectedThreadId);
   const { isThreadSidebarOpen } = useHomeUI();
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const streamingContainerRef = useRef<HTMLDivElement>(null);
   const prevMessageCountRef = useRef(0);
   const hasInitialized = useRef(false);
 
@@ -83,10 +84,30 @@ export default function HomePage() {
       scrollContainerRef.current
     ) {
       setTimeout(() => {
-        scrollContainerRef.current?.scrollTo({
-          top: scrollContainerRef.current.scrollHeight,
-          behavior: 'smooth',
-        });
+        if (!scrollContainerRef.current) return;
+
+        // If streaming container exists, scroll to align its top with viewport top
+        if (streamingContainerRef.current) {
+          const scrollContainer = scrollContainerRef.current;
+          const streamingContainer = streamingContainerRef.current;
+
+          // Calculate offset (accounting for padding)
+          const offsetTop = streamingContainer.offsetTop;
+
+          scrollContainer.scrollTo({
+            top: offsetTop,
+            behavior: 'smooth',
+          });
+        } else {
+          // No streaming messages, scroll to bottom normally
+          const container = scrollContainerRef.current;
+          const targetScroll = container.scrollHeight - container.clientHeight;
+
+          container.scrollTo({
+            top: targetScroll,
+            behavior: 'smooth',
+          });
+        }
       }, 100);
     }
 
@@ -105,6 +126,7 @@ export default function HomePage() {
         ref={scrollContainerRef}
         messages={messages}
         sendMessage={sendMessage}
+        streamingContainerRef={streamingContainerRef}
       />
       <ChatInput
         onSend={(content: string) => {
@@ -116,7 +138,6 @@ export default function HomePage() {
       />
       {/* NotificationPanelにsendMessageを渡す */}
       <NotificationPanel sendMessage={sendMessage} />
-      {error && <div className='text-red-500 text-center p-4'>{error}</div>}
     </div>
   );
 }

@@ -55,4 +55,3 @@ export function useHomeUI() {
   }
   return context;
 }
-
