@@ -43,6 +43,7 @@ import { createClient } from '@/lib/supabase/browserClient';
 import { useAICompletion } from '@/hooks/useAICompletion';
 import { AiCompletion } from '@/lib/tiptap/AiCompletionExtension';
 import { useCopilotReadable } from '@copilotkit/react-core';
+import { useMobileKeyboard } from '@/hooks/useMobileKeyboard';
 
 interface ToolbarButtonProps {
   onClick: () => void;
@@ -134,6 +135,9 @@ export default function NoteEditor({ noteId }: { noteId: string }) {
   // Mention state
   const [currentMemberId, setCurrentMemberId] = useState<number | null>(null);
   const supabase = createClient();
+
+  // Mobile keyboard detection
+  const { isMobile, isKeyboardVisible, keyboardHeight } = useMobileKeyboard();
 
   // Use a ref to always get the latest members for mention suggestions
   const membersRef = useRef<typeof members>([]);
@@ -853,7 +857,13 @@ export default function NoteEditor({ noteId }: { noteId: string }) {
         )}
       </header>
       {/* Toolbar */}
-      <div className='sticky top-0 z-20 flex flex-wrap gap-2 mx-2 px-3 py-3 rounded-2xl border border-white/10 bg-white/8 backdrop-blur-xl shadow-[0_10px_40px_rgba(0,0,0,0.35),inset_0_1px_0_rgba(255,255,255,0.12)]'>
+      <div
+        className={`z-20 flex flex-wrap gap-2 px-3 py-3 rounded-2xl border border-white/10 bg-white/8 backdrop-blur-xl shadow-[0_10px_40px_rgba(0,0,0,0.35),inset_0_1px_0_rgba(255,255,255,0.12)] transition-all duration-200 ${
+          isMobile && isKeyboardVisible
+            ? 'fixed left-2 right-2 bottom-2'
+            : 'sticky top-0 mx-2'
+        }`}
+      >
         <ToolbarButton
           onClick={() => editor.chain().focus().toggleBold().run()}
           isActive={editor.isActive('bold')}
