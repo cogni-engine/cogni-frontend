@@ -18,7 +18,7 @@ import { getPersonalWorkspace } from '@/lib/api/workspaceApi';
 
 function LayoutContent({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const { isInputActive } = useGlobalUI();
+  const { isInputActive, isDrawerOpen } = useGlobalUI();
   const [isMobile, setIsMobile] = useState(false);
   const supabase = createClient();
 
@@ -87,7 +87,9 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
   }, []);
 
   // モバイルかつ入力中の場合のみフッターを非表示、デスクトップでは常に表示
-  const shouldShowFooter = showTopLevelChrome && (!isMobile || !isInputActive);
+  // Also hide footer when drawer is open
+  const shouldShowFooter =
+    showTopLevelChrome && (!isMobile || !isInputActive) && !isDrawerOpen;
 
   return (
     <div className='flex flex-col h-screen bg-black text-gray-200 relative'>

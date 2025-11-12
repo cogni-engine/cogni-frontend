@@ -94,11 +94,11 @@ export function useWorkspaceNotes(workspaceId: number) {
   );
 
   const createNewNote = useCallback(
-    async (title: string, content: string) => {
+    async (title: string, content: string, folderId?: number | null) => {
       try {
         setError(null);
 
-        const newNote = await createNote(workspaceId, title, content);
+        const newNote = await createNote(workspaceId, title, content, folderId);
         const parsedNote = parseNote(newNote);
         setNotes(prev => [parsedNote, ...prev]);
         return parsedNote;

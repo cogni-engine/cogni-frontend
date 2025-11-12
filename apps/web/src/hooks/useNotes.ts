@@ -106,25 +106,28 @@ export function useNotes() {
     }
   }, []);
 
-  const createNewNote = useCallback(async (title: string, content: string) => {
-    try {
-      setError(null);
+  const createNewNote = useCallback(
+    async (title: string, content: string, folderId?: number | null) => {
+      try {
+        setError(null);
 
-      const workspaceId = getPersonalWorkspaceId();
-      if (!workspaceId) {
-        throw new Error('No personal workspace found');
+        const workspaceId = getPersonalWorkspaceId();
+        if (!workspaceId) {
+          throw new Error('No personal workspace found');
+        }
+
+        const newNote = await createNote(workspaceId, title, content, folderId);
+        const parsedNote = parseNote(newNote);
+        setNotes(prev => [parsedNote, ...prev]);
+        return parsedNote;
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to create note');
+        console.error('Error creating note:', err);
+        throw err;
       }
-
-      const newNote = await createNote(workspaceId, title, content);
-      const parsedNote = parseNote(newNote);
-      setNotes(prev => [parsedNote, ...prev]);
-      return parsedNote;
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to create note');
-      console.error('Error creating note:', err);
-      throw err;
-    }
-  }, []);
+    },
+    []
+  );
 
   const updateExistingNote = useCallback(
     async (id: number, title: string, content: string) => {
@@ -296,13 +299,16 @@ export function useNewNote() {
  * Hook for note mutations (create, update, delete)
  */
 export function useNoteMutations() {
-  const create = useCallback(async (title: string, content: string) => {
-    const workspaceId = getPersonalWorkspaceId();
-    if (!workspaceId) throw new Error('No personal workspace found');
+  const create = useCallback(
+    async (title: string, content: string, folderId?: number | null) => {
+      const workspaceId = getPersonalWorkspaceId();
+      if (!workspaceId) throw new Error('No personal workspace found');
 
-    const newNote = await createNote(workspaceId, title, content);
-    return parseNote(newNote);
-  }, []);
+      const newNote = await createNote(workspaceId, title, content, folderId);
+      return parseNote(newNote);
+    },
+    []
+  );
 
   const update = useCallback(
     async (id: number, title: string, content: string) => {

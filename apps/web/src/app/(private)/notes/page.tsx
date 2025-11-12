@@ -3,16 +3,25 @@
 import NoteList from '@/features/notes/components/NoteList';
 import { useNotes, formatDate, useNoteMutations } from '@/hooks/useNotes';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { getPersonalWorkspaceId } from '@/lib/cookies';
 import { PenSquare, Trash2 } from 'lucide-react';
 import SearchBar from '@/components/SearchBar';
 import GlassButton from '@/components/glass-card/GlassButton';
 import GlassCard from '@/components/glass-card/GlassCard';
 import NoteContextMenu from '@/features/workspace/components/NoteContextMenu';
+import MoveFolderDrawer from '@/components/MoveFolderDrawer';
+import FolderDropdown from '@/components/FolderDropdown';
+import { useNoteFolders } from '@/hooks/useNoteFolders';
+import { useGlobalUI } from '@/contexts/GlobalUIContext';
 
 export default function NotesPage() {
   const router = useRouter();
+  const { isInputActive } = useGlobalUI();
+  const [selectedFolder, setSelectedFolder] = useState<
+    'all' | 'notes' | 'trash' | number
+  >('all');
+
   const {
     notes,
     loading,
@@ -23,8 +32,28 @@ export default function NotesPage() {
     restoreNote,
     duplicateNote,
     emptyTrash,
+    refetch,
   } = useNotes();
   const { create } = useNoteMutations();
+  const personalWorkspaceId = getPersonalWorkspaceId();
+  const {
+    folders: rawFolders,
+    moveNote,
+    createFolder,
+    updateFolder,
+    deleteFolder,
+  } = useNoteFolders(personalWorkspaceId || 0);
+
+  // Add note counts to folders
+  const folders = useMemo(() => {
+    return rawFolders.map(folder => ({
+      ...folder,
+      note_count: notes.filter(
+        n => !n.deleted_at && n.note_folder_id === folder.id
+      ).length,
+    }));
+  }, [rawFolders, notes]);
+
   const [searchQuery, setSearchQuery] = useState('');
   const [isCreating, setIsCreating] = useState(false);
   const [contextMenu, setContextMenu] = useState<{
@@ -37,12 +66,47 @@ export default function NotesPage() {
     string | null
   >(null);
   const [showEmptyTrashConfirm, setShowEmptyTrashConfirm] = useState(false);
+  const [showMoveDrawer, setShowMoveDrawer] = useState(false);
+  const [noteToMove, setNoteToMove] = useState<string | null>(null);
 
-  const personalWorkspaceId = getPersonalWorkspaceId();
+  // Filter notes based on selected folder
+  const filteredNotes = useMemo(() => {
+    if (selectedFolder === 'trash') {
+      // Show only deleted notes
+      return notes.filter(note => note.deleted_at);
+    } else if (selectedFolder === 'all') {
+      // Show all active notes (no folder filter)
+      return notes.filter(note => !note.deleted_at);
+    } else if (selectedFolder === 'notes') {
+      // Show notes with null folder_id (default Notes folder)
+      return notes.filter(note => !note.deleted_at && !note.note_folder_id);
+    } else {
+      // Show notes in specific folder (not deleted)
+      return notes.filter(
+        note => !note.deleted_at && note.note_folder_id === selectedFolder
+      );
+    }
+  }, [notes, selectedFolder]);
 
   // Separate active and deleted notes
-  const activeNotes = notes.filter(note => !note.deleted_at);
-  const deletedNotes = notes.filter(note => note.deleted_at);
+  const activeNotes = selectedFolder === 'trash' ? [] : filteredNotes;
+  const deletedNotes =
+    selectedFolder === 'trash'
+      ? filteredNotes
+      : notes.filter(note => note.deleted_at);
+  const unfolderedNotes = notes.filter(
+    note => !note.deleted_at && !note.note_folder_id
+  );
+
+  // Calculate note counts for dropdown
+  const noteCounts = useMemo(
+    () => ({
+      all: notes.filter(note => !note.deleted_at).length,
+      notes: unfolderedNotes.length,
+      trash: deletedNotes.length,
+    }),
+    [notes, unfolderedNotes, deletedNotes]
+  );
 
   const formattedActiveNotes = activeNotes.map(note => ({
     id: note.id.toString(),
@@ -78,8 +142,16 @@ export default function NotesPage() {
         throw new Error('No personal workspace found');
       }
 
-      // Create a new note with empty/default content
-      const newNote = await create('Untitled', '');
+      // Create a new note with empty/default content and current selected folder
+      let currentFolderId: number | null = null;
+      if (selectedFolder === 'notes') {
+        currentFolderId = null; // Default folder
+      } else if (typeof selectedFolder === 'number') {
+        currentFolderId = selectedFolder;
+      }
+      // If 'all' or 'trash', create in default folder (null)
+
+      const newNote = await create('Untitled', '', currentFolderId);
 
       // Navigate to the new note page
       router.push(`/notes/${newNote.id}`);
@@ -151,40 +223,72 @@ export default function NotesPage() {
     }
   };
 
+  const handleOpenMoveDrawer = (noteId: string) => {
+    setNoteToMove(noteId);
+    setShowMoveDrawer(true);
+    setContextMenu(null);
+  };
+
+  const handleMove = async (folderId: number | null) => {
+    if (!noteToMove) return;
+
+    try {
+      // Move the note
+      await moveNote(parseInt(noteToMove), folderId);
+
+      // Refetch to update the lists
+      await refetch();
+
+      // Close drawer
+      setShowMoveDrawer(false);
+      setNoteToMove(null);
+
+      // Update dropdown selection to show the destination folder
+      if (folderId === null) {
+        setSelectedFolder('notes');
+      } else {
+        setSelectedFolder(folderId);
+      }
+    } catch (err) {
+      console.error('Failed to move note:', err);
+    }
+  };
+
+  const handleCreateFolderInDrawer = async (name: string) => {
+    try {
+      await createFolder(name);
+      // Folders will be automatically refetched by the hook
+    } catch (err) {
+      console.error('Failed to create folder:', err);
+      throw err;
+    }
+  };
+
   return (
     <div className='flex flex-col h-full text-gray-100 relative overflow-hidden'>
-      {/* 固定ヘッダー（タイトル + 検索バー + 新規作成ボタン） */}
-      <div className='relative z-20 px-4 md:px-6 pt-4 md:pt-6 pb-4'>
-        {/* 検索バー + 新規作成ボタン */}
-        <div className='flex w-full items-center justify-between gap-3'>
-          <SearchBar
-            placeholder='Search notes...'
-            value={searchQuery}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-              setSearchQuery(e.target.value);
-              searchNotes(e.target.value);
-            }}
-          />
-
-          {/* 新規作成ボタン */}
-          <GlassButton
-            onClick={handleCreateNote}
-            disabled={isCreating}
-            size='icon'
-            className='size-11 disabled:cursor-not-allowed'
-          >
-            {isCreating ? (
-              <div className='animate-spin rounded-full h-5 w-5 border-b-2 border-gray-300'></div>
-            ) : (
-              <PenSquare className='w-5 h-5 text-white' />
-            )}
-          </GlassButton>
-        </div>
+      {/* 固定ヘッダー（フォルダードロップダウンのみ） */}
+      <div className='relative z-20 px-4 md:px-6 md:pt-6 pb-4'>
+        {/* Folder Dropdown */}
+        <FolderDropdown
+          folders={folders}
+          selectedFolder={selectedFolder}
+          onFolderSelect={setSelectedFolder}
+          onCreateFolder={async (name: string) => {
+            await createFolder(name);
+          }}
+          onUpdateFolder={async (id: number, name: string) => {
+            await updateFolder(id, name);
+          }}
+          onDeleteFolder={async (id: number) => {
+            await deleteFolder(id);
+          }}
+          noteCounts={noteCounts}
+        />
       </div>
 
       {/* スクロール可能エリア（ノートリストのみ） */}
       <div
-        className='relative z-10 flex-1 overflow-y-auto px-4 md:px-6 pb-4'
+        className='relative z-10 flex-1 overflow-y-auto px-4 md:px-6 pb-32 md:pb-24'
         style={{
           willChange: 'scroll-position',
           transform: 'translateZ(0)',
@@ -205,38 +309,110 @@ export default function NotesPage() {
 
         {!loading && !error && (
           <>
-            <NoteList
-              notes={formattedActiveNotes}
-              onNoteClick={handleNoteClick}
-              onContextMenu={handleContextMenu}
-            />
-
-            {/* Trash Section */}
-            {deletedNotes.length > 0 && (
-              <div className='mt-6'>
-                <div className='flex items-center justify-between mb-3 px-1'>
-                  <h3 className='text-sm font-medium text-gray-400 flex items-center gap-2'>
-                    <Trash2 className='w-4 h-4' />
-                    Trash ({deletedNotes.length})
-                  </h3>
-                  <button
-                    onClick={() => setShowEmptyTrashConfirm(true)}
-                    className='text-xs text-red-400 hover:text-red-300 px-3 py-1.5 rounded-lg hover:bg-red-500/10 transition-all duration-200 font-medium'
-                  >
-                    Empty Trash
-                  </button>
-                </div>
-                <div className='flex flex-col gap-[14px]'>
+            {selectedFolder === 'trash' ? (
+              /* Trash View */
+              <div>
+                {deletedNotes.length > 0 ? (
+                  <>
+                    <div className='flex items-center justify-between mb-3 px-1'>
+                      <h3 className='text-sm font-medium text-gray-400'>
+                        {deletedNotes.length} deleted note
+                        {deletedNotes.length !== 1 ? 's' : ''}
+                      </h3>
+                      <button
+                        onClick={() => setShowEmptyTrashConfirm(true)}
+                        className='text-xs text-red-400 hover:text-red-300 px-3 py-1.5 rounded-lg hover:bg-red-500/10 transition-all duration-200 font-medium'
+                      >
+                        Empty Trash
+                      </button>
+                    </div>
+                    <NoteList
+                      notes={formattedDeletedNotes}
+                      onNoteClick={handleNoteClick}
+                      onContextMenu={handleContextMenu}
+                    />
+                  </>
+                ) : (
+                  <div className='text-center py-12'>
+                    <Trash2 className='w-12 h-12 text-gray-600 mx-auto mb-3' />
+                    <h3 className='text-lg font-medium text-white mb-2'>
+                      Trash is empty
+                    </h3>
+                    <p className='text-gray-400'>
+                      Deleted notes will appear here
+                    </p>
+                  </div>
+                )}
+              </div>
+            ) : (
+              /* Notes View */
+              <>
+                {formattedActiveNotes.length > 0 ? (
                   <NoteList
-                    notes={formattedDeletedNotes}
+                    notes={formattedActiveNotes}
                     onNoteClick={handleNoteClick}
                     onContextMenu={handleContextMenu}
                   />
-                </div>
-              </div>
+                ) : (
+                  <div className='text-center py-12'>
+                    <PenSquare className='w-12 h-12 text-gray-600 mx-auto mb-3' />
+                    <h3 className='text-lg font-medium text-white mb-2'>
+                      {searchQuery ? 'No matching notes' : 'No notes yet'}
+                    </h3>
+                    <p className='text-gray-400 mb-6'>
+                      {searchQuery
+                        ? `No notes match "${searchQuery}"`
+                        : 'Create your first note to get started'}
+                    </p>
+                    {!searchQuery && selectedFolder !== 'all' && (
+                      <GlassButton
+                        onClick={handleCreateNote}
+                        className='px-6 py-2.5 rounded-xl'
+                      >
+                        Create Note
+                      </GlassButton>
+                    )}
+                  </div>
+                )}
+              </>
             )}
           </>
         )}
+      </div>
+
+      {/* Bottom Search Bar and Create Button */}
+      <div
+        className={`fixed left-0 right-0 z-30 px-4 py-4 transition-all duration-300 ${
+          isInputActive ? 'bottom-0' : 'bottom-[72px] md:bottom-0'
+        }`}
+      >
+        {/* Glass-morphism background with gradient mask */}
+        <div className='relative flex items-center gap-3 max-w-7xl mx-auto'>
+          <SearchBar
+            placeholder='Search notes...'
+            value={searchQuery}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+              setSearchQuery(e.target.value);
+              searchNotes(e.target.value);
+            }}
+          />
+
+          {/* 新規作成ボタン */}
+          {selectedFolder !== 'trash' && (
+            <GlassButton
+              onClick={handleCreateNote}
+              disabled={isCreating}
+              size='icon'
+              className='size-11 disabled:cursor-not-allowed shrink-0'
+            >
+              {isCreating ? (
+                <div className='animate-spin rounded-full h-5 w-5 border-b-2 border-gray-300'></div>
+              ) : (
+                <PenSquare className='w-5 h-5 text-white' />
+              )}
+            </GlassButton>
+          )}
+        </div>
       </div>
 
       {/* Context Menu */}
@@ -266,8 +442,31 @@ export default function NotesPage() {
               ? () => handleRestore(contextMenu.noteId)
               : undefined
           }
+          onMove={
+            !contextMenu.isDeleted
+              ? () => handleOpenMoveDrawer(contextMenu.noteId)
+              : undefined
+          }
         />
       )}
+
+      {/* Move Folder Drawer */}
+      <MoveFolderDrawer
+        isOpen={showMoveDrawer}
+        onClose={() => {
+          setShowMoveDrawer(false);
+          setNoteToMove(null);
+        }}
+        folders={folders}
+        currentFolderId={
+          noteToMove
+            ? notes.find(n => n.id.toString() === noteToMove)?.note_folder_id ||
+              null
+            : null
+        }
+        onMove={handleMove}
+        onCreateFolder={handleCreateFolderInDrawer}
+      />
 
       {/* Hard Delete Confirmation Modal */}
       {showHardDeleteConfirm && (

@@ -18,6 +18,7 @@ export interface Note {
   text: string;
   workspace_id: number;
   deleted_at?: string | null;
+  note_folder_id?: number | null;
   workspace?: {
     id: number;
     title: string;
@@ -25,6 +26,14 @@ export interface Note {
     created_at: string;
   };
   workspace_member_note?: NoteAssignment[];
+}
+
+export interface NoteFolder {
+  id: number;
+  created_at: string;
+  title: string;
+  workspace_id: number;
+  note_count?: number;
 }
 
 export interface NoteWithParsed extends Note {

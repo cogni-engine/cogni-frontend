@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { Copy, Trash2, RotateCcw, Trash } from 'lucide-react';
+import { Copy, Trash2, RotateCcw, Trash, FolderInput } from 'lucide-react';
+import type { NoteFolder } from '@/types/note';
 
 interface NoteContextMenuProps {
   x: number;
@@ -11,6 +12,7 @@ interface NoteContextMenuProps {
   onHardDelete?: () => void;
   onDuplicate?: () => void;
   onRestore?: () => void;
+  onMove?: () => void;
   isDeleted?: boolean;
 }
 
@@ -22,6 +24,7 @@ export default function NoteContextMenu({
   onHardDelete,
   onDuplicate,
   onRestore,
+  onMove,
   isDeleted = false,
 }: NoteContextMenuProps) {
   const menuRef = useRef<HTMLDivElement>(null);
@@ -118,6 +121,16 @@ export default function NoteContextMenu({
             >
               <Copy className='w-4 h-4 text-blue-400' />
               <span className='font-medium'>Duplicate</span>
+            </button>
+          )}
+          {/* Move to Folder option */}
+          {onMove && (
+            <button
+              onClick={() => handleAction(onMove)}
+              className='w-full px-3 py-2.5 text-left text-sm text-white hover:bg-white/10 flex items-center gap-3 transition-all duration-200 rounded-lg mb-1'
+            >
+              <FolderInput className='w-4 h-4 text-yellow-400' />
+              <span className='font-medium'>Move to Folder</span>
             </button>
           )}
           {/* Soft delete option for active notes */}

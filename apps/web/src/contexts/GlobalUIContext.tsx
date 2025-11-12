@@ -10,6 +10,8 @@ import {
 
 interface GlobalUIContextType {
   isInputActive: boolean;
+  isDrawerOpen: boolean;
+  setDrawerOpen: (open: boolean) => void;
 }
 
 const GlobalUIContext = createContext<GlobalUIContextType | undefined>(
@@ -18,6 +20,7 @@ const GlobalUIContext = createContext<GlobalUIContextType | undefined>(
 
 export function GlobalUIProvider({ children }: { children: ReactNode }) {
   const [isInputActive, setIsInputActive] = useState(false);
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
   useEffect(() => {
     const checkIfInputActive = () => {
@@ -50,6 +53,8 @@ export function GlobalUIProvider({ children }: { children: ReactNode }) {
     <GlobalUIContext.Provider
       value={{
         isInputActive,
+        isDrawerOpen,
+        setDrawerOpen: setIsDrawerOpen,
       }}
     >
       {children}
