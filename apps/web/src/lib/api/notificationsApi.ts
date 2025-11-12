@@ -59,12 +59,15 @@ export async function getPastDueNotifications(
   if (error) throw error;
   if (!data) return [];
 
-  const latestByTask = data.reduce<Map<number, Notification>>((acc, notification) => {
-    if (!acc.has(notification.task_id)) {
-      acc.set(notification.task_id, notification);
-    }
-    return acc;
-  }, new Map());
+  const latestByTask = data.reduce<Map<number, Notification>>(
+    (acc, notification) => {
+      if (!acc.has(notification.task_id)) {
+        acc.set(notification.task_id, notification);
+      }
+      return acc;
+    },
+    new Map()
+  );
 
   return Array.from(latestByTask.values()).sort(
     (a, b) => new Date(a.due_date).getTime() - new Date(b.due_date).getTime()
@@ -194,7 +197,10 @@ export async function getUnreadNotificationCount(
   const latestByTask = data.reduce<Map<number, NotificationStatus>>(
     (acc, notification) => {
       if (!acc.has(notification.task_id)) {
-        acc.set(notification.task_id, notification.status as NotificationStatus);
+        acc.set(
+          notification.task_id,
+          notification.status as NotificationStatus
+        );
       }
       return acc;
     },

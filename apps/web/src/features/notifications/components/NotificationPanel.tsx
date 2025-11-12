@@ -161,7 +161,9 @@ export default function NotificationPanel({
         'resolved' as NotificationStatus
       );
       setNotifications(prev => {
-        const next = prev.filter(notification => notification.id !== notificationId);
+        const next = prev.filter(
+          notification => notification.id !== notificationId
+        );
         refreshScheduledIds(next);
         return next;
       });
@@ -212,7 +214,7 @@ export default function NotificationPanel({
             </div>
           </div>
         ) : (
-           <div className='space-y-2'>
+          <div className='space-y-2'>
             {notifications.map(notification => (
               <NotificationItem
                 key={notification.id}
@@ -223,12 +225,12 @@ export default function NotificationPanel({
                 onDismiss={() => handleDismissNotification(notification)}
               />
             ))}
-           </div>
-         )}
-       </div>
-     </div>
-   );
- }
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
 
 type NotificationItemProps = {
   notification: Notification;
