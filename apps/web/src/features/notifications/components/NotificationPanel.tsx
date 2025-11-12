@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState, useRef } from 'react';
-import { useUI } from '@/contexts/UIContext';
+import { useHomeUI } from '@/contexts/HomeUIContext';
 import { useThreadContext } from '@/contexts/ThreadContext';
 import { createClient } from '@/lib/supabase/browserClient';
 import {
@@ -19,7 +19,7 @@ type NotificationPanelProps = {
 export default function NotificationPanel({
   sendMessage,
 }: NotificationPanelProps) {
-  const { isNotificationPanelOpen, closeNotificationPanel } = useUI();
+  const { isNotificationPanelOpen, closeNotificationPanel } = useHomeUI();
   const { selectedThreadId } = useThreadContext();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(false);

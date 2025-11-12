@@ -11,7 +11,6 @@ import {
 import { useEditor, EditorContent } from '@tiptap/react';
 import { ArrowUp, Square } from 'lucide-react';
 import { VoiceInputButton } from './VoiceInputButton';
-import { useUI } from '@/contexts/UIContext';
 import { useTiptapExtensions } from '@/components/tiptap/extensions/useTiptapExtensions';
 import {
   extractMemberMentions,
@@ -58,7 +57,6 @@ const TiptapChatInput = forwardRef<TiptapChatInputRef, TiptapChatInputProps>(
   ) {
     const [isFocused, setIsFocused] = useState(false);
     const [isEmpty, setIsEmpty] = useState(true);
-    const { setInputActive } = useUI();
     const editorRef = useRef<HTMLDivElement>(null);
 
     // Get extensions for chat mode with member mentions and note mentions
@@ -105,11 +103,6 @@ const TiptapChatInput = forwardRef<TiptapChatInputRef, TiptapChatInputProps>(
         setIsEmpty(true);
       },
     }));
-
-    // Update input active state
-    useEffect(() => {
-      setInputActive(isFocused || !isEmpty);
-    }, [isFocused, isEmpty, setInputActive]);
 
     const handleSend = useCallback(async () => {
       if (isLoading || isUploading || !editor) return;

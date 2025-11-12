@@ -2,23 +2,20 @@
 
 import { createContext, useContext, useState, ReactNode } from 'react';
 
-interface UIContextType {
+interface HomeUIContextType {
   isThreadSidebarOpen: boolean;
   isNotificationPanelOpen: boolean;
-  isInputActive: boolean;
   toggleThreadSidebar: () => void;
   toggleNotificationPanel: () => void;
   closeThreadSidebar: () => void;
   closeNotificationPanel: () => void;
-  setInputActive: (active: boolean) => void;
 }
 
-const UIContext = createContext<UIContextType | undefined>(undefined);
+const HomeUIContext = createContext<HomeUIContextType | undefined>(undefined);
 
-export function UIProvider({ children }: { children: ReactNode }) {
+export function HomeUIProvider({ children }: { children: ReactNode }) {
   const [isThreadSidebarOpen, setIsThreadSidebarOpen] = useState(false);
   const [isNotificationPanelOpen, setIsNotificationPanelOpen] = useState(false);
-  const [isInputActive, setIsInputActive] = useState(false);
 
   const toggleThreadSidebar = () => {
     setIsThreadSidebarOpen(prev => !prev);
@@ -34,30 +31,28 @@ export function UIProvider({ children }: { children: ReactNode }) {
 
   const closeThreadSidebar = () => setIsThreadSidebarOpen(false);
   const closeNotificationPanel = () => setIsNotificationPanelOpen(false);
-  const setInputActive = (active: boolean) => setIsInputActive(active);
 
   return (
-    <UIContext.Provider
+    <HomeUIContext.Provider
       value={{
         isThreadSidebarOpen,
         isNotificationPanelOpen,
-        isInputActive,
         toggleThreadSidebar,
         toggleNotificationPanel,
         closeThreadSidebar,
         closeNotificationPanel,
-        setInputActive,
       }}
     >
       {children}
-    </UIContext.Provider>
+    </HomeUIContext.Provider>
   );
 }
 
-export function useUI() {
-  const context = useContext(UIContext);
+export function useHomeUI() {
+  const context = useContext(HomeUIContext);
   if (context === undefined) {
-    throw new Error('useUI must be used within a UIProvider');
+    throw new Error('useHomeUI must be used within a HomeUIProvider');
   }
   return context;
 }
+

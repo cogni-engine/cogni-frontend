@@ -2,14 +2,12 @@
 
 import { useState, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
-import { useThreads } from '@/hooks/useThreads';
-import { useThreadContext } from '@/contexts/ThreadContext';
 import { useNotifications } from '@/hooks/useNotifications';
-import { useUI } from '@/contexts/UIContext';
 import { createClient } from '@/lib/supabase/browserClient';
 import type { User } from '@supabase/supabase-js';
 import { UserMenu } from '@/components/layout/UserMenu';
-import { BellIcon } from 'lucide-react';
+import { BellIcon, Menu, PenSquare } from 'lucide-react';
+import { dispatchHeaderEvent, HEADER_EVENTS } from '@/lib/headerEvents';
 
 export default function Header() {
   const pathname = usePathname();
@@ -21,12 +19,10 @@ export default function Header() {
     '/user/settings': 'User Settings',
   };
   const pageTitle = pageTitleMap[pathname] ?? null;
-  const { createThread } = useThreads();
-  const { setSelectedThreadId } = useThreadContext();
-  const { toggleThreadSidebar, toggleNotificationPanel } = useUI();
   const [user, setUser] = useState<User | null>(null);
   const [isMounted, setIsMounted] = useState(false);
   const [currentTime, setCurrentTime] = useState('');
+  const [isMobile, setIsMobile] = useState(false);
 
   // Get notifications hook
   const userId = user?.id ?? null;
@@ -50,13 +46,24 @@ export default function Header() {
     getUserData();
   }, []);
 
+  // Detect mobile screen size
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
   // Update time every minute
   useEffect(() => {
     const updateTime = () => {
       const now = new Date();
       const formatted = now
         .toLocaleString('en-US', {
-          weekday: 'short',
+          ...(isMobile ? {} : { weekday: 'short' }),
           month: 'short',
           day: 'numeric',
           hour: '2-digit',
@@ -71,7 +78,7 @@ export default function Header() {
     const interval = setInterval(updateTime, 60000); // Update every minute
 
     return () => clearInterval(interval);
-  }, []);
+  }, [isMobile]);
 
   // Poll for unread notifications every 30 seconds
   useEffect(() => {
@@ -86,26 +93,16 @@ export default function Header() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId]);
 
-  const handleCreateThread = async () => {
-    try {
-      const now = new Date();
-      const dateTimeTitle = now.toLocaleString('en-US', {
-        month: 'short',
-        day: 'numeric',
-        year: 'numeric',
-        hour: 'numeric',
-        minute: '2-digit',
-        hour12: true,
-      });
+  const handleCreateThread = () => {
+    dispatchHeaderEvent(HEADER_EVENTS.CREATE_THREAD);
+  };
 
-      const newThread = await createThread(dateTimeTitle);
-      // Auto-select the newly created thread
-      if (newThread && newThread.id) {
-        setSelectedThreadId(newThread.id);
-      }
-    } catch (error) {
-      console.error('Failed to create thread:', error);
-    }
+  const handleToggleThreadSidebar = () => {
+    dispatchHeaderEvent(HEADER_EVENTS.TOGGLE_THREAD_SIDEBAR);
+  };
+
+  const handleToggleNotificationPanel = () => {
+    dispatchHeaderEvent(HEADER_EVENTS.TOGGLE_NOTIFICATION_PANEL);
   };
 
   return (
@@ -116,24 +113,11 @@ export default function Header() {
           <div className='flex items-center gap-2'>
             {/* Thread Sidebar Toggle */}
             <button
-              onClick={toggleThreadSidebar}
+              onClick={handleToggleThreadSidebar}
               className='flex items-center gap-1.5 text-white/60 hover:text-white transition-colors group'
               title='Threads'
             >
-              <svg
-                xmlns='http://www.w3.org/2000/svg'
-                fill='none'
-                viewBox='0 0 24 24'
-                strokeWidth={2}
-                stroke='currentColor'
-                className='w-5 h-5'
-              >
-                <path
-                  strokeLinecap='round'
-                  strokeLinejoin='round'
-                  d='M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5'
-                />
-              </svg>
+              <Menu className='w-5 h-5' />
             </button>
 
             {/* New Thread Button */}
@@ -142,20 +126,7 @@ export default function Header() {
               className='flex items-center gap-2 text-white/60 hover:text-white transition-colors group'
               title='New Thread'
             >
-              <svg
-                xmlns='http://www.w3.org/2000/svg'
-                fill='none'
-                viewBox='0 0 24 24'
-                strokeWidth={2}
-                stroke='currentColor'
-                className='w-5 h-5'
-              >
-                <path
-                  strokeLinecap='round'
-                  strokeLinejoin='round'
-                  d='M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10'
-                />
-              </svg>
+              <PenSquare className='w-5 h-5' />
             </button>
 
             {/* Divider */}
@@ -180,7 +151,7 @@ export default function Header() {
       <div className='flex items-center gap-3'>
         {isHomePage && isMounted && (
           <button
-            onClick={toggleNotificationPanel}
+            onClick={handleToggleNotificationPanel}
             data-notification-trigger='true'
             className='flex items-center gap-2 text-white/60 hover:text-white transition-colors group relative'
           >

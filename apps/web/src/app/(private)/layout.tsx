@@ -3,9 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
 import Header from '@/components/layout/Header';
 import BottomNav from '@/components/layout/BottomNav';
-import ThreadSidebar from '@/features/thread/ThreadSidebar';
-import { ThreadProvider } from '@/contexts/ThreadContext';
-import { UIProvider, useUI } from '@/contexts/UIContext';
+import { GlobalUIProvider, useGlobalUI } from '@/contexts/GlobalUIContext';
 import { CopilotKit } from '@copilotkit/react-core';
 import '@copilotkit/react-textarea/styles.css';
 import { createClient } from '@/lib/supabase/browserClient';
@@ -20,7 +18,7 @@ import { getPersonalWorkspace } from '@/lib/api/workspaceApi';
 
 function LayoutContent({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const { isInputActive } = useUI();
+  const { isInputActive } = useGlobalUI();
   const [isMobile, setIsMobile] = useState(false);
   const supabase = createClient();
 
@@ -64,6 +62,7 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
     };
 
     setupUserSession();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const showTopLevelChrome =
@@ -92,9 +91,6 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
 
   return (
     <div className='flex flex-col h-screen bg-black text-gray-200 relative'>
-      {/* Thread Sidebar */}
-      <ThreadSidebar />
-
       {/* Main Layout */}
       <div className='flex flex-col h-screen'>
         {/* Header */}
@@ -116,12 +112,10 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   return (
-    <ThreadProvider>
-      <UIProvider>
-        <CopilotKit runtimeUrl='/api/copilotkit'>
-          <LayoutContent>{children}</LayoutContent>
-        </CopilotKit>
-      </UIProvider>
-    </ThreadProvider>
+    <GlobalUIProvider>
+      <CopilotKit runtimeUrl='/api/copilotkit'>
+        <LayoutContent>{children}</LayoutContent>
+      </CopilotKit>
+    </GlobalUIProvider>
   );
 }

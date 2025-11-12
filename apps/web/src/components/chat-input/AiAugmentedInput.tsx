@@ -1,15 +1,8 @@
 'use client';
 
-import {
-  useRef,
-  useState,
-  useEffect,
-  useImperativeHandle,
-  forwardRef,
-} from 'react';
+import { useRef, useState, useImperativeHandle, forwardRef } from 'react';
 import { ArrowUp, Square } from 'lucide-react';
 import { VoiceInputButton } from './VoiceInputButton';
-import { useUI } from '@/contexts/UIContext';
 import { CopilotTextarea } from '@copilotkit/react-textarea';
 
 type TextInputProps = {
@@ -42,9 +35,7 @@ const AiAugmentedInput = forwardRef<AiAugmentedInputRef, TextInputProps>(
     ref
   ) {
     const [input, setInput] = useState('');
-    const [isFocused, setIsFocused] = useState(false);
     const textareaRef = useRef<HTMLTextAreaElement>(null);
-    const { setInputActive } = useUI();
 
     useImperativeHandle(ref, () => ({
       focus: () => {
@@ -67,11 +58,6 @@ const AiAugmentedInput = forwardRef<AiAugmentedInputRef, TextInputProps>(
       // 7行以上はスクロール
       el.style.overflowY = el.scrollHeight > maxHeight ? 'auto' : 'hidden';
     };
-
-    // 入力中かどうかを検知してUIContextを更新（フォーカスまたは入力値がある場合）
-    useEffect(() => {
-      setInputActive(isFocused || input.trim().length > 0);
-    }, [isFocused, input, setInputActive]);
 
     const handleSend = async () => {
       if (isLoading || isUploading) return;
@@ -144,8 +130,6 @@ const AiAugmentedInput = forwardRef<AiAugmentedInputRef, TextInputProps>(
           value={input}
           onChange={handleChange}
           onKeyDown={handleKeyDown}
-          onFocus={() => setIsFocused(true)}
-          onBlur={() => setIsFocused(false)}
           placeholder={placeholder}
           autoFocus
           disabled={isLoading || isUploading}

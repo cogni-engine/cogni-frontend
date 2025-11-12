@@ -7,7 +7,7 @@ import NotificationPanel from '@/features/notifications/components/NotificationP
 import { useCogno } from '@/hooks/useCogno';
 import { useThreadContext } from '@/contexts/ThreadContext';
 import { useThreads } from '@/hooks/useThreads';
-import { useUI } from '@/contexts/UIContext';
+import { useHomeUI } from '@/contexts/HomeUIContext';
 import { useCopilotReadable } from '@copilotkit/react-core';
 
 export default function HomePage() {
@@ -15,7 +15,7 @@ export default function HomePage() {
   const { threads, loading: threadsLoading, createThread } = useThreads();
   const { messages, sendMessage, isLoading, error, stopStream } =
     useCogno(selectedThreadId);
-  const { isThreadSidebarOpen } = useUI();
+  const { isThreadSidebarOpen } = useHomeUI();
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const prevMessageCountRef = useRef(0);
   const hasInitialized = useRef(false);
