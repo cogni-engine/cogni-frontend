@@ -9,6 +9,7 @@ import MessageFiles from './MessageFiles';
 import { TiptapRenderer } from '@/components/tiptap/TiptapRenderer';
 import type { WorkspaceMember } from '@/types/workspace';
 import type { Note } from '@/types/note';
+import NoteDrawer from '@/components/NoteDrawer';
 
 type Props = {
   message: WorkspaceMessage;
@@ -41,6 +42,8 @@ export default function WorkspaceMessageItem({
   } | null>(null);
   const [swipeOffset, setSwipeOffset] = useState(0);
   const [showSwipeIndicator, setShowSwipeIndicator] = useState(false);
+  const [noteDrawerOpen, setNoteDrawerOpen] = useState(false);
+  const [selectedNoteId, setSelectedNoteId] = useState<number | null>(null);
   const messageRef = useRef<HTMLDivElement>(null);
   const longPressTimer = useRef<NodeJS.Timeout | null>(null);
   const dragTargetRef = useRef<HTMLElement | null>(null);
@@ -75,6 +78,16 @@ export default function WorkspaceMessageItem({
     }
     setContextMenu(null);
   }, [onReply, message.id]);
+
+  const handleNoteMentionClick = useCallback((noteId: number) => {
+    setSelectedNoteId(noteId);
+    setNoteDrawerOpen(true);
+  }, []);
+
+  const handleCloseNoteDrawer = useCallback(() => {
+    setNoteDrawerOpen(false);
+    setSelectedNoteId(null);
+  }, []);
 
   const cancelLongPress = useCallback(() => {
     if (longPressTimer.current) {
@@ -277,7 +290,7 @@ export default function WorkspaceMessageItem({
         style={{ pointerEvents: 'auto' }}
       >
         <div className='flex items-start gap-2'>
-          <Avatar className='h-6 w-6 border border-white/15 bg-white/10 text-[10px] font-medium flex-shrink-0'>
+          <Avatar className='h-6 w-6 border border-white/15 bg-white/10 text-[10px] font-medium shrink-0'>
             {repliedProfile?.avatar_url ? (
               <AvatarImage src={repliedProfile.avatar_url} alt={repliedName} />
             ) : (
@@ -297,6 +310,7 @@ export default function WorkspaceMessageItem({
                 workspaceMembers={workspaceMembers}
                 workspaceNotes={workspaceNotes}
                 className='tiptap-reply-preview'
+                onNoteMentionClick={handleNoteMentionClick}
               />
             </div>
           </div>
@@ -336,7 +350,7 @@ export default function WorkspaceMessageItem({
               transform: `translateX(${swipeOffset}px)`,
             }}
           >
-            <div className='flex flex-col justify-end flex-shrink-0'>
+            <div className='flex flex-col justify-end shrink-0'>
               <div className='text-right'>
                 <ReadStatus readCount={readCount} />
               </div>
@@ -362,6 +376,7 @@ export default function WorkspaceMessageItem({
                         workspaceMembers={workspaceMembers}
                         workspaceNotes={workspaceNotes}
                         className='tiptap-message-content'
+                        onNoteMentionClick={handleNoteMentionClick}
                       />
                     </div>
                   )}
@@ -381,6 +396,11 @@ export default function WorkspaceMessageItem({
             position={contextMenu}
           />
         )}
+        <NoteDrawer
+          isOpen={noteDrawerOpen}
+          onClose={handleCloseNoteDrawer}
+          noteId={selectedNoteId}
+        />
       </>
     );
   }
@@ -410,7 +430,7 @@ export default function WorkspaceMessageItem({
           </div>
         )}
         <div
-          className='flex gap-2 flex-shrink-0 transition-transform duration-75'
+          className='flex gap-2 shrink-0 transition-transform duration-75'
           style={{
             transform: `translateX(${swipeOffset}px)`,
           }}
@@ -451,6 +471,7 @@ export default function WorkspaceMessageItem({
                         workspaceMembers={workspaceMembers}
                         workspaceNotes={workspaceNotes}
                         className='tiptap-message-content'
+                        onNoteMentionClick={handleNoteMentionClick}
                       />
                     </div>
                   )}
@@ -474,6 +495,11 @@ export default function WorkspaceMessageItem({
           position={contextMenu}
         />
       )}
+      <NoteDrawer
+        isOpen={noteDrawerOpen}
+        onClose={handleCloseNoteDrawer}
+        noteId={selectedNoteId}
+      />
     </>
   );
 }

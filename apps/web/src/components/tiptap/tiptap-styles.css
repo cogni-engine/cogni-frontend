@@ -177,32 +177,26 @@
 
 /* Member mention styles */
 .ProseMirror .mention {
-  background-color: rgba(59, 130, 246, 0.2);
-  border-radius: 0.25rem;
-  padding: 0.125rem 0.25rem;
-  color: rgb(147, 197, 253);
-  font-weight: 500;
+  color: rgb(96, 165, 250);
+  font-weight: 600;
   cursor: pointer;
-  transition: background-color 0.2s;
+  transition: color 0.2s;
 }
 
 .ProseMirror .mention:hover {
-  background-color: rgba(59, 130, 246, 0.3);
+  color: rgb(147, 197, 253);
 }
 
 /* Note mention styles */
 .ProseMirror .note-mention {
-  background-color: rgba(34, 197, 94, 0.2);
-  border-radius: 0.25rem;
-  padding: 0.125rem 0.25rem;
-  color: rgb(134, 239, 172);
-  font-weight: 500;
+  color: rgb(0, 201, 44);
+  font-weight: 600;
   cursor: pointer;
-  transition: background-color 0.2s;
+  transition: color 0.2s;
 }
 
 .ProseMirror .note-mention:hover {
-  background-color: rgba(34, 197, 94, 0.3);
+  color: rgb(48, 248, 81);
 }
 
 /* File mention styles */

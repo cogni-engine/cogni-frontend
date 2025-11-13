@@ -688,7 +688,7 @@ export default function NoteEditor({ noteId }: { noteId: string }) {
   // Validate that noteId is a valid number (after hooks)
   if (!isValidId) {
     return (
-      <div className='flex flex-col h-full bg-gradient-to-br from-slate-950 via-black to-slate-950 text-gray-100 items-center justify-center p-6'>
+      <div className='flex flex-col h-full bg-linear-to-br from-slate-950 via-black to-slate-950 text-gray-100 items-center justify-center p-6'>
         <div className='bg-red-500/10 border border-red-500/20 rounded-lg p-6 text-red-300 max-w-md'>
           <h2 className='font-bold mb-2'>Invalid Note ID</h2>
           <p>The note ID must be a valid number.</p>
@@ -705,7 +705,7 @@ export default function NoteEditor({ noteId }: { noteId: string }) {
 
   if (loading) {
     return (
-      <div className='flex flex-col h-full bg-gradient-to-br from-slate-950 via-black to-slate-950 text-gray-100 items-center justify-center'>
+      <div className='flex flex-col h-full bg-linear-to-br from-slate-950 via-black to-slate-950 text-gray-100 items-center justify-center'>
         <div className='animate-spin rounded-full h-12 w-12 border-b-2 border-white'></div>
       </div>
     );
@@ -713,7 +713,7 @@ export default function NoteEditor({ noteId }: { noteId: string }) {
 
   if (error) {
     return (
-      <div className='flex flex-col h-full bg-gradient-to-br from-slate-950 via-black to-slate-950 text-gray-100 items-center justify-center p-6'>
+      <div className='flex flex-col h-full bg-linear-to-br from-slate-950 via-black to-slate-950 text-gray-100 items-center justify-center p-6'>
         <div className='bg-red-500/10 border border-red-500/20 rounded-lg p-6 text-red-300 max-w-md'>
           <h2 className='font-bold mb-2'>Error</h2>
           <p>{error}</p>
@@ -730,7 +730,7 @@ export default function NoteEditor({ noteId }: { noteId: string }) {
 
   if (!note && !loading) {
     return (
-      <div className='flex flex-col h-full bg-gradient-to-br from-slate-950 via-black to-slate-950 text-gray-100 items-center justify-center p-6'>
+      <div className='flex flex-col h-full bg-linear-to-br from-slate-950 via-black to-slate-950 text-gray-100 items-center justify-center p-6'>
         <div className='bg-yellow-500/10 border border-yellow-500/20 rounded-lg p-6 text-yellow-300 max-w-md'>
           <h2 className='font-bold mb-2'>Note Not Found</h2>
           <p>This note does not exist or you don&apos;t have access to it.</p>
@@ -751,7 +751,7 @@ export default function NoteEditor({ noteId }: { noteId: string }) {
 
   return (
     <div
-      className='flex flex-col h-full bg-gradient-to-br from-slate-950 via-black to-slate-950 text-gray-100 relative overflow-hidden'
+      className='flex flex-col h-full bg-linear-to-br from-slate-950 via-black to-slate-950 text-gray-100 relative overflow-hidden'
       style={{
         willChange: 'scroll-position',
         transform: 'translateZ(0)',
@@ -817,7 +817,7 @@ export default function NoteEditor({ noteId }: { noteId: string }) {
                           className='w-full px-4 py-2.5 text-left text-sm hover:bg-white/10 transition-colors flex items-center gap-3'
                         >
                           <div
-                            className={`w-5 h-5 border-2 rounded flex items-center justify-center flex-shrink-0 ${
+                            className={`w-5 h-5 border-2 rounded flex items-center justify-center shrink-0 ${
                               assigneeIds.includes(member.id)
                                 ? 'bg-blue-500 border-blue-500'
                                 : 'border-gray-600'
@@ -1117,29 +1117,23 @@ export default function NoteEditor({ noteId }: { noteId: string }) {
         }
         /* Member mention styles */
         .ProseMirror .mention {
-          background-color: rgba(59, 130, 246, 0.2);
-          border-radius: 0.25rem;
-          padding: 0.125rem 0.25rem;
-          color: rgb(147, 197, 253);
-          font-weight: 500;
+          color: rgb(96, 165, 250);
+          font-weight: 600;
           cursor: pointer;
-          transition: background-color 0.2s;
+          transition: color 0.2s;
         }
         .ProseMirror .mention:hover {
-          background-color: rgba(59, 130, 246, 0.3);
+          color: rgb(147, 197, 253);
         }
         /* Note mention styles */
         .ProseMirror .note-mention {
-          background-color: rgba(34, 197, 94, 0.2);
-          border-radius: 0.25rem;
-          padding: 0.125rem 0.25rem;
-          color: rgb(134, 239, 172);
-          font-weight: 500;
+          color: rgb(22, 163, 74);
+          font-weight: 600;
           cursor: pointer;
-          transition: background-color 0.2s;
+          transition: color 0.2s;
         }
         .ProseMirror .note-mention:hover {
-          background-color: rgba(34, 197, 94, 0.3);
+          color: rgb(34, 197, 94);
         }
         /* AI Completion ghost text styles */
         .ProseMirror .ai-completion-ghost-text {

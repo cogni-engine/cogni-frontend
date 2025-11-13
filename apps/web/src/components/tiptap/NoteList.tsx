@@ -8,6 +8,7 @@ import React, {
 } from 'react';
 import { NoteWithParsed } from '@/types/note';
 import { FileText } from 'lucide-react';
+import GlassCard from '../glass-card/GlassCard';
 
 export interface NoteListProps {
   items: NoteWithParsed[];
@@ -71,7 +72,7 @@ export const NoteList = forwardRef<NoteListRef, NoteListProps>((props, ref) => {
   }));
 
   return (
-    <div className='bg-white/10 backdrop-blur-xl border border-white/20 rounded-lg shadow-lg overflow-hidden max-h-[300px] overflow-y-auto'>
+    <GlassCard className='rounded-xl overflow-hidden max-h-[300px] overflow-y-auto'>
       {props.items.length ? (
         props.items.map((item, index) => (
           <button
@@ -101,7 +102,7 @@ export const NoteList = forwardRef<NoteListRef, NoteListProps>((props, ref) => {
       ) : (
         <div className='px-4 py-3 text-sm text-gray-400'>No notes found</div>
       )}
-    </div>
+    </GlassCard>
   );
 });
 

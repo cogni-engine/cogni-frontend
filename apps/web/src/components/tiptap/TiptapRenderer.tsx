@@ -33,7 +33,6 @@ export function TiptapRenderer({
   enableNoteMentions = false,
   workspaceMembers = [],
   workspaceNotes = [],
-  workspaceFiles = [],
   onMentionClick,
   onNoteMentionClick,
   onFileMentionClick,
@@ -54,7 +53,7 @@ export function TiptapRenderer({
     editable: false,
     editorProps: {
       attributes: {
-        class: `tiptap-renderer ${className}`,
+        class: `tiptap-editor ${className}`,
       },
       handleClickOn: (view, pos, node, nodePos, event) => {
         // Handle mention clicks

@@ -2,6 +2,9 @@ import { useRef, useMemo } from 'react';
 import StarterKit from '@tiptap/starter-kit';
 import { Markdown } from '@tiptap/markdown';
 import Placeholder from '@tiptap/extension-placeholder';
+import Image from '@tiptap/extension-image';
+import TaskList from '@tiptap/extension-task-list';
+import TaskItem from '@tiptap/extension-task-item';
 import { CustomMention } from '@/lib/tiptap/MentionExtension';
 import { NoteMention } from '@/lib/tiptap/NoteMentionExtension';
 import { createMentionSuggestion } from '@/lib/tiptap/mentionSuggestion';
@@ -45,13 +48,18 @@ export function useTiptapExtensions({
 
     // Base extensions for all modes
     if (mode === 'readonly' || mode === 'minimal') {
-      // Minimal set for display only
+      // Read-only mode: full feature set like NoteEditor but without editing
       extensions.push(
         StarterKit.configure({
           heading: { levels: [1, 2, 3] },
           code: false,
         }),
-        Markdown
+        Markdown,
+        Image,
+        TaskList,
+        TaskItem.configure({
+          nested: true,
+        })
       );
     } else if (mode === 'chat') {
       // Chat mode: basic formatting only (bold, italic, mentions)
@@ -74,7 +82,12 @@ export function useTiptapExtensions({
           code: false,
         }),
         Placeholder.configure({ placeholder }),
-        Markdown
+        Markdown,
+        Image,
+        TaskList,
+        TaskItem.configure({
+          nested: true,
+        })
       );
     }
 

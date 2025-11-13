@@ -6,6 +6,7 @@ import React, {
 } from 'react';
 import { SuggestionProps } from '@tiptap/suggestion';
 import type { WorkspaceFile } from '@/lib/api/workspaceFilesApi';
+import GlassCard from '../glass-card/GlassCard';
 
 export interface FileListRef {
   onKeyDown: (props: { event: KeyboardEvent }) => boolean;
@@ -69,9 +70,9 @@ export const FileList = forwardRef<FileListRef, FileListProps>((props, ref) => {
 
   if (props.items.length === 0) {
     return (
-      <div className='bg-zinc-900 border border-zinc-800 rounded-lg shadow-lg p-3 text-sm text-gray-400'>
+      <GlassCard className='rounded-xl p-3 text-sm text-gray-400'>
         No files found
-      </div>
+      </GlassCard>
     );
   }
 
@@ -101,31 +102,29 @@ export const FileList = forwardRef<FileListRef, FileListProps>((props, ref) => {
   };
 
   return (
-    <div className='bg-zinc-900 border border-zinc-800 rounded-lg shadow-lg overflow-hidden'>
+    <GlassCard className='rounded-xl overflow-hidden'>
       {props.items.map((item, index) => (
         <button
           key={item.id}
           onClick={() => selectItem(index)}
-          className={`w-full text-left px-3 py-2 transition-colors flex items-start gap-2 ${
-            index === selectedIndex
-              ? 'bg-zinc-800 text-white'
-              : 'text-gray-300 hover:bg-zinc-800/50'
+          className={`w-full text-left px-4 py-2.5 transition-colors flex items-start gap-3 ${
+            index === selectedIndex ? 'bg-white/20' : 'hover:bg-white/10'
           }`}
         >
-          <span className='text-lg flex-shrink-0'>
+          <span className='text-lg shrink-0'>
             {getFileIcon(item.mime_type)}
           </span>
           <div className='flex-1 min-w-0'>
-            <div className='text-sm font-medium truncate'>
+            <div className='text-sm font-medium text-white truncate'>
               {item.original_filename}
             </div>
-            <div className='text-xs text-gray-500'>
+            <div className='text-xs text-gray-400'>
               {formatFileSize(item.file_size)}
             </div>
           </div>
         </button>
       ))}
-    </div>
+    </GlassCard>
   );
 });
 
