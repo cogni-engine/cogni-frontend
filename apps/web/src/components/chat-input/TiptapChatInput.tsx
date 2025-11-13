@@ -82,7 +82,12 @@ const TiptapChatInput = forwardRef<TiptapChatInputRef, TiptapChatInputProps>(
             class:
               'w-full bg-transparent text-white px-5 py-3.5 pr-[140px] focus:outline-none resize-none overflow-y-auto chat-input-editor',
             style: 'max-height: 140px;', // ~7 lines
+            'data-placeholder': placeholder,
           },
+        },
+        onCreate: ({ editor }) => {
+          const text = editor.getText();
+          setIsEmpty(text.trim().length === 0);
         },
         onUpdate: ({ editor }) => {
           const text = editor.getText();
@@ -91,7 +96,7 @@ const TiptapChatInput = forwardRef<TiptapChatInputRef, TiptapChatInputProps>(
         onFocus: () => setIsFocused(true),
         onBlur: () => setIsFocused(false),
       },
-      [extensions]
+      [extensions, placeholder]
     );
 
     useImperativeHandle(ref, () => ({
@@ -177,7 +182,7 @@ const TiptapChatInput = forwardRef<TiptapChatInputRef, TiptapChatInputProps>(
       <div className='flex-1 relative ml-[55px]'>
         <div
           ref={editorRef}
-          className='w-full bg-white/8 backdrop-blur-xl rounded-4xl border border-black focus-within:shadow-[0_12px_40px_rgba(0,0,0,0.25),inset_0_1px_0_rgba(255,255,255,0.18)] transition-all duration-300 shadow-[0_8px_32px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.12)]'
+          className='w-full bg-white/2 backdrop-blur-sm rounded-4xl border border-black focus-within:shadow-[0_12px_40px_rgba(0,0,0,0.25),inset_0_1px_0_rgba(255,255,255,0.18)] transition-all duration-300 shadow-[0_8px_32px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.12)]'
         >
           <EditorContent editor={editor} />
         </div>

@@ -85,7 +85,7 @@ export default function FileUploadMenu({
           setIsOpen(prev => !prev);
         }}
         disabled={disabled}
-        className='flex h-[52px] w-[52px] items-center justify-center rounded-full bg-white/8 backdrop-blur-xl text-white/80 border border-black transition-all duration-300 shadow-[0_8px_32px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.12)] hover:bg-white/15 hover:text-white hover:shadow-[0_12px_40px_rgba(0,0,0,0.25),inset_0_1px_0_rgba(255,255,255,0.18)] disabled:opacity-50 disabled:cursor-not-allowed'
+        className='flex h-[52px] w-[52px] items-center justify-center rounded-full bg-white/3 backdrop-blur-md text-white/80 border border-black transition-all duration-300 shadow-[0_8px_32px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.12)] hover:bg-white/15 hover:text-white hover:shadow-[0_12px_40px_rgba(0,0,0,0.25),inset_0_1px_0_rgba(255,255,255,0.18)] disabled:opacity-50 disabled:cursor-not-allowed'
         aria-label='Add files'
       >
         <svg

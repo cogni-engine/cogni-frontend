@@ -71,7 +71,12 @@ export function useTiptapExtensions({
           horizontalRule: false, // No horizontal rules in chat
           code: false,
         }),
-        Placeholder.configure({ placeholder }),
+        Placeholder.configure({
+          placeholder,
+          showOnlyCurrent: false,
+          showOnlyWhenEditable: false,
+          includeChildren: true,
+        }),
         Markdown
       );
     } else if (mode === 'full') {

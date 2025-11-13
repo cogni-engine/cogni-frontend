@@ -51,7 +51,7 @@ export default function FileUploadPreview(props: FileUploadPreviewProps) {
           return (
             <div
               key={item.id}
-              className='relative group bg-white/8 backdrop-blur-xl border border-black rounded-xl overflow-hidden shadow-[0_8px_32px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.12)]'
+              className='relative group bg-white/2 backdrop-blur-xl border border-black rounded-xl overflow-hidden shadow-[0_8px_32px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.12)]'
             >
               {/* Remove button */}
               {!isUploading && (

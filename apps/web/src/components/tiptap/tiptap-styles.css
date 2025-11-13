@@ -148,10 +148,12 @@
   text-decoration: line-through;
 }
 
-.ProseMirror p.is-editor-empty:first-child::before {
+.ProseMirror p.is-editor-empty:first-child::before,
+.ProseMirror[data-placeholder] p.is-editor-empty:first-child::before,
+.ProseMirror[data-placeholder]:empty::before {
   content: attr(data-placeholder);
   float: left;
-  color: rgba(156, 163, 175, 0.6);
+  color: rgba(255, 255, 255, 0.55);
   pointer-events: none;
   height: 0;
 }

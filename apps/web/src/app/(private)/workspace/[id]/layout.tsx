@@ -146,13 +146,13 @@ export default function WorkspaceLayout({
           {/* Navigation Tabs - Absolutely Positioned */}
           {(currentView === 'chat' || currentView === 'notes') && (
             <div className='absolute w-full top-14 left-1/2 -translate-x-1/2 z-20 pointer-events-none'>
-              <GlassCard className='flex w-full divide-x divide-white/10 overflow-hidden rounded-3xl border backdrop-blur-md shadow-lg pointer-events-auto'>
+              <GlassCard className='flex w-full divide-x divide-white/10 overflow-hidden rounded-3xl border backdrop-blur-md !shadow-[0_8px_32px_rgba(0,0,0,0.15)] pointer-events-auto'>
                 <button
                   onClick={() => handleViewChange('chat')}
                   className={`flex flex-1 items-center justify-center gap-2 px-8 py-2.5 text-sm font-medium transition-all duration-300 ${
                     currentView === 'chat'
                       ? 'text-white bg-white/10'
-                      : 'text-gray-400 hover:text-white hover:bg-white/5'
+                      : 'text-gray-400 hover:text-white bg-black/10'
                   }`}
                   aria-current={currentView === 'chat' ? 'page' : undefined}
                 >
@@ -164,7 +164,7 @@ export default function WorkspaceLayout({
                   className={`flex flex-1 items-center justify-center gap-2 px-8 py-2.5 text-sm font-medium transition-all duration-300 ${
                     currentView === 'notes'
                       ? 'text-white bg-white/10'
-                      : 'text-gray-400 hover:text-white hover:bg-white/5'
+                      : 'text-gray-400 hover:text-white bg-black/10'
                   }`}
                   aria-current={currentView === 'notes' ? 'page' : undefined}
                 >
