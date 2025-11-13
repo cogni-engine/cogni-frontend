@@ -288,7 +288,7 @@ export default function NotesPage() {
 
       {/* スクロール可能エリア（ノートリストのみ） */}
       <div
-        className='relative z-10 flex-1 overflow-y-auto px-4 md:px-6 pt-20 pb-32'
+        className='relative z-10 flex-1 overflow-y-auto px-4 md:px-6 pt-20 pb-36'
         style={{
           willChange: 'scroll-position',
           transform: 'translateZ(0)',

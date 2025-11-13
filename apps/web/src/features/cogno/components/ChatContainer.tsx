@@ -2,6 +2,7 @@ import { Message, AIMessage } from '@/types/chat';
 import { forwardRef } from 'react';
 import MessageItem from './MessageItem';
 import EmptyState from './EmptyState';
+import { useGlobalUI } from '@/contexts/GlobalUIContext';
 
 type ChatContainerProps = {
   messages: Message[] | AIMessage[];
@@ -29,6 +30,8 @@ const ChatContainer = forwardRef<HTMLDivElement, ChatContainerProps>(
       }
     });
 
+    const { isInputActive } = useGlobalUI();
+
     const hasStreamingMessages = streamingMessages.length > 0;
 
     return (
@@ -36,7 +39,9 @@ const ChatContainer = forwardRef<HTMLDivElement, ChatContainerProps>(
         {/* メッセージエリア - GPU最適化 */}
         <div
           ref={ref}
-          className='h-full overflow-y-auto relative z-10 px-4 md:px-8 py-20 md:pb-40 space-y-6 scroll-smooth'
+          className={`h-full overflow-y-auto relative z-10 pt-20 px-4 md:px-8 ${
+            isInputActive ? 'pb-6' : 'pb-20'
+          } space-y-6 scroll-smooth`}
           style={{
             willChange: 'scroll-position',
             transform: 'translateZ(0)',
