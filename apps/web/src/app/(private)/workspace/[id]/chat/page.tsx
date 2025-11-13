@@ -8,7 +8,6 @@ import { ChatInput, type ChatInputRef } from '@/components/chat-input';
 import GlassButton from '@/components/glass-card/GlassButton';
 import WorkspaceMessageList from '@/features/workspace/components/WorkspaceMessageList';
 import { ChevronDown } from 'lucide-react';
-import { useCopilotReadable } from '@copilotkit/react-core';
 import { useWorkspaceMembers } from '@/hooks/useWorkspace';
 import { useWorkspaceNotes } from '@/hooks/useWorkspaceNotes';
 
@@ -48,17 +47,24 @@ export default function WorkspaceChatPage() {
   // Fetch workspace members for mentions
   const { members } = useWorkspaceMembers(workspaceId);
 
-  // Fetch workspace notes for note mentions
-  const { notes: workspaceNotes } = useWorkspaceNotes(workspaceId);
+  // Defer fetching workspace notes until after initial render to improve performance
+  const [enableNotesFetch, setEnableNotesFetch] = useState(false);
 
-  useCopilotReadable({
-    description: 'workspace chat history',
-    value: messages
-      .slice(-20)
-      .map(message => message.text)
-      .join('\n'),
-    categories: ['workspace_chat'],
-  });
+  // Enable notes fetch after messages are loaded
+  useEffect(() => {
+    if (messages.length > 0 || !isLoading) {
+      // Defer by 200ms to let messages render first
+      const timer = setTimeout(() => {
+        setEnableNotesFetch(true);
+      }, 200);
+      return () => clearTimeout(timer);
+    }
+  }, [messages.length, isLoading]);
+
+  const { notes: workspaceNotes } = useWorkspaceNotes(
+    workspaceId,
+    enableNotesFetch
+  );
 
   // Scroll to bottom function
   // Note: With column-reverse, bottom is at scrollTop = 0
@@ -317,70 +323,58 @@ export default function WorkspaceChatPage() {
     if (!container) return;
 
     const prevMessages = prevMessagesRef.current;
-    const messagesChanged =
-      prevMessages.length !== messages.length ||
-      (prevMessages.length > 0 &&
-        messages.length > 0 &&
-        prevMessages[0]?.id !== messages[0]?.id);
 
-    // If messages changed and user has scrolled up, preserve scroll position
-    if (messagesChanged && prevMessages.length > 0) {
-      // Case 1: Loading older messages (prepending) - preserve scroll position
-      // Check if we stored a scrollHeight and messages increased (new messages were prepended)
-      if (
-        prevScrollHeightRef.current > 0 &&
-        messages.length > prevMessages.length
-      ) {
-        // Use double requestAnimationFrame to ensure DOM has fully updated with new messages
-        requestAnimationFrame(() => {
-          requestAnimationFrame(() => {
-            if (!scrollContainerRef.current) return;
-            const container = scrollContainerRef.current;
+    // Early exit if no messages changed
+    if (
+      prevMessages.length === messages.length &&
+      prevMessages.length > 0 &&
+      messages.length > 0 &&
+      prevMessages[0]?.id === messages[0]?.id &&
+      prevMessages[prevMessages.length - 1]?.id ===
+        messages[messages.length - 1]?.id
+    ) {
+      return;
+    }
 
-            const scrollHeightDifference =
-              container.scrollHeight - prevScrollHeightRef.current;
+    // Case 1: Loading older messages (prepending) - preserve scroll position
+    if (
+      prevScrollHeightRef.current > 0 &&
+      messages.length > prevMessages.length &&
+      prevMessages.length > 0
+    ) {
+      // Single requestAnimationFrame is sufficient for scroll adjustment
+      requestAnimationFrame(() => {
+        if (!scrollContainerRef.current) return;
+        const container = scrollContainerRef.current;
 
-            if (scrollHeightDifference > 0) {
-              // With flex-col-reverse, when older messages are prepended,
-              // scrollTop may be negative. We need to adjust it to maintain visual position.
-              // Since we're adding content "above" (which in flex-col-reverse is at higher scrollTop),
-              // we need to increase the scrollTop value (make it less negative or more positive)
-              const oldScrollTop = container.scrollTop;
-              // Adding the difference maintains the visual position
-              container.scrollTop = oldScrollTop + scrollHeightDifference;
-            }
+        const scrollHeightDifference =
+          container.scrollHeight - prevScrollHeightRef.current;
 
-            // Reset after adjustment
-            prevScrollHeightRef.current = 0;
-          });
-        });
-        // Update prev messages after processing
-        prevMessagesRef.current = messages;
-        return; // Don't process realtime updates when loading more
-      }
-      // Case 2: Realtime update changed messages - preserve scroll if user scrolled up
-      // Skip this if we just sent a message (handled by sendMessage wrapper)
-      else if (
-        messages.length > 0 &&
-        !isLoadingMore &&
-        !sendingMessageRef.current &&
-        !isNearBottom()
-      ) {
-        // Capture scroll position before React updates DOM
-        const scrollTopToPreserve = container.scrollTop;
+        if (scrollHeightDifference > 0) {
+          // Adjust scroll position to maintain visual position
+          container.scrollTop += scrollHeightDifference;
+        }
 
-        // Use double requestAnimationFrame to ensure DOM has fully updated
-        requestAnimationFrame(() => {
-          requestAnimationFrame(() => {
-            if (!scrollContainerRef.current) return;
+        // Reset after adjustment
+        prevScrollHeightRef.current = 0;
+      });
+    }
+    // Case 2: Realtime update - only preserve if user scrolled away from bottom
+    else if (
+      messages.length > 0 &&
+      prevMessages.length > 0 &&
+      !isLoadingMore &&
+      !sendingMessageRef.current &&
+      !isNearBottom()
+    ) {
+      const scrollTopToPreserve = container.scrollTop;
 
-            // If user is still not near bottom, restore scroll position
-            if (!isNearBottom()) {
-              scrollContainerRef.current.scrollTop = scrollTopToPreserve;
-            }
-          });
-        });
-      }
+      // Single requestAnimationFrame is sufficient
+      requestAnimationFrame(() => {
+        if (scrollContainerRef.current && !isNearBottom()) {
+          scrollContainerRef.current.scrollTop = scrollTopToPreserve;
+        }
+      });
     }
 
     // Update prev messages after processing

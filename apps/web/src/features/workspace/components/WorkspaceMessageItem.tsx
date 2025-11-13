@@ -2,7 +2,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import type { WorkspaceMessage } from '@/types/workspace';
 import { format } from 'date-fns';
 import { User, Reply } from 'lucide-react';
-import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
+import { useState, useRef, useEffect, useCallback, useMemo, memo } from 'react';
 import { useDrag } from '@use-gesture/react';
 import MessageContextMenu from './MessageContextMenu';
 import MessageFiles from './MessageFiles';
@@ -27,7 +27,7 @@ function ReadStatus({ readCount }: { readCount: number }) {
   return <p className='text-xs text-gray-500 mt-1'>Read {readCount}</p>;
 }
 
-export default function WorkspaceMessageItem({
+function WorkspaceMessageItem({
   message,
   isOwnMessage,
   onReply,
@@ -503,3 +503,6 @@ export default function WorkspaceMessageItem({
     </>
   );
 }
+
+// Memoize the component to prevent unnecessary re-renders
+export default memo(WorkspaceMessageItem);

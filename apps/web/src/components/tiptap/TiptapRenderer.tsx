@@ -1,6 +1,7 @@
 'use client';
 
 import { useEditor, EditorContent } from '@tiptap/react';
+import { useMemo, memo } from 'react';
 import { useTiptapExtensions } from './extensions/useTiptapExtensions';
 import type { WorkspaceMember } from '@/types/workspace';
 import type { Note } from '@/types/note';
@@ -24,8 +25,9 @@ interface TiptapRendererProps {
 /**
  * TiptapRenderer - Displays TipTap content in read-only mode
  * Used for rendering messages, previews, etc.
+ * Optimized with memoization to reduce re-renders
  */
-export function TiptapRenderer({
+function TiptapRenderer({
   content,
   contentType = 'markdown',
   className = '',
@@ -45,17 +47,26 @@ export function TiptapRenderer({
     workspaceNotes,
   });
 
-  const editor = useEditor({
-    immediatelyRender: false,
-    extensions,
-    content: content || '',
-    contentType: contentType,
-    editable: false,
-    editorProps: {
+  // Memoize editorProps to prevent recreating on every render
+  const editorProps = useMemo(
+    () => ({
       attributes: {
         class: `tiptap-editor ${className}`,
       },
-      handleClickOn: (view, pos, node, nodePos, event) => {
+      handleClickOn: (
+        view: unknown,
+        pos: number,
+        node: {
+          type: { name: string };
+          attrs: {
+            workspaceMemberId?: number;
+            noteId?: number;
+            fileId?: number;
+          };
+        },
+        nodePos: number,
+        event: MouseEvent
+      ) => {
         // Handle mention clicks
         if (node.type.name === 'mention' && onMentionClick) {
           const memberId = node.attrs.workspaceMemberId;
@@ -85,7 +96,18 @@ export function TiptapRenderer({
         }
         return false;
       },
-    },
+    }),
+    [className, onMentionClick, onNoteMentionClick, onFileMentionClick]
+  );
+
+  const editor = useEditor({
+    immediatelyRender: false,
+    shouldRerenderOnTransaction: false, // Prevent unnecessary re-renders
+    extensions,
+    content: content || '',
+    contentType: contentType,
+    editable: false,
+    editorProps,
   });
 
   if (!editor) {
@@ -94,3 +116,7 @@ export function TiptapRenderer({
 
   return <EditorContent editor={editor} />;
 }
+
+// Export memoized component to prevent re-renders when props don't change
+export const MemoizedTiptapRenderer = memo(TiptapRenderer);
+export { MemoizedTiptapRenderer as TiptapRenderer };
