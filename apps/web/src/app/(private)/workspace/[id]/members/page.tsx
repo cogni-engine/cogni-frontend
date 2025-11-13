@@ -7,6 +7,8 @@ import { useWorkspaceInvitations } from '@/hooks/useWorkspaceInvitations';
 import { useWorkspaceMembers } from '@/hooks/useWorkspace';
 import { generateInvitationLink } from '@/lib/api/invitationsApi';
 import { Plus, X, Mail, Link, Copy } from 'lucide-react';
+import GlassCard from '@/components/glass-card/GlassCard';
+import GlassButton from '@/components/glass-card/GlassButton';
 
 export default function WorkspaceMembersPage() {
   const params = useParams();
@@ -92,16 +94,15 @@ export default function WorkspaceMembersPage() {
 
   return (
     <>
-      <div className='h-full overflow-y-auto space-y-6 pt-20'>
+      <div className='h-full overflow-y-auto space-y-6 pt-20 px-4'>
         <div className='flex items-center justify-between'>
           <h2 className='text-xl font-semibold text-white'>Members</h2>
-          <button
+          <GlassButton
             onClick={() => setShowInviteModal(true)}
-            className='p-2 bg-white/10 backdrop-blur-xl border border-black rounded-full hover:bg-white/15 transition-all duration-300 shadow-[0_8px_32px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.12)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.25),inset_0_1px_0_rgba(255,255,255,0.18)]'
             title='Invite Member'
           >
             <Plus className='w-5 h-5 text-white' />
-          </button>
+          </GlassButton>
         </div>
 
         <div className='space-y-4'>
@@ -127,9 +128,9 @@ export default function WorkspaceMembersPage() {
           ) : (
             <div className='space-y-2'>
               {invitations.map(invitation => (
-                <div
+                <GlassCard
                   key={invitation.id}
-                  className='flex items-center justify-between bg-white/5 rounded-lg p-3 border border-white/10'
+                  className='flex items-center justify-between rounded-lg p-3'
                 >
                   <div>
                     <p className='text-white font-medium'>
@@ -162,7 +163,7 @@ export default function WorkspaceMembersPage() {
                       </button>
                     )}
                   </div>
-                </div>
+                </GlassCard>
               ))}
             </div>
           )}
@@ -177,9 +178,9 @@ export default function WorkspaceMembersPage() {
           ) : (
             <div className='space-y-2'>
               {inviteLinks.map(inviteLink => (
-                <div
+                <GlassCard
                   key={inviteLink.id}
-                  className='flex items-center justify-between bg-white/5 rounded-lg p-3 border border-white/10'
+                  className='flex items-center justify-between rounded-lg p-3'
                 >
                   <div>
                     <p className='text-white font-medium'>Anonymous Link</p>
@@ -220,7 +221,7 @@ export default function WorkspaceMembersPage() {
                       </>
                     )}
                   </div>
-                </div>
+                </GlassCard>
               ))}
             </div>
           )}
@@ -229,8 +230,8 @@ export default function WorkspaceMembersPage() {
 
       {/* Invite Modal */}
       {showInviteModal && (
-        <div className='fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4'>
-          <div className='bg-slate-900 rounded-xl border border-white/10 w-full max-w-md'>
+        <div className='fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-100 p-4'>
+          <GlassCard className='rounded-xl w-full max-w-md'>
             <div className='p-6'>
               <div className='flex items-center justify-between mb-6'>
                 <h3 className='text-xl font-semibold text-white'>
@@ -248,22 +249,22 @@ export default function WorkspaceMembersPage() {
                 </button>
               </div>
 
-              <div className='space-y-4'>
+              <div className='space-y-3'>
                 {/* Email Invitation */}
                 <button
                   onClick={() => setInvitationType('email')}
-                  className={`w-full p-4 rounded-lg border transition-colors ${
+                  className={`w-full p-4 rounded-lg transition-all duration-300 ${
                     invitationType === 'email'
-                      ? 'border-blue-500 bg-blue-500/10'
-                      : 'border-white/20 hover:border-white/30 hover:bg-white/5'
+                      ? 'bg-blue-500/20 border border-blue-500/50 shadow-[0_0_20px_rgba(59,130,246,0.3)]'
+                      : 'bg-white/5 border border-white/10 hover:bg-white/10'
                   }`}
                 >
                   <div className='flex items-center gap-3'>
                     <div
-                      className={`p-2 rounded-lg ${
+                      className={`p-2 rounded-lg transition-colors ${
                         invitationType === 'email'
                           ? 'bg-blue-500'
-                          : 'bg-gray-600'
+                          : 'bg-white/10'
                       }`}
                     >
                       <Mail className='w-5 h-5 text-white' />
@@ -280,18 +281,18 @@ export default function WorkspaceMembersPage() {
                 {/* Share Link */}
                 <button
                   onClick={() => setInvitationType('anonymous')}
-                  className={`w-full p-4 rounded-lg border transition-colors ${
+                  className={`w-full p-4 rounded-lg transition-all duration-300 ${
                     invitationType === 'anonymous'
-                      ? 'border-blue-500 bg-blue-500/10'
-                      : 'border-white/20 hover:border-white/30 hover:bg-white/5'
+                      ? 'bg-blue-500/20 border border-blue-500/50 shadow-[0_0_20px_rgba(59,130,246,0.3)]'
+                      : 'bg-white/5 border border-white/10 hover:bg-white/10'
                   }`}
                 >
                   <div className='flex items-center gap-3'>
                     <div
-                      className={`p-2 rounded-lg ${
+                      className={`p-2 rounded-lg transition-colors ${
                         invitationType === 'anonymous'
                           ? 'bg-blue-500'
-                          : 'bg-gray-600'
+                          : 'bg-white/10'
                       }`}
                     >
                       <Link className='w-5 h-5 text-white' />
@@ -317,7 +318,7 @@ export default function WorkspaceMembersPage() {
                     value={inviteEmail}
                     onChange={e => setInviteEmail(e.target.value)}
                     placeholder='colleague@company.com'
-                    className='w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500'
+                    className='w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all'
                     autoFocus
                   />
                 </div>
@@ -331,21 +332,21 @@ export default function WorkspaceMembersPage() {
                     setInvitationType('email');
                     setInviteEmail('');
                   }}
-                  className='flex-1 px-4 py-2 bg-gray-600 hover:bg-gray-700 rounded-lg transition-colors font-medium'
+                  className='flex-1 px-4 py-2.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg transition-all font-medium text-white'
                 >
                   Cancel
                 </button>
                 <button
                   onClick={handleCreateInvitation}
                   disabled={invitationType === 'email' && !inviteEmail.trim()}
-                  className='flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 disabled:cursor-not-allowed rounded-lg transition-colors font-medium flex items-center justify-center gap-2'
+                  className='flex-1 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 disabled:bg-white/5 disabled:cursor-not-allowed disabled:text-gray-500 rounded-lg transition-all font-medium flex items-center justify-center gap-2'
                 >
                   <Copy className='w-4 h-4' />
                   {invitationType === 'email' ? 'Send Invite' : 'Copy Link'}
                 </button>
               </div>
             </div>
-          </div>
+          </GlassCard>
         </div>
       )}
     </>

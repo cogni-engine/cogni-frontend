@@ -58,9 +58,6 @@ export function ProfileInfoForm({
               disabled={saving}
               autoComplete='name'
             />
-            <p className='text-xs text-white/50'>
-              This is how your name appears to teammates.
-            </p>
           </div>
           <div className='flex items-center gap-3'>
             <Button type='submit' disabled={saving || disableSave}>

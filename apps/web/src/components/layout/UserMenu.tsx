@@ -18,6 +18,7 @@ import { Button } from '@/components/ui/button';
 import { signOut } from '@/features/auth/api/supabaseAuth';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import type { UserProfile } from '@/types/userProfile';
+import GlassCard from '@/components/glass-card/GlassCard';
 
 type UserMenuProps = {
   user: User | null;
@@ -123,38 +124,40 @@ export function UserMenu({ user }: UserMenuProps) {
           sideOffset={12}
           onMouseEnter={handleMouseEnter}
           onMouseLeave={handleMouseLeave}
-          className='w-60'
+          className='w-60 z-110 p-0 border-0 bg-transparent shadow-none'
         >
-          <DropdownMenuLabel className='flex flex-col gap-1'>
-            <span className='text-sm font-semibold'>
-              {profile?.name || initials}
-            </span>
-            <span className='text-xs text-white/60'>{email}</span>
-          </DropdownMenuLabel>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem
-            onSelect={event => {
-              event.preventDefault();
-              handleSelectSettings();
-            }}
-            className='flex items-center gap-2'
-          >
-            <Settings className='h-4 w-4' />
-            <span>User settings</span>
-          </DropdownMenuItem>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem
-            onSelect={event => {
-              event.preventDefault();
-              if (!isSigningOut) {
-                handleSignOut();
-              }
-            }}
-            className='flex items-center gap-2 text-red-300'
-          >
-            <LogOut className='h-4 w-4' />
-            <span>{isSigningOut ? 'Signing out…' : 'Log out'}</span>
-          </DropdownMenuItem>
+          <GlassCard className='rounded-lg p-1'>
+            <DropdownMenuLabel className='flex flex-col gap-1'>
+              <span className='text-sm font-semibold'>
+                {profile?.name || initials}
+              </span>
+              <span className='text-xs text-white/60'>{email}</span>
+            </DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem
+              onSelect={event => {
+                event.preventDefault();
+                handleSelectSettings();
+              }}
+              className='flex items-center gap-2'
+            >
+              <Settings className='h-4 w-4' />
+              <span>User settings</span>
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem
+              onSelect={event => {
+                event.preventDefault();
+                if (!isSigningOut) {
+                  handleSignOut();
+                }
+              }}
+              className='flex items-center gap-2 text-red-300'
+            >
+              <LogOut className='h-4 w-4' />
+              <span>{isSigningOut ? 'Signing out…' : 'Log out'}</span>
+            </DropdownMenuItem>
+          </GlassCard>
         </DropdownMenuContent>
       </div>
     </DropdownMenu>

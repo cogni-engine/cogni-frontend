@@ -165,7 +165,7 @@ export default function UserSettingsClient() {
   }, []);
 
   return (
-    <div className='flex h-full flex-col gap-6 overflow-auto p-6'>
+    <div className='flex h-full flex-col gap-6 overflow-auto p-6 py-20'>
       {isLoading ? (
         <div className='flex flex-1 items-center justify-center text-white/60'>
           Loading your settings...

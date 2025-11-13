@@ -35,9 +35,6 @@ export function AiSuggestionToggle({
             <Label htmlFor='ai-suggestion' className='text-base'>
               Enable AI suggestions
             </Label>
-            <p className='text-xs text-white/50'>
-              Get AI-powered suggestions to enhance your workflow.
-            </p>
           </div>
           <Switch
             id='ai-suggestion'

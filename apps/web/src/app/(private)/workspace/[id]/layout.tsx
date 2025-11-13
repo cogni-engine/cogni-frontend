@@ -107,32 +107,31 @@ export default function WorkspaceLayout({
               <EllipsisVertical className='w-5 h-5 text-white' />
             </GlassButton>
             {isMenuOpen && (
-              <div
-                role='menu'
-                className='absolute right-0 mt-2 w-45 rounded-md border border-white/10 bg-black/90 backdrop-blur shadow-lg z-110'
-              >
-                <button
-                  role='menuitem'
-                  onClick={() => {
-                    setIsMenuOpen(false);
-                    router.push(`${basePath}/members`);
-                  }}
-                  className='w-full text-left px-3 py-2 text-sm text-gray-200 hover:bg-white/10 rounded-md flex items-center gap-2'
-                >
-                  <Users className='w-4 h-4' />
-                  Members
-                </button>
-                <button
-                  role='menuitem'
-                  onClick={() => {
-                    setIsMenuOpen(false);
-                    router.push(`${basePath}/menu`);
-                  }}
-                  className='w-full text-left px-3 py-2 text-sm text-gray-200 hover:bg-white/10 rounded-md flex items-center gap-2'
-                >
-                  <Settings className='w-4 h-4' />
-                  Workspace Settings
-                </button>
+              <div className='absolute right-0 mt-2 z-110'>
+                <GlassCard role='menu' className='w-40 rounded-lg p-1'>
+                  <button
+                    role='menuitem'
+                    onClick={() => {
+                      setIsMenuOpen(false);
+                      router.push(`${basePath}/members`);
+                    }}
+                    className='w-full text-left px-3 py-2 text-sm text-gray-200 hover:bg-white/10 rounded-md flex items-center gap-2'
+                  >
+                    <Users className='w-4 h-4' />
+                    Members
+                  </button>
+                  <button
+                    role='menuitem'
+                    onClick={() => {
+                      setIsMenuOpen(false);
+                      router.push(`${basePath}/menu`);
+                    }}
+                    className='w-full text-left px-3 py-2 text-sm text-gray-200 hover:bg-white/10 rounded-md flex items-center gap-2'
+                  >
+                    <Settings className='w-4 h-4' />
+                    Settings
+                  </button>
+                </GlassCard>
               </div>
             )}
           </div>
