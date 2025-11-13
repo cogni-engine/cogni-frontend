@@ -58,7 +58,7 @@ export default function FileUploadPreview(props: FileUploadPreviewProps) {
                 <button
                   type='button'
                   onClick={() => onRemove(item.id)}
-                  className='absolute top-1 right-1 z-10 w-6 h-6 rounded-full bg-black/60 hover:bg-black/80 backdrop-blur-sm flex items-center justify-center transition-all opacity-0 group-hover:opacity-100'
+                  className='absolute top-1 right-1 z-100 w-6 h-6 rounded-full bg-black/60 hover:bg-black/80 backdrop-blur-sm flex items-center justify-center transition-all opacity-0 group-hover:opacity-100'
                   aria-label='Remove file'
                 >
                   <X className='w-3 h-3 text-white' />

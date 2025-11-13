@@ -424,7 +424,7 @@ export default function FolderDropdown({
       {folderContextMenu && (
         <div
           ref={contextMenuRef}
-          className='fixed z-[9999] min-w-[180px] rounded-xl border border-white/15 bg-black/70 px-2 py-2 text-sm text-white shadow-[0_12px_32px_rgba(0,0,0,0.45)] backdrop-blur-md'
+          className='fixed z-110 min-w-[180px] rounded-xl border border-white/15 bg-black/70 px-2 py-2 text-sm text-white shadow-[0_12px_32px_rgba(0,0,0,0.45)] backdrop-blur-md'
           style={{
             left: `${folderContextMenu.x}px`,
             top: `${folderContextMenu.y}px`,
@@ -458,7 +458,7 @@ export default function FolderDropdown({
 
       {/* Delete Confirmation Modal */}
       {showDeleteConfirm && (
-        <div className='fixed inset-0 z-[1000] flex items-center justify-center bg-black/60 backdrop-blur-md px-4 py-8'>
+        <div className='fixed inset-0 z-100 flex items-center justify-center bg-black/60 backdrop-blur-md px-4 py-8'>
           <GlassCard className='w-full max-w-md rounded-3xl border border-white/12 bg-white/10 p-6 shadow-[0_20px_60px_rgba(0,0,0,0.45)]'>
             <div className='flex flex-col gap-4 text-white'>
               <div className='flex items-start gap-3'>

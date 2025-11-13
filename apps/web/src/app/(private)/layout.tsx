@@ -104,10 +104,20 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
       {showTopLevelChrome && <Header />}
 
       {/* Main Content - Full height, scrolls under transparent header and bottom nav */}
-      <main className='h-screen overflow-hidden'>{children}</main>
+      <main className='h-screen overflow-hidden relative'>
+        {/* Top darkening gradient */}
+        <div className='absolute top-0 left-0 right-0 h-32 bg-linear-to-b from-black via-black/50 to-transparent pointer-events-none z-50' />
+
+        {children}
+
+        {/* Bottom darkening gradient */}
+        <div className='absolute bottom-0 left-0 right-0 h-32 bg-linear-to-t from-black via-black/50 to-transparent pointer-events-none z-50' />
+      </main>
 
       {/* Bottom Navigation - Absolutely Positioned */}
-      {shouldShowFooter && <BottomNav />}
+      <div className={shouldShowFooter ? 'block' : 'hidden'}>
+        <BottomNav />
+      </div>
 
       {/* Global Note Drawer */}
       <NoteDrawer

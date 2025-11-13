@@ -70,12 +70,12 @@ export default function MoveFolderDrawer({
     <>
       {/* Backdrop */}
       <div
-        className='fixed inset-0 bg-black/50 backdrop-blur-sm z-40'
+        className='fixed inset-0 bg-black/50 backdrop-blur-sm z-50'
         onClick={onClose}
       />
 
       {/* Drawer */}
-      <div className='fixed inset-x-0 bottom-0 z-50 animate-[slide-up_0.3s_ease-out]'>
+      <div className='fixed inset-x-0 bottom-0 z-100 animate-[slide-up_0.3s_ease-out]'>
         <GlassCard className='rounded-t-3xl rounded-b-none max-h-[70vh] flex flex-col'>
           {/* Header */}
           <div className='flex items-center justify-between p-4 border-b border-white/10'>

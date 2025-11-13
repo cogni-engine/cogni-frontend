@@ -502,7 +502,7 @@ export default function WorkspaceNotesPage() {
   return (
     <div className='flex flex-col h-full text-gray-100 relative overflow-hidden'>
       {/* Absolutely Positioned Folder Dropdown */}
-      <div className='absolute top-28 left-4 md:left-6 z-20'>
+      <div className='absolute top-29 left-1/2 -translate-x-1/2 z-100'>
         <FolderDropdown
           folders={folders}
           selectedFolder={selectedFolder}
@@ -521,7 +521,7 @@ export default function WorkspaceNotesPage() {
       </div>
 
       {/* Scrollable Notes List */}
-      <ScrollableView className='md:px-6 pt-28 pb-24'>
+      <ScrollableView className='md:px-6 pt-32 pb-24'>
         {activeNotes.length === 0 &&
         (selectedFolder === 'trash' ? deletedNotes.length === 0 : true) ? (
           <div className='text-center py-12'>
@@ -602,7 +602,7 @@ export default function WorkspaceNotesPage() {
       </ScrollableView>
 
       {/* Bottom Search Bar and Create Button - sits at bottom with transparent nav above */}
-      <div className='fixed left-0 right-0 bottom-0 z-30 px-4 py-4'>
+      <div className='fixed left-0 right-0 bottom-0 z-100 px-4 py-4'>
         <div className='relative flex items-center gap-3 max-w-7xl mx-auto'>
           <SearchBar
             placeholder='Search notes...'

@@ -88,7 +88,7 @@ export default function WorkspaceLayout({
   return (
     <div className='flex flex-col h-full relative overflow-hidden'>
       {/* Header - Absolutely Positioned with Glass Effect */}
-      <div className='absolute top-0 left-0 right-0 z-70 px-4 md:px-6 pt-4 md:pt-6 pointer-events-none'>
+      <div className='absolute top-0 left-0 right-0 z-100 px-4 md:px-6 pt-4 md:pt-6 pointer-events-none'>
         <div className='flex items-center gap-3 w-full pointer-events-auto'>
           <GlassButton onClick={handleBackNavigation} title='Go back'>
             <ArrowLeft className='w-5 h-5' />
@@ -109,7 +109,7 @@ export default function WorkspaceLayout({
             {isMenuOpen && (
               <div
                 role='menu'
-                className='absolute right-0 mt-2 w-45 rounded-md border border-white/10 bg-black/90 backdrop-blur shadow-lg z-20'
+                className='absolute right-0 mt-2 w-45 rounded-md border border-white/10 bg-black/90 backdrop-blur shadow-lg z-110'
               >
                 <button
                   role='menuitem'
@@ -141,7 +141,7 @@ export default function WorkspaceLayout({
 
       {/* Navigation Tabs - Absolutely Positioned */}
       {(currentView === 'chat' || currentView === 'notes') && (
-        <div className='absolute w-full top-16 left-1/2 -translate-x-1/2 z-20 px-4 md:px-6 pointer-events-none'>
+        <div className='absolute w-full top-16 left-1/2 -translate-x-1/2 z-50 px-4 md:px-6 pointer-events-none'>
           <GlassCard className='flex w-full divide-x divide-white/10 overflow-hidden rounded-3xl border backdrop-blur-md shadow-[0_8px_32px_rgba(0,0,0,0.15)] pointer-events-auto'>
             <button
               onClick={() => handleViewChange('chat')}
@@ -172,7 +172,7 @@ export default function WorkspaceLayout({
       )}
 
       {/* Scrollable Content */}
-      <div className='relative z-10 flex-1 overflow-y-auto'>{children}</div>
+      <div className='relative flex-1 overflow-y-auto'>{children}</div>
     </div>
   );
 }

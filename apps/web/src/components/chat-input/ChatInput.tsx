@@ -213,7 +213,7 @@ const ChatInput = forwardRef<ChatInputRef, ChatInputProps>(function ChatInput(
   );
 
   return (
-    <div className='relative z-10 rounded-t-3xl'>
+    <div className='relative z-100 rounded-t-3xl'>
       {/* Reply indicator - absolutely positioned above input */}
       {replyingTo && (
         <div className='absolute bottom-full left-0 right-0 px-4 md:px-8 pb-2 pointer-events-auto'>
@@ -239,7 +239,7 @@ const ChatInput = forwardRef<ChatInputRef, ChatInputProps>(function ChatInput(
           <div className='relative'>
             {/* File Upload Menu - Plus button */}
             {workspaceId && (
-              <div className='absolute left-0 z-10'>
+              <div className='absolute left-0 z-100'>
                 <FileUploadMenu
                   onFilesSelected={handleFilesSelected}
                   maxFiles={4}

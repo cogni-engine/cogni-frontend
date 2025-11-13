@@ -144,14 +144,14 @@ export default function NoteDrawer({
     <>
       {/* Backdrop */}
       <div
-        className='fixed inset-0 bg-black/50 backdrop-blur-sm z-40'
+        className='fixed inset-0 bg-black/50 backdrop-blur-sm z-100'
         onClick={onClose}
       />
 
       {/* Drawer */}
       <div
         ref={drawerRef}
-        className='fixed inset-x-0 bottom-0 z-50 animate-[slide-up_0.3s_ease-out]'
+        className='fixed inset-x-0 bottom-0 z-110 animate-[slide-up_0.3s_ease-out]'
         style={{
           transform: `translateY(${dragOffset}px)`,
           transition: dragOffset === 0 ? 'transform 0.2s ease-out' : 'none',

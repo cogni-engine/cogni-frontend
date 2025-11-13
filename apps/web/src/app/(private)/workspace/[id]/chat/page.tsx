@@ -465,7 +465,7 @@ export default function WorkspaceChatPage() {
       )}
 
       {/* Absolutely positioned ChatInput with transparent background */}
-      <div className='absolute bottom-0 left-0 right-0 z-30'>
+      <div className='absolute bottom-0 left-0 right-0 z-100'>
         <ChatInput
           ref={chatInputRef}
           onSend={sendMessage}

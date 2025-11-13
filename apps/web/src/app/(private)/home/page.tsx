@@ -7,7 +7,6 @@ import NotificationPanel from '@/features/notifications/components/NotificationP
 import { useCogno } from '@/hooks/useCogno';
 import { useThreadContext } from '@/contexts/ThreadContext';
 import { useThreads } from '@/hooks/useThreads';
-import { useHomeUI } from '@/contexts/HomeUIContext';
 import { useCopilotReadable } from '@copilotkit/react-core';
 import { useGlobalUI } from '@/contexts/GlobalUIContext';
 
@@ -16,7 +15,6 @@ export default function HomePage() {
   const { threads, loading: threadsLoading, createThread } = useThreads();
   const { messages, sendMessage, isLoading, stopStream } =
     useCogno(selectedThreadId);
-  const { isThreadSidebarOpen } = useHomeUI();
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const streamingContainerRef = useRef<HTMLDivElement>(null);
   const prevMessageCountRef = useRef(0);
@@ -117,13 +115,7 @@ export default function HomePage() {
   }, [messages]);
 
   return (
-    <div
-      className={`relative flex flex-col h-full transition-all duration-300 ${
-        isThreadSidebarOpen
-          ? 'translate-x-[240px] md:translate-x-0 md:ml-80'
-          : 'translate-x-0'
-      }`}
-    >
+    <div className='flex flex-col h-full transition-all duration-300'>
       <ChatContainer
         ref={scrollContainerRef}
         messages={messages}
@@ -133,20 +125,18 @@ export default function HomePage() {
 
       {/* Absolutely positioned ChatInput - no longer needs bottom offset as main area has padding */}
       <div
-        className={`fixed left-0 right-0 z-30 py-4 transition-all duration-300 ${
+        className={`fixed left-0 right-0 z-110 py-4 transition-all duration-300 ${
           isInputActive ? 'bottom-0 md:bottom-[72px]' : 'bottom-[72px]'
         }`}
       >
-        <div className='relative'>
-          <ChatInput
-            onSend={(content: string) => {
-              // Wrapper to match InputArea's expected signature
-              void sendMessage(content);
-            }}
-            onStop={stopStream}
-            isLoading={isLoading}
-          />
-        </div>
+        <ChatInput
+          onSend={(content: string) => {
+            // Wrapper to match InputArea's expected signature
+            void sendMessage(content);
+          }}
+          onStop={stopStream}
+          isLoading={isLoading}
+        />
       </div>
 
       {/* NotificationPanelにsendMessageを渡す */}

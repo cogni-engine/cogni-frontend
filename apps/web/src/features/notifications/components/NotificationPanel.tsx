@@ -194,7 +194,7 @@ export default function NotificationPanel({
   return (
     <div
       ref={panelRef}
-      className={`fixed right-4 w-94 max-h-100 bg-black/30 backdrop-blur-sm border border-black/10 rounded-2xl shadow-2xl transition-all duration-300 ease-in-out z-50 ${
+      className={`fixed top-14 right-4 w-94 max-h-100 bg-black/30 backdrop-blur-sm border border-black/10 rounded-2xl shadow-2xl transition-all duration-300 ease-in-out z-50 ${
         isNotificationPanelOpen
           ? 'opacity-100 translate-y-0'
           : 'opacity-0 -translate-y-4 pointer-events-none'

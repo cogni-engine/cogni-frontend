@@ -750,16 +750,9 @@ export default function NoteEditor({ noteId }: { noteId: string }) {
   }
 
   return (
-    <div
-      className='flex flex-col h-full bg-linear-to-br from-slate-950 via-black to-slate-950 text-gray-100 relative overflow-hidden'
-      style={{
-        willChange: 'scroll-position',
-        transform: 'translateZ(0)',
-        WebkitOverflowScrolling: 'touch',
-      }}
-    >
+    <div className='flex flex-col h-full bg-linear-to-br from-slate-950 via-black to-slate-950 text-gray-100 relative overflow-hidden'>
       {/* ヘッダー */}
-      <header className='flex items-center gap-3 px-4 md:px-6 py-6 relative z-30'>
+      <header className='flex items-center gap-3 px-4 md:px-6 py-6 relative z-100'>
         {/* 戻るボタン - 丸く浮き出る */}
         <button
           onClick={() => router.back()}
