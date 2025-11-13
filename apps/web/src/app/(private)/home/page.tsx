@@ -133,7 +133,7 @@ export default function HomePage() {
 
       {/* Absolutely positioned ChatInput - no longer needs bottom offset as main area has padding */}
       <div
-        className={`fixed left-0 right-0 z-30 px-4 py-4 transition-all duration-300 ${
+        className={`fixed left-0 right-0 z-30 py-4 transition-all duration-300 ${
           isInputActive ? 'bottom-0 md:bottom-[72px]' : 'bottom-[72px]'
         }`}
       >

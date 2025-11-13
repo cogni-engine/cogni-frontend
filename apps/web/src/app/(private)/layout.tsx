@@ -92,7 +92,7 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
     showTopLevelChrome && (!isMobile || !isInputActive) && !isDrawerOpen;
 
   return (
-    <div className='relative h-screen bg-black text-gray-200'>
+    <div className='relative h-screen bg-black px-4'>
       {/* Header - Absolutely Positioned, Transparent */}
       {showTopLevelChrome && <Header />}
 

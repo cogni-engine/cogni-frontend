@@ -8,6 +8,7 @@ import { uploadWorkspaceIcon } from '@/lib/api/workspaceApi';
 import type { Workspace } from '@/types/workspace';
 import SearchBar from '@/components/SearchBar';
 import { useGlobalUI } from '@/contexts/GlobalUIContext';
+import ScrollableView from '@/components/layout/ScrollableView';
 
 export default function WorkspacePage() {
   const { workspaces, isLoading, error } = useWorkspaces();
@@ -84,14 +85,7 @@ export default function WorkspacePage() {
   return (
     <div className='flex flex-col h-full relative overflow-hidden'>
       {/* スクロール可能エリア */}
-      <div
-        className='relative z-10 flex-1 overflow-y-auto px-4 md:px-6 pb-32 md:pb-24'
-        style={{
-          willChange: 'scroll-position',
-          transform: 'translateZ(0)',
-          WebkitOverflowScrolling: 'touch',
-        }}
-      >
+      <ScrollableView className='pb-32 md:pb-24'>
         {isLoading && (
           <div className='flex items-center justify-center py-12'>
             <div className='animate-spin rounded-full h-8 w-8 border-b-2 border-white'></div>
@@ -112,7 +106,7 @@ export default function WorkspacePage() {
               No workspaces found matching &quot;{searchQuery.trim()}&quot;.
             </div>
           )}
-      </div>
+      </ScrollableView>
 
       {/* Bottom Search Bar and Create Button */}
       <div

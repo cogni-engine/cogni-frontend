@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import { useWorkspaceNotes } from '@/hooks/useWorkspaceNotes';
 import GlassCard from '@/components/glass-card/GlassCard';
+import GlassButton from '@/components/glass-card/GlassButton';
 
 type ViewType = 'chat' | 'notes' | 'members' | 'menu';
 
@@ -85,100 +86,93 @@ export default function WorkspaceLayout({
   const basePath = `/workspace/${workspaceId}`;
 
   return (
-    <div className='flex flex-col h-full p-4 md:p-6 relative overflow-hidden'>
-      <div className='relative z-10 flex flex-col h-full'>
-        <div className='flex flex-col gap-3'>
-          {/* Header */}
-          <div className='flex items-center gap-3 w-full'>
-            <button
-              onClick={handleBackNavigation}
-              className='w-[50px] h-[50px] rounded-full bg-white/10 backdrop-blur-xl border border-black hover:bg-white/15 transition-all duration-300 shadow-[0_8px_32px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.12)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.25),inset_0_1px_0_rgba(255,255,255,0.18)] flex items-center justify-center p-0 z-10'
-              title='Go back'
+    <div className='flex flex-col h-full relative overflow-hidden'>
+      {/* Header - Absolutely Positioned with Glass Effect */}
+      <div className='absolute top-0 left-0 right-0 z-70 px-4 md:px-6 pt-4 md:pt-6 pointer-events-none'>
+        <div className='flex items-center gap-3 w-full pointer-events-auto'>
+          <GlassButton onClick={handleBackNavigation} title='Go back'>
+            <ArrowLeft className='w-5 h-5' />
+          </GlassButton>
+          <h1 className='flex-1 min-w-0 text-xl font-bold bg-linear-to-r from-white to-gray-300 bg-clip-text text-transparent truncate'>
+            {workspace ? workspace.title : 'Workspace'}
+          </h1>
+          <div className='relative' ref={menuRef}>
+            <GlassButton
+              onClick={() => setIsMenuOpen(prev => !prev)}
+              aria-haspopup='menu'
+              aria-expanded={isMenuOpen}
+              aria-label='Open workspace menu'
+              title='More actions'
             >
-              <ArrowLeft className='w-5 h-5 text-white' />
-            </button>
-            <h1 className='flex-1 min-w-0 text-xl font-bold bg-linear-to-r from-white to-gray-300 bg-clip-text text-transparent truncate'>
-              {workspace ? workspace.title : 'Workspace'}
-            </h1>
-            <div className='relative' ref={menuRef}>
-              <button
-                onClick={() => setIsMenuOpen(prev => !prev)}
-                className='w-[50px] h-[50px] rounded-full bg-white/10 backdrop-blur-xl border border-black hover:bg-white/15 transition-all duration-300 shadow-[0_8px_32px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.12)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.25),inset_0_1px_0_rgba(255,255,255,0.18)] flex items-center justify-center p-0'
-                aria-haspopup='menu'
-                aria-expanded={isMenuOpen}
-                aria-label='Open workspace menu'
-                title='More actions'
+              <EllipsisVertical className='w-5 h-5 text-white' />
+            </GlassButton>
+            {isMenuOpen && (
+              <div
+                role='menu'
+                className='absolute right-0 mt-2 w-45 rounded-md border border-white/10 bg-black/90 backdrop-blur shadow-lg z-20'
               >
-                <EllipsisVertical className='w-5 h-5 text-white' />
-              </button>
-              {isMenuOpen && (
-                <div
-                  role='menu'
-                  className='absolute right-0 mt-2 w-45 rounded-md border border-white/10 bg-black/90 backdrop-blur shadow-lg z-20'
+                <button
+                  role='menuitem'
+                  onClick={() => {
+                    setIsMenuOpen(false);
+                    router.push(`${basePath}/members`);
+                  }}
+                  className='w-full text-left px-3 py-2 text-sm text-gray-200 hover:bg-white/10 rounded-md flex items-center gap-2'
                 >
-                  <button
-                    role='menuitem'
-                    onClick={() => {
-                      setIsMenuOpen(false);
-                      router.push(`${basePath}/members`);
-                    }}
-                    className='w-full text-left px-3 py-2 text-sm text-gray-200 hover:bg-white/10 rounded-md flex items-center gap-2'
-                  >
-                    <Users className='w-4 h-4' />
-                    Members
-                  </button>
-                  <button
-                    role='menuitem'
-                    onClick={() => {
-                      setIsMenuOpen(false);
-                      router.push(`${basePath}/menu`);
-                    }}
-                    className='w-full text-left px-3 py-2 text-sm text-gray-200 hover:bg-white/10 rounded-md flex items-center gap-2'
-                  >
-                    <Settings className='w-4 h-4' />
-                    Workspace Settings
-                  </button>
-                </div>
-              )}
-            </div>
+                  <Users className='w-4 h-4' />
+                  Members
+                </button>
+                <button
+                  role='menuitem'
+                  onClick={() => {
+                    setIsMenuOpen(false);
+                    router.push(`${basePath}/menu`);
+                  }}
+                  className='w-full text-left px-3 py-2 text-sm text-gray-200 hover:bg-white/10 rounded-md flex items-center gap-2'
+                >
+                  <Settings className='w-4 h-4' />
+                  Workspace Settings
+                </button>
+              </div>
+            )}
           </div>
-
-          {/* Navigation Tabs - Absolutely Positioned */}
-          {(currentView === 'chat' || currentView === 'notes') && (
-            <div className='absolute w-full top-14 left-1/2 -translate-x-1/2 z-20 pointer-events-none'>
-              <GlassCard className='flex w-full divide-x divide-white/10 overflow-hidden rounded-3xl border backdrop-blur-md !shadow-[0_8px_32px_rgba(0,0,0,0.15)] pointer-events-auto'>
-                <button
-                  onClick={() => handleViewChange('chat')}
-                  className={`flex flex-1 items-center justify-center gap-2 px-8 py-2.5 text-sm font-medium transition-all duration-300 ${
-                    currentView === 'chat'
-                      ? 'text-white bg-white/10'
-                      : 'text-gray-400 hover:text-white bg-black/10'
-                  }`}
-                  aria-current={currentView === 'chat' ? 'page' : undefined}
-                >
-                  <MessageSquare className='w-4 h-4' />
-                  Chat
-                </button>
-                <button
-                  onClick={() => handleViewChange('notes')}
-                  className={`flex flex-1 items-center justify-center gap-2 px-8 py-2.5 text-sm font-medium transition-all duration-300 ${
-                    currentView === 'notes'
-                      ? 'text-white bg-white/10'
-                      : 'text-gray-400 hover:text-white bg-black/10'
-                  }`}
-                  aria-current={currentView === 'notes' ? 'page' : undefined}
-                >
-                  <FileText className='w-4 h-4' />
-                  Notes
-                </button>
-              </GlassCard>
-            </div>
-          )}
         </div>
-
-        {/* Content */}
-        <div className='flex-1 overflow-y-auto'>{children}</div>
       </div>
+
+      {/* Navigation Tabs - Absolutely Positioned */}
+      {(currentView === 'chat' || currentView === 'notes') && (
+        <div className='absolute w-full top-16 left-1/2 -translate-x-1/2 z-20 px-4 md:px-6 pointer-events-none'>
+          <GlassCard className='flex w-full divide-x divide-white/10 overflow-hidden rounded-3xl border backdrop-blur-md shadow-[0_8px_32px_rgba(0,0,0,0.15)] pointer-events-auto'>
+            <button
+              onClick={() => handleViewChange('chat')}
+              className={`flex flex-1 items-center justify-center gap-2 px-8 py-2.5 text-sm font-medium transition-all duration-300 ${
+                currentView === 'chat'
+                  ? 'text-white bg-white/10'
+                  : 'text-gray-400 hover:text-white bg-black/10'
+              }`}
+              aria-current={currentView === 'chat' ? 'page' : undefined}
+            >
+              <MessageSquare className='w-4 h-4' />
+              Chat
+            </button>
+            <button
+              onClick={() => handleViewChange('notes')}
+              className={`flex flex-1 items-center justify-center gap-2 px-8 py-2.5 text-sm font-medium transition-all duration-300 ${
+                currentView === 'notes'
+                  ? 'text-white bg-white/10'
+                  : 'text-gray-400 hover:text-white bg-black/10'
+              }`}
+              aria-current={currentView === 'notes' ? 'page' : undefined}
+            >
+              <FileText className='w-4 h-4' />
+              Notes
+            </button>
+          </GlassCard>
+        </div>
+      )}
+
+      {/* Scrollable Content */}
+      <div className='relative z-10 flex-1 overflow-y-auto'>{children}</div>
     </div>
   );
 }
