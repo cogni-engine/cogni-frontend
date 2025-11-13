@@ -501,7 +501,7 @@ export default function WorkspaceNotesPage() {
   return (
     <div className='flex flex-col h-full text-gray-100 relative overflow-hidden'>
       {/* Absolutely Positioned Folder Dropdown */}
-      <div className='absolute top-16 left-4 md:left-6 z-20'>
+      <div className='absolute top-16 left-1/2 -translate-x-1/2 z-20'>
         <FolderDropdown
           folders={folders}
           selectedFolder={selectedFolder}

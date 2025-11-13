@@ -6,10 +6,8 @@ import {
   FolderOpen,
   Trash2,
   Plus,
-  ChevronDown,
+  ChevronRight,
   Check,
-  Edit2,
-  X as XIcon,
 } from 'lucide-react';
 import type { NoteFolder } from '@/types/note';
 import GlassCard from '@/components/glass-card/GlassCard';
@@ -46,14 +44,19 @@ export default function FolderDropdown({
     null
   );
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const contextMenuRef = useRef<HTMLDivElement | null>(null);
+  const [folderContextMenu, setFolderContextMenu] = useState<{
+    folderId: number;
+    x: number;
+    y: number;
+  } | null>(null);
 
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(event.target as Node)
-      ) {
+      const target = event.target as Node;
+
+      if (dropdownRef.current && !dropdownRef.current.contains(target)) {
         setIsOpen(false);
         setIsCreating(false);
         setEditingFolderId(null);
@@ -66,6 +69,31 @@ export default function FolderDropdown({
         document.removeEventListener('mousedown', handleClickOutside);
     }
   }, [isOpen]);
+
+  useEffect(() => {
+    if (!folderContextMenu) return;
+
+    const handleOutside = (event: MouseEvent) => {
+      const target = event.target as Node;
+      if (contextMenuRef.current?.contains(target)) {
+        return;
+      }
+      setFolderContextMenu(null);
+    };
+
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setFolderContextMenu(null);
+      }
+    };
+
+    document.addEventListener('mousedown', handleOutside);
+    document.addEventListener('keydown', handleEscape);
+    return () => {
+      document.removeEventListener('mousedown', handleOutside);
+      document.removeEventListener('keydown', handleEscape);
+    };
+  }, [folderContextMenu]);
 
   const handleCreateFolder = async () => {
     if (!newFolderName.trim()) return;
@@ -132,22 +160,22 @@ export default function FolderDropdown({
       {/* Dropdown Button */}
       <GlassCard
         onClick={() => setIsOpen(!isOpen)}
-        className='flex items-center gap-3 px-3 py-2 hover:bg-white/10 rounded-2xl transition-all duration-200 min-w-[180px] group'
+        className='flex items-center gap-3 px-3 rounded-3xl transition-all duration-200 min-w-[180px] group'
       >
-        <div className='flex items-center justify-center w-8 h-8 rounded-xl bg-white/5 group-hover:bg-white/10 transition-colors'>
+        <div className='flex items-center justify-center w-8 h-8 rounded-xl bg-transparent transition-colors'>
           {getSelectedIcon()}
         </div>
-        <span className='flex-1 text-left text-sm font-semibold text-white truncate'>
+        <span className='flex-1 text-left text-sm font-semibold text-white truncate transition-colors group-hover:text-white group-focus-visible:text-white'>
           {getSelectedLabel()}
         </span>
-        <ChevronDown
-          className={`w-4 h-4 text-gray-400 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}
+        <ChevronRight
+          className={`w-4 h-4 text-gray-400 transition-transform duration-200 group-hover:text-white ${isOpen ? 'rotate-90' : ''}`}
         />
       </GlassCard>
 
       {/* Dropdown Menu */}
       {isOpen && (
-        <GlassCard className='absolute left-0 top-full mt-3 w-[320px] max-h-[520px] overflow-y-auto rounded-3xl z-50'>
+        <GlassCard className='absolute left-1/2 -translate-x-1/2 top-full mt-2 w-[280px] max-h-[460px] overflow-y-auto rounded-3xl z-50'>
           <div className='p-3'>
             {/* All Notes */}
             <button
@@ -155,7 +183,7 @@ export default function FolderDropdown({
                 onFolderSelect('all');
                 setIsOpen(false);
               }}
-              className={`w-full flex items-center justify-between p-3 rounded-xl transition-all duration-200 group ${
+              className={`w-full flex items-center justify-between px-3 py-2 rounded-xl transition-all duration-200 group ${
                 selectedFolder === 'all' ? 'bg-white/10' : 'hover:bg-white/5'
               }`}
             >
@@ -197,8 +225,8 @@ export default function FolderDropdown({
                 <div
                   className={`flex items-center justify-center w-9 h-9 rounded-lg transition-colors ${
                     selectedFolder === 'notes'
-                      ? 'bg-white/10'
-                      : 'bg-white/5 group-hover:bg-white/10'
+                      ? 'bg-white/5'
+                      : 'bg-white/3 group-hover:bg-white/10'
                   }`}
                 >
                   <FolderIcon className='w-5 h-5 text-blue-400' />
@@ -305,63 +333,53 @@ export default function FolderDropdown({
                     </div>
                   </div>
                 ) : (
-                  <div className='group relative'>
-                    <button
-                      onClick={() => {
-                        onFolderSelect(folder.id);
-                        setIsOpen(false);
-                      }}
-                      className={`w-full flex items-center justify-between p-3 rounded-xl transition-all duration-200 ${
-                        selectedFolder === folder.id
-                          ? 'bg-white/10'
-                          : 'hover:bg-white/5'
-                      }`}
-                    >
-                      <div className='flex items-center gap-3'>
-                        <div
-                          className={`flex items-center justify-center w-9 h-9 rounded-lg transition-colors ${
-                            selectedFolder === folder.id
-                              ? 'bg-white/10'
-                              : 'bg-white/5 group-hover:bg-white/10'
-                          }`}
-                        >
-                          <FolderIcon className='w-5 h-5 text-yellow-400' />
-                        </div>
-                        <div className='flex flex-col items-start'>
-                          <span className='text-sm font-medium text-white truncate'>
-                            {folder.title}
-                          </span>
-                          <span className='text-xs text-gray-400'>
-                            {folder.note_count || 0} notes
-                          </span>
-                        </div>
+                  <button
+                    onClick={e => {
+                      if (folderContextMenu?.folderId === folder.id) {
+                        setFolderContextMenu(null);
+                        e.preventDefault();
+                        return;
+                      }
+                      onFolderSelect(folder.id);
+                      setIsOpen(false);
+                    }}
+                    onContextMenu={event => {
+                      event.preventDefault();
+                      setFolderContextMenu({
+                        folderId: folder.id,
+                        x: event.clientX,
+                        y: event.clientY,
+                      });
+                    }}
+                    className={`w-full flex items-center justify-between p-3 rounded-xl transition-all duration-200 ${
+                      selectedFolder === folder.id
+                        ? 'bg-white/10'
+                        : 'hover:bg-white/5'
+                    }`}
+                  >
+                    <div className='flex items-center gap-3'>
+                      <div
+                        className={`flex items-center justify-center w-9 h-9 rounded-lg transition-colors ${
+                          selectedFolder === folder.id
+                            ? 'bg-white/10'
+                            : 'bg-white/5 group-hover:bg-white/10'
+                        }`}
+                      >
+                        <FolderIcon className='w-5 h-5 text-yellow-400' />
                       </div>
-                      {selectedFolder === folder.id && (
-                        <Check className='w-5 h-5 text-white' />
-                      )}
-                    </button>
-                    {/* Context Menu Buttons */}
-                    <div className='absolute right-1 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity flex gap-1 bg-slate-800 rounded px-1'>
-                      <button
-                        onClick={e => {
-                          e.stopPropagation();
-                          startEditing(folder.id, folder.title);
-                        }}
-                        className='p-1 hover:bg-white/10 rounded'
-                      >
-                        <Edit2 className='w-3 h-3 text-gray-400' />
-                      </button>
-                      <button
-                        onClick={e => {
-                          e.stopPropagation();
-                          setShowDeleteConfirm(folder.id);
-                        }}
-                        className='p-1 hover:bg-red-500/20 rounded'
-                      >
-                        <XIcon className='w-3 h-3 text-red-400' />
-                      </button>
+                      <div className='flex flex-col items-start'>
+                        <span className='text-sm font-medium text-white truncate'>
+                          {folder.title}
+                        </span>
+                        <span className='text-xs text-gray-400'>
+                          {folder.note_count || 0} notes
+                        </span>
+                      </div>
                     </div>
-                  </div>
+                    {selectedFolder === folder.id && (
+                      <Check className='w-5 h-5 text-white' />
+                    )}
+                  </button>
                 )}
               </div>
             ))}
@@ -403,30 +421,77 @@ export default function FolderDropdown({
         </GlassCard>
       )}
 
+      {folderContextMenu && (
+        <div
+          ref={contextMenuRef}
+          className='fixed z-[9999] min-w-[180px] rounded-xl border border-white/15 bg-black/70 px-2 py-2 text-sm text-white shadow-[0_12px_32px_rgba(0,0,0,0.45)] backdrop-blur-md'
+          style={{
+            left: `${folderContextMenu.x}px`,
+            top: `${folderContextMenu.y}px`,
+          }}
+        >
+          <button
+            onClick={() => {
+              const target = folders.find(
+                folder => folder.id === folderContextMenu.folderId
+              );
+              if (target) {
+                startEditing(target.id, target.title);
+              }
+              setFolderContextMenu(null);
+            }}
+            className='flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left transition-colors hover:bg-white/10'
+          >
+            Rename folder
+          </button>
+          <button
+            onClick={() => {
+              setShowDeleteConfirm(folderContextMenu.folderId);
+              setFolderContextMenu(null);
+            }}
+            className='flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-red-300 transition-colors hover:bg-red-500/15'
+          >
+            Delete folder
+          </button>
+        </div>
+      )}
+
       {/* Delete Confirmation Modal */}
       {showDeleteConfirm && (
-        <div className='fixed inset-0 bg-white/5 backdrop-blur-sm flex items-center justify-center z-200 p-4'>
-          <GlassCard className='p-6 max-w-sm w-full rounded-2xl'>
-            <h3 className='text-lg font-semibold text-white mb-2'>
-              Delete Folder
-            </h3>
-            <p className='text-gray-400 mb-6 text-sm'>
-              Are you sure you want to delete this folder? Notes in this folder
-              will be moved to &quot;Notes&quot;.
-            </p>
-            <div className='flex gap-3 justify-end'>
-              <button
-                onClick={() => setShowDeleteConfirm(null)}
-                className='px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-lg transition-colors'
-              >
-                Cancel
-              </button>
-              <button
-                onClick={() => handleDeleteFolder(showDeleteConfirm)}
-                className='px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors shadow-lg shadow-red-500/20'
-              >
-                Delete
-              </button>
+        <div className='fixed inset-0 z-[1000] flex items-center justify-center bg-black/60 backdrop-blur-md px-4 py-8'>
+          <GlassCard className='w-full max-w-md rounded-3xl border border-white/12 bg-white/10 p-6 shadow-[0_20px_60px_rgba(0,0,0,0.45)]'>
+            <div className='flex flex-col gap-4 text-white'>
+              <div className='flex items-start gap-3'>
+                <div className='flex h-10 w-10 items-center justify-center rounded-2xl bg-red-500/20'>
+                  <Trash2 className='h-5 w-5 text-red-300' />
+                </div>
+                <div>
+                  <h3 className='text-lg font-semibold tracking-tight'>
+                    Delete folder?
+                  </h3>
+                  <p className='mt-1 text-sm text-white/70'>
+                    Notes inside this folder will move back to “Notes”. This
+                    action can’t be undone.
+                  </p>
+                </div>
+              </div>
+
+              <div className='h-px bg-white/10' />
+
+              <div className='flex justify-end gap-3'>
+                <button
+                  onClick={() => setShowDeleteConfirm(null)}
+                  className='rounded-full bg-white/10 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-white/16'
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => handleDeleteFolder(showDeleteConfirm)}
+                  className='rounded-full bg-red-500/90 px-4 py-2 text-sm font-semibold text-white shadow-[0_12px_30px_rgba(248,113,113,0.35)] transition-colors hover:bg-red-500'
+                >
+                  Delete
+                </button>
+              </div>
             </div>
           </GlassCard>
         </div>

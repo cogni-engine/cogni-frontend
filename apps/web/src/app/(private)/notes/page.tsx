@@ -267,7 +267,7 @@ export default function NotesPage() {
   return (
     <div className='flex flex-col h-full text-gray-100 relative overflow-hidden'>
       {/* 固定ヘッダー（フォルダードロップダウンのみ） */}
-      <div className='absolute top-4 left-4 md:left-6 z-20'>
+      <div className='absolute top-1 left-1/2 -translate-x-1/2 z-20'>
         {/* Folder Dropdown */}
         <FolderDropdown
           folders={folders}
@@ -288,7 +288,7 @@ export default function NotesPage() {
 
       {/* スクロール可能エリア（ノートリストのみ） */}
       <div
-        className='relative z-10 flex-1 overflow-y-auto px-4 md:px-6 pb-32 md:pb-24'
+        className='relative z-10 flex-1 overflow-y-auto px-4 md:px-6 pt-6 pb-32 md:pt-20 md:pb-24'
         style={{
           willChange: 'scroll-position',
           transform: 'translateZ(0)',
