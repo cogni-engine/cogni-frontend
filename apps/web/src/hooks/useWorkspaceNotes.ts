@@ -46,7 +46,10 @@ function formatDate(dateString: string): string {
     .replace(/\//g, '/');
 }
 
-export function useWorkspaceNotes(workspaceId: number, enabled: boolean = true) {
+export function useWorkspaceNotes(
+  workspaceId: number,
+  enabled: boolean = true
+) {
   const [notes, setNotes] = useState<NoteWithParsed[]>([]);
   const [workspace, setWorkspace] = useState<Workspace | null>(null);
   const [loading, setLoading] = useState(enabled);
