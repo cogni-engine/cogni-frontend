@@ -9,6 +9,7 @@ import React, {
 import { WorkspaceMember } from '@/types/workspace';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { User } from 'lucide-react';
+import GlassCard from '../glass-card/GlassCard';
 
 export interface MentionListProps {
   items: WorkspaceMember[];
@@ -77,7 +78,7 @@ export const MentionList = forwardRef<MentionListRef, MentionListProps>(
     }));
 
     return (
-      <div className='bg-white/10 backdrop-blur-xl border border-white/20 rounded-lg shadow-lg overflow-hidden max-h-[300px] overflow-y-auto'>
+      <GlassCard className='rounded-xl overflow-hidden max-h-[300px] overflow-y-auto'>
         {props.items.length ? (
           props.items.map((item, index) => (
             <button
@@ -115,7 +116,7 @@ export const MentionList = forwardRef<MentionListRef, MentionListProps>(
             No members found
           </div>
         )}
-      </div>
+      </GlassCard>
     );
   }
 );

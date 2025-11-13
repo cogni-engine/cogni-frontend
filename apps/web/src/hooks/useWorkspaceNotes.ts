@@ -46,10 +46,13 @@ function formatDate(dateString: string): string {
     .replace(/\//g, '/');
 }
 
-export function useWorkspaceNotes(workspaceId: number) {
+export function useWorkspaceNotes(
+  workspaceId: number,
+  enabled: boolean = true
+) {
   const [notes, setNotes] = useState<NoteWithParsed[]>([]);
   const [workspace, setWorkspace] = useState<Workspace | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(enabled);
   const [error, setError] = useState<string | null>(null);
 
   const fetchNotes = useCallback(async () => {
@@ -203,10 +206,12 @@ export function useWorkspaceNotes(workspaceId: number) {
   }, [workspaceId]);
 
   useEffect(() => {
-    if (workspaceId) {
+    if (workspaceId && enabled) {
       fetchNotes();
+    } else if (!enabled) {
+      setLoading(false);
     }
-  }, [fetchNotes, workspaceId]);
+  }, [fetchNotes, workspaceId, enabled]);
 
   return {
     notes,

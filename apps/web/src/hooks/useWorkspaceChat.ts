@@ -121,6 +121,7 @@ export function useWorkspaceChat(workspaceId: number) {
   );
 
   // Initialize local messages from SWR data
+  // Combined effect to avoid double decoration
   useEffect(() => {
     if (initialMessages) {
       const reversedMessages = [...initialMessages].reverse();
@@ -135,13 +136,6 @@ export function useWorkspaceChat(workspaceId: number) {
       setHasMoreMessages(initialMessages.length === 50);
     }
   }, [initialMessages, workspaceMember, decorateMessages]);
-
-  // Re-decorate messages when workspace member changes
-  useEffect(() => {
-    if (workspaceMember) {
-      setLocalMessages(prev => decorateMessages(prev, workspaceMember));
-    }
-  }, [workspaceMember, decorateMessages]);
 
   // Set up Realtime subscription with retry logic
   useEffect(() => {
@@ -259,14 +253,11 @@ export function useWorkspaceChat(workspaceId: number) {
       }
     }
 
-    // Wait a bit for auth to be ready
-    const initTimeout = setTimeout(() => {
-      setupRealtime();
-    }, 500);
+    // Initialize realtime connection immediately
+    setupRealtime();
 
     return () => {
       mounted = false;
-      clearTimeout(initTimeout);
       if (reconnectTimeoutRef.current) {
         clearTimeout(reconnectTimeoutRef.current);
       }

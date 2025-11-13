@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import type { WorkspaceMessage, WorkspaceMember } from '@/types/workspace';
 import WorkspaceMessageItem from '@/features/workspace/components/WorkspaceMessageItem';
 import type { Note } from '@/types/note';
@@ -12,7 +13,7 @@ type Props = {
   workspaceNotes?: Note[];
 };
 
-export default function WorkspaceMessageList({
+function WorkspaceMessageList({
   messages,
   currentUserId,
   onReply,
@@ -52,3 +53,6 @@ export default function WorkspaceMessageList({
     </div>
   );
 }
+
+// Memoize the component to prevent unnecessary re-renders
+export default memo(WorkspaceMessageList);

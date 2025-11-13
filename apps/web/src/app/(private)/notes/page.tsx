@@ -383,7 +383,7 @@ export default function NotesPage() {
       {/* Bottom Search Bar and Create Button */}
       <div
         className={`fixed left-0 right-0 z-30 px-4 py-4 transition-all duration-300 ${
-          isInputActive ? 'bottom-0 md:bottom-{' : 'bottom-[72px]'
+          isInputActive ? 'bottom-0 md:bottom-[72px]' : 'bottom-[72px]'
         }`}
       >
         {/* Glass-morphism background with gradient mask */}
