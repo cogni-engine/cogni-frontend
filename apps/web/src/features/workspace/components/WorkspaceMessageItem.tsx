@@ -9,7 +9,7 @@ import MessageFiles from './MessageFiles';
 import { TiptapRenderer } from '@/components/tiptap/TiptapRenderer';
 import type { WorkspaceMember } from '@/types/workspace';
 import type { Note } from '@/types/note';
-import NoteDrawer from '@/components/NoteDrawer';
+import { useGlobalUI } from '@/contexts/GlobalUIContext';
 
 type Props = {
   message: WorkspaceMessage;
@@ -36,14 +36,13 @@ function WorkspaceMessageItem({
   workspaceMembers = [],
   workspaceNotes = [],
 }: Props) {
+  const { openNoteDrawer } = useGlobalUI();
   const [contextMenu, setContextMenu] = useState<{
     x: number;
     y: number;
   } | null>(null);
   const [swipeOffset, setSwipeOffset] = useState(0);
   const [showSwipeIndicator, setShowSwipeIndicator] = useState(false);
-  const [noteDrawerOpen, setNoteDrawerOpen] = useState(false);
-  const [selectedNoteId, setSelectedNoteId] = useState<number | null>(null);
   const messageRef = useRef<HTMLDivElement>(null);
   const longPressTimer = useRef<NodeJS.Timeout | null>(null);
   const dragTargetRef = useRef<HTMLElement | null>(null);
@@ -79,15 +78,12 @@ function WorkspaceMessageItem({
     setContextMenu(null);
   }, [onReply, message.id]);
 
-  const handleNoteMentionClick = useCallback((noteId: number) => {
-    setSelectedNoteId(noteId);
-    setNoteDrawerOpen(true);
-  }, []);
-
-  const handleCloseNoteDrawer = useCallback(() => {
-    setNoteDrawerOpen(false);
-    setSelectedNoteId(null);
-  }, []);
+  const handleNoteMentionClick = useCallback(
+    (noteId: number) => {
+      openNoteDrawer(noteId);
+    },
+    [openNoteDrawer]
+  );
 
   const cancelLongPress = useCallback(() => {
     if (longPressTimer.current) {
@@ -396,11 +392,6 @@ function WorkspaceMessageItem({
             position={contextMenu}
           />
         )}
-        <NoteDrawer
-          isOpen={noteDrawerOpen}
-          onClose={handleCloseNoteDrawer}
-          noteId={selectedNoteId}
-        />
       </>
     );
   }
@@ -495,11 +486,6 @@ function WorkspaceMessageItem({
           position={contextMenu}
         />
       )}
-      <NoteDrawer
-        isOpen={noteDrawerOpen}
-        onClose={handleCloseNoteDrawer}
-        noteId={selectedNoteId}
-      />
     </>
   );
 }

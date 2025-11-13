@@ -15,10 +15,17 @@ import {
   COOKIE_KEYS,
 } from '@/lib/cookies';
 import { getPersonalWorkspace } from '@/lib/api/workspaceApi';
+import NoteDrawer from '@/components/NoteDrawer';
 
 function LayoutContent({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const { isInputActive, isDrawerOpen } = useGlobalUI();
+  const {
+    isInputActive,
+    isDrawerOpen,
+    noteDrawerOpen,
+    selectedNoteId,
+    closeNoteDrawer,
+  } = useGlobalUI();
   const [isMobile, setIsMobile] = useState(false);
   const supabase = createClient();
 
@@ -101,6 +108,13 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
 
       {/* Bottom Navigation - Absolutely Positioned */}
       {shouldShowFooter && <BottomNav />}
+
+      {/* Global Note Drawer */}
+      <NoteDrawer
+        isOpen={noteDrawerOpen}
+        onClose={closeNoteDrawer}
+        noteId={selectedNoteId}
+      />
     </div>
   );
 }
