@@ -129,8 +129,8 @@ export default function HomePage() {
         streamingContainerRef={streamingContainerRef}
       />
 
-      {/* Absolutely positioned ChatInput with glass-morphism background */}
-      <div className='absolute bottom-0 left-0 right-0 z-30'>
+      {/* Absolutely positioned ChatInput - no longer needs bottom offset as main area has padding */}
+      <div className='absolute bottom-[72px] left-0 right-0 z-30'>
         <div className='relative'>
           <ChatInput
             onSend={(content: string) => {

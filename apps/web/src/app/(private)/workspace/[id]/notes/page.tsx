@@ -607,7 +607,7 @@ export default function WorkspaceNotesPage() {
         )}
       </div>
 
-      {/* Bottom Search Bar and Create Button */}
+      {/* Bottom Search Bar and Create Button - sits at bottom with transparent nav above */}
       <div className='fixed left-0 right-0 bottom-0 z-30 px-4 py-4'>
         <div className='relative flex items-center gap-3 max-w-7xl mx-auto'>
           <SearchBar

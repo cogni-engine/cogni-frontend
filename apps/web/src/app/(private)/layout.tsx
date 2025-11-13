@@ -92,18 +92,15 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
     showTopLevelChrome && (!isMobile || !isInputActive) && !isDrawerOpen;
 
   return (
-    <div className='flex flex-col h-screen bg-black text-gray-200 relative'>
-      {/* Main Layout */}
-      <div className='flex flex-col h-screen'>
-        {/* Header */}
-        {showTopLevelChrome && <Header />}
+    <div className='relative h-screen bg-black text-gray-200'>
+      {/* Header - Absolutely Positioned, Transparent */}
+      {showTopLevelChrome && <Header />}
 
-        {/* Main */}
-        <main className='flex-1 overflow-hidden'>{children}</main>
+      {/* Main Content - Full height, scrolls under transparent header and bottom nav */}
+      <main className='h-screen overflow-hidden'>{children}</main>
 
-        {/* Bottom Navigation - モバイルかつ入力中は非表示、デスクトップでは常に表示 */}
-        {shouldShowFooter && <BottomNav />}
-      </div>
+      {/* Bottom Navigation - Absolutely Positioned */}
+      {shouldShowFooter && <BottomNav />}
     </div>
   );
 }

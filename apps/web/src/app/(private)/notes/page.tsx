@@ -267,7 +267,7 @@ export default function NotesPage() {
   return (
     <div className='flex flex-col h-full text-gray-100 relative overflow-hidden'>
       {/* 固定ヘッダー（フォルダードロップダウンのみ） */}
-      <div className='absolute top-4 left-4 md:left-6 z-20'>
+      <div className='absolute top-16 left-4 md:left-6 z-20'>
         {/* Folder Dropdown */}
         <FolderDropdown
           folders={folders}
