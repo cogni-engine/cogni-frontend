@@ -23,7 +23,7 @@ const SearchBar = React.forwardRef<HTMLInputElement, SearchBarProps>(
         ref={ref}
         type={type}
         className={cn(
-          'w-full bg-transparent text-sm text-white outline-none placeholder-white/50',
+          'w-full bg-transparent text-base text-white outline-none placeholder-white/50',
           className
         )}
         {...inputProps}
