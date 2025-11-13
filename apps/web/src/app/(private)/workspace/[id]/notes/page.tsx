@@ -13,6 +13,7 @@ import GlassCard from '@/components/glass-card/GlassCard';
 import FolderDropdown from '@/components/FolderDropdown';
 import MoveFolderDrawer from '@/components/MoveFolderDrawer';
 import { useNoteFolders } from '@/hooks/useNoteFolders';
+import ScrollableView from '@/components/layout/ScrollableView';
 
 // Helper functions for date grouping (same as in NoteList.tsx)
 function getTimeGroup(dateString: string): string {
@@ -501,7 +502,7 @@ export default function WorkspaceNotesPage() {
   return (
     <div className='flex flex-col h-full text-gray-100 relative overflow-hidden'>
       {/* Absolutely Positioned Folder Dropdown */}
-      <div className='absolute top-16 left-1/2 -translate-x-1/2 z-20'>
+      <div className='absolute top-28 left-4 md:left-6 z-20'>
         <FolderDropdown
           folders={folders}
           selectedFolder={selectedFolder}
@@ -520,14 +521,7 @@ export default function WorkspaceNotesPage() {
       </div>
 
       {/* Scrollable Notes List */}
-      <div
-        className='relative z-10 flex-1 overflow-y-auto px-4 md:px-6 pt-20 md:pt-24 pb-24 md:pb-28'
-        style={{
-          willChange: 'scroll-position',
-          transform: 'translateZ(0)',
-          WebkitOverflowScrolling: 'touch',
-        }}
-      >
+      <ScrollableView className='md:px-6 pt-28 pb-24'>
         {activeNotes.length === 0 &&
         (selectedFolder === 'trash' ? deletedNotes.length === 0 : true) ? (
           <div className='text-center py-12'>
@@ -605,9 +599,9 @@ export default function WorkspaceNotesPage() {
             )}
           </div>
         )}
-      </div>
+      </ScrollableView>
 
-      {/* Bottom Search Bar and Create Button */}
+      {/* Bottom Search Bar and Create Button - sits at bottom with transparent nav above */}
       <div className='fixed left-0 right-0 bottom-0 z-30 px-4 py-4'>
         <div className='relative flex items-center gap-3 max-w-7xl mx-auto'>
           <SearchBar

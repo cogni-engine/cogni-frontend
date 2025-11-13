@@ -2,6 +2,8 @@ import { Message, AIMessage } from '@/types/chat';
 import { forwardRef } from 'react';
 import MessageItem from './MessageItem';
 import EmptyState from './EmptyState';
+import { useGlobalUI } from '@/contexts/GlobalUIContext';
+import ScrollableView from '@/components/layout/ScrollableView';
 
 type ChatContainerProps = {
   messages: Message[] | AIMessage[];
@@ -29,19 +31,18 @@ const ChatContainer = forwardRef<HTMLDivElement, ChatContainerProps>(
       }
     });
 
+    const { isInputActive } = useGlobalUI();
+
     const hasStreamingMessages = streamingMessages.length > 0;
 
     return (
-      <div className='flex-1 bg-linear-to-br from-slate-950 via-black to-slate-950 relative overflow-hidden'>
+      <div className='flex flex-col flex-1 bg-linear-to-br from-slate-950 via-black to-slate-950 relative overflow-hidden'>
         {/* メッセージエリア - GPU最適化 */}
-        <div
+        <ScrollableView
           ref={ref}
-          className='h-full overflow-y-auto relative z-10 p-6 md:p-8 pb-32 md:pb-40 space-y-6 scroll-smooth'
-          style={{
-            willChange: 'scroll-position',
-            transform: 'translateZ(0)',
-            WebkitOverflowScrolling: 'touch',
-          }}
+          className={`pt-20 md:px-8 ${
+            isInputActive ? 'pb-6' : 'pb-20'
+          } space-y-6 scroll-smooth`}
         >
           {messages.length === 0 ? (
             <EmptyState />
@@ -93,7 +94,7 @@ const ChatContainer = forwardRef<HTMLDivElement, ChatContainerProps>(
               )}
             </>
           )}
-        </div>
+        </ScrollableView>
       </div>
     );
   }

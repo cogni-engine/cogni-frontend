@@ -2,10 +2,15 @@
 
 import { usePathname, useRouter } from 'next/navigation';
 import { HomeIcon, MessageSquare, Notebook } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+import GlassCard from '../glass-card/GlassCard';
 
 export default function BottomNav() {
   const pathname = usePathname();
   const router = useRouter();
+  const containerRef = useRef<HTMLDivElement>(null);
+  const tabRefs = useRef<(HTMLButtonElement | null)[]>([]);
+  const [indicatorStyle, setIndicatorStyle] = useState({ left: 0, width: 0 });
 
   const tabs = [
     {
@@ -17,59 +22,82 @@ export default function BottomNav() {
     { name: 'Notes', path: '/notes', icon: <Notebook className='w-6 h-6' /> },
   ];
 
+  // Find active tab index
+  const activeIndex = tabs.findIndex(tab => pathname.startsWith(tab.path));
+
+  // Update indicator position based on actual tab positions
+  useEffect(() => {
+    const updateIndicator = () => {
+      if (
+        activeIndex === -1 ||
+        !containerRef.current ||
+        !tabRefs.current[activeIndex]
+      ) {
+        return;
+      }
+
+      const container = containerRef.current;
+      const activeTab = tabRefs.current[activeIndex];
+
+      if (activeTab) {
+        const containerRect = container.getBoundingClientRect();
+        const tabRect = activeTab.getBoundingClientRect();
+
+        const left = tabRect.left - containerRect.left + 4;
+        const width = tabRect.width - 8;
+
+        setIndicatorStyle({ left, width });
+      }
+    };
+
+    updateIndicator();
+    window.addEventListener('resize', updateIndicator);
+
+    return () => window.removeEventListener('resize', updateIndicator);
+  }, [activeIndex]);
+
   return (
-    <div className='border-t border-black bg-white/1 backdrop-blur-lg relative z-100'>
-      <div className='flex items-center justify-around py-4 px-4'>
-        {tabs.map(tab => {
+    <GlassCard className='fixed bottom-0 left-0 right-0 z-50 rounded-full my-3 mx-6'>
+      <div
+        ref={containerRef}
+        className='relative flex items-center justify-around p-1'
+      >
+        {/* Sliding background indicator */}
+        <div
+          className='absolute h-[calc(100%-8px)] rounded-full bg-white/10 backdrop-blur-sm transition-all duration-500 ease-out'
+          style={{
+            left: `${indicatorStyle.left}px`,
+            width: `${indicatorStyle.width}px`,
+            transform: 'translateY(0)',
+          }}
+        />
+
+        {tabs.map((tab, index) => {
           const isActive = pathname.startsWith(tab.path);
 
           return (
             <button
               key={tab.path}
+              ref={el => {
+                tabRefs.current[index] = el;
+              }}
               onClick={() => router.push(tab.path)}
-              className={`flex flex-col items-center gap-2 transition-all duration-300 group ${
-                isActive ? 'text-white' : 'text-gray-400 hover:text-white'
-              }`}
+              className='relative z-10 flex flex-col items-center gap-0.5 px-4 py-2 transition-all duration-300 group flex-1'
             >
-              {/* <div className='relative'>
-                <div
-                  className={`bg-white rounded-full shadow-lg transition-all duration-500 ease-out ${
-                    isActive
-                      ? 'w-3.5 h-3.5 scale-100'
-                      : 'w-2.5 h-2.5 scale-100 group-hover:scale-110'
-                  }`}
-                ></div>
-
-                <div
-                  className={`absolute top-1/2 left-0 transition-all duration-500 ease-out ${
-                    isActive
-                      ? 'opacity-100 translate-x-0'
-                      : 'opacity-0 -translate-x-2'
-                  }`}
-                >
-                  <div className='absolute top-1/2 left-0 w-10 h-0.5 bg-gradient-to-r from-white/60 via-white/30 to-transparent transform -translate-y-1/2'></div>
-                  <div className='absolute top-1/2 left-0 w-8 h-0.5 bg-gradient-to-r from-white/40 via-white/20 to-transparent transform -translate-y-1/2 translate-y-1.5'></div>
-                  <div className='absolute top-1/2 left-0 w-6 h-0.5 bg-gradient-to-r from-white/30 via-white/15 to-transparent transform -translate-y-1/2 -translate-y-1.5'></div>
-                  <div className='absolute top-1/2 left-0 w-4 h-0.5 bg-gradient-to-r from-white/20 via-white/10 to-transparent transform -translate-y-1/2 translate-y-2.5'></div>
-                </div>
-
-                <div
-                  className={`transition-all duration-500 ease-out ${
-                    isActive ? 'opacity-0 scale-75' : 'opacity-100 scale-100'
-                  }`}
-                >
-                  <div className='absolute top-1/2 left-1/2 w-8 h-0.5 bg-gradient-to-r from-transparent via-white/40 to-transparent transform -translate-x-1/2 -translate-y-1/2 rotate-12'></div>
-                  <div className='absolute top-1/2 left-1/2 w-7 h-0.5 bg-gradient-to-r from-transparent via-white/25 to-transparent transform -translate-x-1/2 -translate-y-1/2 -rotate-12'></div>
-                  <div className='absolute top-1/2 left-1/2 w-6 h-0.5 bg-gradient-to-r from-transparent via-white/15 to-transparent transform -translate-x-1/2 -translate-y-1/2 rotate-6'></div>
-                </div>
-              </div> */}
-              {tab.icon}
-
-              <span className='text-xs font-medium'>{tab.name}</span>
+              <div
+                className={`transition-colors duration-300 ${isActive ? 'text-white' : 'text-gray-400 group-hover:text-white'}`}
+              >
+                {tab.icon}
+              </div>
+              <span
+                className={`text-xs font-medium transition-colors duration-300 ${isActive ? 'text-white' : 'text-gray-400 group-hover:text-white'}`}
+              >
+                {tab.name}
+              </span>
             </button>
           );
         })}
       </div>
-    </div>
+    </GlassCard>
   );
 }

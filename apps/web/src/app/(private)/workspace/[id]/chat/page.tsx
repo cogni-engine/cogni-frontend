@@ -10,6 +10,7 @@ import WorkspaceMessageList from '@/features/workspace/components/WorkspaceMessa
 import { ChevronDown } from 'lucide-react';
 import { useWorkspaceMembers } from '@/hooks/useWorkspace';
 import { useWorkspaceNotes } from '@/hooks/useWorkspaceNotes';
+import ScrollableView from '@/components/layout/ScrollableView';
 
 export default function WorkspaceChatPage() {
   const params = useParams();
@@ -407,9 +408,9 @@ export default function WorkspaceChatPage() {
 
       {/* Messages */}
       {/* Using flex-direction: column-reverse makes the list naturally start at bottom */}
-      <div
+      <ScrollableView
         ref={scrollContainerRef}
-        className='flex-1 overflow-y-auto relative flex flex-col-reverse pb-32 md:pb-40'
+        className='relative flex flex-col-reverse pt-28 pb-20'
       >
         {/* Loading indicator for older messages - appears at top when scrolling up */}
         {isLoadingMore && (
@@ -446,7 +447,7 @@ export default function WorkspaceChatPage() {
             </div>
           </div>
         )}
-      </div>
+      </ScrollableView>
 
       {/* Scroll to Bottom Button */}
       {showScrollButton && (

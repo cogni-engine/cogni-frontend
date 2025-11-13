@@ -15,10 +15,17 @@ import {
   COOKIE_KEYS,
 } from '@/lib/cookies';
 import { getPersonalWorkspace } from '@/lib/api/workspaceApi';
+import NoteDrawer from '@/components/NoteDrawer';
 
 function LayoutContent({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const { isInputActive, isDrawerOpen } = useGlobalUI();
+  const {
+    isInputActive,
+    isDrawerOpen,
+    noteDrawerOpen,
+    selectedNoteId,
+    closeNoteDrawer,
+  } = useGlobalUI();
   const [isMobile, setIsMobile] = useState(false);
   const supabase = createClient();
 
@@ -92,18 +99,22 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
     showTopLevelChrome && (!isMobile || !isInputActive) && !isDrawerOpen;
 
   return (
-    <div className='flex flex-col h-screen bg-black text-gray-200 relative'>
-      {/* Main Layout */}
-      <div className='flex flex-col h-screen'>
-        {/* Header */}
-        {showTopLevelChrome && <Header />}
+    <div className='relative h-screen bg-black px-4'>
+      {/* Header - Absolutely Positioned, Transparent */}
+      {showTopLevelChrome && <Header />}
 
-        {/* Main */}
-        <main className='flex-1 overflow-hidden'>{children}</main>
+      {/* Main Content - Full height, scrolls under transparent header and bottom nav */}
+      <main className='h-screen overflow-hidden'>{children}</main>
 
-        {/* Bottom Navigation - モバイルかつ入力中は非表示、デスクトップでは常に表示 */}
-        {shouldShowFooter && <BottomNav />}
-      </div>
+      {/* Bottom Navigation - Absolutely Positioned */}
+      {shouldShowFooter && <BottomNav />}
+
+      {/* Global Note Drawer */}
+      <NoteDrawer
+        isOpen={noteDrawerOpen}
+        onClose={closeNoteDrawer}
+        noteId={selectedNoteId}
+      />
     </div>
   );
 }

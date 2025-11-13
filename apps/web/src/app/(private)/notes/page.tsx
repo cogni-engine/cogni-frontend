@@ -14,6 +14,7 @@ import MoveFolderDrawer from '@/components/MoveFolderDrawer';
 import FolderDropdown from '@/components/FolderDropdown';
 import { useNoteFolders } from '@/hooks/useNoteFolders';
 import { useGlobalUI } from '@/contexts/GlobalUIContext';
+import ScrollableView from '@/components/layout/ScrollableView';
 
 export default function NotesPage() {
   const router = useRouter();
@@ -267,7 +268,7 @@ export default function NotesPage() {
   return (
     <div className='flex flex-col h-full text-gray-100 relative overflow-hidden'>
       {/* 固定ヘッダー（フォルダードロップダウンのみ） */}
-      <div className='absolute top-1 left-1/2 -translate-x-1/2 z-20'>
+      <div className='absolute top-16 left-4 md:left-6 z-20'>
         {/* Folder Dropdown */}
         <FolderDropdown
           folders={folders}
@@ -287,14 +288,7 @@ export default function NotesPage() {
       </div>
 
       {/* スクロール可能エリア（ノートリストのみ） */}
-      <div
-        className='relative z-10 flex-1 overflow-y-auto px-4 md:px-6 pt-6 pb-32 md:pt-20 md:pb-24'
-        style={{
-          willChange: 'scroll-position',
-          transform: 'translateZ(0)',
-          WebkitOverflowScrolling: 'touch',
-        }}
-      >
+      <ScrollableView className='pt-20 pb-36'>
         {loading && (
           <div className='flex justify-center items-center py-12'>
             <div className='animate-spin rounded-full h-8 w-8 border-b-2 border-white'></div>
@@ -378,7 +372,7 @@ export default function NotesPage() {
             )}
           </>
         )}
-      </div>
+      </ScrollableView>
 
       {/* Bottom Search Bar and Create Button */}
       <div
