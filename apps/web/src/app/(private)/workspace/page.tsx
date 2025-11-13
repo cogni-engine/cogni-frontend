@@ -7,10 +7,12 @@ import WorkspaceForm from '@/features/workspace/components/WorkspaceForm';
 import { uploadWorkspaceIcon } from '@/lib/api/workspaceApi';
 import type { Workspace } from '@/types/workspace';
 import SearchBar from '@/components/SearchBar';
+import { useGlobalUI } from '@/contexts/GlobalUIContext';
 
 export default function WorkspacePage() {
   const { workspaces, isLoading, error } = useWorkspaces();
   const { create, update } = useWorkspaceMutations();
+  const { isInputActive } = useGlobalUI();
   const [searchQuery, setSearchQuery] = useState('');
 
   const filteredWorkspaces = useMemo(() => {
@@ -81,21 +83,9 @@ export default function WorkspacePage() {
 
   return (
     <div className='flex flex-col h-full relative overflow-hidden'>
-      {/* 固定ヘッダー（検索バー + 新規作成ボタン） */}
-      <div className='relative z-20 px-4 md:px-6 pt-4 md:pt-6 pb-4'>
-        <div className='flex w-full items-center justify-between gap-3'>
-          <SearchBar
-            placeholder='Search workspaces...'
-            value={searchQuery}
-            onChange={event => setSearchQuery(event.target.value)}
-          />
-          <WorkspaceForm onSubmit={handleSubmit} isLoading={isLoading} />
-        </div>
-      </div>
-
       {/* スクロール可能エリア */}
       <div
-        className='relative z-10 flex-1 overflow-y-auto px-4 md:px-6 pb-4'
+        className='relative z-10 flex-1 overflow-y-auto px-4 md:px-6 pb-32 md:pb-24'
         style={{
           willChange: 'scroll-position',
           transform: 'translateZ(0)',
@@ -122,6 +112,22 @@ export default function WorkspacePage() {
               No workspaces found matching &quot;{searchQuery.trim()}&quot;.
             </div>
           )}
+      </div>
+
+      {/* Bottom Search Bar and Create Button */}
+      <div
+        className={`fixed left-0 right-0 z-30 px-4 py-4 transition-all duration-300 ${
+          isInputActive ? 'bottom-0 md:bottom-[72px]' : 'bottom-[72px]'
+        }`}
+      >
+        <div className='relative flex items-center gap-3 max-w-7xl mx-auto'>
+          <SearchBar
+            placeholder='Search workspaces...'
+            value={searchQuery}
+            onChange={event => setSearchQuery(event.target.value)}
+          />
+          <WorkspaceForm onSubmit={handleSubmit} isLoading={isLoading} />
+        </div>
       </div>
     </div>
   );

@@ -9,6 +9,7 @@ import { useThreadContext } from '@/contexts/ThreadContext';
 import { useThreads } from '@/hooks/useThreads';
 import { useHomeUI } from '@/contexts/HomeUIContext';
 import { useCopilotReadable } from '@copilotkit/react-core';
+import { useGlobalUI } from '@/contexts/GlobalUIContext';
 
 export default function HomePage() {
   const { selectedThreadId, setSelectedThreadId } = useThreadContext();
@@ -20,6 +21,7 @@ export default function HomePage() {
   const streamingContainerRef = useRef<HTMLDivElement>(null);
   const prevMessageCountRef = useRef(0);
   const hasInitialized = useRef(false);
+  const { isInputActive } = useGlobalUI();
 
   useCopilotReadable({
     description: 'cogni chat history',
@@ -130,7 +132,11 @@ export default function HomePage() {
       />
 
       {/* Absolutely positioned ChatInput - no longer needs bottom offset as main area has padding */}
-      <div className='absolute bottom-[72px] left-0 right-0 z-30'>
+      <div
+        className={`fixed left-0 right-0 z-30 px-4 py-4 transition-all duration-300 ${
+          isInputActive ? 'bottom-0 md:bottom-[72px]' : 'bottom-[72px]'
+        }`}
+      >
         <div className='relative'>
           <ChatInput
             onSend={(content: string) => {

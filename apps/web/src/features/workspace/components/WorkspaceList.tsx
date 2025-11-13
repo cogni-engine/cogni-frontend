@@ -23,7 +23,7 @@ export default function WorkspaceList({ workspaces }: WorkspaceListProps) {
   }
 
   return (
-    <div className='flex flex-col gap-[14px]'>
+    <div className='flex flex-col gap-[14px] py-20'>
       {workspaces.map(workspace => (
         <WorkspaceCard key={workspace.id} workspace={workspace} />
       ))}
@@ -87,7 +87,7 @@ function WorkspaceCard({ workspace }: WorkspaceCardProps) {
 
         <div className='flex items-center gap-3 shrink-0'>
           <span
-            className={`inline-flex min-w-[2.25rem] items-center justify-center rounded-full px-3 py-1 text-xs font-semibold transition-colors ${
+            className={`inline-flex min-w-9 items-center justify-center rounded-full px-3 py-1 text-xs font-semibold transition-colors ${
               hasUnread
                 ? 'bg-purple-500/20 text-purple-100 shadow-[0_0_15px_rgba(192,132,252,0.35)]'
                 : 'bg-white/10 text-white/40'
