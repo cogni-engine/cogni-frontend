@@ -3,9 +3,6 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { Message } from '@/types/chat';
 
-const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL || 'http://0.0.0.0:8000';
-
 export function useCogno(threadId: number | null) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -16,9 +13,7 @@ export function useCogno(threadId: number | null) {
   const fetchMessages = useCallback(async (tid: number) => {
     try {
       setError(null);
-      const response = await fetch(
-        `${API_BASE_URL}/api/cogno/threads/${tid}/messages`
-      );
+      const response = await fetch(`/api/cogno/threads/${tid}/messages`);
       if (!response.ok) throw new Error('Failed to fetch messages');
       const data = await response.json();
       setMessages(data.messages || []);
@@ -52,6 +47,9 @@ export function useCogno(threadId: number | null) {
   const sendMessage = useCallback(
     async (
       content: string,
+      fileIds?: number[],
+      mentionedMemberIds?: number[],
+      mentionedNoteIds?: number[],
       notificationId?: number,
       timerCompleted?: boolean
     ) => {
@@ -76,6 +74,7 @@ export function useCogno(threadId: number | null) {
           id: Date.now().toString(),
           content,
           role: 'user',
+          file_ids: fileIds,
         };
       }
 
@@ -87,29 +86,37 @@ export function useCogno(threadId: number | null) {
       };
 
       // メッセージを追加
+      let updatedMessages: Message[] = [];
       if (tempUserMsg) {
+        updatedMessages = [...messages, tempUserMsg];
         setMessages(prev => [...prev, tempUserMsg!, tempAIMsg]);
       } else {
+        updatedMessages = [...messages];
         setMessages(prev => [...prev, tempAIMsg]);
       }
 
       try {
-        const response = await fetch(
-          `${API_BASE_URL}/api/cogno/conversations/stream`,
-          {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              thread_id: threadId,
-              message: content,
-              ...(notificationId && { notification_id: notificationId }),
-              ...(timerCompleted && { timer_completed: true }),
-            }),
-            signal: abortController.signal,
-          }
-        );
+        const response = await fetch(`/api/cogno/conversations/stream`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            thread_id: threadId,
+            messages: updatedMessages,
+            ...(mentionedMemberIds &&
+              mentionedMemberIds.length > 0 && {
+                mentioned_member_ids: mentionedMemberIds,
+              }),
+            ...(mentionedNoteIds &&
+              mentionedNoteIds.length > 0 && {
+                mentioned_note_ids: mentionedNoteIds,
+              }),
+            ...(notificationId && { notification_id: notificationId }),
+            ...(timerCompleted && { timer_completed: true }),
+          }),
+          signal: abortController.signal,
+        });
 
         if (!response.ok) throw new Error('Failed to send message');
 
@@ -206,7 +213,7 @@ export function useCogno(threadId: number | null) {
         abortControllerRef.current = null;
       }
     },
-    [threadId, fetchMessages]
+    [threadId, messages, fetchMessages]
   );
 
   // タイマー開始（手動開始用 - 通常は使われない）
@@ -215,7 +222,7 @@ export function useCogno(threadId: number | null) {
       if (!threadId) return;
 
       try {
-        const response = await fetch(`${API_BASE_URL}/api/cogno/timers/start`, {
+        const response = await fetch(`/api/cogno/timers/start`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

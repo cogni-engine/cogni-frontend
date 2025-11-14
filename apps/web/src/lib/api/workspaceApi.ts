@@ -346,3 +346,66 @@ export async function getWorkspaceMembers(
 
   return members.map(normalizeWorkspaceMember);
 }
+
+/**
+ * Get all workspace members from all workspaces the user belongs to
+ * Excludes the current user and deduplicates by user_id
+ */
+export async function getAllWorkspaceMembersForUser(): Promise<
+  WorkspaceMember[]
+> {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    throw new Error('User not authenticated');
+  }
+
+  // Get all workspace IDs where user is a member
+  const { data: userMemberships, error: membershipError } = await supabase
+    .from('workspace_member')
+    .select('workspace_id')
+    .eq('user_id', user.id);
+
+  if (membershipError) throw membershipError;
+
+  if (!userMemberships || userMemberships.length === 0) {
+    return [];
+  }
+
+  const workspaceIds = userMemberships.map(m => m.workspace_id);
+
+  // Fetch all workspace members from these workspaces
+  const { data, error } = await supabase
+    .from('workspace_member')
+    .select(
+      `
+      id,
+      created_at,
+      user_id,
+      workspace_id,
+      role,
+      user_profile:user_id(id, name, avatar_url)
+    `
+    )
+    .in('workspace_id', workspaceIds)
+    .neq('user_id', user.id) // Exclude current user
+    .order('created_at', { ascending: true });
+
+  if (error) throw error;
+
+  const members = (data ?? []) as SupabaseWorkspaceMember[];
+
+  // Deduplicate by user_id (a user might be in multiple workspaces)
+  const uniqueMembersMap = new Map<string, WorkspaceMember>();
+
+  members.forEach(member => {
+    const normalized = normalizeWorkspaceMember(member);
+    if (!uniqueMembersMap.has(member.user_id)) {
+      uniqueMembersMap.set(member.user_id, normalized);
+    }
+  });
+
+  return Array.from(uniqueMembersMap.values());
+}
