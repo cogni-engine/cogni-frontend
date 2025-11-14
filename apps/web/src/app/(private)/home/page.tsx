@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from 'react';
 import ChatContainer from '@/features/cogno/components/ChatContainer';
-import ChatInput from '@/components/chat-input/ChatInput';
+import AiChatInput from '@/components/chat-input/AiChatInput';
 import NotificationPanel from '@/features/notifications/components/NotificationPanel';
 import { useCogno } from '@/hooks/useCogno';
 import { useThreadContext } from '@/contexts/ThreadContext';
@@ -129,13 +129,14 @@ export default function HomePage() {
           isInputActive ? 'bottom-0 md:bottom-[72px]' : 'bottom-[72px]'
         }`}
       >
-        <ChatInput
-          onSend={(content: string) => {
-            // Wrapper to match InputArea's expected signature
-            void sendMessage(content);
+        <AiChatInput
+          onSend={(content: string, fileIds?: number[]) => {
+            // Wrapper to match updated signature with file support
+            void sendMessage(content, fileIds);
           }}
           onStop={stopStream}
           isLoading={isLoading}
+          threadId={selectedThreadId}
         />
       </div>
 

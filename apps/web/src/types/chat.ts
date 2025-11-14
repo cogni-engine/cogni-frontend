@@ -1,7 +1,17 @@
+export type MessageFile = {
+  id: number;
+  original_filename: string;
+  file_path: string;
+  mime_type: string;
+  file_size: number;
+};
+
 export type Message = {
   id?: string;
   role: 'user' | 'assistant';
   content: string;
+  files?: MessageFile[];
+  file_ids?: number[];
 };
 
 export type AIMessage = {
@@ -11,6 +21,7 @@ export type AIMessage = {
   role: 'user' | 'assistant' | 'system';
   created_at: string;
   meta?: Record<string, any> | null; // eslint-disable-line @typescript-eslint/no-explicit-any
+  files?: MessageFile[];
 };
 
 export type InputMode = 'default' | 'expanded';
