@@ -48,6 +48,8 @@ export function useCogno(threadId: number | null) {
     async (
       content: string,
       fileIds?: number[],
+      mentionedMemberIds?: number[],
+      mentionedNoteIds?: number[],
       notificationId?: number,
       timerCompleted?: boolean
     ) => {
@@ -102,6 +104,14 @@ export function useCogno(threadId: number | null) {
           body: JSON.stringify({
             thread_id: threadId,
             messages: updatedMessages,
+            ...(mentionedMemberIds &&
+              mentionedMemberIds.length > 0 && {
+                mentioned_member_ids: mentionedMemberIds,
+              }),
+            ...(mentionedNoteIds &&
+              mentionedNoteIds.length > 0 && {
+                mentioned_note_ids: mentionedNoteIds,
+              }),
             ...(notificationId && { notification_id: notificationId }),
             ...(timerCompleted && { timer_completed: true }),
           }),

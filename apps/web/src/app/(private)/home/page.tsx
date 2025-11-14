@@ -9,6 +9,7 @@ import { useThreadContext } from '@/contexts/ThreadContext';
 import { useThreads } from '@/hooks/useThreads';
 import { useCopilotReadable } from '@copilotkit/react-core';
 import { useGlobalUI } from '@/contexts/GlobalUIContext';
+import { useAIChatMentions } from '@/hooks/useAIChatMentions';
 
 export default function HomePage() {
   const { selectedThreadId, setSelectedThreadId } = useThreadContext();
@@ -20,6 +21,7 @@ export default function HomePage() {
   const prevMessageCountRef = useRef(0);
   const hasInitialized = useRef(false);
   const { isInputActive } = useGlobalUI();
+  const { members, notes } = useAIChatMentions();
 
   useCopilotReadable({
     description: 'cogni chat history',
@@ -121,6 +123,8 @@ export default function HomePage() {
         messages={messages}
         sendMessage={sendMessage}
         streamingContainerRef={streamingContainerRef}
+        workspaceMembers={members}
+        workspaceNotes={notes}
       />
 
       {/* Absolutely positioned ChatInput - no longer needs bottom offset as main area has padding */}
@@ -130,18 +134,34 @@ export default function HomePage() {
         }`}
       >
         <AiChatInput
-          onSend={(content: string, fileIds?: number[]) => {
-            // Wrapper to match updated signature with file support
-            void sendMessage(content, fileIds);
+          onSend={(
+            content: string,
+            fileIds?: number[],
+            mentionedMemberIds?: number[],
+            mentionedNoteIds?: number[]
+          ) => {
+            // Wrapper to match updated signature with file and mention support
+            void sendMessage(
+              content,
+              fileIds,
+              mentionedMemberIds,
+              mentionedNoteIds
+            );
           }}
           onStop={stopStream}
           isLoading={isLoading}
           threadId={selectedThreadId}
+          workspaceMembers={members}
+          workspaceNotes={notes}
         />
       </div>
 
       {/* NotificationPanelにsendMessageを渡す */}
-      <NotificationPanel sendMessage={sendMessage} />
+      <NotificationPanel
+        sendMessage={(content: string, notificationId?: number) =>
+          sendMessage(content, undefined, undefined, undefined, notificationId)
+        }
+      />
     </div>
   );
 }

@@ -72,4 +72,3 @@ export async function uploadAIChatFile(
     mime_type: file.type,
   };
 }
-

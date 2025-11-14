@@ -4,19 +4,35 @@ import MessageItem from './MessageItem';
 import EmptyState from './EmptyState';
 import { useGlobalUI } from '@/contexts/GlobalUIContext';
 import ScrollableView from '@/components/layout/ScrollableView';
+import type { WorkspaceMember } from '@/types/workspace';
+import type { Note } from '@/types/note';
 
 type ChatContainerProps = {
   messages: Message[] | AIMessage[];
   sendMessage: (
     content: string,
+    fileIds?: number[],
+    mentionedMemberIds?: number[],
+    mentionedNoteIds?: number[],
     notificationId?: number,
     timerCompleted?: boolean
   ) => Promise<void>;
   streamingContainerRef?: React.RefObject<HTMLDivElement | null>;
+  workspaceMembers?: WorkspaceMember[];
+  workspaceNotes?: Note[];
 };
 
 const ChatContainer = forwardRef<HTMLDivElement, ChatContainerProps>(
-  ({ messages, sendMessage, streamingContainerRef }, ref) => {
+  (
+    {
+      messages,
+      sendMessage,
+      streamingContainerRef,
+      workspaceMembers = [],
+      workspaceNotes = [],
+    },
+    ref
+  ) => {
     // Separate committed (saved to DB) messages from streaming (temporary) messages
     // Temporary messages have string IDs from Date.now().toString()
     const committedMessages: (Message | AIMessage)[] = [];
@@ -58,7 +74,12 @@ const ChatContainer = forwardRef<HTMLDivElement, ChatContainerProps>(
 
                 return (
                   <div key={key} data-message-index={i}>
-                    <MessageItem message={message} sendMessage={sendMessage} />
+                    <MessageItem
+                      message={message}
+                      sendMessage={sendMessage}
+                      workspaceMembers={workspaceMembers}
+                      workspaceNotes={workspaceNotes}
+                    />
                   </div>
                 );
               })}
@@ -84,6 +105,8 @@ const ChatContainer = forwardRef<HTMLDivElement, ChatContainerProps>(
                         <MessageItem
                           message={message}
                           sendMessage={sendMessage}
+                          workspaceMembers={workspaceMembers}
+                          workspaceNotes={workspaceNotes}
                         />
                       </div>
                     );
