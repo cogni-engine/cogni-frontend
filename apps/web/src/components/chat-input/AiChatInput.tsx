@@ -10,6 +10,7 @@ import TiptapChatInput, { TiptapChatInputRef } from './TiptapChatInput';
 import FileUploadMenu from './FileUploadMenu';
 import FileUploadPreview from './FileUploadPreview';
 import { uploadAIChatFile } from '@/lib/api/aiChatFilesApi';
+import { type UploadedFile } from '@/lib/api/workspaceFilesApi';
 import type { WorkspaceMember } from '@/types/workspace';
 import type { Note } from '@/types/note';
 
@@ -17,15 +18,9 @@ export type FileUploadItem = {
   file: File;
   id: string;
   preview?: string;
-  uploaded?: {
-    id: number;
-    url: string;
-    original_filename: string;
-    file_size: number;
-    mime_type: string;
-  };
-  uploading?: boolean;
-  progress?: number;
+  uploaded?: UploadedFile;
+  uploading: boolean;
+  progress: number;
   error?: string;
 };
 
@@ -121,16 +116,7 @@ const AiChatInput = forwardRef<AiChatInputRef, AiChatInputProps>(
     }, []);
 
     const handleUploadComplete = useCallback(
-      (
-        id: string,
-        uploadedFile: {
-          id: number;
-          url: string;
-          original_filename: string;
-          file_size: number;
-          mime_type: string;
-        }
-      ) => {
+      (id: string, uploadedFile: UploadedFile) => {
         setUploadItems(prev =>
           prev.map(item =>
             item.id === id ? { ...item, uploaded: uploadedFile } : item

@@ -37,6 +37,25 @@ export default function MessageItem({
     [openNoteDrawer]
   );
 
+  // Wrapper for TimerDisplay - adapts full sendMessage to simplified version
+  const handleTimerSendMessage = useCallback(
+    async (
+      content: string,
+      notificationId?: number,
+      timerCompleted?: boolean
+    ) => {
+      return sendMessage(
+        content,
+        undefined, // fileIds
+        undefined, // mentionedMemberIds
+        undefined, // mentionedNoteIds
+        notificationId,
+        timerCompleted
+      );
+    },
+    [sendMessage]
+  );
+
   // assistantメッセージはTiptapRendererを使用（Markdownとメンションサポート）
   if (message.role === 'assistant') {
     const hasTimer = 'meta' in message && message.meta?.timer;
@@ -73,7 +92,7 @@ export default function MessageItem({
           'thread_id' in message && (
             <TimerDisplay
               timer={message.meta.timer}
-              sendMessage={sendMessage}
+              sendMessage={handleTimerSendMessage}
               threadId={message.thread_id}
             />
           )}
