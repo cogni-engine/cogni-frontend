@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "Cogni",
-    "slug": "cogni-mobile",
+    "slug": "cogni-frontend",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -14,9 +14,10 @@
         "NSAppTransportSecurity": {
           "NSAllowsArbitraryLoads": true,
           "NSAllowsLocalNetworking": true
-        }
+        },
+        "ITSAppUsesNonExemptEncryption": false
       },
-      "bundleIdentifier": "com.cogno.ai.mobile"
+      "bundleIdentifier": "com.cogno.ai.cognifrontend"
     },
     "android": {
       "adaptiveIcon": {
@@ -57,6 +58,11 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
+    },
+    "extra": {
+      "eas": {
+        "projectId": "14473c65-d48a-46e0-8fed-99107d0a044f"
+      }
     }
   }
 }
