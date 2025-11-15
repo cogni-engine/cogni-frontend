@@ -9,7 +9,13 @@
     "ios": "expo run:ios",
     "lint": "expo lint",
     "prebuild": "expo prebuild",
-    "prebuild:clean": "expo prebuild --clean"
+    "prebuild:clean": "expo prebuild --clean",
+    "build:preview": "eas build --profile preview --platform all",
+    "build:preview:ios": "eas build --profile preview --platform ios",
+    "build:preview:android": "eas build --profile preview --platform android",
+    "build:production": "eas build --profile production --platform all",
+    "build:production:ios": "eas build --profile production --platform ios",
+    "build:production:android": "eas build --profile production --platform android"
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.3",
