@@ -57,6 +57,13 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
-    }
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "eca7ce65-e179-43c8-8e0a-74460673cc32"
+      }
+    },
+    "owner": "cogno.ai"
   }
 }
