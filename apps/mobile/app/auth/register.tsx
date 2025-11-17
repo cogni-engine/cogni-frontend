@@ -6,6 +6,7 @@ import {
   TextInput,
   TouchableOpacity,
   Text,
+  Alert,
   ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
@@ -14,37 +15,49 @@ import {
 import { supabase } from '@/lib/supabase';
 import GoogleSignInButton from '@/components/auth/google-sign-in-button';
 
-export default function LoginScreen() {
+export default function RegisterScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  async function handleSignIn(e?: any) {
-    e?.preventDefault?.();
-    
+  async function handleSignUp() {
     if (!email || !password) {
       setError('Please enter both email and password');
       return;
     }
 
+    if (password.length < 6) {
+      setError('Password must be at least 6 characters');
+      return;
+    }
+
     setLoading(true);
     setError('');
-    
-    const { error: signInError } = await supabase.auth.signInWithPassword({
+
+    const { error: signUpError } = await supabase.auth.signUp({
       email: email.trim(),
       password,
     });
 
-    if (signInError) {
-      setError(signInError.message);
+    if (signUpError) {
+      setError(signUpError.message);
+    } else {
+      Alert.alert(
+        'Success!',
+        'Account created! Please check your email to verify your account.',
+        [{ text: 'OK' }]
+      );
+      // Clear form
+      setEmail('');
+      setPassword('');
     }
     setLoading(false);
   }
 
   return (
     <>
-      <Stack.Screen options={{ title: 'Login', headerShown: false }} />
+      <Stack.Screen options={{ title: 'Register', headerShown: false }} />
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.keyboardView}
@@ -52,7 +65,7 @@ export default function LoginScreen() {
         <ScrollView contentContainerStyle={styles.scrollContent}>
           <View style={styles.container}>
             <View style={styles.card}>
-              <Text style={styles.title}>Sign in to Cogni Engine</Text>
+              <Text style={styles.title}>Create your account</Text>
 
               <View style={styles.formContainer}>
                 <TextInput
@@ -81,25 +94,25 @@ export default function LoginScreen() {
                   }}
                   secureTextEntry
                   autoCapitalize="none"
-                  autoComplete="password"
+                  autoComplete="password-new"
                   editable={!loading}
                   returnKeyType="go"
-                  onSubmitEditing={handleSignIn}
+                  onSubmitEditing={handleSignUp}
                 />
 
                 <TouchableOpacity
                   style={[styles.primaryButton, loading && styles.buttonDisabled]}
-                  onPress={handleSignIn}
+                  onPress={handleSignUp}
                   disabled={loading}
                   activeOpacity={0.8}
                 >
                   {loading ? (
                     <View style={styles.loadingContainer}>
                       <ActivityIndicator color="#fff" size="small" />
-                      <Text style={styles.primaryButtonText}>Signing in...</Text>
+                      <Text style={styles.primaryButtonText}>Creating account...</Text>
                     </View>
                   ) : (
-                    <Text style={styles.primaryButtonText}>Sign in</Text>
+                    <Text style={styles.primaryButtonText}>Create account</Text>
                   )}
                 </TouchableOpacity>
 
@@ -117,10 +130,10 @@ export default function LoginScreen() {
               </View>
 
               <View style={styles.registerContainer}>
-                <Text style={styles.registerPrompt}>Don&apos;t have an account?</Text>
-                <Link href="/auth/register" asChild>
+                <Text style={styles.registerPrompt}>Already have an account?</Text>
+                <Link href="/auth/login" asChild>
                   <TouchableOpacity>
-                    <Text style={styles.registerLink}>Create account</Text>
+                    <Text style={styles.registerLink}>Sign in</Text>
                   </TouchableOpacity>
                 </Link>
               </View>
