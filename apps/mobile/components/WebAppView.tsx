@@ -5,15 +5,18 @@ import { ThemedView } from './themed-view';
 import { ThemedText } from './themed-text';
 import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
+import { Session } from '@supabase/supabase-js';
 
 interface WebAppViewProps {
   url?: string;
+  session?: Session | null;
 }
 
-export default function WebAppView({ url = 'https://cogno.studio' }: WebAppViewProps) {
+export default function WebAppView({ url = 'https://cogno.studio', session }: WebAppViewProps) {
   const webViewRef = useRef<WebView>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [authInitialized, setAuthInitialized] = useState(false);
   const colorScheme = useColorScheme();
 
   const handleError = (syntheticEvent: any) => {
@@ -26,7 +29,76 @@ export default function WebAppView({ url = 'https://cogno.studio' }: WebAppViewP
   const handleRetry = () => {
     setError(null);
     setLoading(true);
+    setAuthInitialized(false);
     webViewRef.current?.reload();
+  };
+
+  // Generate the injected JavaScript to authenticate the session
+  const getInjectedJavaScript = () => {
+    if (!session?.access_token || !session?.refresh_token) {
+      return '';
+    }
+
+    return `
+      (async function() {
+        try {
+          console.log('Starting mobile authentication...');
+          const response = await fetch('${url}/api/mobile-auth', {
+            method: 'POST',
+            headers: { 
+              'Content-Type': 'application/json',
+              'Accept': 'application/json'
+            },
+            credentials: 'include',
+            body: JSON.stringify({
+              access_token: '${session.access_token}',
+              refresh_token: '${session.refresh_token}'
+            })
+          });
+          
+          const data = await response.json();
+          
+          if (response.ok && data.success) {
+            console.log('Mobile authentication successful');
+            window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'AUTH_SUCCESS' }));
+            // Reload to apply the cookies
+            window.location.href = '${url}/home';
+          } else {
+            console.error('Mobile authentication failed:', data.error);
+            window.ReactNativeWebView.postMessage(JSON.stringify({ 
+              type: 'AUTH_ERROR', 
+              error: data.error || 'Authentication failed' 
+            }));
+          }
+        } catch (e) {
+          console.error('Mobile auth exception:', e);
+          window.ReactNativeWebView.postMessage(JSON.stringify({ 
+            type: 'AUTH_ERROR', 
+            error: e.message || 'Network error' 
+          }));
+        }
+      })();
+      true;
+    `;
+  };
+
+  // Handle messages from the WebView
+  const handleMessage = (event: any) => {
+    try {
+      const message = JSON.parse(event.nativeEvent.data);
+      
+      if (message.type === 'AUTH_SUCCESS') {
+        console.log('Authentication successful in WebView');
+        setAuthInitialized(true);
+      } else if (message.type === 'AUTH_ERROR') {
+        console.error('Authentication error:', message.error);
+        setError(`Authentication failed: ${message.error}`);
+        setLoading(false);
+      }
+    } catch {
+      // Non-JSON message from WebView, ignore
+      console.log('Non-JSON message from WebView:', event.nativeEvent.data);
+    }
   };
 
   return (
@@ -67,12 +139,22 @@ export default function WebAppView({ url = 'https://cogno.studio' }: WebAppViewP
           setLoading(true);
           setError(null);
         }}
-        onLoadEnd={() => setLoading(false)}
+        onLoadEnd={() => {
+          setLoading(false);
+          // If we have a session but haven't initialized auth yet, inject the auth script
+          if (session && !authInitialized) {
+            const script = getInjectedJavaScript();
+            if (script) {
+              webViewRef.current?.injectJavaScript(script);
+            }
+          }
+        }}
         onError={handleError}
         onHttpError={(syntheticEvent) => {
           const { nativeEvent } = syntheticEvent;
           console.warn('WebView HTTP error:', nativeEvent.statusCode, nativeEvent.description);
         }}
+        onMessage={handleMessage}
         javaScriptEnabled={true}
         domStorageEnabled={true}
         startInLoadingState={true}
@@ -90,6 +172,9 @@ export default function WebAppView({ url = 'https://cogno.studio' }: WebAppViewP
         // Allow file access
         allowFileAccess={true}
         allowUniversalAccessFromFileURLs={true}
+        // Enable third-party cookies for session management
+        thirdPartyCookiesEnabled={true}
+        sharedCookiesEnabled={true}
       />
     </ThemedView>
   );

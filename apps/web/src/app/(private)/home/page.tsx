@@ -14,14 +14,14 @@ import { useThreadContext } from '@/contexts/ThreadContext';
 export default function HomePage() {
   const workspaceId = getPersonalWorkspaceId();
   const { selectedThreadId, setSelectedThreadId } = useThreadContext();
-  
+
   // Pass thread selection state to useChat (single source of truth)
-  const chat = useChat({ 
+  const chat = useChat({
     workspaceId,
     selectedThreadId,
-    onThreadSelect: setSelectedThreadId
+    onThreadSelect: setSelectedThreadId,
   });
-  
+
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const streamingContainerRef = useRef<HTMLDivElement>(null);
   const { isInputActive } = useGlobalUI();
