@@ -15,7 +15,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
-import { signOut } from '@/features/auth/api/supabaseAuth';
+import { signOut } from '@cogni/api';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import type { UserProfile } from '@/types/userProfile';
 import GlassCard from '@/components/glass-card/GlassCard';

@@ -26,7 +26,7 @@ import Placeholder from '@tiptap/extension-placeholder';
 import Image from '@tiptap/extension-image';
 import TaskList from '@tiptap/extension-task-list';
 import TaskItem from '@tiptap/extension-task-item';
-import { getPersonalWorkspaceId } from '@/lib/cookies';
+import { getPersonalWorkspaceId } from '@cogni/utils';
 import { useWorkspaceMembers } from '@/hooks/useWorkspace';
 import { useWorkspaceNotes } from '@/hooks/useWorkspaceNotes';
 import { assignNoteToMembers, getNoteAssignments } from '@/lib/api/notesApi';

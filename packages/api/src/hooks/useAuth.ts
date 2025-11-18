@@ -1,15 +1,15 @@
 'use client';
 
 import { useState } from 'react';
-import { signIn, signUp, signOut, signInWithGoogle } from '../api/supabaseAuth';
-import { getPersonalWorkspace } from '@/lib/api/workspaceApi';
+import { signIn, signUp, signOut, signInWithGoogle } from '../supabase/auth';
+import { getPersonalWorkspace } from '../workspace';
 import {
   setCookie,
   COOKIE_KEYS,
   getPendingInviteToken,
   setCurrentUserId,
   clearAllUserCookies,
-} from '@/lib/cookies';
+} from '@cogni/utils';
 
 export function useAuth() {
   const [loading, setLoading] = useState(false);
@@ -130,3 +130,4 @@ export function useAuth() {
     error,
   };
 }
+

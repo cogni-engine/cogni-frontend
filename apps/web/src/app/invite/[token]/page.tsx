@@ -8,7 +8,7 @@ import {
 } from '@/lib/api/invitationsApi';
 import { checkWorkspaceMembership } from '@/lib/api/workspaceApi';
 import { createClient } from '@/lib/supabase/browserClient';
-import { setCookie, clearPendingInviteToken, COOKIE_KEYS } from '@/lib/cookies';
+import { setCookie, clearPendingInviteToken, COOKIE_KEYS } from '@cogni/utils';
 import { CheckCircle, XCircle } from 'lucide-react';
 
 export default function InvitePage() {
@@ -122,7 +122,7 @@ export default function InvitePage() {
 
   if (loading || status === 'checking') {
     return (
-      <div className='min-h-screen bg-gradient-to-br from-slate-950 via-black to-slate-950 text-gray-100 flex items-center justify-center'>
+      <div className='min-h-screen bg-linear-to-br from-slate-950 via-black to-slate-950 text-gray-100 flex items-center justify-center'>
         <div className='text-center'>
           <div className='animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4'></div>
           <p className='text-gray-400'>Loading invitation...</p>
@@ -133,7 +133,7 @@ export default function InvitePage() {
 
   if (status === 'ready' || status === 'accepting') {
     return (
-      <div className='min-h-screen bg-gradient-to-br from-slate-950 via-black to-slate-950 text-gray-100 flex items-center justify-center'>
+      <div className='min-h-screen bg-linear-to-br from-slate-950 via-black to-slate-950 text-gray-100 flex items-center justify-center'>
         <div className='text-center max-w-md mx-auto p-6'>
           <div className='animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4'></div>
           <h1 className='text-2xl font-bold text-white mb-2'>
@@ -149,7 +149,7 @@ export default function InvitePage() {
 
   if (status === 'success') {
     return (
-      <div className='min-h-screen bg-gradient-to-br from-slate-950 via-black to-slate-950 text-gray-100 flex items-center justify-center'>
+      <div className='min-h-screen bg-linear-to-br from-slate-950 via-black to-slate-950 text-gray-100 flex items-center justify-center'>
         <div className='text-center max-w-md mx-auto p-6'>
           <CheckCircle className='w-16 h-16 text-green-400 mx-auto mb-4' />
           <h1 className='text-2xl font-bold text-white mb-2'>Welcome!</h1>
@@ -165,7 +165,7 @@ export default function InvitePage() {
 
   // Error state
   return (
-    <div className='min-h-screen bg-gradient-to-br from-slate-950 via-black to-slate-950 text-gray-100 flex items-center justify-center'>
+    <div className='min-h-screen bg-linear-to-br from-slate-950 via-black to-slate-950 text-gray-100 flex items-center justify-center'>
       <div className='text-center max-w-md mx-auto p-6'>
         <XCircle className='w-16 h-16 text-red-400 mx-auto mb-4' />
         <h1 className='text-2xl font-bold text-white mb-2'>

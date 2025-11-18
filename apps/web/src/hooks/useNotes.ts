@@ -17,7 +17,7 @@ import {
   getUserAssignedNotes,
 } from '@/lib/api/notesApi';
 import type { Note, NoteWithParsed } from '@/types/note';
-import { getPersonalWorkspaceId } from '@/lib/cookies';
+import { getPersonalWorkspaceId } from '@cogni/utils';
 
 /**
  * Parse note into format with title, content, and preview

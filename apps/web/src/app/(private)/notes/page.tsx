@@ -4,7 +4,7 @@ import NoteList from '@/features/notes/components/NoteList';
 import { useNotes, formatDate, useNoteMutations } from '@/hooks/useNotes';
 import { useRouter } from 'next/navigation';
 import { useState, useMemo } from 'react';
-import { getPersonalWorkspaceId } from '@/lib/cookies';
+import { getPersonalWorkspaceId } from '@cogni/utils';
 import { PenSquare, Trash2 } from 'lucide-react';
 import SearchBar from '@/components/SearchBar';
 import GlassButton from '@/components/glass-card/GlassButton';

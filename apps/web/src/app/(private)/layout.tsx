@@ -13,7 +13,7 @@ import {
   getCookie,
   setCookie,
   COOKIE_KEYS,
-} from '@/lib/cookies';
+} from '@cogni/utils';
 import { getPersonalWorkspace } from '@/lib/api/workspaceApi';
 import NoteDrawer from '@/components/NoteDrawer';
 
