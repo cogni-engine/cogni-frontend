@@ -14,6 +14,57 @@ export {
 // Export workspace functions
 export { getPersonalWorkspace } from './workspace';
 
+// Export thread functions
+export {
+  getThreads,
+  getThread,
+  createThread,
+  updateThread,
+  deleteThread,
+} from './threads';
+
 // Export hooks
 export { useAuth } from './hooks/useAuth';
+export { useThreads } from './hooks/useThreads';
+export { useMessages } from './hooks/useMessages';
+export { useSendMessage } from './hooks/useSendMessage';
+export { useChat } from './hooks/useChat';
+
+// Export note functions
+export {
+  getNotes,
+  getNote,
+  createNote,
+  updateNote,
+  deleteNote,
+  softDeleteNote,
+  restoreNote,
+  duplicateNote,
+  emptyTrash,
+  searchNotes,
+  getUserAssignedNotes,
+  parseNoteText,
+  combineNoteText,
+  assignNoteToMembers,
+  getNoteAssignments,
+} from './notes';
+
+// Export folder functions
+export {
+  getFolders,
+  getFolder,
+  createFolder,
+  updateFolder,
+  deleteFolder,
+  moveNoteToFolder,
+  getFolderNoteCounts,
+} from './folders';
+
+// Export note hooks
+export { useNotes } from './hooks/useNotes';
+export { useNoteFolders } from './hooks/useNoteFolders';
+export { useNoteEditor } from './hooks/useNoteEditor';
+
+// Export note helpers
+export { parseNote, formatDate } from './utils/noteHelpers';
 

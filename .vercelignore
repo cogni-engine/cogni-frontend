@@ -4,8 +4,7 @@ apps/mobile/
 # Ignore docs
 docs/
 
-# Ignore shared packages source (only dist/ is needed)
-packages/*/src/
+# Ignore shared packages tests
 packages/*/tests/
 
 # Turbo cache

@@ -3,8 +3,8 @@
 import Image from 'next/image';
 import { useParams, useRouter } from 'next/navigation';
 import { useState, useRef, memo, useMemo, useEffect } from 'react';
-import { useWorkspaceNotes, formatDate } from '@/hooks/useWorkspaceNotes';
-import type { NoteWithParsed } from '@/types/note';
+import { useNotes, useNoteFolders, formatDate } from '@cogni/api';
+import type { NoteWithParsed } from '@cogni/types';
 import { PenSquare, Trash2, FolderOpen } from 'lucide-react';
 import NoteContextMenu from '@/features/workspace/components/NoteContextMenu';
 import SearchBar from '@/components/SearchBar';
@@ -12,7 +12,6 @@ import GlassButton from '@/components/glass-card/GlassButton';
 import GlassCard from '@/components/glass-card/GlassCard';
 import FolderDropdown from '@/components/FolderDropdown';
 import MoveFolderDrawer from '@/components/MoveFolderDrawer';
-import { useNoteFolders } from '@/hooks/useNoteFolders';
 import ScrollableView from '@/components/layout/ScrollableView';
 
 // Helper functions for date grouping (same as in NoteList.tsx)
@@ -145,7 +144,10 @@ export default function WorkspaceNotesPage() {
     restoreNote,
     duplicateNote,
     emptyTrash,
-  } = useWorkspaceNotes(workspaceId);
+  } = useNotes({
+    workspaceId: workspaceId,
+    includeDeleted: true,
+  });
 
   const {
     folders: rawFolders,
@@ -153,7 +155,9 @@ export default function WorkspaceNotesPage() {
     createFolder,
     updateFolder,
     deleteFolder,
-  } = useNoteFolders(workspaceId || 0);
+  } = useNoteFolders({
+    workspaceId: workspaceId || 0,
+  });
 
   // Add note counts to folders
   const folders = useMemo(() => {

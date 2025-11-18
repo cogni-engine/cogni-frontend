@@ -9,7 +9,7 @@ import GlassButton from '@/components/glass-card/GlassButton';
 import WorkspaceMessageList from '@/features/workspace/components/WorkspaceMessageList';
 import { ChevronDown } from 'lucide-react';
 import { useWorkspaceMembers } from '@/hooks/useWorkspace';
-import { useWorkspaceNotes } from '@/hooks/useWorkspaceNotes';
+import { useNotes } from '@cogni/api';
 import ScrollableView from '@/components/layout/ScrollableView';
 
 export default function WorkspaceChatPage() {
@@ -62,10 +62,11 @@ export default function WorkspaceChatPage() {
     }
   }, [messages.length, isLoading]);
 
-  const { notes: workspaceNotes } = useWorkspaceNotes(
-    workspaceId,
-    enableNotesFetch
-  );
+  const { notes: workspaceNotes } = useNotes({
+    workspaceId: workspaceId,
+    includeDeleted: false,
+    autoFetch: enableNotesFetch,
+  });
 
   // Scroll to bottom function
   // Note: With column-reverse, bottom is at scrollTop = 0

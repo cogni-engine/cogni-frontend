@@ -10,7 +10,7 @@ import {
   Users,
   Settings,
 } from 'lucide-react';
-import { useWorkspaceNotes } from '@/hooks/useWorkspaceNotes';
+import { useNotes } from '@cogni/api';
 import GlassCard from '@/components/glass-card/GlassCard';
 import GlassButton from '@/components/glass-card/GlassButton';
 
@@ -26,7 +26,13 @@ export default function WorkspaceLayout({
   const pathname = usePathname();
   const workspaceId = parseInt(params.id as string);
 
-  const { workspace } = useWorkspaceNotes(workspaceId);
+  const { notes } = useNotes({
+    workspaceId: workspaceId,
+    includeDeleted: false,
+  });
+
+  // Extract workspace from the first note (if available)
+  const workspace = notes.length > 0 ? notes[0].workspace : null;
 
   const getCurrentView = (): ViewType => {
     if (pathname.includes('/members')) return 'members';

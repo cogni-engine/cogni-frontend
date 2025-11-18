@@ -1,7 +1,7 @@
 'use client';
 
 import NoteList from '@/features/notes/components/NoteList';
-import { useNotes, formatDate, useNoteMutations } from '@/hooks/useNotes';
+import { useNotes, useNoteFolders, formatDate } from '@cogni/api';
 import { useRouter } from 'next/navigation';
 import { useState, useMemo } from 'react';
 import { getPersonalWorkspaceId } from '@cogni/utils';
@@ -12,7 +12,6 @@ import GlassCard from '@/components/glass-card/GlassCard';
 import NoteContextMenu from '@/features/workspace/components/NoteContextMenu';
 import MoveFolderDrawer from '@/components/MoveFolderDrawer';
 import FolderDropdown from '@/components/FolderDropdown';
-import { useNoteFolders } from '@/hooks/useNoteFolders';
 import { useGlobalUI } from '@/contexts/GlobalUIContext';
 import ScrollableView from '@/components/layout/ScrollableView';
 
@@ -22,6 +21,8 @@ export default function NotesPage() {
   const [selectedFolder, setSelectedFolder] = useState<
     'all' | 'notes' | 'trash' | number
   >('all');
+
+  const personalWorkspaceId = getPersonalWorkspaceId();
 
   const {
     notes,
@@ -34,16 +35,22 @@ export default function NotesPage() {
     duplicateNote,
     emptyTrash,
     refetch,
-  } = useNotes();
-  const { create } = useNoteMutations();
-  const personalWorkspaceId = getPersonalWorkspaceId();
+    createNote: create,
+  } = useNotes({
+    workspaceId: personalWorkspaceId || 0,
+    includeDeleted: true,
+    includeAssignedNotes: true,
+  });
+
   const {
     folders: rawFolders,
     moveNote,
     createFolder,
     updateFolder,
     deleteFolder,
-  } = useNoteFolders(personalWorkspaceId || 0);
+  } = useNoteFolders({
+    workspaceId: personalWorkspaceId || 0,
+  });
 
   // Add note counts to folders
   const folders = useMemo(() => {

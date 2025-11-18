@@ -2,9 +2,10 @@
 
 import { useState, useEffect } from 'react';
 import { getAllWorkspaceMembersForUser } from '@/lib/api/workspaceApi';
-import { useNotes } from '@/hooks/useNotes';
+import { useNotes } from '@cogni/api';
+import { getPersonalWorkspaceId } from '@cogni/utils';
 import type { WorkspaceMember } from '@/types/workspace';
-import type { NoteWithParsed } from '@/types/note';
+import type { NoteWithParsed } from '@cogni/types';
 
 /**
  * Hook to fetch all workspace members and notes for AI chat mentions
@@ -15,8 +16,14 @@ export function useAIChatMentions() {
   const [membersLoading, setMembersLoading] = useState(true);
   const [membersError, setMembersError] = useState<string | null>(null);
 
+  const personalWorkspaceId = getPersonalWorkspaceId();
+
   // Fetch notes using existing hook (personal + assigned notes)
-  const { notes, loading: notesLoading } = useNotes();
+  const { notes, loading: notesLoading } = useNotes({
+    workspaceId: personalWorkspaceId || 0,
+    includeDeleted: true,
+    includeAssignedNotes: true,
+  });
 
   // Fetch all workspace members
   useEffect(() => {

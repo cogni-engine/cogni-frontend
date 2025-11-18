@@ -1,0 +1,204 @@
+import { useState, useCallback, useRef } from 'react';
+import type { Message } from '@cogni/types';
+
+export interface SendMessageOptions {
+  content: string;
+  fileIds?: number[];
+  mentionedMemberIds?: number[];
+  mentionedNoteIds?: number[];
+  notificationId?: number;
+  timerCompleted?: boolean;
+}
+
+export interface UseSendMessageOptions {
+  threadId: number | null;
+  messages: Message[];
+  apiBaseUrl?: string;
+  onMessageUpdate?: (messages: Message[]) => void;
+  onComplete?: () => void;
+}
+
+export function useSendMessage({
+  threadId,
+  messages,
+  apiBaseUrl = '/api',
+  onMessageUpdate,
+  onComplete,
+}: UseSendMessageOptions) {
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const abortControllerRef = useRef<AbortController | null>(null);
+
+  const stopStream = useCallback(() => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+      abortControllerRef.current = null;
+      setIsLoading(false);
+    }
+  }, []);
+
+  const sendMessage = useCallback(
+    async ({
+      content,
+      fileIds,
+      mentionedMemberIds,
+      mentionedNoteIds,
+      notificationId,
+      timerCompleted,
+    }: SendMessageOptions) => {
+      if (!threadId) return;
+
+      // Abort existing stream
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+
+      const abortController = new AbortController();
+      abortControllerRef.current = abortController;
+
+      setIsLoading(true);
+      setError(null);
+
+      // Create temporary user message
+      let tempUserMsg: Message | null = null;
+      if (content.trim()) {
+        tempUserMsg = {
+          id: Date.now().toString(),
+          content,
+          role: 'user',
+          file_ids: fileIds,
+        };
+      }
+
+      // Create temporary AI message
+      const tempAIMsg: Message = {
+        id: (Date.now() + (tempUserMsg ? 1 : 0)).toString(),
+        content: '',
+        role: 'assistant',
+      };
+
+      // Update messages
+      let updatedMessages: Message[] = [];
+      let newMessages: Message[] = [];
+
+      if (tempUserMsg) {
+        updatedMessages = [...messages, tempUserMsg];
+        newMessages = [...messages, tempUserMsg, tempAIMsg];
+      } else {
+        updatedMessages = [...messages];
+        newMessages = [...messages, tempAIMsg];
+      }
+
+      onMessageUpdate?.(newMessages);
+
+      try {
+        const response = await fetch(`${apiBaseUrl}/cogno/conversations/stream`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            thread_id: threadId,
+            messages: updatedMessages,
+            ...(mentionedMemberIds && mentionedMemberIds.length > 0 && {
+              mentioned_member_ids: mentionedMemberIds,
+            }),
+            ...(mentionedNoteIds && mentionedNoteIds.length > 0 && {
+              mentioned_note_ids: mentionedNoteIds,
+            }),
+            ...(notificationId && { notification_id: notificationId }),
+            ...(timerCompleted && { timer_completed: true }),
+          }),
+          signal: abortController.signal,
+        });
+
+        if (!response.ok) throw new Error('Failed to send message');
+
+        const reader = response.body?.getReader();
+        const decoder = new TextDecoder();
+
+        if (!reader) throw new Error('Response body is null');
+
+        let accumulatedContent = '';
+        let buffer = '';
+        let lastUpdateTime = 0;
+        const UPDATE_THROTTLE = 50;
+
+        while (true) {
+          if (abortController.signal.aborted) break;
+
+          const { done, value } = await reader.read();
+          if (done) break;
+
+          const chunk = decoder.decode(value, { stream: true });
+          buffer += chunk;
+
+          const lines = buffer.split('\n');
+          buffer = lines.pop() || '';
+
+          for (const line of lines) {
+            if (line.startsWith('data: ')) {
+              const data = line.slice(6);
+              if (data === '[DONE]') continue;
+              const parsedData = JSON.parse(data);
+              accumulatedContent += parsedData.data;
+
+              const now = Date.now();
+              if (now - lastUpdateTime >= UPDATE_THROTTLE) {
+                onMessageUpdate?.(
+                  newMessages.map(msg =>
+                    msg.id === tempAIMsg.id
+                      ? { ...msg, content: accumulatedContent }
+                      : msg
+                  )
+                );
+                lastUpdateTime = now;
+              }
+            }
+          }
+        }
+
+        // Final update
+        onMessageUpdate?.(
+          newMessages.map(msg =>
+            msg.id === tempAIMsg.id ? { ...msg, content: accumulatedContent } : msg
+          )
+        );
+
+        if (abortController.signal.aborted) {
+          console.log('Stream aborted by user');
+          return;
+        }
+
+        onComplete?.();
+      } catch (err) {
+        if (err instanceof Error && err.name === 'AbortError') {
+          console.log('Stream aborted by user');
+          return;
+        }
+
+        const errorMessage =
+          err instanceof Error ? err.message : 'An error occurred';
+        setError(errorMessage);
+        console.error('Error in sendMessage:', err);
+
+        // Remove temporary messages on error
+        onMessageUpdate?.(
+          messages.filter(
+            msg => msg.id !== tempUserMsg?.id && msg.id !== tempAIMsg.id
+          )
+        );
+      } finally {
+        setIsLoading(false);
+        abortControllerRef.current = null;
+      }
+    },
+    [threadId, messages, apiBaseUrl, onMessageUpdate, onComplete]
+  );
+
+  return {
+    sendMessage,
+    stopStream,
+    isLoading,
+    error,
+  };
+}
+

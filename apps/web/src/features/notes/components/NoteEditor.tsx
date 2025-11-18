@@ -2,7 +2,12 @@
 
 import { useRouter } from 'next/navigation';
 import { useEffect, useState, useRef, useCallback } from 'react';
-import { useNoteEditor } from '@/hooks/useNoteEditor';
+import {
+  useNoteEditor,
+  useNotes,
+  assignNoteToMembers,
+  getNoteAssignments,
+} from '@cogni/api';
 import {
   ArrowLeft,
   Bold,
@@ -28,8 +33,6 @@ import TaskList from '@tiptap/extension-task-list';
 import TaskItem from '@tiptap/extension-task-item';
 import { getPersonalWorkspaceId } from '@cogni/utils';
 import { useWorkspaceMembers } from '@/hooks/useWorkspace';
-import { useWorkspaceNotes } from '@/hooks/useWorkspaceNotes';
-import { assignNoteToMembers, getNoteAssignments } from '@/lib/api/notesApi';
 import { uploadWorkspaceFile, getFileUrl } from '@/lib/api/workspaceFilesApi';
 import { CustomMention } from '@/lib/tiptap/MentionExtension';
 import { createMentionSuggestion } from '@/lib/tiptap/mentionSuggestion';
@@ -94,7 +97,9 @@ export default function NoteEditor({ noteId }: { noteId: string }) {
   const isValidId = !isNaN(id);
 
   const { note, title, content, loading, error, setTitle, setContent } =
-    useNoteEditor(isValidId ? id : null);
+    useNoteEditor({
+      noteId: isValidId ? id : null,
+    });
 
   // Check if this is a group workspace note (not personal)
   const personalWorkspaceId = getPersonalWorkspaceId();
@@ -125,7 +130,10 @@ export default function NoteEditor({ noteId }: { noteId: string }) {
   );
 
   // Fetch workspace notes for note mentions
-  const { notes: workspaceNotes } = useWorkspaceNotes(note?.workspace_id || 0);
+  const { notes: workspaceNotes } = useNotes({
+    workspaceId: note?.workspace_id || 0,
+    autoFetch: !!note?.workspace_id,
+  });
 
   // Track initial loaded state to compare against
   const [initialAssigneeIds, setInitialAssigneeIds] = useState<number[]>([]);
