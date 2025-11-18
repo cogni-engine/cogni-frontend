@@ -46,7 +46,18 @@ export function useSendMessage({
       notificationId,
       timerCompleted,
     }: SendMessageOptions) => {
-      if (!threadId) return;
+      console.log('📤 sendMessage called', {
+        threadId,
+        contentLength: content?.length,
+        fileIds,
+        mentionedMemberIds,
+        mentionedNoteIds,
+      });
+
+      if (!threadId) {
+        console.error('❌ Cannot send message: No threadId');
+        return;
+      }
 
       // Abort existing stream
       if (abortControllerRef.current) {
@@ -92,25 +103,36 @@ export function useSendMessage({
       onMessageUpdate?.(newMessages);
 
       try {
-        const response = await fetch(`${apiBaseUrl}/cogno/conversations/stream`, {
+        const url = `${apiBaseUrl}/cogno/conversations/stream`;
+        const requestBody = {
+          thread_id: threadId,
+          messages: updatedMessages,
+          ...(mentionedMemberIds && mentionedMemberIds.length > 0 && {
+            mentioned_member_ids: mentionedMemberIds,
+          }),
+          ...(mentionedNoteIds && mentionedNoteIds.length > 0 && {
+            mentioned_note_ids: mentionedNoteIds,
+          }),
+          ...(notificationId && { notification_id: notificationId }),
+          ...(timerCompleted && { timer_completed: true }),
+        };
+
+        console.log('📡 Sending message to:', url, requestBody);
+
+        const response = await fetch(url, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            thread_id: threadId,
-            messages: updatedMessages,
-            ...(mentionedMemberIds && mentionedMemberIds.length > 0 && {
-              mentioned_member_ids: mentionedMemberIds,
-            }),
-            ...(mentionedNoteIds && mentionedNoteIds.length > 0 && {
-              mentioned_note_ids: mentionedNoteIds,
-            }),
-            ...(notificationId && { notification_id: notificationId }),
-            ...(timerCompleted && { timer_completed: true }),
-          }),
+          body: JSON.stringify(requestBody),
           signal: abortController.signal,
         });
 
-        if (!response.ok) throw new Error('Failed to send message');
+        console.log('📨 Response status:', response.status);
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error('❌ Failed to send message:', response.status, errorText);
+          throw new Error(`Failed to send message: ${response.status}`);
+        }
 
         const reader = response.body?.getReader();
         const decoder = new TextDecoder();
@@ -143,6 +165,7 @@ export function useSendMessage({
 
               const now = Date.now();
               if (now - lastUpdateTime >= UPDATE_THROTTLE) {
+                console.log('🌊 Streaming update:', accumulatedContent.length, 'chars');
                 onMessageUpdate?.(
                   newMessages.map(msg =>
                     msg.id === tempAIMsg.id

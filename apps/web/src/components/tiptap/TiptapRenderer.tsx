@@ -1,7 +1,7 @@
 'use client';
 
 import { useEditor, EditorContent } from '@tiptap/react';
-import { useMemo, memo } from 'react';
+import { useMemo, memo, useEffect } from 'react';
 import { useTiptapExtensions } from './extensions/useTiptapExtensions';
 import type { WorkspaceMember } from '@/types/workspace';
 import type { Note } from '@/types/note';
@@ -101,14 +101,33 @@ function TiptapRenderer({
   );
 
   const editor = useEditor({
-    immediatelyRender: false,
-    shouldRerenderOnTransaction: false, // Prevent unnecessary re-renders
+    immediatelyRender: true,
+    shouldRerenderOnTransaction: true,
     extensions,
     content: content || '',
     contentType: contentType,
     editable: false,
     editorProps,
   });
+
+  // Update editor content when content prop changes (for streaming)
+  useEffect(() => {
+    if (!editor || content === undefined) return;
+
+    // Get current content as markdown to compare
+    const currentContent =
+      contentType === 'markdown' ? editor.getMarkdown() : editor.getText();
+    const newContent = content || '';
+
+    // Only update if content has actually changed
+    if (currentContent !== newContent) {
+      // Use queueMicrotask to avoid batching issues
+      queueMicrotask(() => {
+        // Set content with proper contentType for markdown parsing
+        editor.commands.setContent(newContent, { contentType });
+      });
+    }
+  }, [editor, content, contentType]);
 
   if (!editor) {
     return null;
@@ -117,6 +136,4 @@ function TiptapRenderer({
   return <EditorContent editor={editor} />;
 }
 
-// Export memoized component to prevent re-renders when props don't change
-export const MemoizedTiptapRenderer = memo(TiptapRenderer);
-export { MemoizedTiptapRenderer as TiptapRenderer };
+export { TiptapRenderer };

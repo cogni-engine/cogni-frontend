@@ -37,9 +37,25 @@ export function useChat({ workspaceId, apiBaseUrl }: UseChatOptions) {
 
   // Auto-initialize: create or select first thread
   const initializeChat = useCallback(async () => {
-    if (threadsHook.loading || !workspaceId) return;
+    console.log('📋 initializeChat called', {
+      loading: threadsHook.loading,
+      workspaceId,
+      threadsCount: threadsHook.threads.length,
+      selectedThreadId,
+    });
+
+    if (threadsHook.loading) {
+      console.log('⏳ Still loading threads, skipping initialization');
+      return;
+    }
+
+    if (!workspaceId) {
+      console.error('❌ No workspaceId available for chat initialization');
+      return;
+    }
 
     if (threadsHook.threads.length === 0) {
+      console.log('📝 No threads found, creating initial thread');
       // Create initial thread
       const now = new Date();
       const dateTimeTitle = now.toLocaleString('en-US', {
@@ -51,10 +67,16 @@ export function useChat({ workspaceId, apiBaseUrl }: UseChatOptions) {
         hour12: true,
       });
 
-      const newThread = await threadsHook.createThread(dateTimeTitle);
-      setSelectedThreadId(newThread.id);
+      try {
+        const newThread = await threadsHook.createThread(dateTimeTitle);
+        console.log('✅ Created new thread:', newThread);
+        setSelectedThreadId(newThread.id);
+      } catch (error) {
+        console.error('❌ Failed to create thread:', error);
+      }
     } else if (selectedThreadId === null) {
       // Select the first thread
+      console.log('✅ Selecting first thread:', threadsHook.threads[0]);
       setSelectedThreadId(threadsHook.threads[0].id);
     }
   }, [

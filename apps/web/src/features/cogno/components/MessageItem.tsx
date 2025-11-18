@@ -3,7 +3,7 @@ import { Message, AIMessage } from '@/types/chat';
 import { TimerDisplay } from './TimerDisplay';
 import { AIInitiatedMessageWrapper } from './AIInitiatedMessageWrapper';
 import MessageFiles from '@/features/workspace/components/MessageFiles';
-import { MemoizedTiptapRenderer as TiptapRenderer } from '@/components/tiptap/TiptapRenderer';
+import { TiptapRenderer } from '@/components/tiptap/TiptapRenderer';
 import { useGlobalUI } from '@/contexts/GlobalUIContext';
 import type { WorkspaceMember } from '@/types/workspace';
 import type { Note } from '@/types/note';
@@ -62,9 +62,11 @@ export default function MessageItem({
     const isAIInitiated =
       'meta' in message && message.meta?.is_ai_initiated === true;
 
+    const content = message.content;
+
     const aiMessageContent = (
       <TiptapRenderer
-        content={message.content}
+        content={content}
         contentType='markdown'
         enableMemberMentions={true}
         enableNoteMentions={true}
