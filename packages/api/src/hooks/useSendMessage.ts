@@ -46,16 +46,8 @@ export function useSendMessage({
       notificationId,
       timerCompleted,
     }: SendMessageOptions) => {
-      console.log('📤 sendMessage called', {
-        threadId,
-        contentLength: content?.length,
-        fileIds,
-        mentionedMemberIds,
-        mentionedNoteIds,
-      });
-
       if (!threadId) {
-        console.error('❌ Cannot send message: No threadId');
+        console.error('Cannot send message: No threadId');
         return;
       }
 
@@ -117,8 +109,6 @@ export function useSendMessage({
           ...(timerCompleted && { timer_completed: true }),
         };
 
-        console.log('📡 Sending message to:', url, requestBody);
-
         const response = await fetch(url, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -126,11 +116,9 @@ export function useSendMessage({
           signal: abortController.signal,
         });
 
-        console.log('📨 Response status:', response.status);
-
         if (!response.ok) {
           const errorText = await response.text();
-          console.error('❌ Failed to send message:', response.status, errorText);
+          console.error('Failed to send message:', response.status, errorText);
           throw new Error(`Failed to send message: ${response.status}`);
         }
 
@@ -165,7 +153,6 @@ export function useSendMessage({
 
               const now = Date.now();
               if (now - lastUpdateTime >= UPDATE_THROTTLE) {
-                console.log('🌊 Streaming update:', accumulatedContent.length, 'chars');
                 onMessageUpdate?.(
                   newMessages.map(msg =>
                     msg.id === tempAIMsg.id
@@ -187,14 +174,12 @@ export function useSendMessage({
         );
 
         if (abortController.signal.aborted) {
-          console.log('Stream aborted by user');
           return;
         }
 
         onComplete?.();
       } catch (err) {
         if (err instanceof Error && err.name === 'AbortError') {
-          console.log('Stream aborted by user');
           return;
         }
 

@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useCallback, useEffect } from 'react';
 import { useThreads } from './useThreads';
 import { useMessages } from './useMessages';
 import { useSendMessage } from './useSendMessage';
@@ -7,14 +7,21 @@ import type { Thread, Message } from '@cogni/types';
 export interface UseChatOptions {
   workspaceId: number | null;
   apiBaseUrl?: string;
+  selectedThreadId: number | null;
+  onThreadSelect: (threadId: number | null) => void;
 }
 
 /**
  * Unified hook that combines thread management, messages, and sending
  * This hook provides a complete chat interface
+ * Thread selection is managed externally (e.g., via ThreadContext)
  */
-export function useChat({ workspaceId, apiBaseUrl }: UseChatOptions) {
-  const [selectedThreadId, setSelectedThreadId] = useState<number | null>(null);
+export function useChat({ 
+  workspaceId, 
+  apiBaseUrl,
+  selectedThreadId,
+  onThreadSelect 
+}: UseChatOptions) {
 
   // Thread management
   const threadsHook = useThreads({ workspaceId });
@@ -35,56 +42,46 @@ export function useChat({ workspaceId, apiBaseUrl }: UseChatOptions) {
     },
   });
 
-  // Auto-initialize: create or select first thread
-  const initializeChat = useCallback(async () => {
-    console.log('📋 initializeChat called', {
-      loading: threadsHook.loading,
-      workspaceId,
-      threadsCount: threadsHook.threads.length,
-      selectedThreadId,
-    });
-
-    if (threadsHook.loading) {
-      console.log('⏳ Still loading threads, skipping initialization');
-      return;
-    }
-
-    if (!workspaceId) {
-      console.error('❌ No workspaceId available for chat initialization');
-      return;
-    }
-
-    if (threadsHook.threads.length === 0) {
-      console.log('📝 No threads found, creating initial thread');
-      // Create initial thread
-      const now = new Date();
-      const dateTimeTitle = now.toLocaleString('en-US', {
-        month: 'short',
-        day: 'numeric',
-        year: 'numeric',
-        hour: 'numeric',
-        minute: '2-digit',
-        hour12: true,
-      });
-
-      try {
-        const newThread = await threadsHook.createThread(dateTimeTitle);
-        console.log('✅ Created new thread:', newThread);
-        setSelectedThreadId(newThread.id);
-      } catch (error) {
-        console.error('❌ Failed to create thread:', error);
+  // Auto-initialize: create thread if needed when threads finish loading
+  useEffect(() => {
+    const initialize = async () => {
+      if (threadsHook.loading || !workspaceId) {
+        return;
       }
-    } else if (selectedThreadId === null) {
-      // Select the first thread
-      console.log('✅ Selecting first thread:', threadsHook.threads[0]);
-      setSelectedThreadId(threadsHook.threads[0].id);
-    }
+
+      // Create initial thread if none exist
+      if (threadsHook.threads.length === 0) {
+        const now = new Date();
+        const dateTimeTitle = now.toLocaleString('en-US', {
+          month: 'short',
+          day: 'numeric',
+          year: 'numeric',
+          hour: 'numeric',
+          minute: '2-digit',
+          hour12: true,
+        });
+
+        try {
+          const newThread = await threadsHook.createThread(dateTimeTitle);
+          onThreadSelect(newThread.id);
+        } catch (error) {
+          console.error('Failed to create thread:', error);
+        }
+      }
+      // Auto-select first thread if none is selected
+      else if (selectedThreadId === null && threadsHook.threads.length > 0) {
+        onThreadSelect(threadsHook.threads[0].id);
+      }
+    };
+
+    initialize();
   }, [
     threadsHook.loading,
     threadsHook.threads,
     threadsHook.createThread,
     workspaceId,
     selectedThreadId,
+    onThreadSelect,
   ]);
 
   return {
@@ -97,9 +94,9 @@ export function useChat({ workspaceId, apiBaseUrl }: UseChatOptions) {
     deleteThread: threadsHook.deleteThread,
     refetchThreads: threadsHook.refetch,
 
-    // Thread selection
+    // Thread selection (external state)
     selectedThreadId,
-    setSelectedThreadId,
+    setSelectedThreadId: onThreadSelect,
 
     // Message management
     messages: messagesHook.messages,
@@ -112,9 +109,6 @@ export function useChat({ workspaceId, apiBaseUrl }: UseChatOptions) {
     stopStream: sendMessageHook.stopStream,
     isSending: sendMessageHook.isLoading,
     sendError: sendMessageHook.error,
-
-    // Utility
-    initializeChat,
   };
 }
 

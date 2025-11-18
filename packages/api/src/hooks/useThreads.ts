@@ -18,10 +18,7 @@ export function useThreads({ workspaceId, autoFetch = true }: UseThreadsOptions)
   const [error, setError] = useState<string | null>(null);
 
   const fetchThreads = useCallback(async () => {
-    console.log('🔍 fetchThreads called with workspaceId:', workspaceId);
-
     if (!workspaceId) {
-      console.warn('⚠️ No workspaceId provided to fetchThreads');
       setThreads([]);
       setLoading(false);
       return;
@@ -30,13 +27,11 @@ export function useThreads({ workspaceId, autoFetch = true }: UseThreadsOptions)
     try {
       setLoading(true);
       setError(null);
-      console.log('📡 Fetching threads from database...');
       const data = await getThreads(workspaceId);
-      console.log('✅ Fetched threads:', data);
       setThreads(data);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to fetch threads');
-      console.error('❌ Error fetching threads:', err);
+      console.error('Error fetching threads:', err);
     } finally {
       setLoading(false);
     }

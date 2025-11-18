@@ -1,5 +1,5 @@
 import { Message, AIMessage } from '@/types/chat';
-import { forwardRef, useEffect } from 'react';
+import { forwardRef } from 'react';
 import MessageItem from './MessageItem';
 import EmptyState from './EmptyState';
 import { useGlobalUI } from '@/contexts/GlobalUIContext';
@@ -50,7 +50,6 @@ const ChatContainer = forwardRef<HTMLDivElement, ChatContainerProps>(
     const { isInputActive } = useGlobalUI();
 
     const hasStreamingMessages = streamingMessages.length > 0;
-    console.log('🎨 Streaming messages:', streamingMessages.length);
 
     return (
       <div className='flex flex-col flex-1 bg-linear-to-br from-slate-950 via-black to-slate-950 relative overflow-hidden'>
