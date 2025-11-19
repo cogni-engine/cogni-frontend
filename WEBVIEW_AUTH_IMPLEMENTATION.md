@@ -32,10 +32,10 @@ User is authenticated in webview!
 
 **New Files:**
 
-1. **`apps/web/src/app/mobile-auth/page.tsx`**
-   - Server-side page that receives tokens via URL params
+1. **`apps/web/src/app/mobile-auth/route.ts`**
+   - Route handler (GET) that receives tokens via URL params
    - Validates tokens with Supabase
-   - Sets session cookies
+   - Sets session cookies (Next.js 15 requires Route Handlers for cookie modification)
    - Redirects to `/home` on success
 
 2. **`apps/web/src/app/mobile-auth-required/page.tsx`**
@@ -297,7 +297,7 @@ Check:
 
 ### Web App
 - Middleware: `apps/web/src/middleware.ts`
-- Mobile auth page: `apps/web/src/app/mobile-auth/page.tsx`
+- Mobile auth route: `apps/web/src/app/mobile-auth/route.ts`
 - Auth required page: `apps/web/src/app/mobile-auth-required/page.tsx`
 - Webview utils: `apps/web/src/lib/webview.ts`
 - Logout handler: `apps/web/src/components/layout/UserMenu.tsx`
