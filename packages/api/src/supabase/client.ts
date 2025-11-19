@@ -5,6 +5,14 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 let supabaseInstance: SupabaseClient | null = null;
 
 /**
+ * Set a custom Supabase client instance
+ * Useful for React Native or custom configurations
+ */
+export function setClient(client: SupabaseClient): void {
+  supabaseInstance = client;
+}
+
+/**
  * Create a Supabase client for browser/web environments
  * Uses environment variables for configuration
  */

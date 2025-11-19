@@ -1,6 +1,9 @@
 import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
+  // Transpile packages from the monorepo
+  transpilePackages: ['@cogni/api', '@cogni/types', '@cogni/utils'],
+
   images: {
     remotePatterns: [
       {

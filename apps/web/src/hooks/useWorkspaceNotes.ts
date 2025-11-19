@@ -12,39 +12,12 @@ import {
   emptyTrash,
   searchNotes,
   parseNoteText,
-} from '@/lib/api/notesApi';
+  parseNote,
+  formatDate,
+} from '@cogni/api';
 import { getWorkspace } from '@/lib/api/workspaceApi';
 import type { Note, NoteWithParsed } from '@/types/note';
 import type { Workspace } from '@/types/workspace';
-
-/**
- * Parse note into format with title, content, and preview
- */
-function parseNote(note: Note): NoteWithParsed {
-  const { title, content } = parseNoteText(note.text);
-  const preview = content.slice(0, 100) + (content.length > 100 ? '...' : '');
-
-  return {
-    ...note,
-    title,
-    content,
-    preview,
-  };
-}
-
-/**
- * Format date for display
- */
-function formatDate(dateString: string): string {
-  const date = new Date(dateString);
-  return date
-    .toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-    })
-    .replace(/\//g, '/');
-}
 
 export function useWorkspaceNotes(
   workspaceId: number,

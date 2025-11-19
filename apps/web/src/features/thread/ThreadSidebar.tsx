@@ -1,12 +1,14 @@
 'use client';
 
 import { useState } from 'react';
-import { useThreads } from '@/hooks/useThreads';
+import { useThreads } from '@cogni/api';
+import { getPersonalWorkspaceId } from '@cogni/utils';
 import { useThreadContext } from '@/contexts/ThreadContext';
 import { useHomeUI } from '@/contexts/HomeUIContext';
 
 export default function ThreadSidebar() {
-  const { threads, updateThread, deleteThread } = useThreads();
+  const workspaceId = getPersonalWorkspaceId();
+  const { threads, updateThread, deleteThread } = useThreads({ workspaceId });
   const { selectedThreadId, setSelectedThreadId } = useThreadContext();
   const { isThreadSidebarOpen, closeThreadSidebar } = useHomeUI();
   const [menuOpenId, setMenuOpenId] = useState<number | null>(null);

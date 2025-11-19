@@ -2,6 +2,12 @@ import { AuthContext } from '@/hooks/use-auth-context';
 import { supabase } from '@/lib/supabase';
 import type { Session } from '@supabase/supabase-js';
 import { PropsWithChildren, useEffect, useState } from 'react';
+import {
+  setPersonalWorkspaceId,
+  setCurrentUserId,
+  clearAllUserStorage,
+} from '@/lib/storage';
+import { getPersonalWorkspace } from '@cogni/api';
 
 export default function AuthProvider({ children }: PropsWithChildren) {
   const [session, setSession] = useState<Session | undefined | null>();
@@ -52,8 +58,29 @@ export default function AuthProvider({ children }: PropsWithChildren) {
           .single();
 
         setProfile(data);
+
+        // Store user ID
+        await setCurrentUserId(session.user.id);
+
+        // Fetch and store personal workspace ID using shared package
+        console.log('🔍 Fetching workspace for user:', session.user.id);
+        
+        try {
+          const workspace = await getPersonalWorkspace();
+          
+          if (workspace?.id) {
+            console.log('✅ Setting workspace ID:', workspace.id);
+            await setPersonalWorkspaceId(workspace.id);
+          } else {
+            console.warn('⚠️ No workspace found for user');
+          }
+        } catch (error) {
+          console.error('❌ Error fetching workspace:', error);
+        }
       } else {
         setProfile(null);
+        // Clear storage on logout
+        await clearAllUserStorage();
       }
       setIsLoading(false);
     };

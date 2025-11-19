@@ -1,6 +1,10 @@
 import { useState, useCallback, useRef } from 'react';
 import type { Message } from '@cogni/types';
 
+// Use native fetch - works on both web and React Native (Expo 50+)
+// React Native Hermes engine now supports fetch natively
+const platformFetch = typeof global !== 'undefined' && global.fetch ? global.fetch : fetch;
+
 export interface SendMessageOptions {
   content: string;
   fileIds?: number[];
@@ -14,6 +18,7 @@ export interface UseSendMessageOptions {
   threadId: number | null;
   messages: Message[];
   apiBaseUrl?: string;
+  headers?: HeadersInit;
   onMessageUpdate?: (messages: Message[]) => void;
   onComplete?: () => void;
 }
@@ -22,6 +27,7 @@ export function useSendMessage({
   threadId,
   messages,
   apiBaseUrl = '/api',
+  headers,
   onMessageUpdate,
   onComplete,
 }: UseSendMessageOptions) {
@@ -109,9 +115,12 @@ export function useSendMessage({
           ...(timerCompleted && { timer_completed: true }),
         };
 
-        const response = await fetch(url, {
+        const response = await platformFetch(url, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 
+            'Content-Type': 'application/json',
+            ...headers,
+          },
           body: JSON.stringify(requestBody),
           signal: abortController.signal,
         });
@@ -122,45 +131,72 @@ export function useSendMessage({
           throw new Error(`Failed to send message: ${response.status}`);
         }
 
+        // Debug: Check critical response properties
+        const contentType = response.headers.get("content-type");
+        const bodyIsNull = response.body === null;
+        
+        console.log('🔍 Response Check:');
+        console.log('  content-type:', contentType);
+        console.log('  response.body === null:', bodyIsNull);
+        console.log('  response.body:', response.body);
+        console.log('  typeof response.body:', typeof response.body);
+
+        // React Native (Expo) supports ReadableStream natively!
         const reader = response.body?.getReader();
-        const decoder = new TextDecoder();
+        if (!reader) {
+          console.error('❌ Response body is not readable.');
+          console.error('  This might be due to:');
+          console.error('  1. Backend not sending streaming response');
+          console.error('  2. Proxy/CDN buffering the response');
+          console.error('  3. Missing Content-Type: text/event-stream header');
+          throw new Error('Response body is not readable - streaming not supported');
+        }
 
-        if (!reader) throw new Error('Response body is null');
-
+        const decoder = new TextDecoder("utf-8");
         let accumulatedContent = '';
         let buffer = '';
         let lastUpdateTime = 0;
-        const UPDATE_THROTTLE = 50;
+        const UPDATE_THROTTLE = 50; // Throttle UI updates to 50ms
 
         while (true) {
           if (abortController.signal.aborted) break;
 
-          const { done, value } = await reader.read();
+          const { value, done } = await reader.read();
           if (done) break;
 
+          // Decode the chunk
           const chunk = decoder.decode(value, { stream: true });
           buffer += chunk;
 
+          // Process complete lines (SSE format)
           const lines = buffer.split('\n');
-          buffer = lines.pop() || '';
+          buffer = lines.pop() || ''; // Keep incomplete line in buffer
 
           for (const line of lines) {
             if (line.startsWith('data: ')) {
-              const data = line.slice(6);
+              const data = line.slice(6).trim();
               if (data === '[DONE]') continue;
-              const parsedData = JSON.parse(data);
-              accumulatedContent += parsedData.data;
+              
+              try {
+                const parsedData = JSON.parse(data);
+                // Support both .data and .content fields
+                const content = parsedData.data || parsedData.content || '';
+                accumulatedContent += content;
 
-              const now = Date.now();
-              if (now - lastUpdateTime >= UPDATE_THROTTLE) {
-                onMessageUpdate?.(
-                  newMessages.map(msg =>
-                    msg.id === tempAIMsg.id
-                      ? { ...msg, content: accumulatedContent }
-                      : msg
-                  )
-                );
-                lastUpdateTime = now;
+                // Throttle UI updates for performance
+                const now = Date.now();
+                if (now - lastUpdateTime >= UPDATE_THROTTLE) {
+                  onMessageUpdate?.(
+                    newMessages.map(msg =>
+                      msg.id === tempAIMsg.id
+                        ? { ...msg, content: accumulatedContent }
+                        : msg
+                    )
+                  );
+                  lastUpdateTime = now;
+                }
+              } catch (parseError) {
+                console.error('Error parsing SSE data:', parseError, 'Line:', line);
               }
             }
           }

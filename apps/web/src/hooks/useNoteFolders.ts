@@ -8,7 +8,7 @@ import {
   deleteFolder,
   getFolderNoteCounts,
   moveNoteToFolder,
-} from '@/lib/api/foldersApi';
+} from '@cogni/api';
 import type { NoteFolder } from '@/types/note';
 
 export function useNoteFolders(workspaceId: number) {

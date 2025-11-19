@@ -1,17 +1,21 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { createClient } from '@supabase/supabase-js';
 import 'react-native-url-polyfill/auto';
 
+// For React Native Web, use browser's localStorage
 const ExpoWebSecureStoreAdapter = {
   getItem: (key: string) => {
-    console.debug('getItem', { key });
-    return AsyncStorage.getItem(key);
+    if (typeof window === 'undefined') return null;
+    return Promise.resolve(window.localStorage.getItem(key));
   },
   setItem: (key: string, value: string) => {
-    return AsyncStorage.setItem(key, value);
+    if (typeof window === 'undefined') return Promise.resolve();
+    window.localStorage.setItem(key, value);
+    return Promise.resolve();
   },
   removeItem: (key: string) => {
-    return AsyncStorage.removeItem(key);
+    if (typeof window === 'undefined') return Promise.resolve();
+    window.localStorage.removeItem(key);
+    return Promise.resolve();
   },
 };
 
