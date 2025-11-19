@@ -19,6 +19,7 @@ import { signOut } from '@cogni/api';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import type { UserProfile } from '@/types/userProfile';
 import GlassCard from '@/components/glass-card/GlassCard';
+import { isInMobileWebView, notifyNativeLogout } from '@/lib/webview';
 
 type UserMenuProps = {
   user: User | null;
@@ -59,6 +60,13 @@ export function UserMenu({ user }: UserMenuProps) {
   const handleSignOut = React.useCallback(async () => {
     setIsSigningOut(true);
     try {
+      // If in mobile webview, notify native app before signing out
+      if (isInMobileWebView()) {
+        notifyNativeLogout();
+        // Give native app time to receive the message
+        await new Promise(resolve => setTimeout(resolve, 100));
+      }
+
       await signOut();
       router.push('/login');
     } catch (error) {

@@ -6,6 +6,7 @@ import { ThemedText } from './themed-text';
 import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { Session } from '@supabase/supabase-js';
+import { router } from 'expo-router';
 
 interface WebAppViewProps {
   url?: string;
@@ -16,8 +17,24 @@ export default function WebAppView({ url = 'https://cogno.studio', session }: We
   const webViewRef = useRef<WebView>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [authInitialized, setAuthInitialized] = useState(false);
   const colorScheme = useColorScheme();
+
+  // Build auth URL with tokens for initial login
+  const getAuthUrl = () => {
+    if (!session?.access_token || !session?.refresh_token) {
+      return url; // No session, load base URL
+    }
+
+    // Encode tokens for URL
+    const params = new URLSearchParams({
+      access_token: session.access_token,
+      refresh_token: session.refresh_token,
+    });
+
+    return `${url}/mobile-auth?${params.toString()}`;
+  };
+
+  const authUrl = getAuthUrl();
 
   const handleError = (syntheticEvent: any) => {
     const { nativeEvent } = syntheticEvent;
@@ -29,57 +46,7 @@ export default function WebAppView({ url = 'https://cogno.studio', session }: We
   const handleRetry = () => {
     setError(null);
     setLoading(true);
-    setAuthInitialized(false);
     webViewRef.current?.reload();
-  };
-
-  // Generate the injected JavaScript to authenticate the session
-  const getInjectedJavaScript = () => {
-    if (!session?.access_token || !session?.refresh_token) {
-      return '';
-    }
-
-    return `
-      (async function() {
-        try {
-          console.log('Starting mobile authentication...');
-          const response = await fetch('${url}/api/mobile-auth', {
-            method: 'POST',
-            headers: { 
-              'Content-Type': 'application/json',
-              'Accept': 'application/json'
-            },
-            credentials: 'include',
-            body: JSON.stringify({
-              access_token: '${session.access_token}',
-              refresh_token: '${session.refresh_token}'
-            })
-          });
-          
-          const data = await response.json();
-          
-          if (response.ok && data.success) {
-            console.log('Mobile authentication successful');
-            window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'AUTH_SUCCESS' }));
-            // Reload to apply the cookies
-            window.location.href = '${url}/home';
-          } else {
-            console.error('Mobile authentication failed:', data.error);
-            window.ReactNativeWebView.postMessage(JSON.stringify({ 
-              type: 'AUTH_ERROR', 
-              error: data.error || 'Authentication failed' 
-            }));
-          }
-        } catch (e) {
-          console.error('Mobile auth exception:', e);
-          window.ReactNativeWebView.postMessage(JSON.stringify({ 
-            type: 'AUTH_ERROR', 
-            error: e.message || 'Network error' 
-          }));
-        }
-      })();
-      true;
-    `;
   };
 
   // Handle messages from the WebView
@@ -87,17 +54,69 @@ export default function WebAppView({ url = 'https://cogno.studio', session }: We
     try {
       const message = JSON.parse(event.nativeEvent.data);
       
-      if (message.type === 'AUTH_SUCCESS') {
-        console.log('Authentication successful in WebView');
-        setAuthInitialized(true);
-      } else if (message.type === 'AUTH_ERROR') {
-        console.error('Authentication error:', message.error);
-        setError(`Authentication failed: ${message.error}`);
-        setLoading(false);
+      console.log('Received message from WebView:', message);
+      
+      switch (message.type) {
+        case 'AUTH_REQUIRED':
+          // Session expired or invalid - go back to native login
+          console.log('Auth required, redirecting to login');
+          router.replace('/auth/login');
+          break;
+          
+        case 'LOGOUT':
+          // User logged out from web - clear native session and go to login
+          console.log('User logged out from web');
+          router.replace('/auth/login');
+          break;
+          
+        case 'NAVIGATION':
+          // Handle specific navigation requests from web
+          console.log('Navigation request:', message.path);
+          // Could handle special routes here if needed
+          break;
+          
+        default:
+          console.log('Unknown message type:', message.type);
       }
     } catch {
-      // Non-JSON message from WebView, ignore
+      // Non-JSON message, ignore
       console.log('Non-JSON message from WebView:', event.nativeEvent.data);
+    }
+  };
+
+  // Intercept navigation requests (iOS)
+  const handleShouldStartLoadWithRequest = (request: any) => {
+    const { url: requestUrl } = request;
+    
+    console.log('Navigation request:', requestUrl);
+    
+    // Block navigation to web login/register pages
+    if (requestUrl.includes('/login') || 
+        requestUrl.includes('/register') ||
+        requestUrl.includes('/mobile-auth-required')) {
+      console.log('Blocking web auth page, redirecting to native login');
+      
+      // Redirect to native login
+      router.replace('/auth/login');
+      return false; // Block the navigation
+    }
+    
+    // Allow all other navigation
+    return true;
+  };
+
+  // Handle navigation state changes (Android)
+  const handleNavigationStateChange = (navState: any) => {
+    if (Platform.OS === 'android') {
+      const { url: navUrl } = navState;
+      
+      if (navUrl && (navUrl.includes('/login') || 
+          navUrl.includes('/register') ||
+          navUrl.includes('/mobile-auth-required'))) {
+        console.log('Android: Blocking web auth page, redirecting to native login');
+        router.replace('/auth/login');
+        webViewRef.current?.stopLoading();
+      }
     }
   };
 
@@ -133,7 +152,14 @@ export default function WebAppView({ url = 'https://cogno.studio', session }: We
 
       <WebView
         ref={webViewRef}
-        source={{ uri: url }}
+        source={{ 
+          uri: authUrl,
+          // Add custom headers to identify mobile app
+          headers: {
+            'X-Mobile-App': 'true',
+            'User-Agent': `${Platform.OS === 'ios' ? 'iOS' : 'Android'} Cogni-Mobile/1.0`,
+          }
+        }}
         style={styles.webview}
         onLoadStart={() => {
           setLoading(true);
@@ -141,13 +167,6 @@ export default function WebAppView({ url = 'https://cogno.studio', session }: We
         }}
         onLoadEnd={() => {
           setLoading(false);
-          // If we have a session but haven't initialized auth yet, inject the auth script
-          if (session && !authInitialized) {
-            const script = getInjectedJavaScript();
-            if (script) {
-              webViewRef.current?.injectJavaScript(script);
-            }
-          }
         }}
         onError={handleError}
         onHttpError={(syntheticEvent) => {
@@ -155,6 +174,8 @@ export default function WebAppView({ url = 'https://cogno.studio', session }: We
           console.warn('WebView HTTP error:', nativeEvent.statusCode, nativeEvent.description);
         }}
         onMessage={handleMessage}
+        onShouldStartLoadWithRequest={handleShouldStartLoadWithRequest} // iOS navigation interception
+        onNavigationStateChange={handleNavigationStateChange} // Android navigation handling
         javaScriptEnabled={true}
         domStorageEnabled={true}
         startInLoadingState={true}
