@@ -1,10 +1,7 @@
-import React, { useRef, useState } from 'react';
-import { View, StyleSheet, ActivityIndicator, Platform, Text, TouchableOpacity } from 'react-native';
+import React, { useRef, useState, useEffect } from 'react';
+import { View, StyleSheet, ActivityIndicator, Platform, Text, TouchableOpacity, Animated } from 'react-native';
 import { WebView } from 'react-native-webview';
 import { ThemedView } from './themed-view';
-import { ThemedText } from './themed-text';
-import { Colors } from '@/constants/theme';
-import { useColorScheme } from '@/hooks/use-color-scheme';
 import { Session } from '@supabase/supabase-js';
 import { router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -19,8 +16,8 @@ export default function WebAppView({ url = 'https://cogno.studio', session }: We
   const webViewRef = useRef<WebView>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const colorScheme = useColorScheme();
   const insets = useSafeAreaInsets();
+  const slideAnim = useRef(new Animated.Value(1000)).current; // Start off-screen (below)
 
   // Build auth URL with tokens for initial login
   const getAuthUrl = () => {
@@ -38,6 +35,21 @@ export default function WebAppView({ url = 'https://cogno.studio', session }: We
   };
 
   const authUrl = getAuthUrl();
+
+  // Animate slide-in when loading completes
+  useEffect(() => {
+    if (!loading && !error) {
+      Animated.spring(slideAnim, {
+        toValue: 0,
+        useNativeDriver: true,
+        tension: 65,
+        friction: 10,
+      }).start();
+    } else {
+      // Reset to off-screen position when loading starts
+      slideAnim.setValue(1000);
+    }
+  }, [loading, error, slideAnim]);
 
   const handleError = (syntheticEvent: any) => {
     const { nativeEvent } = syntheticEvent;
@@ -142,34 +154,7 @@ export default function WebAppView({ url = 'https://cogno.studio', session }: We
         paddingTop: Math.max(insets.top - 10, 0), // Reduce top inset by 10px
         paddingBottom: Math.max(insets.bottom - 10, 0), // Reduce bottom inset by 10px
       }]}>
-        {loading && !error && (
-          <View style={styles.loadingContainer}>
-            <ActivityIndicator 
-              size="large" 
-              color={Colors[colorScheme ?? 'light'].tint} 
-            />
-            <ThemedText style={styles.loadingText}>Loading {url}...</ThemedText>
-          </View>
-        )}
-        
-        {error && (
-          <View style={styles.errorContainer}>
-            <ThemedText type="subtitle" style={styles.errorTitle}>
-              Connection Error
-            </ThemedText>
-            <ThemedText style={styles.errorText}>{error}</ThemedText>
-            <ThemedText style={styles.errorDetails}>
-              URL: {url}
-            </ThemedText>
-            <TouchableOpacity 
-              style={[styles.retryButton, { backgroundColor: Colors[colorScheme ?? 'light'].tint }]}
-              onPress={handleRetry}
-            >
-              <Text style={styles.retryButtonText}>Retry</Text>
-            </TouchableOpacity>
-          </View>
-        )}
-
+        {/* WebView - visually hidden until loaded */}
         <WebView
         ref={webViewRef}
         source={{ 
@@ -180,7 +165,7 @@ export default function WebAppView({ url = 'https://cogno.studio', session }: We
             'User-Agent': `${Platform.OS === 'ios' ? 'iOS' : 'Android'} Cogni-Mobile/1.0`,
           }
         }}
-        style={styles.webview}
+        style={[styles.webview, { opacity: loading || error ? 0 : 1 }]}
         onLoadStart={() => {
           setLoading(true);
           setError(null);
@@ -217,6 +202,32 @@ export default function WebAppView({ url = 'https://cogno.studio', session }: We
         thirdPartyCookiesEnabled={true}
         sharedCookiesEnabled={true}
       />
+
+        {/* Loading Screen - shown until page loads */}
+        {loading && !error && (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator 
+              size="large" 
+              color="#fff"
+            />
+            <Text style={styles.loadingText}>Loading...</Text>
+          </View>
+        )}
+        
+        {/* Error Screen */}
+        {error && (
+          <View style={styles.errorContainer}>
+            <Text style={styles.errorTitle}>Connection Error</Text>
+            <Text style={styles.errorText}>{error}</Text>
+            <Text style={styles.errorDetails}>URL: {url}</Text>
+            <TouchableOpacity 
+              style={styles.retryButton}
+              onPress={handleRetry}
+            >
+              <Text style={styles.retryButtonText}>Retry</Text>
+            </TouchableOpacity>
+          </View>
+        )}
       </ThemedView>
   );
 }
@@ -233,12 +244,13 @@ const styles = StyleSheet.create({
     ...StyleSheet.absoluteFillObject,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'transparent',
+    backgroundColor: '#000',
     zIndex: 1,
   },
   loadingText: {
     marginTop: 16,
     fontSize: 14,
+    color: '#fff',
     opacity: 0.7,
   },
   errorContainer: {
@@ -246,31 +258,36 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     padding: 20,
+    backgroundColor: '#000',
     zIndex: 2,
   },
   errorTitle: {
     fontSize: 20,
     fontWeight: 'bold',
+    color: '#fff',
     marginBottom: 12,
   },
   errorText: {
     fontSize: 14,
+    color: '#fff',
     textAlign: 'center',
     marginBottom: 8,
   },
   errorDetails: {
     fontSize: 12,
+    color: '#fff',
     textAlign: 'center',
     opacity: 0.6,
     marginBottom: 24,
   },
   retryButton: {
+    backgroundColor: '#fff',
     paddingHorizontal: 24,
     paddingVertical: 12,
     borderRadius: 8,
   },
   retryButtonText: {
-    color: '#fff',
+    color: '#000',
     fontSize: 16,
     fontWeight: '600',
   },
