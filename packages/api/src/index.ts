@@ -1,5 +1,5 @@
 // Export Supabase client
-export { createClient, getClient, resetClient, setClient } from './supabase/client';
+export { createClient, getClient, resetClient } from './supabase/client';
 
 // Export auth functions
 export {

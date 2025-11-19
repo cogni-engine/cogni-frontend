@@ -19,30 +19,11 @@ export default function WebAppView({ url = 'https://cogno.studio', session }: We
   const [authInitialized, setAuthInitialized] = useState(false);
   const colorScheme = useColorScheme();
 
-  // Validate URL on mount
-  React.useEffect(() => {
-    console.log('WebAppView initialized with URL:', url);
-    console.log('Session available:', !!session);
-    if (!url || url === '') {
-      console.error('Invalid URL provided to WebAppView');
-      setError('Invalid URL configuration');
-      setLoading(false);
-    }
-  }, [url, session]);
-
   const handleError = (syntheticEvent: any) => {
     const { nativeEvent } = syntheticEvent;
-    
-    // Ignore errors after successful authentication (navigation errors are expected)
-    if (authInitialized) {
-      console.log('Ignoring error after successful auth (expected during navigation)');
-      return;
-    }
-    
     setLoading(false);
-    const errorMsg = `Error loading ${url}: ${nativeEvent.description || 'Unknown error'}`;
-    setError(errorMsg);
-    console.error('WebView error:', { url, ...nativeEvent });
+    setError(`Error loading page: ${nativeEvent.description || 'Unknown error'}`);
+    console.error('WebView error:', nativeEvent);
   };
 
   const handleRetry = () => {
@@ -62,19 +43,6 @@ export default function WebAppView({ url = 'https://cogno.studio', session }: We
       (async function() {
         try {
           console.log('Starting mobile authentication...');
-          
-          // Wait for DOM to be ready
-          if (document.readyState === 'loading') {
-            await new Promise(resolve => {
-              document.addEventListener('DOMContentLoaded', resolve);
-            });
-          }
-          
-          // Show we're authenticating
-          if (document.body) {
-            document.body.innerHTML = '<div style="display: flex; justify-content: center; align-items: center; height: 100vh; font-family: system-ui;"><div style="text-align: center;"><div style="font-size: 18px; margin-bottom: 10px;">Authenticating...</div><div style="font-size: 14px; color: #666;">Setting up your session</div></div></div>';
-          }
-          
           const response = await fetch('${url}/api/mobile-auth', {
             method: 'POST',
             headers: { 
@@ -93,19 +61,14 @@ export default function WebAppView({ url = 'https://cogno.studio', session }: We
           if (response.ok && data.success) {
             console.log('Mobile authentication successful');
             window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'AUTH_SUCCESS' }));
-            // Small delay to ensure message is sent, then navigate
-            setTimeout(() => {
-              window.location.href = '${url}/home';
-            }, 100);
+            // Reload to apply the cookies
+            window.location.href = '${url}/home';
           } else {
             console.error('Mobile authentication failed:', data.error);
             window.ReactNativeWebView.postMessage(JSON.stringify({ 
               type: 'AUTH_ERROR', 
               error: data.error || 'Authentication failed' 
             }));
-            if (document.body) {
-              document.body.innerHTML = '<div style="display: flex; justify-content: center; align-items: center; height: 100vh; font-family: system-ui;"><div style="text-align: center;"><div style="font-size: 18px; color: red; margin-bottom: 10px;">Authentication Failed</div><div style="font-size: 14px; color: #666;">' + (data.error || 'Unknown error') + '</div></div></div>';
-            }
           }
         } catch (e) {
           console.error('Mobile auth exception:', e);
@@ -113,9 +76,6 @@ export default function WebAppView({ url = 'https://cogno.studio', session }: We
             type: 'AUTH_ERROR', 
             error: e.message || 'Network error' 
           }));
-          if (document.body) {
-            document.body.innerHTML = '<div style="display: flex; justify-content: center; align-items: center; height: 100vh; font-family: system-ui;"><div style="text-align: center;"><div style="font-size: 18px; color: red; margin-bottom: 10px;">Connection Error</div><div style="font-size: 14px; color: #666;">' + e.message + '</div></div></div>';
-          }
         }
       })();
       true;
@@ -128,20 +88,12 @@ export default function WebAppView({ url = 'https://cogno.studio', session }: We
       const message = JSON.parse(event.nativeEvent.data);
       
       if (message.type === 'AUTH_SUCCESS') {
-        console.log('Authentication successful, marking as initialized');
+        console.log('Authentication successful in WebView');
         setAuthInitialized(true);
-        setLoading(false);
-        // Navigate using WebView navigation instead of window.location
-        // This avoids the "Load failed" error
       } else if (message.type === 'AUTH_ERROR') {
-        // Only show error if it's not related to navigation
-        if (!message.error?.includes('Load failed') && !authInitialized) {
-          console.error('Authentication error:', message.error);
-          setError(`Authentication failed: ${message.error}`);
-          setLoading(false);
-        } else {
-          console.log('Ignoring navigation-related error:', message.error);
-        }
+        console.error('Authentication error:', message.error);
+        setError(`Authentication failed: ${message.error}`);
+        setLoading(false);
       }
     } catch {
       // Non-JSON message from WebView, ignore
@@ -187,40 +139,19 @@ export default function WebAppView({ url = 'https://cogno.studio', session }: We
           setLoading(true);
           setError(null);
         }}
-        onLoadEnd={(event) => {
-          const loadedUrl = event.nativeEvent.url;
-          console.log('WebView loaded:', loadedUrl, 'auth initialized:', authInitialized);
+        onLoadEnd={() => {
           setLoading(false);
-          
-          // Only inject auth script if we're on the login page and not yet authenticated
-          const isLoginPage = loadedUrl.includes('/login');
-          
-          if (session && !authInitialized && isLoginPage) {
+          // If we have a session but haven't initialized auth yet, inject the auth script
+          if (session && !authInitialized) {
             const script = getInjectedJavaScript();
             if (script) {
-              console.log('Injecting authentication script on login page...');
-              // Use a small timeout to ensure DOM is ready
-              setTimeout(() => {
-                webViewRef.current?.injectJavaScript(script);
-              }, 100);
+              webViewRef.current?.injectJavaScript(script);
             }
-          } else if (authInitialized && isLoginPage) {
-            // If we're authenticated but back on login page, redirect to home
-            console.log('Already authenticated, redirecting from login to home...');
-            webViewRef.current?.injectJavaScript(`
-              window.location.href = '${url}/home';
-              true;
-            `);
           }
         }}
         onError={handleError}
         onHttpError={(syntheticEvent) => {
           const { nativeEvent } = syntheticEvent;
-          // Ignore HTTP errors after successful auth (might be redirects)
-          if (authInitialized) {
-            console.log('HTTP status during navigation:', nativeEvent.statusCode);
-            return;
-          }
           console.warn('WebView HTTP error:', nativeEvent.statusCode, nativeEvent.description);
         }}
         onMessage={handleMessage}
@@ -244,10 +175,6 @@ export default function WebAppView({ url = 'https://cogno.studio', session }: We
         // Enable third-party cookies for session management
         thirdPartyCookiesEnabled={true}
         sharedCookiesEnabled={true}
-        // Inject auth script as soon as possible
-        injectedJavaScriptBeforeContentLoaded={
-          session && !authInitialized ? getInjectedJavaScript() : undefined
-        }
       />
     </ThemedView>
   );

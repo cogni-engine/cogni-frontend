@@ -9,7 +9,6 @@ export interface UseChatOptions {
   apiBaseUrl?: string;
   selectedThreadId: number | null;
   onThreadSelect: (threadId: number | null) => void;
-  headers?: HeadersInit;
 }
 
 /**
@@ -21,22 +20,20 @@ export function useChat({
   workspaceId, 
   apiBaseUrl,
   selectedThreadId,
-  onThreadSelect,
-  headers
+  onThreadSelect 
 }: UseChatOptions) {
 
   // Thread management
   const threadsHook = useThreads({ workspaceId });
 
   // Message management
-  const messagesHook = useMessages({ threadId: selectedThreadId, apiBaseUrl, headers });
+  const messagesHook = useMessages({ threadId: selectedThreadId, apiBaseUrl });
 
   // Message sending
   const sendMessageHook = useSendMessage({
     threadId: selectedThreadId,
     messages: messagesHook.messages,
     apiBaseUrl,
-    headers,
     onMessageUpdate: messagesHook.setMessages,
     onComplete: () => {
       if (selectedThreadId) {

@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import useSWR from 'swr';
-import { getNote, updateNote, parseNoteText } from '@cogni/api';
+import { getNote, updateNote, parseNoteText } from '@/lib/api/notesApi';
 import type { NoteWithParsed } from '@/types/note';
 
 const AUTOSAVE_DELAY = 700;

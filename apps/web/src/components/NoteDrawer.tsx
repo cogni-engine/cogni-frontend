@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation';
 import GlassCard from '@/components/glass-card/GlassCard';
 import { useGlobalUI } from '@/contexts/GlobalUIContext';
 import type { Note } from '@/types/note';
-import { getNote } from '@cogni/api';
+import { getNote } from '@/lib/api/notesApi';
 import { TiptapRenderer } from '@/components/tiptap/TiptapRenderer';
 
 interface NoteDrawerProps {

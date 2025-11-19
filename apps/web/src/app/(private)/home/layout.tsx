@@ -4,13 +4,11 @@ import { ReactNode, useEffect } from 'react';
 import { ThreadProvider, useThreadContext } from '@/contexts/ThreadContext';
 import { HomeUIProvider, useHomeUI } from '@/contexts/HomeUIContext';
 import ThreadSidebar from '@/features/thread/ThreadSidebar';
-import { useThreads } from '@cogni/api';
-import { getPersonalWorkspaceId } from '@cogni/utils';
+import { useThreads } from '@/hooks/useThreads';
 import { onHeaderEvent, HEADER_EVENTS } from '@/lib/headerEvents';
 
 function HomeLayoutContent({ children }: { children: ReactNode }) {
-  const workspaceId = getPersonalWorkspaceId();
-  const { createThread } = useThreads({ workspaceId });
+  const { createThread } = useThreads();
   const { setSelectedThreadId } = useThreadContext();
   const { toggleThreadSidebar, toggleNotificationPanel } = useHomeUI();
 
