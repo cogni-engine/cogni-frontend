@@ -10,7 +10,7 @@ export async function getNotifications(
   userId: string
 ): Promise<Notification[]> {
   const { data, error } = await supabase
-    .from('notifications')
+    .from('ai_notifications')
     .select('*')
     .eq('user_id', userId)
     .order('due_date', { ascending: true });
@@ -28,7 +28,7 @@ export async function getScheduledNotifications(
   const now = new Date().toISOString();
 
   const { data, error } = await supabase
-    .from('notifications')
+    .from('ai_notifications')
     .select('*')
     .eq('user_id', userId)
     .eq('status', 'scheduled')
@@ -49,7 +49,7 @@ export async function getPastDueNotifications(
   const now = new Date().toISOString();
 
   const { data, error } = await supabase
-    .from('notifications')
+    .from('ai_notifications')
     .select('*')
     .eq('user_id', userId)
     .in('status', ['scheduled', 'sent'])
@@ -81,7 +81,7 @@ export async function getNotification(
   id: number
 ): Promise<Notification | null> {
   const { data, error } = await supabase
-    .from('notifications')
+    .from('ai_notifications')
     .select('*')
     .eq('id', id)
     .single();
@@ -104,7 +104,7 @@ export async function markNotificationAsSent(
   id: number
 ): Promise<Notification> {
   const { data, error } = await supabase
-    .from('notifications')
+    .from('ai_notifications')
     .update({
       status: 'sent' as NotificationStatus,
       updated_at: new Date().toISOString(),
@@ -126,7 +126,7 @@ export async function markMultipleNotificationsAsSent(
   if (ids.length === 0) return [];
 
   const { data, error } = await supabase
-    .from('notifications')
+    .from('ai_notifications')
     .update({
       status: 'sent' as NotificationStatus,
       updated_at: new Date().toISOString(),
@@ -146,7 +146,7 @@ export async function updateNotificationStatus(
   status: NotificationStatus
 ): Promise<Notification> {
   const { data, error } = await supabase
-    .from('notifications')
+    .from('ai_notifications')
     .update({
       status,
       updated_at: new Date().toISOString(),
@@ -164,7 +164,7 @@ export async function resolveNotificationsByTask(
   taskId: number
 ): Promise<void> {
   const { error } = await supabase
-    .from('notifications')
+    .from('ai_notifications')
     .update({
       status: 'resolved' as NotificationStatus,
       updated_at: new Date().toISOString(),
@@ -184,7 +184,7 @@ export async function getUnreadNotificationCount(
   const now = new Date().toISOString();
 
   const { data, error } = await supabase
-    .from('notifications')
+    .from('ai_notifications')
     .select('task_id, status, due_date')
     .eq('user_id', userId)
     .in('status', ['scheduled', 'sent'])
@@ -216,7 +216,10 @@ export async function getUnreadNotificationCount(
  * Delete a notification
  */
 export async function deleteNotification(id: number): Promise<void> {
-  const { error } = await supabase.from('notifications').delete().eq('id', id);
+  const { error } = await supabase
+    .from('ai_notifications')
+    .delete()
+    .eq('id', id);
 
   if (error) throw error;
 }
