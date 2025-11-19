@@ -5,9 +5,9 @@ import { cookies } from 'next/headers';
 export default async function MobileAuthPage({
   searchParams,
 }: {
-  searchParams: { access_token?: string; refresh_token?: string };
+  searchParams: Promise<{ access_token?: string; refresh_token?: string }>;
 }) {
-  const { access_token, refresh_token } = searchParams;
+  const { access_token, refresh_token } = await searchParams;
 
   // Validate tokens are present
   if (!access_token || !refresh_token) {
