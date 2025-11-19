@@ -7,6 +7,8 @@ import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { Session } from '@supabase/supabase-js';
 import { router } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { supabase } from '@/lib/supabase';
 
 interface WebAppViewProps {
   url?: string;
@@ -18,6 +20,7 @@ export default function WebAppView({ url = 'https://cogno.studio', session }: We
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const colorScheme = useColorScheme();
+  const insets = useSafeAreaInsets();
 
   // Build auth URL with tokens for initial login
   const getAuthUrl = () => {
@@ -50,7 +53,7 @@ export default function WebAppView({ url = 'https://cogno.studio', session }: We
   };
 
   // Handle messages from the WebView
-  const handleMessage = (event: any) => {
+  const handleMessage = async (event: any) => {
     try {
       const message = JSON.parse(event.nativeEvent.data);
       
@@ -66,6 +69,20 @@ export default function WebAppView({ url = 'https://cogno.studio', session }: We
         case 'LOGOUT':
           // User logged out from web - clear native session and go to login
           console.log('User logged out from web');
+          
+          // Clear native Supabase session
+          try {
+            await supabase.auth.signOut();
+            console.log('Native session cleared');
+          } catch (error) {
+            console.error('Error clearing native session:', error);
+          }
+          
+          // Clear WebView by reloading to base URL (no auth)
+          // This clears cookies and forces fresh login
+          webViewRef.current?.reload();
+          
+          // Navigate to login
           router.replace('/auth/login');
           break;
           
@@ -121,36 +138,39 @@ export default function WebAppView({ url = 'https://cogno.studio', session }: We
   };
 
   return (
-    <ThemedView style={styles.container}>
-      {loading && !error && (
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator 
-            size="large" 
-            color={Colors[colorScheme ?? 'light'].tint} 
-          />
-          <ThemedText style={styles.loadingText}>Loading {url}...</ThemedText>
-        </View>
-      )}
-      
-      {error && (
-        <View style={styles.errorContainer}>
-          <ThemedText type="subtitle" style={styles.errorTitle}>
-            Connection Error
-          </ThemedText>
-          <ThemedText style={styles.errorText}>{error}</ThemedText>
-          <ThemedText style={styles.errorDetails}>
-            URL: {url}
-          </ThemedText>
-          <TouchableOpacity 
-            style={[styles.retryButton, { backgroundColor: Colors[colorScheme ?? 'light'].tint }]}
-            onPress={handleRetry}
-          >
-            <Text style={styles.retryButtonText}>Retry</Text>
-          </TouchableOpacity>
-        </View>
-      )}
+      <ThemedView style={[styles.container, { 
+        paddingTop: Math.max(insets.top - 10, 0), // Reduce top inset by 10px
+        paddingBottom: Math.max(insets.bottom - 10, 0), // Reduce bottom inset by 10px
+      }]}>
+        {loading && !error && (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator 
+              size="large" 
+              color={Colors[colorScheme ?? 'light'].tint} 
+            />
+            <ThemedText style={styles.loadingText}>Loading {url}...</ThemedText>
+          </View>
+        )}
+        
+        {error && (
+          <View style={styles.errorContainer}>
+            <ThemedText type="subtitle" style={styles.errorTitle}>
+              Connection Error
+            </ThemedText>
+            <ThemedText style={styles.errorText}>{error}</ThemedText>
+            <ThemedText style={styles.errorDetails}>
+              URL: {url}
+            </ThemedText>
+            <TouchableOpacity 
+              style={[styles.retryButton, { backgroundColor: Colors[colorScheme ?? 'light'].tint }]}
+              onPress={handleRetry}
+            >
+              <Text style={styles.retryButtonText}>Retry</Text>
+            </TouchableOpacity>
+          </View>
+        )}
 
-      <WebView
+        <WebView
         ref={webViewRef}
         source={{ 
           uri: authUrl,
@@ -197,13 +217,14 @@ export default function WebAppView({ url = 'https://cogno.studio', session }: We
         thirdPartyCookiesEnabled={true}
         sharedCookiesEnabled={true}
       />
-    </ThemedView>
+      </ThemedView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: '#000',
   },
   webview: {
     flex: 1,
