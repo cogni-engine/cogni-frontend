@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "Cogni",
-    "slug": "cogni-frontend",
+    "slug": "cogni-mobile",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
