@@ -32,9 +32,11 @@
         "INTERNET",
         "ACCESS_NETWORK_STATE",
         "INTERNET",
-        "ACCESS_NETWORK_STATE"
+        "ACCESS_NETWORK_STATE",
+        "POST_NOTIFICATIONS"
       ],
-      "package": "com.cogno.ai.mobile"
+      "package": "com.cogno.ai.mobile",
+      "googleServicesFile": "./google-services.json"
     },
     "web": {
       "output": "static",
@@ -54,7 +56,16 @@
           }
         }
       ],
-      "expo-secure-store"
+      "expo-secure-store",
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/images/icon.png",
+          "color": "#ffffff",
+          "sounds": [],
+          "mode": "production"
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,
