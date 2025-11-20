@@ -6,7 +6,11 @@ export interface UseMessageAutoScrollOptions {
   scrollContainerRef: React.RefObject<HTMLDivElement | null>;
   streamingContainerRef?: React.RefObject<HTMLDivElement | null>;
   delay?: number;
+  headerHeight?: number;
 }
+
+// Default header height in pixels (pt-20 = 5rem = 80px)
+const DEFAULT_HEADER_HEIGHT = 60;
 
 /**
  * Hook to automatically scroll to the bottom when new messages arrive
@@ -17,6 +21,7 @@ export function useMessageAutoScroll({
   scrollContainerRef,
   streamingContainerRef,
   delay = 100,
+  headerHeight = DEFAULT_HEADER_HEIGHT,
 }: UseMessageAutoScrollOptions) {
   const prevMessageCountRef = useRef(0);
 
@@ -33,9 +38,10 @@ export function useMessageAutoScroll({
 
         if (streamingContainerRef?.current) {
           // If streaming container exists, scroll to align its top with viewport top
+          // Account for the header height by subtracting it from the offset
           const offsetTop = streamingContainerRef.current.offsetTop;
           scrollContainerRef.current.scrollTo({
-            top: offsetTop,
+            top: offsetTop - headerHeight,
             behavior: 'smooth',
           });
         } else {
@@ -51,5 +57,11 @@ export function useMessageAutoScroll({
     }
 
     prevMessageCountRef.current = currentCount;
-  }, [messages, scrollContainerRef, streamingContainerRef, delay]);
+  }, [
+    messages,
+    scrollContainerRef,
+    streamingContainerRef,
+    delay,
+    headerHeight,
+  ]);
 }

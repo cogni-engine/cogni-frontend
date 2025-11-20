@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "Cogni",
-    "slug": "cogni-mobile",
+    "slug": "cogni-frontend",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -17,7 +17,7 @@
         },
         "ITSAppUsesNonExemptEncryption": false
       },
-      "bundleIdentifier": "com.cogno.ai.mobile"
+      "bundleIdentifier": "com.cogno.ai.cognifrontend"
     },
     "android": {
       "adaptiveIcon": {

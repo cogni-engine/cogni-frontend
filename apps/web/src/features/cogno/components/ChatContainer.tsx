@@ -51,6 +51,33 @@ const ChatContainer = forwardRef<HTMLDivElement, ChatContainerProps>(
 
     const hasStreamingMessages = streamingMessages.length > 0;
 
+    // If no streaming messages, find recent messages after the last user message
+    let recentMessages: (Message | AIMessage)[] = [];
+    let messagesBeforeRecent: (Message | AIMessage)[] = committedMessages;
+
+    if (!hasStreamingMessages && committedMessages.length > 0) {
+      // Find the index of the most recent user message
+      let lastUserMessageIndex = -1;
+      for (let i = committedMessages.length - 1; i >= 0; i--) {
+        if (committedMessages[i].role === 'user') {
+          lastUserMessageIndex = i;
+          break;
+        }
+      }
+
+      // If we found a user message, split the messages
+      if (lastUserMessageIndex !== -1) {
+        messagesBeforeRecent = committedMessages.slice(0, lastUserMessageIndex);
+        recentMessages = committedMessages.slice(lastUserMessageIndex);
+      }
+    }
+
+    // Determine what to show in the streaming/recent container
+    const containerMessages = hasStreamingMessages
+      ? streamingMessages
+      : recentMessages;
+    const shouldShowContainer = containerMessages.length > 0;
+
     return (
       <div className='flex flex-col flex-1 bg-linear-to-br from-slate-950 via-black to-slate-950 relative overflow-hidden'>
         {/* メッセージエリア - GPU最適化 */}
@@ -64,8 +91,8 @@ const ChatContainer = forwardRef<HTMLDivElement, ChatContainerProps>(
             <EmptyState />
           ) : (
             <>
-              {/* Committed messages with small bottom spacing */}
-              {committedMessages.map((message, i) => {
+              {/* Messages before the recent/streaming section */}
+              {messagesBeforeRecent.map((message, i) => {
                 const messageId =
                   'id' in message && typeof message.id === 'number'
                     ? message.id
@@ -84,24 +111,26 @@ const ChatContainer = forwardRef<HTMLDivElement, ChatContainerProps>(
                 );
               })}
 
-              {/* Small spacing after committed messages when not streaming */}
-              {!hasStreamingMessages && <div className='h-16'></div>}
+              {/* Small spacing when no container to show */}
+              {!shouldShowContainer && <div className='h-16'></div>}
 
-              {/* Streaming messages in a separate container with min-height of screen */}
-              {hasStreamingMessages && (
+              {/* Streaming/Recent messages container with min-height of container minus header */}
+              {shouldShowContainer && (
                 <div
                   ref={streamingContainerRef}
-                  className='min-h-screen flex flex-col'
+                  className='flex flex-col pb-32'
+                  style={{ minHeight: 'calc(100%)' }}
                 >
-                  {streamingMessages.map((message, i) => {
-                    const messageId = `streaming-${message.id}-${i}`;
+                  {containerMessages.map((message, i) => {
+                    const messageId = hasStreamingMessages
+                      ? `streaming-${message.id}-${i}`
+                      : `recent-${message.id}-${i}`;
                     const key = messageId;
-                    console.log('🎨 Streaming message:', message.content);
 
                     return (
                       <div
                         key={key}
-                        data-message-index={committedMessages.length + i}
+                        data-message-index={messagesBeforeRecent.length + i}
                       >
                         <MessageItem
                           message={message}
