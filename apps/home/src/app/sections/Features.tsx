@@ -37,7 +37,7 @@ export function Features() {
           {features.cards.map(card => (
             <div
               key={card.title}
-              className='min-h-[80vh] flex items-center py-16'
+              className='min-h-[60vh] flex items-center py-16'
             >
               <FeatureCard
                 label={card.label}

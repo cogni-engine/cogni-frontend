@@ -1,10 +1,32 @@
 'use client';
 
+import { useState, useEffect } from 'react';
+import Image from 'next/image';
+import { Button } from '../components/Button';
 import { useLanguage } from '../context/language-context';
 
 export function Hero() {
   const { copy } = useLanguage();
   const hero = copy.hero;
+
+  // Featuresセクションの4つの画像
+  const featureImages = [
+    '/edu/assets/feature_timer.png',
+    '/edu/assets/feature_notify.png',
+    '/edu/assets/feature_chat.png',
+    '/edu/assets/feature_notes.png',
+  ];
+
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+
+  // 画像を順番に切り替える
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentImageIndex(prev => (prev + 1) % featureImages.length);
+    }, 4000); // 4秒ごとに切り替え
+
+    return () => clearInterval(interval);
+  }, [featureImages.length]);
 
   return (
     <section className='relative overflow-hidden bg-[#05060b]'>
@@ -20,37 +42,32 @@ export function Hero() {
           </p>
         </div>
         <div className='flex flex-wrap justify-center gap-4'>
-          <a
-            href={hero.primaryCta.href}
-            className='inline-flex items-center justify-center rounded-full px-6 py-3 text-sm font-medium transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 bg-white text-slate-950 hover:bg-white/80 hover:text-slate-950 focus-visible:outline-white'
-          >
+          <Button as='link' href={hero.primaryCta.href}>
             {hero.primaryCta.label}
-          </a>
-          <a
-            href={hero.secondaryCta.href}
-            className='inline-flex items-center justify-center rounded-full px-6 py-3 text-sm font-medium transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 border border-white/40 bg-transparent text-white hover:border-white focus-visible:outline-white'
-          >
+          </Button>
+          <Button as='link' href={hero.secondaryCta.href} variant='secondary'>
             {hero.secondaryCta.label}
-          </a>
+          </Button>
         </div>
-        <div className='relative w-full max-w-4xl'>
-          <div className='relative aspect-video w-full overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-white/10 via-white/5 to-transparent'>
-            {/* Placeholder for hero image */}
-            <div className='flex h-full items-center justify-center text-white/40'>
-              <svg
-                className='h-24 w-24'
-                fill='none'
-                stroke='currentColor'
-                viewBox='0 0 24 24'
+        <div className='relative w-full max-w-3xl'>
+          <div className='relative aspect-[4/3] w-full overflow-hidden rounded-3xl'>
+            {/* 4つの画像を順番に表示 */}
+            {featureImages.map((src, index) => (
+              <div
+                key={src}
+                className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${
+                  index === currentImageIndex ? 'opacity-100' : 'opacity-0'
+                }`}
               >
-                <path
-                  strokeLinecap='round'
-                  strokeLinejoin='round'
-                  strokeWidth={1}
-                  d='M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z'
+                <Image
+                  src={src}
+                  alt={`Feature ${index + 1}`}
+                  fill
+                  className='object-cover'
+                  priority={index === 0}
                 />
-              </svg>
-            </div>
+              </div>
+            ))}
           </div>
         </div>
       </div>

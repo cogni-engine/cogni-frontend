@@ -66,7 +66,7 @@ export function FeatureCard({
             {label}
           </span>
         </div>
-        <h3 className='mb-6 text-4xl font-semibold text-white'>{title}</h3>
+        <h3 className='mb-6 text-3xl font-semibold text-white'>{title}</h3>
         <p className='text-base leading-relaxed text-slate-300'>
           {description}
         </p>

@@ -89,6 +89,25 @@ export type LocalizedCopy = {
     privacy: string;
     terms: string;
   };
+  pricing: {
+    title: string;
+    description: string;
+    bestValueLabel: string;
+    plans: Array<{
+      id: string;
+      name: string;
+      description: string;
+      price: string;
+      priceNote?: string;
+      ctaLabel: string;
+      ctaHref: string;
+      isBestValue?: boolean;
+      features: Array<{
+        label: string;
+        included: boolean;
+      }>;
+    }>;
+  };
 };
 
 export const LOCALIZED_COPY: Record<Language, LocalizedCopy> = {
@@ -253,6 +272,110 @@ export const LOCALIZED_COPY: Record<Language, LocalizedCopy> = {
       privacy: 'Privacy',
       terms: 'Terms',
     },
+    pricing: {
+      title: 'Choose a plan built for your needs',
+      description:
+        'Start with the free plan to get started, and upgrade anytime later.',
+      bestValueLabel: 'Best Value',
+      plans: [
+        {
+          id: 'free',
+          name: 'Free',
+          description: 'Try and get started with basic features',
+          price: '¥0',
+          priceNote: 'Always free',
+          ctaLabel: 'Get started with Cogno',
+          ctaHref: '/contact',
+          features: [
+            { label: 'Basic features (limited)', included: true },
+            { label: 'Lightweight data storage', included: true },
+            { label: 'Personal use (minimum)', included: true },
+            { label: 'Email support (low priority)', included: true },
+            { label: '1 user only', included: true },
+            { label: 'API/Integrations (limited)', included: true },
+            { label: 'Advanced analytics & management', included: false },
+            { label: 'Team features', included: false },
+            {
+              label: 'High-speed processing & priority servers',
+              included: false,
+            },
+          ],
+        },
+        {
+          id: 'pro',
+          name: 'Pro',
+          description: 'For individuals who want to use it seriously',
+          price: '¥1,050',
+          priceNote: 'Per user per month (monthly)',
+          ctaLabel: 'Get started with Cogno',
+          ctaHref: '/contact',
+          features: [
+            { label: 'All Free features', included: true },
+            { label: 'High-speed processing', included: true },
+            { label: 'Extended storage capacity', included: true },
+            { label: 'Advanced tools unlocked', included: true },
+            { label: '3-5 workspace participation', included: true },
+            { label: 'Mobile sync', included: true },
+            { label: 'Priority support', included: true },
+            { label: 'API usage (limited)', included: true },
+            { label: 'Team management', included: true },
+            { label: 'Invite multiple users', included: true },
+            { label: 'Security features (SSO, etc.)', included: true },
+          ],
+        },
+        {
+          id: 'business',
+          name: 'Business',
+          description: 'Enable team operations and organizational management',
+          price: '¥2,160',
+          priceNote: 'Per user per month (monthly)',
+          ctaLabel: 'Get started with Cogno',
+          ctaHref: '/contact',
+          isBestValue: true,
+          features: [
+            { label: 'All Pro features', included: true },
+            { label: 'Team workspaces', included: true },
+            { label: 'Multi-member permission management', included: true },
+            { label: 'Organizational project management', included: true },
+            { label: 'Roles and permissions (Admin / Member)', included: true },
+            { label: 'Secure sharing (internal only, etc.)', included: true },
+            { label: 'Team activity logs', included: true },
+            { label: 'Enhanced API usage', included: true },
+            { label: 'SSO (paid option available)', included: true },
+            { label: 'Data retention & backup', included: true },
+            { label: 'Enterprise integration management', included: true },
+            { label: 'SLA', included: true },
+          ],
+        },
+        {
+          id: 'enterprise',
+          name: 'Enterprise',
+          description:
+            'Meet enterprise-wide requirements for governance and high security',
+          price: '',
+          ctaLabel: 'Contact sales',
+          ctaHref: '/contact',
+          features: [
+            { label: 'All Business features', included: true },
+            { label: 'Advanced security (SAML / SCIM / SOC2)', included: true },
+            { label: 'Organization-wide user management', included: true },
+            {
+              label: 'Custom permissions & integration management',
+              included: true,
+            },
+            { label: 'Large-scale user support', included: true },
+            { label: 'Dedicated customer success', included: true },
+            { label: 'SLA (99.9% uptime guarantee)', included: true },
+            {
+              label: 'Dedicated servers / dedicated cloud (optional)',
+              included: true,
+            },
+            { label: 'Audit logs', included: true },
+            { label: 'Legal & compliance support', included: true },
+          ],
+        },
+      ],
+    },
   },
   ja: {
     hero: {
@@ -406,6 +529,106 @@ export const LOCALIZED_COPY: Record<Language, LocalizedCopy> = {
     footer: {
       privacy: 'プライバシー',
       terms: '利用規約',
+    },
+    pricing: {
+      title: 'ビジネス向けに構築されている有料プランを選びましょう',
+      description:
+        'まずはフリープランで基本から始めて、あとからいつでもアップグレードすることもできます。',
+      bestValueLabel: 'ベストバリュー',
+      plans: [
+        {
+          id: 'free',
+          name: 'フリー',
+          description: 'お試し・導入・ユーザー獲得',
+          price: '¥0',
+          priceNote: 'ずっと無料',
+          ctaLabel: 'Cognoを始める',
+          ctaHref: '/contact',
+          features: [
+            { label: '基本機能の利用（制限あり）', included: true },
+            { label: '軽量なデータ保存容量', included: true },
+            { label: '個人向けの最低限の使用', included: true },
+            { label: 'メールサポート（低優先度）', included: true },
+            { label: '1ユーザーのみ', included: true },
+            { label: 'API/連携は制限', included: true },
+            { label: '高度な分析・管理機能', included: false },
+            { label: 'チーム機能', included: false },
+            { label: '高速処理・優先サーバー', included: false },
+          ],
+        },
+        {
+          id: 'pro',
+          name: 'プロ',
+          description: '個人ユーザーが本気で継続利用できる状態',
+          price: '¥1,050',
+          priceNote: 'ユーザー1人あたりの月額（月払い）',
+          ctaLabel: 'Cognoを始める',
+          ctaHref: '/contact',
+          features: [
+            { label: 'Freeの全機能', included: true },
+            { label: '高速処理', included: true },
+            { label: '保存容量の拡張', included: true },
+            { label: '高機能ツールの解放', included: true },
+            { label: '3〜5ワークスペース参加可能', included: true },
+            { label: 'モバイル同期', included: true },
+            { label: '優先サポート', included: true },
+            { label: 'API利用（制限あり）', included: true },
+            { label: 'チーム管理', included: true },
+            { label: '複数ユーザーの招待', included: true },
+            { label: 'セキュリティ機能追加（SSOなど）', included: true },
+          ],
+        },
+        {
+          id: 'business',
+          name: 'ビジネス',
+          description: 'チーム運用・組織管理を可能にする',
+          price: '¥2,160',
+          priceNote: 'ユーザー1人あたりの月額（月払い）',
+          ctaLabel: 'Cognoを始める',
+          ctaHref: '/contact',
+          isBestValue: true,
+          features: [
+            { label: 'Proの全機能', included: true },
+            { label: 'チームワークスペース', included: true },
+            { label: '複数メンバーの権限管理', included: true },
+            { label: '組織プロジェクトの管理機能', included: true },
+            { label: 'ロールと権限（Admin / Member）', included: true },
+            { label: 'セキュア共有（社内限定など）', included: true },
+            { label: 'チームアクティビティログ', included: true },
+            { label: 'API利用強化', included: true },
+            { label: 'SSO（有料の場合が多い）', included: true },
+            { label: 'データ保持・バックアップ', included: true },
+            { label: '大規模組織向けの統合管理', included: true },
+            { label: 'SLA', included: true },
+          ],
+        },
+        {
+          id: 'enterprise',
+          name: 'エンタープライズ',
+          description: '企業全体の導入・ガバナンス・高セキュリティを満たす',
+          price: '',
+          ctaLabel: '営業担当者に問い合わせる',
+          ctaHref: '/contact',
+          features: [
+            { label: 'Businessの全機能', included: true },
+            {
+              label: '高度なセキュリティ（SAML / SCIM / SOC2）',
+              included: true,
+            },
+            { label: '組織横断のユーザー管理', included: true },
+            { label: 'カスタム権限・統合管理', included: true },
+            { label: '大規模ユーザー数対応', included: true },
+            { label: '専任カスタマーサクセス', included: true },
+            { label: 'SLA（99.9%アップタイム保証など）', included: true },
+            {
+              label: '専用サーバー / 専用クラウド（オプション）',
+              included: true,
+            },
+            { label: '監査ログ', included: true },
+            { label: '法務・コンプライアンス対応', included: true },
+          ],
+        },
+      ],
     },
   },
 };
