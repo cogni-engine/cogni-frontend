@@ -76,6 +76,9 @@ jobs:
       - name: Check Prettier formatting (web only)
         run: pnpm --filter web format:check
 
+      - name: Build workspace packages
+        run: pnpm --filter "@cogni/*" build
+
       - name: Type check (web only)
         run: pnpm --filter web type-check
 
