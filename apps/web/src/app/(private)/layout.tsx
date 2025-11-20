@@ -1,6 +1,6 @@
 'use client';
 import React, { useState, useEffect } from 'react';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import Header from '@/components/layout/Header';
 import BottomNav from '@/components/layout/BottomNav';
 import { GlobalUIProvider, useGlobalUI } from '@/contexts/GlobalUIContext';
@@ -19,6 +19,7 @@ import NoteDrawer from '@/components/NoteDrawer';
 
 function LayoutContent({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const router = useRouter();
   const {
     isInputActive,
     isDrawerOpen,
@@ -71,6 +72,39 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
     setupUserSession();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Global postMessage listener for mobile app navigation
+  useEffect(() => {
+    const handleMobileNavigation = (event: MessageEvent) => {
+      try {
+        const data = event.data;
+
+        if (data.type === 'NAVIGATE_TO_MESSAGE') {
+          const { workspaceId, messageId } = data;
+
+          if (workspaceId && messageId) {
+            console.log('🌐 Global navigation from mobile:', {
+              workspaceId,
+              messageId,
+            });
+            // Use Next.js router to navigate (client-side, no page reload)
+            router.push(
+              `/workspace/${workspaceId}/chat?messageId=${messageId}`
+            );
+          }
+        }
+      } catch (error) {
+        // Ignore errors from unrelated postMessage events
+        console.debug('Error handling mobile navigation:', error);
+      }
+    };
+
+    window.addEventListener('message', handleMobileNavigation);
+
+    return () => {
+      window.removeEventListener('message', handleMobileNavigation);
+    };
+  }, [router]);
 
   const showTopLevelChrome =
     pathname === '/home' ||

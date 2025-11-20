@@ -16,7 +16,7 @@ export default function AuthCallback() {
     }, 1000);
 
     return () => clearTimeout(timer);
-  }, []);
+  }, [router]);
 
   return (
     <View style={styles.container}>

@@ -3,9 +3,11 @@ import { View, StyleSheet, ActivityIndicator, Platform, Text, TouchableOpacity, 
 import { WebView } from 'react-native-webview';
 import { ThemedView } from './themed-view';
 import { Session } from '@supabase/supabase-js';
-import { router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { supabase } from '@/lib/supabase';
+import type { NotificationData } from '@/lib/notifications';
+import { generateNavigationScript } from '@/lib/deep-linking';
 
 interface WebAppViewProps {
   url?: string;
@@ -16,8 +18,12 @@ export default function WebAppView({ url = 'https://cogno.studio', session }: We
   const webViewRef = useRef<WebView>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [webViewReady, setWebViewReady] = useState(false);
   const insets = useSafeAreaInsets();
   const slideAnim = useRef(new Animated.Value(1000)).current; // Start off-screen (below)
+  const params = useLocalSearchParams();
+  const pendingNavigationRef = useRef<NotificationData | null>(null);
+  const lastProcessedParamsRef = useRef<string>('');
 
   // Build auth URL with tokens for initial login
   const getAuthUrl = () => {
@@ -35,6 +41,85 @@ export default function WebAppView({ url = 'https://cogno.studio', session }: We
   };
 
   const authUrl = getAuthUrl();
+
+  // Check if we have notification data in params and trigger navigation
+  useEffect(() => {
+    if (params.action === 'navigate_to_message' && params.workspaceId && params.messageId) {
+      // Create a unique key for these params to prevent duplicate processing
+      const paramsKey = `${params.workspaceId}-${params.messageId}`;
+      
+      // Skip if we've already processed these exact params
+      if (lastProcessedParamsRef.current === paramsKey) {
+        console.log('⏭️  Skipping duplicate navigation for:', paramsKey);
+        return;
+      }
+      
+      console.log('🆕 New notification navigation params:', {
+        workspaceId: params.workspaceId,
+        messageId: params.messageId,
+      });
+      
+      const workspaceId = parseInt(params.workspaceId as string, 10);
+      const messageId = parseInt(params.messageId as string, 10);
+      
+      // Mark as processed immediately to prevent duplicates
+      lastProcessedParamsRef.current = paramsKey;
+      
+      // Only navigate if WebView is ready
+      if (webViewReady && webViewRef.current) {
+        console.log('🚀 WebView is ready, sending postMessage for workspace', workspaceId, 'message', messageId);
+        
+        // Use postMessage to notify web app (no page reload!)
+        const notificationData: NotificationData = {
+          type: 'workspace_message',
+          workspaceId: workspaceId,
+          messageId: messageId,
+        };
+        const navigationScript = generateNavigationScript(notificationData);
+        
+        if (navigationScript) {
+          console.log('✅ Injecting postMessage script');
+          webViewRef.current.injectJavaScript(navigationScript);
+        }
+      } else {
+        // WebView not ready yet, store for later
+        console.log('⏰ WebView not ready, storing for later');
+        const notificationData: NotificationData = {
+          type: 'workspace_message',
+          workspaceId: workspaceId,
+          messageId: messageId,
+        };
+        pendingNavigationRef.current = notificationData;
+      }
+    }
+  }, [params.action, params.workspaceId, params.messageId, webViewReady, url]);
+
+  // Handle pending navigation after WebView loads (for initial app launch)
+  useEffect(() => {
+    if (webViewReady && pendingNavigationRef.current && webViewRef.current) {
+      const data = pendingNavigationRef.current;
+      console.log('🎬 WebView just became ready, processing pending navigation:', data);
+      
+      if (data.workspaceId && data.messageId) {
+        console.log('🚀 Sending postMessage for workspace', data.workspaceId, 'message', data.messageId);
+        
+        // Use postMessage to notify web app (no page reload!)
+        const navigationScript = generateNavigationScript(data);
+        
+        if (navigationScript) {
+          // Wait a bit for auth and page to be fully ready
+          setTimeout(() => {
+            if (webViewRef.current) {
+              console.log('✅ Injecting postMessage script');
+              webViewRef.current.injectJavaScript(navigationScript);
+              pendingNavigationRef.current = null; // Clear after use
+              console.log('🧹 Cleared pending navigation');
+            }
+          }, 1500);
+        }
+      }
+    }
+  }, [webViewReady]);
 
   // Animate slide-in when loading completes
   useEffect(() => {
@@ -172,6 +257,7 @@ export default function WebAppView({ url = 'https://cogno.studio', session }: We
         }}
         onLoadEnd={() => {
           setLoading(false);
+          setWebViewReady(true);
         }}
         onError={handleError}
         onHttpError={(syntheticEvent) => {

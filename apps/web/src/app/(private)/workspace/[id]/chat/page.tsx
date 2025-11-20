@@ -1,6 +1,6 @@
 'use client';
 
-import { useParams } from 'next/navigation';
+import { useParams, useSearchParams, useRouter } from 'next/navigation';
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { useWorkspaceChat } from '@/hooks/useWorkspaceChat';
 import { createClient } from '@/lib/supabase/browserClient';
@@ -14,6 +14,8 @@ import ScrollableView from '@/components/layout/ScrollableView';
 
 export default function WorkspaceChatPage() {
   const params = useParams();
+  const searchParams = useSearchParams();
+  const router = useRouter();
   const workspaceId = parseInt(params.id as string);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [showScrollButton, setShowScrollButton] = useState(false);
@@ -194,6 +196,69 @@ export default function WorkspaceChatPage() {
       }, 600);
     }
   }, []);
+
+  // Listen for navigation commands from mobile app via postMessage
+  useEffect(() => {
+    const handlePostMessage = (event: MessageEvent) => {
+      // Validate origin for security (in production, check specific origins)
+      // For mobile WebView, origin might be 'file://' or similar
+
+      try {
+        const data = event.data;
+
+        if (data.type === 'NAVIGATE_TO_MESSAGE') {
+          const targetWorkspaceId = data.workspaceId;
+          const targetMessageId = data.messageId;
+
+          console.log('Received navigation command:', {
+            targetWorkspaceId,
+            targetMessageId,
+          });
+
+          // Check if we're on the right workspace
+          if (targetWorkspaceId && targetWorkspaceId !== workspaceId) {
+            // Navigate to the correct workspace first
+            router.push(
+              `/workspace/${targetWorkspaceId}/chat?messageId=${targetMessageId}`
+            );
+          } else if (targetMessageId) {
+            // We're on the right workspace, just scroll to message
+            scrollToMessage(targetMessageId);
+          }
+        }
+      } catch (error) {
+        // Ignore errors from unrelated postMessage events
+        console.debug('Error processing postMessage:', error);
+      }
+    };
+
+    window.addEventListener('message', handlePostMessage);
+
+    return () => {
+      window.removeEventListener('message', handlePostMessage);
+    };
+  }, [workspaceId, scrollToMessage, router]);
+
+  // Handle navigation from URL query parameters (e.g., from notifications)
+  useEffect(() => {
+    const messageIdParam = searchParams.get('messageId');
+
+    if (messageIdParam && messages.length > 0) {
+      const messageId = parseInt(messageIdParam, 10);
+
+      if (!isNaN(messageId)) {
+        // Wait a bit for messages to render
+        setTimeout(() => {
+          scrollToMessage(messageId);
+
+          // Clear the query parameter after navigating
+          const newUrl = new URL(window.location.href);
+          newUrl.searchParams.delete('messageId');
+          router.replace(newUrl.pathname + newUrl.search, { scroll: false });
+        }, 500);
+      }
+    }
+  }, [searchParams, messages.length, scrollToMessage, router]);
 
   // Check if user is near bottom (within threshold)
   // Note: With column-reverse, scrollTop 0 or positive small values are at the bottom
