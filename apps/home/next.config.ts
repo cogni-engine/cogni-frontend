@@ -1,0 +1,20 @@
+import type { NextConfig } from 'next';
+
+const nextConfig: NextConfig = {
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'gtcwgwlgcphwhapmnerq.supabase.co',
+        pathname: '/storage/v1/object/**', // 👈 sign と public の両方を含む
+      },
+      {
+        protocol: 'https',
+        hostname: '**.supabase.in',
+        pathname: '/storage/v1/object/**',
+      },
+    ],
+  },
+};
+
+export default nextConfig;
