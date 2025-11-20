@@ -77,10 +77,10 @@ jobs:
         run: pnpm --filter web format:check
 
       - name: Build workspace packages
-        run: pnpm --filter "@cogni/*" build
+        run: pnpm --filter "@cogni/web" --filter "@cogni/api" --filter "@cogni/types" --filter "@cogni/utils" build
 
       - name: Type check (web only)
         run: pnpm --filter web type-check
 
-      - name: Build all apps (Turborepo)
-        run: pnpm turbo run build
+      - name: Build web app (Turborepo)
+        run: pnpm turbo run build --filter="@cogni/web"
