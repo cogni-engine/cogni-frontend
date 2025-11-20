@@ -36,7 +36,7 @@ function RootNavigator() {
       // Redirect to home if logged in
       router.replace('/(tabs)');
     }
-  }, [isLoggedIn, isLoading, segments]);
+  }, [isLoggedIn, isLoading, segments, router]);
 
   // Register for push notifications when user is logged in
   useEffect(() => {
@@ -45,7 +45,7 @@ function RootNavigator() {
         console.error('Error registering for push notifications:', error);
       });
     }
-  }, [isLoggedIn, isLoading, router]);
+  }, [isLoggedIn, isLoading]);
 
   // Set up notification listeners
   useEffect(() => {
@@ -58,12 +58,12 @@ function RootNavigator() {
     const cleanup = setupNotificationListeners(
       // On notification received (foreground)
       (notification) => {
-        console.log('Notification received in foreground:', notification);
+        console.log('📬 Notification received in foreground');
       },
       // On notification tapped (user interaction)
       (response) => {
-        console.log('Notification tapped:', response);
         const data = response.notification.request.content.data as NotificationData;
+        console.log('🔔 Notification tapped:', data);
         handleNotificationResponse(data, router);
       }
     );

@@ -13,13 +13,10 @@ export function handleNotificationResponse(
     return;
   }
 
-  console.log('Handling notification response:', data);
-
   switch (data.type) {
     case 'workspace_message':
       if (data.workspaceId && data.messageId) {
-        // Navigate to workspace chat with message ID
-        // The WebView will handle scrolling to the specific message
+        console.log('📍 Navigating to workspace', data.workspaceId, 'message', data.messageId);
         router.push({
           pathname: '/(tabs)',
           params: {
