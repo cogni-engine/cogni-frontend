@@ -64,6 +64,27 @@ export type LocalizedCopy = {
     primaryCta: { label: string; href: string };
     secondaryCta: { label: string; href: string };
   };
+  contact: {
+    title: string;
+    description: string;
+    form: {
+      firstName: string;
+      lastName: string;
+      companyName: string;
+      workMail: string;
+      jobTitle: string;
+      expectedUserCount: string;
+      expectedUserCountOptions: string[];
+      subject: string;
+      subjectOptions: string[];
+      phoneNumber: string;
+      message: string;
+      submit: string;
+      submitting: string;
+      successMessage: string;
+      errorMessage: string;
+    };
+  };
   footer: {
     privacy: string;
     terms: string;
@@ -211,6 +232,41 @@ export const LOCALIZED_COPY: Record<Language, LocalizedCopy> = {
         'Launch Cogni in minutes and experience AI-powered automation of planning and execution.',
       primaryCta: { label: 'Get started now', href: '/contact' },
       secondaryCta: { label: 'View demo', href: '/demo' },
+    },
+    contact: {
+      title: 'Get started with Cogno',
+      description:
+        'Fill out the form below and our team will get back to you within 24 hours.',
+      form: {
+        firstName: 'First Name',
+        lastName: 'Last Name',
+        companyName: 'Company Name',
+        workMail: 'Work Email',
+        jobTitle: 'Job Title',
+        expectedUserCount: 'Expected User Count',
+        expectedUserCountOptions: [
+          '1-10 users',
+          '11-50 users',
+          '51-100 users',
+          '101-500 users',
+          '500+ users',
+        ],
+        subject: 'Inquiry Type',
+        subjectOptions: [
+          'Discuss Cogno implementation',
+          'Discuss which Cogno plan is suitable',
+          'Have questions about the product',
+          'Need support',
+          'Discuss compliance planning',
+          'Other',
+        ],
+        phoneNumber: 'Phone Number',
+        message: 'Message (Optional)',
+        submit: 'Submit',
+        submitting: 'Submitting...',
+        successMessage: 'Thank you! We will contact you soon.',
+        errorMessage: 'Something went wrong. Please try again.',
+      },
     },
     footer: {
       privacy: 'Privacy',
@@ -425,6 +481,41 @@ export const LOCALIZED_COPY: Record<Language, LocalizedCopy> = {
         '数分でCogniを起動し、AIによる計画と実行の自動化を体験しましょう。',
       primaryCta: { label: '今すぐ始める', href: `${NEXT_PUBLIC_APP_URL}` },
       secondaryCta: { label: 'デモを見る', href: '/demo' },
+    },
+    contact: {
+      title: 'Cognoを始める',
+      description:
+        '以下のフォームにご記入ください。24時間以内にご連絡いたします。',
+      form: {
+        firstName: '名',
+        lastName: '姓',
+        companyName: '会社名',
+        workMail: '仕事用メールアドレス',
+        jobTitle: '役職',
+        expectedUserCount: '予想ユーザー数',
+        expectedUserCountOptions: [
+          '1-10名',
+          '11-50名',
+          '51-100名',
+          '101-500名',
+          '500名以上',
+        ],
+        subject: 'お問い合わせ内容',
+        subjectOptions: [
+          'Cognoの導入について相談したい',
+          'どのCognoプランが適しているか相談したい',
+          '製品に関して質問したい',
+          'サポートのお願いをしたい',
+          'コンプライアンス計画について相談したい',
+          'その他',
+        ],
+        phoneNumber: '電話番号',
+        message: 'メッセージ（任意）',
+        submit: '送信',
+        submitting: '送信中...',
+        successMessage: 'ありがとうございます！すぐにご連絡いたします。',
+        errorMessage: 'エラーが発生しました。もう一度お試しください。',
+      },
     },
     footer: {
       privacy: 'プライバシー',

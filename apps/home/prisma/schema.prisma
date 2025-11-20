@@ -1,0 +1,29 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["multiSchema"]
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+  schemas   = ["crm"]
+}
+
+model hp_leads {
+  id                  BigInt   @id @default(autoincrement())
+  created_at          DateTime @default(now()) @db.Timestamptz(6)
+  first_name          String
+  last_name           String
+  company_name        String
+  work_mail           String
+  job_title           String
+  expected_user_count BigInt
+  subject             String
+  phone_number        BigInt
+  message             String?
+
+  @@map("hp_leads")
+  @@schema("crm")
+}
+

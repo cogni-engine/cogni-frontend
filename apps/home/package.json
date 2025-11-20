@@ -1,23 +1,28 @@
 {
-  "name": "web",
+  "name": "@cogni/home",
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --turbopack -p 3001",
+    "dev": "next dev --turbopack -p 3002",
     "build": "next build --turbopack",
-    "start": "next start -p 3001",
+    "start": "next start -p 3002",
     "lint": "eslint . --ext .ts,.tsx,.js,.jsx",
     "lint:fix": "eslint . --ext .ts,.tsx,.js,.jsx --fix",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "type-check": "tsc --noEmit",
+    "postinstall": "prisma generate",
     "prepare": "husky"
   },
   "dependencies": {
     "lucide-react": "^0.545.0",
+    "@prisma/client": "^6.0.0",
+    "@supabase/ssr": "^0.5.2",
+    "@supabase/supabase-js": "^2.48.1",
     "next": "15.5.4",
     "react": "19.1.0",
     "react-dom": "19.1.0",
+    "resend": "^4.0.0",
     "tailwind-merge": "^2.5.1",
     "tailwindcss-animate": "^1.0.7",
     "tippy.js": "^6.3.7"
@@ -39,6 +44,7 @@
     "lint-staged": "^16.2.6",
     "postcss": "^8.4.47",
     "prettier": "^3.6.2",
+    "prisma": "^6.0.0",
     "tailwindcss": "^4",
     "turbo": "^2.6.0",
     "typescript": "^5"
