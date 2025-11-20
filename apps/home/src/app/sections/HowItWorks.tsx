@@ -16,7 +16,7 @@ export function HowItWorks() {
       <div className='pointer-events-none absolute inset-x-0 bottom-0 h-64 bg-gradient-to-t from-white/10 to-transparent' />
       <div className='relative mx-auto max-w-6xl space-y-12 px-6 md:px-8 py-20'>
         <SectionTitle title={howItWorks.title} align='center' />
-        <div className='grid gap-6 md:grid-cols-3'>
+        <div className='grid gap-4 md:grid-cols-3'>
           {howItWorks.steps.map(step => (
             <Card
               key={step.title}

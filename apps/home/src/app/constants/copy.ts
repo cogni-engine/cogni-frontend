@@ -71,11 +71,11 @@ export type LocalizedCopy = {
 export const LOCALIZED_COPY: Record<Language, LocalizedCopy> = {
   en: {
     hero: {
-      title: 'Cognoが、動かす',
-      description: 'AIが計画から管理、実行までを自動化する次世代ワークスペース',
-      primaryCta: { label: 'Cognoを始める', href: '/contact' },
+      title: 'Cogno moves you forward',
+      description: 'Next-generation workspace where AI automates planning, management, and execution',
+      primaryCta: { label: 'Get started with Cogno', href: '/contact' },
       secondaryCta: {
-        label: 'プランを比較する',
+        label: 'Compare plans',
         href: '/pricing',
       },
     },
@@ -104,40 +104,40 @@ export const LOCALIZED_COPY: Record<Language, LocalizedCopy> = {
       ],
     },
     features: {
-      title: 'AIで「計画・アサイン・実行・管理」が一箇所に。',
+      title: 'Plan, assign, execute, and manage—all in one place with AI',
       description: '',
       cards: [
         {
-          label: '計画・実行',
+          label: 'Planning & Execution',
           iconType: 'timer',
-          title: 'Cogno で、計画から実行まで。',
+          title: 'From planning to execution with Cogno',
           description:
-            'Cognoは、チームのメンバーや、期限まで把握したAIエージェントです。優先順位づけや計画から資料作成、学習や実行まで一気貫通。伝えたいことは、音声でも。自動的にタイマーを起動するなど、その時の状況に応じてサポートを得る。',
+            'Cogno is an AI agent that understands your team members and deadlines. It handles everything from prioritization and planning to document creation, learning, and execution. You can even communicate via voice. It automatically starts timers and provides support based on your current situation.',
           asset: '/edu/assets/feature_timer.png',
           focus: 'bottom',
         },
         {
-          label: '通知・リマインド',
+          label: 'Notifications & Reminders',
           iconType: 'notify',
-          title: 'AI通知・リマインドで動く。',
+          title: 'Powered by AI notifications and reminders',
           description:
-            '進捗具合や締切を考えて、AIが計画性を持って通知。個人のやることでも、チームプロジェクトでも。完了しているかの確認まで行い、マネジメント工数を減らします。',
+            'AI sends strategic notifications based on progress and deadlines. Whether it\'s personal tasks or team projects, it even checks completion status to reduce management overhead.',
           asset: '/edu/assets/feature_notify.png',
         },
         {
-          label: 'コラボレーション',
+          label: 'Collaboration',
           iconType: 'chat',
-          title: 'ChatとNoteで、チームでやることを整理',
+          title: 'Organize team work with Chat and Notes',
           description:
-            'ワークスペース内でAIとメンバーが連携。進捗と意思決定を一箇所で管理。Chat機能では、リアルタイムでメンバー同士がコミュニケーションを取りながら、AIが会話の内容を理解し、必要な情報を整理。Note機能では、アイデアや議事録、タスクの詳細を記録し、チーム全体で共有。',
+            'AI and team members collaborate within workspaces. Manage progress and decisions in one place. Chat enables real-time communication while AI understands conversations and organizes information. Notes capture ideas, meeting minutes, and task details for team-wide sharing.',
           asset: '/edu/assets/feature_chat.png',
         },
         {
-          label: 'タスク管理',
+          label: 'Task Management',
           iconType: 'task',
-          title: 'タスクの作成・アサインも、AIで',
+          title: 'AI-powered task creation and assignment',
           description:
-            'Noteから自動で期限を抽出し、タスクとして整理。もちろん、Noteの作成もAIと一緒に行えます。会議の議事録やチャットの内容から、AIが自動的にタスクを識別。期限や優先順位も自動で設定され、プロジェクトの進捗に応じて調整されます。手動での入力や管理の手間を大幅に削減し、チーム全体の生産性を向上させます。',
+            'Automatically extract deadlines from Notes and organize them as tasks. You can also create Notes with AI. AI identifies tasks from meeting minutes and chat content, automatically setting deadlines and priorities that adjust based on project progress. This dramatically reduces manual input and management effort, boosting team productivity.',
           asset: '/edu/assets/feature_notes.png',
         },
       ],
@@ -164,34 +164,34 @@ export const LOCALIZED_COPY: Record<Language, LocalizedCopy> = {
       ],
     },
     useCases: {
-      title: 'Built for teams that can’t miss',
+      title: 'AI management that fits any team',
       cases: [
         {
-          title: 'Product launches',
+          title: 'Education & Learning Management',
           description:
-            'Coordinate roadmap, marketing, and ops deadlines with AI-guarded focus.',
+            'AI automatically optimizes learning time based on student and instructor progress.',
           asset: '/edu/assets/usecase_education.png',
         },
         {
-          title: 'Client delivery',
+          title: 'Care & Healthcare',
           description:
-            'Give every stakeholder a live view of priorities and next actions.',
+            'AI centrally manages care schedules and handovers between staff members.',
           asset: '/edu/assets/usecase_healthcare.png',
         },
         {
-          title: 'Internal operations',
+          title: 'Personal Management',
           description:
-            'Automate recurring workflows and keep the entire organization aligned.',
+            'Your personal AI supports everything from planning and notifications to reflection.',
           asset: '/edu/assets/usecase_personal.png',
         },
       ],
     },
     cta: {
-      title: 'Ready for an AI command center?',
+      title: 'AI manages your time',
       description:
-        'Spin up a workspace in minutes and let Cogni orchestrate the plan, the people, and the pace.',
-      primaryCta: { label: 'Start the conversation', href: '/contact' },
-      secondaryCta: { label: 'View product tour', href: '/demo' },
+        'Launch Cogni in minutes and experience AI-powered automation of planning and execution.',
+      primaryCta: { label: 'Get started now', href: '/contact' },
+      secondaryCta: { label: 'View demo', href: '/demo' },
     },
     footer: {
       privacy: 'Privacy',
