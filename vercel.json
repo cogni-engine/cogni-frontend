@@ -1,6 +1,6 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "buildCommand": "pnpm turbo run build --filter=web",
+  "buildCommand": "pnpm turbo run build --filter=@cogni/web",
   "outputDirectory": "apps/web/.next",
   "installCommand": "pnpm install --no-frozen-lockfile",
   "framework": null,
