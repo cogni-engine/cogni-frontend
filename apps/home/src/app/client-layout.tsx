@@ -6,15 +6,16 @@ import { useMemo } from 'react';
 import type { ReactNode } from 'react';
 
 import { LanguageProvider, useLanguage } from './context/language-context';
-import { SECTION_IDS } from './constants/copy';
+import { SECTION_IDS, type Language } from './constants/copy';
 
 type ClientLayoutProps = {
   children: ReactNode;
+  initialLanguage: Language;
 };
 
-export function ClientLayout({ children }: ClientLayoutProps) {
+export function ClientLayout({ children, initialLanguage }: ClientLayoutProps) {
   return (
-    <LanguageProvider>
+    <LanguageProvider initialLanguage={initialLanguage}>
       <div className='flex min-h-screen flex-col bg-[#05060b] text-white'>
         <Header />
         <main className='flex-1 pt-24'>{children}</main>

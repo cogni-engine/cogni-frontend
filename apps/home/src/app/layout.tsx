@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
 import './globals.css';
 import { ClientLayout } from './client-layout';
+import { detectLanguage } from './lib/language';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -37,17 +38,20 @@ export const viewport: Viewport = {
   themeColor: '#0B0F1A',
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  // Detect language on the server for SSR
+  const language = await detectLanguage();
+
   return (
-    <html lang='en'>
+    <html lang={language}>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <ClientLayout>{children}</ClientLayout>
+        <ClientLayout initialLanguage={language}>{children}</ClientLayout>
       </body>
     </html>
   );

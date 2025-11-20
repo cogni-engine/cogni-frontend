@@ -6,6 +6,8 @@ export const SECTION_IDS = {
 
 export type Language = 'en' | 'ja';
 
+export const NEXT_PUBLIC_APP_URL = process.env.NEXT_PUBLIC_APP_URL;
+
 export type LocalizedCopy = {
   hero: {
     title: string;
@@ -72,7 +74,8 @@ export const LOCALIZED_COPY: Record<Language, LocalizedCopy> = {
   en: {
     hero: {
       title: 'Cogno moves you forward',
-      description: 'Next-generation workspace where AI automates planning, management, and execution',
+      description:
+        'Next-generation workspace where AI automates planning, management, and execution',
       primaryCta: { label: 'Get started with Cogno', href: '/contact' },
       secondaryCta: {
         label: 'Compare plans',
@@ -121,7 +124,7 @@ export const LOCALIZED_COPY: Record<Language, LocalizedCopy> = {
           iconType: 'notify',
           title: 'Powered by AI notifications and reminders',
           description:
-            'AI sends strategic notifications based on progress and deadlines. Whether it\'s personal tasks or team projects, it even checks completion status to reduce management overhead.',
+            "AI sends strategic notifications based on progress and deadlines. Whether it's personal tasks or team projects, it even checks completion status to reduce management overhead.",
           asset: '/edu/assets/feature_notify.png',
         },
         {
@@ -170,19 +173,16 @@ export const LOCALIZED_COPY: Record<Language, LocalizedCopy> = {
           title: 'Education & Learning Management',
           description:
             'AI automatically optimizes learning time based on student and instructor progress.',
-          asset: '/edu/assets/usecase_education.png',
         },
         {
           title: 'Care & Healthcare',
           description:
             'AI centrally manages care schedules and handovers between staff members.',
-          asset: '/edu/assets/usecase_healthcare.png',
         },
         {
           title: 'Personal Management',
           description:
             'Your personal AI supports everything from planning and notifications to reflection.',
-          asset: '/edu/assets/usecase_personal.png',
         },
       ],
     },
@@ -202,7 +202,7 @@ export const LOCALIZED_COPY: Record<Language, LocalizedCopy> = {
     hero: {
       title: 'Cognoが、動かす',
       description: 'AIが計画から実行までを自動化する次世代ワークスペース',
-      primaryCta: { label: 'Cognoを始める', href: '/contact' },
+      primaryCta: { label: 'Cognoを始める', href: `${NEXT_PUBLIC_APP_URL}` },
       secondaryCta: {
         label: 'プランを比較する',
         href: '/pricing',
@@ -294,17 +294,14 @@ export const LOCALIZED_COPY: Record<Language, LocalizedCopy> = {
         {
           title: '教育・学習管理',
           description: '生徒や講師の進捗に合わせてAIが学習時間を自動で最適化。',
-          asset: '/edu/assets/usecase_education.png',
         },
         {
           title: '介護・ヘルスケア',
           description: 'ケアスケジュールやスタッフ間の引き継ぎをAIが一元管理。',
-          asset: '/edu/assets/usecase_healthcare.png',
         },
         {
           title: 'パーソナルマネジメント',
           description: '自分専用のAIが、計画・通知・振り返りまで全てサポート。',
-          asset: '/edu/assets/usecase_personal.png',
         },
       ],
     },
@@ -312,7 +309,7 @@ export const LOCALIZED_COPY: Record<Language, LocalizedCopy> = {
       title: 'AIがあなたの時間をマネジメントします',
       description:
         '数分でCogniを起動し、AIによる計画と実行の自動化を体験しましょう。',
-      primaryCta: { label: '今すぐ始める', href: '/contact' },
+      primaryCta: { label: '今すぐ始める', href: `${NEXT_PUBLIC_APP_URL}` },
       secondaryCta: { label: 'デモを見る', href: '/demo' },
     },
     footer: {

@@ -1,8 +1,5 @@
 'use client';
 
-import Image from 'next/image';
-
-import { Button } from '../components/Button';
 import { useLanguage } from '../context/language-context';
 
 export function Hero() {
@@ -23,23 +20,37 @@ export function Hero() {
           </p>
         </div>
         <div className='flex flex-wrap justify-center gap-4'>
-          <Button as='link' href={hero.primaryCta.href}>
+          <a
+            href={hero.primaryCta.href}
+            className='inline-flex items-center justify-center rounded-full px-6 py-3 text-sm font-medium transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 bg-white text-slate-950 hover:bg-white/80 hover:text-slate-950 focus-visible:outline-white'
+          >
             {hero.primaryCta.label}
-          </Button>
-          <Button as='link' href={hero.secondaryCta.href} variant='secondary'>
+          </a>
+          <a
+            href={hero.secondaryCta.href}
+            className='inline-flex items-center justify-center rounded-full px-6 py-3 text-sm font-medium transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 border border-white/40 bg-transparent text-white hover:border-white focus-visible:outline-white'
+          >
             {hero.secondaryCta.label}
-          </Button>
+          </a>
         </div>
         <div className='relative w-full max-w-4xl'>
-          <div className='relative aspect-video w-full overflow-hidden rounded-3xl border border-white/10 bg-white/5'>
-            {/* 動画・画像スペース */}
-            <Image
-              src='/edu/assets/hero.png'
-              alt='Cogno workspace'
-              fill
-              className='object-cover'
-              priority
-            />
+          <div className='relative aspect-video w-full overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-white/10 via-white/5 to-transparent'>
+            {/* Placeholder for hero image */}
+            <div className='flex h-full items-center justify-center text-white/40'>
+              <svg
+                className='h-24 w-24'
+                fill='none'
+                stroke='currentColor'
+                viewBox='0 0 24 24'
+              >
+                <path
+                  strokeLinecap='round'
+                  strokeLinejoin='round'
+                  strokeWidth={1}
+                  d='M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z'
+                />
+              </svg>
+            </div>
           </div>
         </div>
       </div>

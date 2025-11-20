@@ -5,7 +5,7 @@ import {
   useCallback,
   useContext,
   useMemo,
-  useState,
+  useOptimistic,
   type ReactNode,
 } from 'react';
 
@@ -14,6 +14,7 @@ import {
   type Language,
   type LocalizedCopy,
 } from '../constants/copy';
+import { setLanguagePreference } from '../actions/language';
 
 type LanguageContextValue = {
   language: Language;
@@ -24,21 +25,48 @@ type LanguageContextValue = {
 
 const LanguageContext = createContext<LanguageContextValue | null>(null);
 
-export function LanguageProvider({ children }: { children: ReactNode }) {
-  const [language, setLanguage] = useState<Language>('en');
+type LanguageProviderProps = {
+  children: ReactNode;
+  initialLanguage: Language;
+};
+
+export function LanguageProvider({
+  children,
+  initialLanguage,
+}: LanguageProviderProps) {
+  // Use optimistic updates for instant UI feedback while server action completes
+  const [optimisticLanguage, setOptimisticLanguage] =
+    useOptimistic(initialLanguage);
+
+  const setLanguage = useCallback(
+    async (newLanguage: Language) => {
+      // Optimistically update the UI
+      setOptimisticLanguage(newLanguage);
+
+      // Update the server-side cookie
+      try {
+        await setLanguagePreference(newLanguage);
+      } catch (error) {
+        console.error('Failed to set language preference:', error);
+        // On error, the page will refresh and revert to the cookie value
+      }
+    },
+    [setOptimisticLanguage]
+  );
 
   const toggleLanguage = useCallback(() => {
-    setLanguage(prev => (prev === 'en' ? 'ja' : 'en'));
-  }, []);
+    const newLanguage = optimisticLanguage === 'en' ? 'ja' : 'en';
+    setLanguage(newLanguage);
+  }, [optimisticLanguage, setLanguage]);
 
   const value = useMemo<LanguageContextValue>(() => {
     return {
-      language,
+      language: optimisticLanguage,
       setLanguage,
       toggleLanguage,
-      copy: LOCALIZED_COPY[language],
+      copy: LOCALIZED_COPY[optimisticLanguage],
     };
-  }, [language, toggleLanguage]);
+  }, [optimisticLanguage, setLanguage, toggleLanguage]);
 
   return (
     <LanguageContext.Provider value={value}>

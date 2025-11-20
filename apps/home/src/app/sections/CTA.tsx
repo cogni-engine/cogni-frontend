@@ -18,12 +18,18 @@ export function CTA() {
           align='center'
         />
         <div className='flex flex-wrap justify-center gap-4'>
-          <Button as='link' href={cta.primaryCta.href}>
+          <a
+            href={cta.primaryCta.href}
+            className='inline-flex items-center justify-center rounded-full px-6 py-3 text-sm font-medium transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 bg-white text-slate-950 hover:bg-white/80 hover:text-slate-950 focus-visible:outline-white'
+          >
             {cta.primaryCta.label}
-          </Button>
-          <Button as='link' href={cta.secondaryCta.href} variant='secondary'>
+          </a>
+          <a
+            href={cta.secondaryCta.href}
+            className='inline-flex items-center justify-center rounded-full px-6 py-3 text-sm font-medium transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 border border-white/40 bg-transparent text-white hover:border-white focus-visible:outline-white'
+          >
             {cta.secondaryCta.label}
-          </Button>
+          </a>
         </div>
       </div>
     </section>
