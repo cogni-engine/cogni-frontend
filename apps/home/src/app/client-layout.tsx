@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import Link from 'next/link';
 import { useMemo } from 'react';
 import type { ReactNode } from 'react';
@@ -7,11 +8,11 @@ import type { ReactNode } from 'react';
 import { LanguageProvider, useLanguage } from './context/language-context';
 import { SECTION_IDS } from './constants/copy';
 
-type EduLayoutProps = {
+type ClientLayoutProps = {
   children: ReactNode;
 };
 
-export default function EduLayout({ children }: EduLayoutProps) {
+export function ClientLayout({ children }: ClientLayoutProps) {
   return (
     <LanguageProvider>
       <div className='flex min-h-screen flex-col bg-[#05060b] text-white'>
@@ -41,9 +42,16 @@ function Header() {
       <div className='mx-auto flex w-full max-w-6xl items-center justify-between px-6 py-4'>
         <Link
           href='/'
-          className='text-2xl font-semibold tracking-wide text-white'
+          className='flex items-center gap-3 text-2xl font-semibold tracking-wide text-white'
         >
-          Cogni Engine
+          <Image
+            src='/favicon.jpg'
+            alt='Cogno'
+            width={32}
+            height={32}
+            className='h-8 w-8'
+          />
+          Cogno
         </Link>
         <div className='flex items-center gap-6 text-sm text-slate-300'>
           <nav className='hidden items-center gap-6 md:flex'>

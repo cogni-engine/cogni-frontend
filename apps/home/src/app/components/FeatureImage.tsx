@@ -23,13 +23,13 @@ export function FeatureImage({
 }: FeatureImageProps) {
   return (
     <div
-      className={`relative w-full overflow-hidden rounded-3xl border border-white/10 bg-white/5 shadow-lg shadow-black/30 aspect-[4/3] ${className}`}
+      className={`relative w-full overflow-hidden rounded-3xl aspect-[4/3] ${className}`}
     >
       <Image
         src={src}
         alt={alt}
         fill
-        sizes='(min-width: 768px) 320px, 100vw'
+        sizes='(min-width: 768px) 600px, 100vw'
         className={`object-cover ${focusMap[focus]}`}
         priority={false}
       />

@@ -12,6 +12,85 @@ importers:
         specifier: latest
         version: 2.6.1
 
+  apps/home:
+    dependencies:
+      next:
+        specifier: 15.5.4
+        version: 15.5.4(@opentelemetry/api@1.9.0)(@playwright/test@1.56.1)(babel-plugin-react-compiler@1.0.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+      react:
+        specifier: 19.1.0
+        version: 19.1.0
+      react-dom:
+        specifier: 19.1.0
+        version: 19.1.0(react@19.1.0)
+      tailwind-merge:
+        specifier: ^2.5.1
+        version: 2.6.0
+      tailwindcss-animate:
+        specifier: ^1.0.7
+        version: 1.0.7(tailwindcss@4.1.17)
+      tippy.js:
+        specifier: ^6.3.7
+        version: 6.3.7
+    devDependencies:
+      '@eslint/eslintrc':
+        specifier: ^3
+        version: 3.3.1
+      '@tailwindcss/postcss':
+        specifier: ^4
+        version: 4.1.17
+      '@types/js-cookie':
+        specifier: ^3.0.6
+        version: 3.0.6
+      '@types/node':
+        specifier: ^20
+        version: 20.19.24
+      '@types/react':
+        specifier: ^19
+        version: 19.1.17
+      '@types/react-dom':
+        specifier: ^19
+        version: 19.2.2(@types/react@19.1.17)
+      '@types/uuid':
+        specifier: ^10.0.0
+        version: 10.0.0
+      autoprefixer:
+        specifier: ^10.4.20
+        version: 10.4.21(postcss@8.5.6)
+      eslint:
+        specifier: ^9
+        version: 9.39.1(jiti@2.6.1)
+      eslint-config-next:
+        specifier: 15.5.4
+        version: 15.5.4(eslint@9.39.1(jiti@2.6.1))(typescript@5.9.3)
+      eslint-config-prettier:
+        specifier: ^10.1.8
+        version: 10.1.8(eslint@9.39.1(jiti@2.6.1))
+      eslint-plugin-prettier:
+        specifier: ^5.5.4
+        version: 5.5.4(eslint-config-prettier@10.1.8(eslint@9.39.1(jiti@2.6.1)))(eslint@9.39.1(jiti@2.6.1))(prettier@3.6.2)
+      husky:
+        specifier: ^9.1.7
+        version: 9.1.7
+      lint-staged:
+        specifier: ^16.2.6
+        version: 16.2.6
+      postcss:
+        specifier: ^8.4.47
+        version: 8.5.6
+      prettier:
+        specifier: ^3.6.2
+        version: 3.6.2
+      tailwindcss:
+        specifier: ^4
+        version: 4.1.17
+      turbo:
+        specifier: ^2.6.0
+        version: 2.6.1
+      typescript:
+        specifier: ^5
+        version: 5.9.3
+
   apps/mobile:
     dependencies:
       '@expo/vector-icons':
@@ -12859,7 +12938,6 @@ snapshots:
   '@types/react-dom@19.2.2(@types/react@19.1.17)':
     dependencies:
       '@types/react': 19.1.17
-    optional: true
 
   '@types/react-dom@19.2.2(@types/react@19.2.2)':
     dependencies:
