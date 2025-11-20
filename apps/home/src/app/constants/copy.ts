@@ -295,7 +295,10 @@ export const LOCALIZED_COPY: Record<Language, LocalizedCopy> = {
             { label: 'API/Integrations (limited)', included: true },
             { label: 'Advanced analytics & management', included: false },
             { label: 'Team features', included: false },
-            { label: 'High-speed processing & priority servers', included: false },
+            {
+              label: 'High-speed processing & priority servers',
+              included: false,
+            },
           ],
         },
         {
@@ -356,11 +359,17 @@ export const LOCALIZED_COPY: Record<Language, LocalizedCopy> = {
             { label: 'All Business features', included: true },
             { label: 'Advanced security (SAML / SCIM / SOC2)', included: true },
             { label: 'Organization-wide user management', included: true },
-            { label: 'Custom permissions & integration management', included: true },
+            {
+              label: 'Custom permissions & integration management',
+              included: true,
+            },
             { label: 'Large-scale user support', included: true },
             { label: 'Dedicated customer success', included: true },
             { label: 'SLA (99.9% uptime guarantee)', included: true },
-            { label: 'Dedicated servers / dedicated cloud (optional)', included: true },
+            {
+              label: 'Dedicated servers / dedicated cloud (optional)',
+              included: true,
+            },
             { label: 'Audit logs', included: true },
             { label: 'Legal & compliance support', included: true },
           ],
@@ -596,20 +605,25 @@ export const LOCALIZED_COPY: Record<Language, LocalizedCopy> = {
         {
           id: 'enterprise',
           name: 'エンタープライズ',
-          description:
-            '企業全体の導入・ガバナンス・高セキュリティを満たす',
+          description: '企業全体の導入・ガバナンス・高セキュリティを満たす',
           price: '',
           ctaLabel: '営業担当者に問い合わせる',
           ctaHref: '/contact',
           features: [
             { label: 'Businessの全機能', included: true },
-            { label: '高度なセキュリティ（SAML / SCIM / SOC2）', included: true },
+            {
+              label: '高度なセキュリティ（SAML / SCIM / SOC2）',
+              included: true,
+            },
             { label: '組織横断のユーザー管理', included: true },
             { label: 'カスタム権限・統合管理', included: true },
             { label: '大規模ユーザー数対応', included: true },
             { label: '専任カスタマーサクセス', included: true },
             { label: 'SLA（99.9%アップタイム保証など）', included: true },
-            { label: '専用サーバー / 専用クラウド（オプション）', included: true },
+            {
+              label: '専用サーバー / 専用クラウド（オプション）',
+              included: true,
+            },
             { label: '監査ログ', included: true },
             { label: '法務・コンプライアンス対応', included: true },
           ],

@@ -56,9 +56,7 @@ export function Hero() {
               <div
                 key={src}
                 className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${
-                  index === currentImageIndex
-                    ? 'opacity-100'
-                    : 'opacity-0'
+                  index === currentImageIndex ? 'opacity-100' : 'opacity-0'
                 }`}
               >
                 <Image
