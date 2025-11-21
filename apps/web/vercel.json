@@ -3,10 +3,5 @@
   "buildCommand": "cd ../.. && pnpm turbo run build --filter=@cogni/web",
   "outputDirectory": ".next",
   "installCommand": "cd ../.. && pnpm install --no-frozen-lockfile",
-  "framework": null,
-  "functions": {
-    "src/app/api/copilotkit/route.ts": {
-      "maxDuration": 60
-    }
-  }
+  "framework": null
 }
