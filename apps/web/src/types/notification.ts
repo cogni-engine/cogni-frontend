@@ -4,7 +4,8 @@ export interface Notification {
   id: number;
   created_at: string;
   title: string;
-  content: string;
+  ai_context: string;
+  body?: string;
   due_date: string;
   status: NotificationStatus;
   task_id: number;

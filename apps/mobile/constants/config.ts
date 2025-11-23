@@ -23,7 +23,7 @@ const getWebAppUrl = () => {
   }
 
   // Default to production URL
-  return 'https://cogno.studio';
+  return 'https://app.cogno.studio';
 };
 
 export const Config = {

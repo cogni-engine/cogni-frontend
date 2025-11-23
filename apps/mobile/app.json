@@ -17,7 +17,7 @@
         },
         "ITSAppUsesNonExemptEncryption": false
       },
-      "bundleIdentifier": "com.cogno.ai.cognifrontend"
+      "bundleIdentifier": "com.cogno.ai.mobile"
     },
     "android": {
       "adaptiveIcon": {

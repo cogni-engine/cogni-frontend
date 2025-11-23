@@ -14,7 +14,7 @@ interface WebAppViewProps {
   session?: Session | null;
 }
 
-export default function WebAppView({ url = 'https://cogno.studio', session }: WebAppViewProps) {
+export default function WebAppView({ url = 'https://app.cogno.studio', session }: WebAppViewProps) {
   const webViewRef = useRef<WebView>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
