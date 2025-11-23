@@ -30,9 +30,18 @@ function Header() {
 
   const navItems = useMemo(
     () => [
-      { href: `#${SECTION_IDS.solution}`, label: copy.navigation.solution },
-      { href: `#${SECTION_IDS.features}`, label: copy.navigation.features },
-      { href: `#${SECTION_IDS.howItWorks}`, label: copy.navigation.howItWorks },
+      {
+        href: `/#${SECTION_IDS.solution}`,
+        label: copy.navigation.solution,
+      },
+      {
+        href: `/#${SECTION_IDS.features}`,
+        label: copy.navigation.features,
+      },
+      {
+        href: `/#${SECTION_IDS.howItWorks}`,
+        label: copy.navigation.howItWorks,
+      },
       { href: '/contact', label: copy.navigation.contact },
     ],
     [copy.navigation]

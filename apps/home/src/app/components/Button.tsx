@@ -39,6 +39,7 @@ export function Button(props: ButtonProps) {
 
   if (props.as === 'link') {
     const {
+      as: _as,
       href,
       children: linkChildren,
       variant: _variant,

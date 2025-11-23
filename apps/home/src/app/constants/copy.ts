@@ -116,7 +116,10 @@ export const LOCALIZED_COPY: Record<Language, LocalizedCopy> = {
       title: 'Cogno moves you forward',
       description:
         'Next-generation workspace where AI automates planning, management, and execution',
-      primaryCta: { label: 'Get started with Cogno', href: '/contact' },
+      primaryCta: {
+        label: 'Get started with Cogno',
+        href: `${NEXT_PUBLIC_APP_URL}`,
+      },
       secondaryCta: {
         label: 'Compare plans',
         href: '/pricing',
@@ -230,8 +233,8 @@ export const LOCALIZED_COPY: Record<Language, LocalizedCopy> = {
       title: 'AI manages your time',
       description:
         'Launch Cogni in minutes and experience AI-powered automation of planning and execution.',
-      primaryCta: { label: 'Get started now', href: '/contact' },
-      secondaryCta: { label: 'View demo', href: '/demo' },
+      primaryCta: { label: 'Get started now', href: `${NEXT_PUBLIC_APP_URL}` },
+      secondaryCta: { label: 'request a demo', href: '/contact' },
     },
     contact: {
       title: 'Get started with Cogno',
@@ -489,7 +492,7 @@ export const LOCALIZED_COPY: Record<Language, LocalizedCopy> = {
       description:
         '数分でCogniを起動し、AIによる計画と実行の自動化を体験しましょう。',
       primaryCta: { label: '今すぐ始める', href: `${NEXT_PUBLIC_APP_URL}` },
-      secondaryCta: { label: 'デモを見る', href: '/demo' },
+      secondaryCta: { label: 'お問い合わせ', href: '/contact' },
     },
     contact: {
       title: 'Cognoを始める',
