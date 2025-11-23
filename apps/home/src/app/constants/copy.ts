@@ -18,8 +18,9 @@ export type LocalizedCopy = {
   navigation: {
     solution: string;
     features: string;
-    howItWorks: string;
+    pricing: string;
     contact: string;
+    getStarted: string;
   };
   problem: {
     title: string;
@@ -128,8 +129,9 @@ export const LOCALIZED_COPY: Record<Language, LocalizedCopy> = {
     navigation: {
       solution: 'Solution',
       features: 'Features',
-      howItWorks: 'How it works',
+      pricing: 'Pricing',
       contact: 'Talk to us',
+      getStarted: 'Get Started!',
     },
     problem: {
       title: 'Manual planning is slowing you down',
@@ -393,8 +395,9 @@ export const LOCALIZED_COPY: Record<Language, LocalizedCopy> = {
     navigation: {
       solution: 'ソリューション',
       features: '機能',
-      howItWorks: '使い方',
+      pricing: '料金',
       contact: 'お問い合わせ',
+      getStarted: 'Cognoを始める',
     },
     problem: {
       title: 'タスク管理や計画立てに時間を奪われていませんか？',

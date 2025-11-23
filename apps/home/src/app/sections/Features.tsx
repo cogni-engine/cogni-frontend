@@ -11,7 +11,7 @@ export function Features() {
   const features = copy.features;
 
   return (
-    <section id={SECTION_IDS.features} className='bg-[#05060b]'>
+    <section id={SECTION_IDS.features} className='scroll-mt-24 bg-[#05060b]'>
       <div className='mx-auto max-w-6xl space-y-12 px-6 md:px-8 pt-8 pb-4'>
         <SectionTitle
           title={features.title}
