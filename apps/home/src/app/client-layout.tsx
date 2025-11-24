@@ -91,7 +91,7 @@ function Footer() {
   return (
     <footer className='border-t border-white/10 bg-[#05060b]'>
       <div className='mx-auto flex w-full max-w-6xl flex-col gap-2 px-6 py-6 text-sm text-slate-400 md:flex-row md:items-center md:justify-between'>
-        <p>&copy; {new Date().getFullYear()} Cogni. All rights reserved.</p>
+        <p>&copy; {new Date().getFullYear()} Cogno. All rights reserved.</p>
         <div className='flex gap-4'>
           <Link href='/privacy' className='transition hover:text-white'>
             {copy.footer.privacy}
