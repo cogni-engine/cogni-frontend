@@ -21,6 +21,7 @@
     "@ag-ui/proto": "^0.0.39",
     "@ai-sdk/react": "^2.0.68",
     "@cogni/api": "workspace:*",
+    "@cogni/pricing": "workspace:*",
     "@cogni/types": "workspace:*",
     "@cogni/utils": "workspace:*",
     "@floating-ui/dom": "^1.7.4",

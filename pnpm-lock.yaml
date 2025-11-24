@@ -14,6 +14,9 @@ importers:
 
   apps/home:
     dependencies:
+      '@cogni/pricing':
+        specifier: workspace:*
+        version: link:../../packages/pricing
       '@prisma/client':
         specifier: ^6.0.0
         version: 6.19.0(prisma@6.19.0(typescript@5.9.3))(typescript@5.9.3)
@@ -271,6 +274,9 @@ importers:
       '@cogni/api':
         specifier: workspace:*
         version: link:../../packages/api
+      '@cogni/pricing':
+        specifier: workspace:*
+        version: link:../../packages/pricing
       '@cogni/types':
         specifier: workspace:*
         version: link:../../packages/types
@@ -533,6 +539,22 @@ importers:
         version: 19.1.17
       typescript:
         specifier: ^5
+        version: 5.9.3
+
+  packages/pricing:
+    dependencies:
+      lucide-react:
+        specifier: '*'
+        version: 0.545.0(react@19.1.0)
+      react:
+        specifier: '*'
+        version: 19.1.0
+    devDependencies:
+      '@types/react':
+        specifier: '*'
+        version: 19.1.17
+      typescript:
+        specifier: '*'
         version: 5.9.3
 
   packages/types:
