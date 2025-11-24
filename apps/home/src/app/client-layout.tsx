@@ -192,6 +192,14 @@ function Header() {
                 {item.label}
               </Link>
             ))}
+            {/* サインイン */}
+            <Link
+              href={process.env.NEXT_PUBLIC_APP_URL || '#'}
+              onClick={handleNavClick}
+              className='py-3 text-base text-slate-300 transition hover:text-white'
+            >
+              {copy.navigation.signIn}
+            </Link>
           </nav>
 
           {/* 言語切り替え */}
