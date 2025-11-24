@@ -13,11 +13,12 @@ import { useUserProfile } from '@/features/users/hooks/useUserProfile';
 import type { UserProfile } from '@/types/userProfile';
 import GlassCard from '@/components/glass-design/GlassCard';
 import { isInMobileWebView, notifyNativeLogout } from '@/lib/webview';
-import { createClient } from '@/lib/supabase/browserClient';
 import { PricingModal } from '@/components/PricingModal';
+import { getSubscriptionPlanFromJWT } from '@/lib/jwtUtils';
+import type { User } from '@supabase/supabase-js';
 
 type UserMenuProps = {
-  userId: string | null;
+  user: User | null;
 };
 
 function getInitials(profile?: UserProfile | null, email?: string | null) {
@@ -35,32 +36,31 @@ function getInitials(profile?: UserProfile | null, email?: string | null) {
   return 'ME';
 }
 
-export function UserMenu({ userId }: UserMenuProps) {
+export function UserMenu({ user }: UserMenuProps) {
   const router = useRouter();
   const [open, setOpen] = React.useState(false);
   const [isSigningOut, setIsSigningOut] = React.useState(false);
   const [isPricingModalOpen, setIsPricingModalOpen] = React.useState(false);
+  const [subscriptionPlan, setSubscriptionPlan] = React.useState<string | null>(
+    null
+  );
   const dropdownRef = React.useRef<HTMLDivElement>(null);
+  const userId = user?.id ?? null;
   const { profile } = useUserProfile({ userId });
 
-  // Lazy load email only when needed (when dropdown opens)
-  const [email, setEmail] = React.useState<string>('Unknown user');
-
+  // Get subscription plan from JWT
   React.useEffect(() => {
-    if (open && userId && email === 'Unknown user') {
-      const fetchEmail = async () => {
-        const supabase = createClient();
-        const {
-          data: { user },
-        } = await supabase.auth.getUser();
-        if (user?.email) {
-          setEmail(user.email);
-        }
-      };
-      fetchEmail();
+    if (user) {
+      getSubscriptionPlanFromJWT().then(plan => {
+        setSubscriptionPlan(plan);
+      });
     }
-  }, [open, userId, email]);
+  }, [user]);
 
+  const isProOrBusiness =
+    subscriptionPlan === 'pro' || subscriptionPlan === 'business';
+
+  const email = user?.email ?? 'Unknown user';
   const avatarUrl = profile?.avatar_url ?? null;
   const initials = getInitials(profile, email);
 
@@ -94,8 +94,12 @@ export function UserMenu({ userId }: UserMenuProps) {
 
   const handleUpgradePlan = React.useCallback(() => {
     setOpen(false);
-    setIsPricingModalOpen(true);
-  }, []);
+    if (isProOrBusiness) {
+      router.push('/user/subscription');
+    } else {
+      setIsPricingModalOpen(true);
+    }
+  }, [isProOrBusiness, router]);
 
   const handleSignOut = React.useCallback(async () => {
     setIsSigningOut(true);
@@ -165,7 +169,9 @@ export function UserMenu({ userId }: UserMenuProps) {
                 className='w-full flex items-center gap-2 px-3 py-2 hover:bg-white/5 rounded-xl transition-colors text-sm text-blue-400 hover:text-blue-300'
               >
                 <ArrowUpCircle className='h-4 w-4' />
-                <span>Upgrade Plan</span>
+                <span>
+                  {isProOrBusiness ? 'Manage Subscription' : 'Upgrade Plan'}
+                </span>
               </button>
               <div className='h-px bg-white/10 my-1' />
               <button
@@ -174,7 +180,7 @@ export function UserMenu({ userId }: UserMenuProps) {
                     handleSignOut();
                   }
                 }}
-                className='w-full flex items-center gap-2 px-3 py-2 hover:bg-white/5 rounded-md transition-colors text-sm text-red-300 hover:text-red-200'
+                className='w-full flex items-center gap-2 px-3 py-2 hover:bg-white/5 rounded-xl transition-colors text-sm text-red-300 hover:text-red-200'
               >
                 <LogOut className='h-4 w-4' />
                 <span>{isSigningOut ? 'Signing out…' : 'Log out'}</span>

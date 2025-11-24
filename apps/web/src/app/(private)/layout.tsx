@@ -175,7 +175,8 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
     pathname === '/workspace' ||
     pathname === '/personal' ||
     pathname === '/user/settings' ||
-    pathname === '/user/tasks';
+    pathname === '/user/tasks' ||
+    pathname === '/user/subscription';
 
   // モバイル判定（768px以下）
   // TODO: これって本当に必要？？？
