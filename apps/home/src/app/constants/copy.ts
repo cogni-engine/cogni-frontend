@@ -166,7 +166,7 @@ export const LOCALIZED_COPY: Record<Language, LocalizedCopy> = {
     solution: {
       title: 'Let AI handle the heavy lifting',
       description:
-        'Cogni watches every commitment, syncs work across teammates, and maps the path to each deadline—before you even ask.',
+        'Cogno watches every commitment, syncs work across teammates, and maps the path to each deadline—before you even ask.',
       highlights: [
         'AI keeps the schedule balanced and your time protected',
         'Collaborative task boards make multi-owner work effortless',
@@ -219,7 +219,7 @@ export const LOCALIZED_COPY: Record<Language, LocalizedCopy> = {
         {
           title: 'Sync your work',
           description:
-            'Import calendars, docs, and tasks—Cogni learns your cadence instantly.',
+            'Import calendars, docs, and tasks—Cogno learns your cadence instantly.',
         },
         {
           title: 'Let AI plan it',
@@ -256,7 +256,7 @@ export const LOCALIZED_COPY: Record<Language, LocalizedCopy> = {
     cta: {
       title: 'Discover the new way of working guided by Cogno.',
       description:
-        'Launch Cogni in minutes and experience AI-powered automation of planning and execution.',
+        'Launch Cogno in minutes and experience AI-powered automation of planning and execution.',
       primaryCta: { label: 'Get started now', href: `${NEXT_PUBLIC_APP_URL}` },
       secondaryCta: { label: 'request a demo', href: '/contact' },
     },
@@ -575,7 +575,7 @@ export const LOCALIZED_COPY: Record<Language, LocalizedCopy> = {
     solution: {
       title: 'AIが計画と実行を一体化',
       description:
-        'Cogniは時間、タスク、集中のリズムを理解し、AIが自動的に次の行動を設計します。ユーザーごとに最適化されたマネジメントを実現。',
+        'Cognoは時間、タスク、集中のリズムを理解し、AIが自動的に次の行動を設計します。ユーザーごとに最適化されたマネジメントを実現。',
       highlights: [
         'AIが所要時間を分析し、タイマーを自発的に起動',
         'タスク進行に合わせて最適なタイミングで通知',
@@ -661,7 +661,7 @@ export const LOCALIZED_COPY: Record<Language, LocalizedCopy> = {
     cta: {
       title: 'Cognoが導く新しい動き方を、ぜひ確かめてください',
       description:
-        '数分でCogniを起動し、AIによる計画と実行の自動化を体験しましょう。',
+        '数分でCognoを起動し、AIによる計画と実行の自動化を体験しましょう。',
       primaryCta: { label: 'Cognoを始める', href: `${NEXT_PUBLIC_APP_URL}` },
       secondaryCta: { label: '営業担当者に問い合わせる', href: '/contact' },
     },
