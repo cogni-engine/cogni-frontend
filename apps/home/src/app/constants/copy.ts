@@ -310,7 +310,7 @@ export const LOCALIZED_COPY: Record<Language, LocalizedCopy> = {
         {
           id: 'free',
           name: 'Free',
-          description: 'Try and get started with basic features',
+          description: 'Start free and experience Cogno\'s basic features',
           price: '$0',
           priceNote: '/month',
           ctaLabel: 'Get started with Cogno',
@@ -328,7 +328,7 @@ export const LOCALIZED_COPY: Record<Language, LocalizedCopy> = {
         {
           id: 'pro',
           name: 'Pro',
-          description: 'For individuals who want to use it seriously',
+          description: 'Unlock the full power of AI for your personal productivity',
           price: '$120',
           priceNote: '/month',
           ctaLabel: 'Get started with Cogno',
@@ -351,7 +351,7 @@ export const LOCALIZED_COPY: Record<Language, LocalizedCopy> = {
         {
           id: 'business',
           name: 'Business',
-          description: 'Enable team operations and organizational management',
+          description: 'Collaborate with your team and manage organizational projects efficiently',
           price: '$150',
           priceNote: '/ user / month',
           ctaLabel: 'Get started with Cogno',
@@ -367,8 +367,7 @@ export const LOCALIZED_COPY: Record<Language, LocalizedCopy> = {
         {
           id: 'enterprise',
           name: 'Enterprise',
-          description:
-            'Meet enterprise-wide requirements for governance and high security',
+          description: 'Deploy at scale with confidence and dedicated support for your organization',
           price: '',
           ctaLabel: 'Contact sales',
           ctaHref: '/contact',
@@ -691,7 +690,7 @@ export const LOCALIZED_COPY: Record<Language, LocalizedCopy> = {
         {
           id: 'free',
           name: 'Free',
-          description: 'お試し・導入・ユーザー獲得',
+          description: 'まずは無料で始めて、Cognoの基本機能を体験できます',
           price: '$0',
           priceNote: '/ 月',
           ctaLabel: 'Cognoを始める',
@@ -709,7 +708,7 @@ export const LOCALIZED_COPY: Record<Language, LocalizedCopy> = {
         {
           id: 'pro',
           name: 'Pro',
-          description: '個人ユーザーが本気で継続利用できる状態',
+          description: '個人で本格的にCognoを使い、AIの力を最大限に活用',
           price: '$120',
           priceNote: '/ 月',
           ctaLabel: 'Cognoを始める',
@@ -731,7 +730,7 @@ export const LOCALIZED_COPY: Record<Language, LocalizedCopy> = {
         {
           id: 'business',
           name: 'Business',
-          description: 'チーム運用・組織管理を可能にする',
+          description: 'AIを活用して、組織のプロジェクトを効率的に管理・スケーリング',
           price: '$150',
           priceNote: '/ ユーザー / 月',
           ctaLabel: 'Cognoを始める',
@@ -754,7 +753,7 @@ export const LOCALIZED_COPY: Record<Language, LocalizedCopy> = {
         {
           id: 'enterprise',
           name: 'Enterprise',
-          description: '企業全体の導入・ガバナンス・高セキュリティを満たす',
+          description: 'もっとも包括的なビジネスの基本システムでパフォーマンスを最大化',
           price: '',
           ctaLabel: '営業担当者に問い合わせる',
           ctaHref: '/contact',
