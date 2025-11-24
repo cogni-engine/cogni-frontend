@@ -10,7 +10,7 @@ export function Terms() {
 
   return (
     <section id={SECTION_IDS.terms} className='bg-[#05060b]'>
-      <div className='mx-auto max-w-4xl space-y-8 px-6 py-20'>
+      <div className='mx-auto max-w-4xl space-y-8 px-6 py-10'>
         <SectionTitle title={terms.title} align='center' />
         <div className='space-y-6 text-sm text-slate-300'>
           <p className='text-center text-slate-400'>{terms.effectiveDate}</p>

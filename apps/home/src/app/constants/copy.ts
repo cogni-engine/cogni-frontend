@@ -22,6 +22,7 @@ export type LocalizedCopy = {
     features: string;
     pricing: string;
     contact: string;
+    signIn: string;
     getStarted: string;
   };
   problem: {
@@ -153,6 +154,7 @@ export const LOCALIZED_COPY: Record<Language, LocalizedCopy> = {
       features: 'Features',
       pricing: 'Pricing',
       contact: 'Talk to us',
+      signIn: 'Sign In',
       getStarted: 'Get Started!',
     },
     problem: {
@@ -562,6 +564,7 @@ export const LOCALIZED_COPY: Record<Language, LocalizedCopy> = {
       features: '機能',
       pricing: '料金',
       contact: 'お問い合わせ',
+      signIn: 'サインイン',
       getStarted: 'Cognoを始める',
     },
     problem: {

@@ -27,6 +27,7 @@ export function ClientLayout({ children, initialLanguage }: ClientLayoutProps) {
 
 function Header() {
   const { copy, language, setLanguage } = useLanguage();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const navItems = useMemo(
     () => [
@@ -44,44 +45,183 @@ function Header() {
     [copy.navigation]
   );
 
+  // ESCキーでメニューを閉じる
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isMobileMenuOpen) {
+        setIsMobileMenuOpen(false);
+      }
+    };
+
+    document.addEventListener('keydown', handleEscape);
+    return () => document.removeEventListener('keydown', handleEscape);
+  }, [isMobileMenuOpen]);
+
+  // メニュー項目クリックでメニューを閉じる
+  const handleNavClick = () => {
+    setIsMobileMenuOpen(false);
+  };
+
   return (
-    <header className='fixed inset-x-0 top-0 z-50 border-b border-white/10 bg-[#05060b]/80 backdrop-blur-xl'>
-      <div className='mx-auto flex w-full max-w-6xl items-center justify-between px-6 py-4'>
-        <Link
-          href='/'
-          className='flex items-center gap-3 text-2xl font-semibold tracking-wide text-white'
-        >
-          <Image
-            src='/favicon.jpg'
-            alt='Cogno'
-            width={32}
-            height={32}
-            className='h-8 w-8'
-          />
-          Cogno
-        </Link>
-        <div className='flex items-center gap-6 text-sm text-slate-300'>
-          <nav className='hidden items-center gap-6 md:flex'>
+    <>
+      <header className='fixed inset-x-0 top-0 z-50 border-b border-white/10 bg-[#05060b]/80 backdrop-blur-xl'>
+        <div className='mx-auto flex w-full max-w-6xl items-center gap-6 px-6 py-4'>
+          <Link
+            href='/'
+            className='flex items-center gap-3 text-2xl font-semibold tracking-wide text-white'
+          >
+            <Image
+              src='/favicon.jpg'
+              alt='Cogno'
+              width={32}
+              height={32}
+              className='h-8 w-8'
+            />
+            Cogno
+          </Link>
+          <nav className='hidden items-center gap-6 lg:flex'>
             {navItems.map(item => (
               <Link
                 key={item.href}
                 href={item.href}
-                className='transition hover:text-white'
+                className='text-sm text-slate-300 transition hover:text-white'
               >
                 {item.label}
               </Link>
             ))}
           </nav>
-          <LanguageSwitch activeLanguage={language} onChange={setLanguage} />
-          <Link
-            href={process.env.NEXT_PUBLIC_APP_URL || '#'}
-            className='rounded-full bg-white px-4 py-2 text-sm font-medium text-slate-950 transition hover:bg-white/90'
-          >
-            {copy.navigation.getStarted}
-          </Link>
+          <div className='ml-auto flex items-center gap-6 text-sm text-slate-300'>
+            <LanguageSwitch activeLanguage={language} onChange={setLanguage} />
+            <Link
+              href={process.env.NEXT_PUBLIC_APP_URL || '#'}
+              className='hidden text-slate-300 transition hover:text-white lg:block'
+            >
+              {copy.navigation.signIn}
+            </Link>
+            <Link
+              href={process.env.NEXT_PUBLIC_APP_URL || '#'}
+              className='hidden rounded-full bg-white px-4 py-2 text-sm font-medium text-slate-950 transition hover:bg-white/90 lg:block'
+            >
+              {copy.navigation.getStarted}
+            </Link>
+            {/* モバイル版: Cognoを始めるボタン */}
+            <Link
+              href={process.env.NEXT_PUBLIC_APP_URL || '#'}
+              className='lg:hidden rounded-full bg-white px-4 py-2 text-sm font-medium text-slate-950 transition hover:bg-white/90'
+            >
+              {copy.navigation.getStarted}
+            </Link>
+            {/* ハンバーガーメニューボタン */}
+            <button
+              type='button'
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              className='lg:hidden p-2 text-white hover:text-white/80 transition'
+              aria-label='Toggle menu'
+            >
+              <svg
+                xmlns='http://www.w3.org/2000/svg'
+                width='24'
+                height='24'
+                viewBox='0 0 24 24'
+                fill='none'
+                stroke='currentColor'
+                strokeWidth='2'
+                strokeLinecap='round'
+                strokeLinejoin='round'
+                className='w-6 h-6'
+              >
+                <line x1='3' y1='6' x2='21' y2='6' />
+                <line x1='3' y1='12' x2='21' y2='12' />
+                <line x1='3' y1='18' x2='21' y2='18' />
+              </svg>
+            </button>
+          </div>
         </div>
-      </div>
-    </header>
+      </header>
+
+      {/* モバイルメニューオーバーレイ */}
+      {isMobileMenuOpen && (
+        <div
+          className='fixed inset-0 z-40 bg-black/60 transition-opacity lg:hidden'
+          onClick={() => setIsMobileMenuOpen(false)}
+        />
+      )}
+
+      {/* モバイルメニューパネル */}
+      <div
+        className={`fixed inset-y-0 right-0 z-50 w-80 bg-[#05060b] border-l border-white/10 transition-transform duration-300 ease-in-out lg:hidden flex flex-col ${
+          isMobileMenuOpen ? 'translate-x-0' : 'translate-x-full'
+        }`}
+      >
+        <div className='flex flex-col flex-1 overflow-y-auto p-6 space-y-6'>
+          {/* 閉じるボタン */}
+          <div className='flex justify-end'>
+            <button
+              type='button'
+              onClick={() => setIsMobileMenuOpen(false)}
+              className='p-2 text-white hover:text-white/80 transition'
+              aria-label='Close menu'
+            >
+              <svg
+                xmlns='http://www.w3.org/2000/svg'
+                width='24'
+                height='24'
+                viewBox='0 0 24 24'
+                fill='none'
+                stroke='currentColor'
+                strokeWidth='2'
+                strokeLinecap='round'
+                strokeLinejoin='round'
+                className='w-6 h-6'
+              >
+                <line x1='18' y1='6' x2='6' y2='18' />
+                <line x1='6' y1='6' x2='18' y2='18' />
+              </svg>
+            </button>
+          </div>
+
+          {/* ナビゲーション項目 */}
+          <nav className='flex flex-col space-y-4'>
+            {navItems.map(item => (
+              <Link
+                key={item.href}
+                href={item.href}
+                onClick={handleNavClick}
+                className='py-3 text-base text-slate-300 transition hover:text-white'
+              >
+                {item.label}
+              </Link>
+            ))}
+          </nav>
+
+          {/* 言語切り替え */}
+          <div className='pt-4 border-t border-white/10'>
+            <LanguageSwitch activeLanguage={language} onChange={setLanguage} />
+          </div>
+        </div>
+
+        {/* ボタンエリア（一番下に配置） */}
+        <div className='p-6 pt-0 space-y-4 border-white/10'>
+            {/* 営業担当者に問い合わせるボタン */}
+            <Link
+              href={copy.cta.secondaryCta.href}
+              onClick={handleNavClick}
+              className='flex w-full items-center justify-center gap-2 rounded-full bg-black border border-white/20 px-4 py-3 text-sm font-medium text-white transition-colors hover:bg-black/80 text-center'
+            >
+              <span>{copy.cta.secondaryCta.label}</span>
+            </Link>
+
+            {/* Cognoを始めるボタン */}
+            <Link
+              href={process.env.NEXT_PUBLIC_APP_URL || '#'}
+              onClick={handleNavClick}
+              className='flex w-full items-center justify-center gap-2 rounded-full bg-white px-4 py-3 text-sm font-medium text-slate-950 transition-colors hover:bg-white/80 text-center'
+            >
+              <span>{copy.navigation.getStarted}</span>
+            </Link>
+          </div>
+        </div>
+    </>
   );
 }
 
@@ -134,7 +274,7 @@ function LanguageSwitch({ activeLanguage, onChange }: LanguageSwitchProps) {
   };
 
   return (
-    <div className='relative' ref={dropdownRef}>
+    <div className='relative hidden lg:block' ref={dropdownRef}>
       <button
         type='button'
         onClick={() => setIsOpen(!isOpen)}

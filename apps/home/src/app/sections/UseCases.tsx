@@ -13,7 +13,7 @@ export function UseCases() {
 
   return (
     <section id={SECTION_IDS.solution} className='scroll-mt-24 bg-[#05060b]'>
-      <div className='mx-auto max-w-6xl space-y-12 px-6 md:px-8 pt-12 pb-20'>
+      <div className='mx-auto max-w-6xl space-y-12 px-6 md:px-8 pt-10 pb-20'>
         <SectionTitle title={useCases.title} align='center' />
         <div className='grid gap-6 md:grid-cols-3'>
           {useCases.cases.map(useCase => (

@@ -73,7 +73,7 @@ export function CustomSelect({
         type='button'
         id={id}
         onClick={() => setIsOpen(!isOpen)}
-        className='w-full px-4 py-3 rounded-lg bg-white/5 border border-white/10 text-white text-left focus:outline-none focus:ring-2 focus:ring-white/20 focus:border-white/20 transition-all flex items-center justify-between'
+        className='w-full px-4 py-3 rounded-lg bg-white/5 text-white text-left transition-all flex items-center justify-between outline-none'
       >
         <span className={selectedValue ? 'text-white' : 'text-white/40'}>
           {selectedValue || '-- Select --'}

@@ -59,7 +59,7 @@ export function Contact() {
 
   return (
     <section id='contact' className='relative overflow-hidden bg-[#05060b]'>
-      <div className='relative mx-auto max-w-4xl px-6 md:px-8 py-24'>
+      <div className='relative mx-auto max-w-4xl px-6 md:px-8 py-10'>
         <SectionTitle
           title={contact.title}
           description={contact.description}
@@ -80,7 +80,7 @@ export function Contact() {
                 id='first_name'
                 name='first_name'
                 required
-                className='w-full px-4 py-3 rounded-lg bg-white/5 border border-white/10 text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-white/20 focus:border-white/20'
+                className='w-full px-4 py-3 rounded-lg bg-white/5 text-white placeholder-white/40 outline-none'
               />
             </div>
 
@@ -96,7 +96,7 @@ export function Contact() {
                 id='last_name'
                 name='last_name'
                 required
-                className='w-full px-4 py-3 rounded-lg bg-white/5 border border-white/10 text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-white/20 focus:border-white/20'
+                className='w-full px-4 py-3 rounded-lg bg-white/5 text-white placeholder-white/40 outline-none'
               />
             </div>
           </div>
@@ -113,7 +113,7 @@ export function Contact() {
               id='company_name'
               name='company_name'
               required
-              className='w-full px-4 py-3 rounded-lg bg-white/5 border border-white/10 text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-white/20 focus:border-white/20'
+              className='w-full px-4 py-3 rounded-lg bg-white/5 text-white placeholder-white/40 outline-none'
             />
           </div>
 
@@ -130,7 +130,7 @@ export function Contact() {
                 id='work_mail'
                 name='work_mail'
                 required
-                className='w-full px-4 py-3 rounded-lg bg-white/5 border border-white/10 text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-white/20 focus:border-white/20'
+                className='w-full px-4 py-3 rounded-lg bg-white/5 text-white placeholder-white/40 outline-none'
               />
             </div>
 
@@ -146,7 +146,7 @@ export function Contact() {
                 id='phone_number'
                 name='phone_number'
                 required
-                className='w-full px-4 py-3 rounded-lg bg-white/5 border border-white/10 text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-white/20 focus:border-white/20'
+                className='w-full px-4 py-3 rounded-lg bg-white/5 text-white placeholder-white/40 outline-none'
               />
             </div>
           </div>
@@ -164,7 +164,7 @@ export function Contact() {
                 id='job_title'
                 name='job_title'
                 required
-                className='w-full px-4 py-3 rounded-lg bg-white/5 border border-white/10 text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-white/20 focus:border-white/20'
+                className='w-full px-4 py-3 rounded-lg bg-white/5 text-white placeholder-white/40 outline-none'
               />
             </div>
 
@@ -196,7 +196,7 @@ export function Contact() {
               id='message'
               name='message'
               rows={4}
-              className='w-full px-4 py-3 rounded-lg bg-white/5 border border-white/10 text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-white/20 focus:border-white/20 resize-none'
+              className='w-full px-4 py-3 rounded-lg bg-white/5 text-white placeholder-white/40 resize-none outline-none'
             />
           </div>
 
