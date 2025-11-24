@@ -119,9 +119,9 @@ export default function NoteEditor({ noteId }: { noteId: string }) {
     // Load from localStorage
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem('aiSuggestionsEnabled');
-      return saved !== null ? saved === 'true' : true; // Default to enabled
+      return saved !== null ? saved === 'true' : false; // Default to disabled
     }
-    return true;
+    return false;
   });
 
   // Fetch workspace members if this is a group note

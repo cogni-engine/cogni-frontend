@@ -12,6 +12,7 @@ import GlassCard from '@/components/glass-card/GlassCard';
 import NoteContextMenu from '@/features/workspace/components/NoteContextMenu';
 import MoveFolderDrawer from '@/components/MoveFolderDrawer';
 import FolderDropdown from '@/components/FolderDropdown';
+import SortDropdown from '@/components/SortDropdown';
 import { useGlobalUI } from '@/contexts/GlobalUIContext';
 import ScrollableView from '@/components/layout/ScrollableView';
 
@@ -21,6 +22,7 @@ export default function NotesPage() {
   const [selectedFolder, setSelectedFolder] = useState<
     'all' | 'notes' | 'trash' | number
   >('all');
+  const [sortBy, setSortBy] = useState<'time' | 'folder'>('time');
 
   const personalWorkspaceId = getPersonalWorkspaceId();
 
@@ -127,6 +129,7 @@ export default function NotesPage() {
       note.workspace_id !== personalWorkspaceId,
     updated_at: note.updated_at,
     deleted_at: note.deleted_at,
+    note_folder_id: note.note_folder_id,
   }));
 
   const formattedDeletedNotes = deletedNotes.map(note => ({
@@ -274,8 +277,8 @@ export default function NotesPage() {
 
   return (
     <div className='flex flex-col h-full text-gray-100 relative overflow-hidden'>
-      {/* 固定ヘッダー（フォルダードロップダウンのみ） */}
-      <div className='absolute top-16 left-1/2 -translate-x-1/2 z-100'>
+      {/* 固定ヘッダー（フォルダードロップダウンと並び替えドロップダウン） */}
+      <div className='absolute top-16 left-1/2 -translate-x-1/2 z-100 flex items-center gap-3'>
         {/* Folder Dropdown */}
         <FolderDropdown
           folders={folders}
@@ -292,6 +295,10 @@ export default function NotesPage() {
           }}
           noteCounts={noteCounts}
         />
+        {/* Sort Dropdown - Only show when "All Notes" is selected */}
+        {selectedFolder === 'all' && (
+          <SortDropdown sortBy={sortBy} onSortChange={setSortBy} />
+        )}
       </div>
 
       {/* スクロール可能エリア（ノートリストのみ） */}
@@ -353,6 +360,8 @@ export default function NotesPage() {
                     notes={formattedActiveNotes}
                     onNoteClick={handleNoteClick}
                     onContextMenu={handleContextMenu}
+                    groupBy={sortBy}
+                    folders={folders}
                   />
                 ) : (
                   <div className='text-center py-12'>

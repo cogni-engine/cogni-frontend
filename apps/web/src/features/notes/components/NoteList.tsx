@@ -4,6 +4,7 @@ import Image from 'next/image';
 import { useRef, memo } from 'react';
 
 import GlassCard from '@/components/glass-card/GlassCard';
+import type { NoteFolder } from '@/types/note';
 
 type NoteListItem = {
   id: string;
@@ -19,12 +20,15 @@ type NoteListItem = {
   isGroupNote?: boolean;
   updated_at: string;
   deleted_at?: string | null;
+  note_folder_id?: number | null;
 };
 
 type NoteListProps = {
   notes: NoteListItem[];
   onNoteClick?: (id: string) => void;
   onContextMenu?: (e: React.MouseEvent, id: string, isDeleted: boolean) => void;
+  groupBy?: 'time' | 'folder';
+  folders?: NoteFolder[];
 };
 
 type GroupedNotes = {
@@ -122,13 +126,71 @@ function sortGroupKeys(keys: string[]): string[] {
   });
 }
 
+function groupNotesByFolder(
+  notes: NoteListItem[],
+  folders: NoteFolder[]
+): GroupedNotes {
+  const grouped: GroupedNotes = {};
+
+  // Sort folders alphabetically by title
+  const sortedFolders = [...folders].sort((a, b) =>
+    a.title.localeCompare(b.title, 'ja')
+  );
+
+  // Initialize groups for each folder
+  sortedFolders.forEach(folder => {
+    grouped[folder.title] = [];
+  });
+
+  // Add "Notes" group for notes without folder
+  grouped['Notes'] = [];
+
+  // Group notes
+  notes.forEach(note => {
+    if (!note.note_folder_id) {
+      grouped['Notes'].push(note);
+    } else {
+      const folder = folders.find(f => f.id === note.note_folder_id);
+      if (folder && grouped[folder.title]) {
+        grouped[folder.title].push(note);
+      }
+    }
+  });
+
+  // Remove empty groups (except "Notes")
+  Object.keys(grouped).forEach(key => {
+    if (key !== 'Notes' && grouped[key].length === 0) {
+      delete grouped[key];
+    }
+  });
+
+  return grouped;
+}
+
+function sortFolderGroupKeys(keys: string[]): string[] {
+  // "Notes" should come first, then alphabetically
+  return keys.sort((a, b) => {
+    if (a === 'Notes') return -1;
+    if (b === 'Notes') return 1;
+    return a.localeCompare(b, 'ja');
+  });
+}
+
 export default function NoteList({
   notes,
   onNoteClick,
   onContextMenu,
+  groupBy = 'time',
+  folders = [],
 }: NoteListProps) {
-  const groupedNotes = groupNotesByTime(notes);
-  const sortedGroups = sortGroupKeys(Object.keys(groupedNotes));
+  const groupedNotes =
+    groupBy === 'folder'
+      ? groupNotesByFolder(notes, folders)
+      : groupNotesByTime(notes);
+  const sortedGroups =
+    groupBy === 'folder'
+      ? sortFolderGroupKeys(Object.keys(groupedNotes))
+      : sortGroupKeys(Object.keys(groupedNotes));
 
   // Note card component with touch handlers - memoized to prevent flickering
   const NoteCardComponent = ({ note }: { note: NoteListItem }) => {

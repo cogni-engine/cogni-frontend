@@ -11,8 +11,10 @@ import SearchBar from '@/components/SearchBar';
 import GlassButton from '@/components/glass-card/GlassButton';
 import GlassCard from '@/components/glass-card/GlassCard';
 import FolderDropdown from '@/components/FolderDropdown';
+import SortDropdown from '@/components/SortDropdown';
 import MoveFolderDrawer from '@/components/MoveFolderDrawer';
 import ScrollableView from '@/components/layout/ScrollableView';
+import type { NoteFolder } from '@/types/note';
 
 // Helper functions for date grouping (same as in NoteList.tsx)
 function getTimeGroup(dateString: string): string {
@@ -72,6 +74,56 @@ function groupNotesByTime(
   return grouped;
 }
 
+function groupNotesByFolder(
+  notes: NoteWithParsed[],
+  folders: NoteFolder[]
+): Record<string, NoteWithParsed[]> {
+  const grouped: Record<string, NoteWithParsed[]> = {};
+
+  // Sort folders alphabetically by title
+  const sortedFolders = [...folders].sort((a, b) =>
+    a.title.localeCompare(b.title, 'ja')
+  );
+
+  // Initialize groups for each folder
+  sortedFolders.forEach(folder => {
+    grouped[folder.title] = [];
+  });
+
+  // Add "Notes" group for notes without folder
+  grouped['Notes'] = [];
+
+  // Group notes
+  notes.forEach(note => {
+    if (!note.note_folder_id) {
+      grouped['Notes'].push(note);
+    } else {
+      const folder = folders.find(f => f.id === note.note_folder_id);
+      if (folder && grouped[folder.title]) {
+        grouped[folder.title].push(note);
+      }
+    }
+  });
+
+  // Remove empty groups (except "Notes")
+  Object.keys(grouped).forEach(key => {
+    if (key !== 'Notes' && grouped[key].length === 0) {
+      delete grouped[key];
+    }
+  });
+
+  return grouped;
+}
+
+function sortFolderGroupKeys(keys: string[]): string[] {
+  // "Notes" should come first, then alphabetically
+  return keys.sort((a, b) => {
+    if (a === 'Notes') return -1;
+    if (b === 'Notes') return 1;
+    return a.localeCompare(b, 'ja');
+  });
+}
+
 function sortGroupKeys(keys: string[]): string[] {
   const order = ['今日', '今週', '今月'];
 
@@ -116,6 +168,7 @@ export default function WorkspaceNotesPage() {
   const [selectedFolder, setSelectedFolder] = useState<
     'all' | 'notes' | 'trash' | number
   >('all');
+  const [sortBy, setSortBy] = useState<'time' | 'folder'>('time');
   const [searchQuery, setSearchQuery] = useState('');
   const [contextMenu, setContextMenu] = useState<{
     x: number;
@@ -213,9 +266,15 @@ export default function WorkspaceNotesPage() {
     }
   }, [selectedFolder, refetch, isMoving]);
 
-  // Group active notes by date
-  const groupedNotes = groupNotesByTime(activeNotes);
-  const sortedGroups = sortGroupKeys(Object.keys(groupedNotes));
+  // Group active notes by date or folder
+  const groupedNotes =
+    sortBy === 'folder'
+      ? groupNotesByFolder(activeNotes, folders)
+      : groupNotesByTime(activeNotes);
+  const sortedGroups =
+    sortBy === 'folder'
+      ? sortFolderGroupKeys(Object.keys(groupedNotes))
+      : sortGroupKeys(Object.keys(groupedNotes));
 
   const handleSearch = async (query: string) => {
     setSearchQuery(query);
@@ -505,8 +564,8 @@ export default function WorkspaceNotesPage() {
 
   return (
     <div className='flex flex-col h-full text-gray-100 overflow-hidden'>
-      {/* Absolutely Positioned Folder Dropdown */}
-      <div className='absolute top-29 left-1/2 -translate-x-1/2 z-50'>
+      {/* Absolutely Positioned Folder Dropdown and Sort Dropdown */}
+      <div className='absolute top-29 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3'>
         <FolderDropdown
           folders={folders}
           selectedFolder={selectedFolder}
@@ -522,6 +581,10 @@ export default function WorkspaceNotesPage() {
           }}
           noteCounts={noteCounts}
         />
+        {/* Sort Dropdown - Only show when "All Notes" is selected */}
+        {selectedFolder === 'all' && (
+          <SortDropdown sortBy={sortBy} onSortChange={setSortBy} />
+        )}
       </div>
 
       {/* Scrollable Notes List */}
