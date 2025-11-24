@@ -78,8 +78,7 @@ export default function SortDropdown({
                       ? 'bg-white/10'
                       : 'bg-white/5 group-hover:bg-white/10'
                   }`}
-                >
-                </div>
+                ></div>
                 <span className='text-sm font-medium text-white'>by time</span>
               </div>
               {sortBy === 'time' && <Check className='w-5 h-5 text-white' />}
@@ -102,8 +101,7 @@ export default function SortDropdown({
                       ? 'bg-white/10'
                       : 'bg-white/5 group-hover:bg-white/10'
                   }`}
-                >
-                </div>
+                ></div>
                 <span className='text-sm font-medium text-white'>
                   by folder
                 </span>
@@ -116,4 +114,3 @@ export default function SortDropdown({
     </div>
   );
 }
-
