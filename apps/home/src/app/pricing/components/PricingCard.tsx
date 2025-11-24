@@ -1,7 +1,7 @@
 'use client';
 
-import { Check, X } from 'lucide-react';
-import { Button } from '../../components/Button';
+import { Check, X, ArrowUpRight } from 'lucide-react';
+import Link from 'next/link';
 import { useLanguage } from '../../context/language-context';
 
 type PricingCardProps = {
@@ -20,6 +20,7 @@ type PricingCardProps = {
 };
 
 export function PricingCard({
+  id,
   name,
   description,
   price,
@@ -29,58 +30,60 @@ export function PricingCard({
   isBestValue,
   features,
 }: PricingCardProps) {
-  const { copy } = useLanguage();
+  const { copy, language } = useLanguage();
+
+  const buttonText =
+    id === 'business'
+      ? language === 'ja'
+        ? '今すぐ試す'
+        : 'Try now'
+      : id === 'enterprise'
+        ? language === 'ja'
+          ? '営業担当者に問い合わせる'
+          : 'Contact sales'
+        : language === 'ja'
+          ? `${name} をはじめる`
+          : `Start ${name}`;
+  const isFree = id === 'free';
+  const isEnterprise = id === 'enterprise';
 
   return (
-    <div
-      className={`relative flex h-full flex-col rounded-3xl border p-6 transition-all ${
-        isBestValue
-          ? 'border-purple-500/50 bg-purple-500/10'
-          : 'border-white/10 bg-white/5'
-      }`}
-    >
-      {isBestValue && (
-        <div className='absolute -top-4 left-1/2 -translate-x-1/2'>
-          <span className='rounded-full bg-purple-500 px-4 py-1 text-xs font-semibold uppercase tracking-wide text-white'>
-            {copy.pricing.bestValueLabel}
-          </span>
-        </div>
-      )}
-
+    <div className='relative flex h-full flex-col rounded-3xl border border-white/10 bg-black/40 p-6 transition-all'>
       <div className='mb-4'>
         <h3 className='mb-2 text-2xl font-semibold text-white'>{name}</h3>
-        <p className='text-sm text-slate-300'>{description}</p>
+        <p className='text-sm text-slate-300 min-h-[40px]'>{description}</p>
       </div>
 
-      <div className='mb-6 min-h-[80px]'>
+      <div className='mb-6 h-[48px] flex items-end'>
         {price && (
-          <>
-            <div className='mb-1 flex items-baseline gap-2'>
-              <span className='text-4xl font-bold text-white'>{price}</span>
-            </div>
+          <div className='flex items-baseline gap-2'>
+            <span className='text-4xl font-bold text-white'>{price}</span>
             {priceNote && (
-              <p className='mb-4 text-xs text-slate-400'>{priceNote}</p>
+              <span className='text-lg text-slate-400'>{priceNote}</span>
             )}
-          </>
+          </div>
         )}
       </div>
 
-      <div className='mb-6 flex justify-center'>
-        <Button
-          as='link'
+      <div className='mb-6 h-[48px] flex items-center'>
+        <Link
           href={ctaHref}
-          variant={isBestValue ? 'primary' : 'secondary'}
-          className={isBestValue ? 'bg-purple-500 hover:bg-purple-600' : ''}
+          className={`flex w-full items-center justify-center gap-2 rounded-full px-4 py-3 text-sm font-medium transition-colors ${
+            isFree || isEnterprise
+              ? 'bg-gray-800 text-white hover:bg-slate-600'
+              : 'bg-white text-slate-950 hover:bg-white/80'
+          }`}
         >
-          {ctaLabel}
-        </Button>
+          <span>{buttonText}</span>
+          <ArrowUpRight className='h-4 w-4' />
+        </Link>
       </div>
 
       <div className='flex-1 space-y-3'>
         {features.map((feature, index) => (
           <div key={index} className='flex items-start gap-3'>
             {feature.included ? (
-              <Check className='mt-0.5 h-5 w-5 flex-shrink-0 text-green-400' />
+              <Check className='mt-0.5 h-5 w-5 flex-shrink-0 text-white' />
             ) : (
               <X className='mt-0.5 h-5 w-5 flex-shrink-0 text-slate-500' />
             )}

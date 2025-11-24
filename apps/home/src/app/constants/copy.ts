@@ -287,8 +287,8 @@ export const LOCALIZED_COPY: Record<Language, LocalizedCopy> = {
           id: 'free',
           name: 'Free',
           description: 'Try and get started with basic features',
-          price: '¥0',
-          priceNote: 'Always free',
+          price: '$0',
+          priceNote: '/month',
           ctaLabel: 'Get started with Cogno',
           ctaHref: '/contact',
           features: [
@@ -310,8 +310,8 @@ export const LOCALIZED_COPY: Record<Language, LocalizedCopy> = {
           id: 'pro',
           name: 'Pro',
           description: 'For individuals who want to use it seriously',
-          price: '¥1,050',
-          priceNote: 'Per user per month (monthly)',
+          price: '$120',
+          priceNote: '/month',
           ctaLabel: 'Get started with Cogno',
           ctaHref: '/contact',
           features: [
@@ -332,8 +332,8 @@ export const LOCALIZED_COPY: Record<Language, LocalizedCopy> = {
           id: 'business',
           name: 'Business',
           description: 'Enable team operations and organizational management',
-          price: '¥2,160',
-          priceNote: 'Per user per month (monthly)',
+          price: '$150',
+          priceNote: '/ user / month',
           ctaLabel: 'Get started with Cogno',
           ctaHref: '/contact',
           isBestValue: true,
@@ -544,10 +544,10 @@ export const LOCALIZED_COPY: Record<Language, LocalizedCopy> = {
       plans: [
         {
           id: 'free',
-          name: 'フリー',
+          name: 'Free',
           description: 'お試し・導入・ユーザー獲得',
-          price: '¥0',
-          priceNote: 'ずっと無料',
+          price: '$0',
+          priceNote: '/ 月',
           ctaLabel: 'Cognoを始める',
           ctaHref: '/contact',
           features: [
@@ -564,10 +564,10 @@ export const LOCALIZED_COPY: Record<Language, LocalizedCopy> = {
         },
         {
           id: 'pro',
-          name: 'プロ',
+          name: 'Pro',
           description: '個人ユーザーが本気で継続利用できる状態',
-          price: '¥1,050',
-          priceNote: 'ユーザー1人あたりの月額（月払い）',
+          price: '$120',
+          priceNote: '/ 月',
           ctaLabel: 'Cognoを始める',
           ctaHref: '/contact',
           features: [
@@ -586,10 +586,10 @@ export const LOCALIZED_COPY: Record<Language, LocalizedCopy> = {
         },
         {
           id: 'business',
-          name: 'ビジネス',
+          name: 'Business',
           description: 'チーム運用・組織管理を可能にする',
-          price: '¥2,160',
-          priceNote: 'ユーザー1人あたりの月額（月払い）',
+          price: '$150',
+          priceNote: '/ ユーザー / 月',
           ctaLabel: 'Cognoを始める',
           ctaHref: '/contact',
           isBestValue: true,
@@ -610,7 +610,7 @@ export const LOCALIZED_COPY: Record<Language, LocalizedCopy> = {
         },
         {
           id: 'enterprise',
-          name: 'エンタープライズ',
+          name: 'Enterprise',
           description: '企業全体の導入・ガバナンス・高セキュリティを満たす',
           price: '',
           ctaLabel: '営業担当者に問い合わせる',
