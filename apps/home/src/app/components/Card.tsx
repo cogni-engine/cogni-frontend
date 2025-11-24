@@ -17,7 +17,9 @@ export function Card({ title, description, icon, children }: CardProps) {
       ) : null}
       <div className='space-y-2'>
         <h3 className='text-lg font-semibold text-white'>{title}</h3>
-        <p className='text-sm text-slate-300'>{description}</p>
+        <p className='text-sm text-slate-300 whitespace-pre-line'>
+          {description}
+        </p>
       </div>
       {children ? (
         <div className='mt-auto text-sm text-slate-400'>{children}</div>

@@ -136,9 +136,9 @@ export type LocalizedCopy = {
 export const LOCALIZED_COPY: Record<Language, LocalizedCopy> = {
   en: {
     hero: {
-      title: 'Cogno moves you forward',
+      title: 'Get your work moving with Cogno',
       description:
-        'Next-generation workspace where AI automates planning, management, and execution',
+        'AI automates everything from planning to execution, intelligently notifying and managing your workflow.',
       primaryCta: {
         label: 'Get started with Cogno',
         href: `${NEXT_PUBLIC_APP_URL}`,
@@ -239,22 +239,22 @@ export const LOCALIZED_COPY: Record<Language, LocalizedCopy> = {
         {
           title: 'Education & Learning Management',
           description:
-            'AI automatically optimizes learning time based on student and instructor progress.',
+            "Based on materials, deadlines, and comprehension levels, Cogno optimizes each student's learning process.\n\nAI constantly checks question responses, progress, and acquisition status, and escalates to instructors when necessary.\n\nTeachers can significantly reduce confirmation and management workload, while students can focus on planning, problem-solving, and deep understanding.",
         },
         {
           title: 'Care & Healthcare',
           description:
-            'AI centrally manages care schedules and handovers between staff members.',
+            'Standardize and structure care work to prevent knowledge silos.\n\nAI optimally assigns tasks by organizing work, managing the field with situation-appropriate notifications and follow-ups.\n\nAddresses the challenges of work complexity and staff shortages, achieving both efficiency and stable care quality simultaneously.',
         },
         {
           title: 'Personal Management',
           description:
-            'Your personal AI supports everything from planning and notifications to reflection.',
+            'Based on goals, lifestyle rhythms, and past behavioral data, Cogno optimizes individual action processes.\n\nFor daily habits including fitness, AI constantly checks progress and execution status, providing notifications and adjustments at appropriate times.\n\nUsers are freed from hesitation and procrastination, maintaining self-discipline while focusing on continuous growth and improving the quality of their actions.',
         },
       ],
     },
     cta: {
-      title: 'AI manages your time',
+      title: 'Discover the new way of working guided by Cogno.',
       description:
         'Launch Cogni in minutes and experience AI-powered automation of planning and execution.',
       primaryCta: { label: 'Get started now', href: `${NEXT_PUBLIC_APP_URL}` },
@@ -548,8 +548,9 @@ export const LOCALIZED_COPY: Record<Language, LocalizedCopy> = {
   },
   ja: {
     hero: {
-      title: 'Cognoが、動かす',
-      description: 'AIが計画から実行までを自動化する次世代ワークスペース',
+      title: 'Cogno で、仕事が動き出す。',
+      description:
+        'AIが計画から実行まで自動化し、通知を出してマネジメントしてくれる。',
       primaryCta: { label: 'Cognoを始める', href: `${NEXT_PUBLIC_APP_URL}` },
       secondaryCta: {
         label: 'プランを比較する',
@@ -642,24 +643,27 @@ export const LOCALIZED_COPY: Record<Language, LocalizedCopy> = {
       cases: [
         {
           title: '教育・学習管理',
-          description: '生徒や講師の進捗に合わせてAIが学習時間を自動で最適化。',
+          description:
+            '教材・期限・理解度をもとに、Cognoが生徒一人ひとりの学習プロセスを最適化。\n\nAIが質問対応しながら、進捗・習得状況をチェックし、理解が不十分な場合には講師への質問をともに考えます。\n\n教員は確認・管理の工数を大幅に削減でき、生徒は方向性をぶらさずに効率的に学習できます',
         },
         {
           title: '介護・ヘルスケア',
-          description: 'ケアスケジュールやスタッフ間の引き継ぎをAIが一元管理。',
+          description:
+            '介護業務をマニュアル化・構造化し、属人化を防止。\n\n業務を整理して最適にアサインし、状況に応じたAIによる通知とフォローで現場をマネジメントします。\n\n業務の複雑さや人員不足に悩む現場でも、無理なく業務を回せる体制を整え、効率化とケア品質の安定を実感できます。',
         },
         {
           title: 'パーソナルマネジメント',
-          description: '自分専用のAIが、計画・通知・振り返りまで全てサポート。',
+          description:
+            '目標・生活リズム・過去の行動データをもとに、Cognoが個人の行動プロセスを最適化。\n\nフィットネスをはじめとした日々の習慣に対して、AIが進捗と実行状況を常時チェックし、適切なタイミングで通知や調整を行います。\n\n迷いや先延ばしから解放され、自己規律を保ちながら、継続的な成長と行動の質の向上に集中できます。',
         },
       ],
     },
     cta: {
-      title: 'AIがあなたの時間をマネジメントします',
+      title: 'Cognoが導く新しい動き方を、ぜひ確かめてください',
       description:
         '数分でCogniを起動し、AIによる計画と実行の自動化を体験しましょう。',
-      primaryCta: { label: '今すぐ始める', href: `${NEXT_PUBLIC_APP_URL}` },
-      secondaryCta: { label: 'お問い合わせ', href: '/contact' },
+      primaryCta: { label: 'Cognoを始める', href: `${NEXT_PUBLIC_APP_URL}` },
+      secondaryCta: { label: '営業担当者に問い合わせる', href: '/contact' },
     },
     contact: {
       title: 'Cognoを始める',

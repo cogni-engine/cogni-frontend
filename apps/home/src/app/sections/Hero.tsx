@@ -34,7 +34,7 @@ export function Hero() {
       <div className='pointer-events-none absolute -right-40 bottom-0 h-96 w-96 rounded-full bg-white/5 blur-3xl' />
       <div className='relative mx-auto flex w-full max-w-6xl flex-col items-center gap-8 px-6 md:px-8 pt-8 pb-8'>
         <div className='space-y-4 text-center'>
-          <h1 className='text-3xl font-bold text-white md:text-5xl lg:text-6xl'>
+          <h1 className='text-3xl font-bold text-white md:text-4xl lg:text-5xl'>
             {hero.title}
           </h1>
           <p className='mx-auto max-w-2xl text-lg text-slate-300 md:text-xl'>

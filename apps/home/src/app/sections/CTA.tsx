@@ -10,8 +10,9 @@ export function CTA() {
 
   return (
     <section className='relative overflow-hidden bg-[#05060b]'>
-      <div className='pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.12),_rgba(5,6,11,0.95))]' />
-      <div className='relative mx-auto max-w-4xl space-y-8 px-6 md:px-8 py-24 text-center'>
+      <div className='pointer-events-none absolute -left-32 top-10 h-80 w-80 rounded-full bg-white/[0.05] blur-3xl' />
+      <div className='pointer-events-none absolute -right-40 bottom-0 h-96 w-96 rounded-full bg-white/[0.03] blur-3xl' />
+      <div className='relative mx-auto max-w-4xl space-y-8 px-6 md:px-8 py-10 text-center'>
         <SectionTitle
           title={cta.title}
           description={cta.description}
