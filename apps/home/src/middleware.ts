@@ -3,7 +3,7 @@ import { type NextRequest, NextResponse } from 'next/server';
 
 const LANGUAGE_COOKIE_NAME = 'preferred-language';
 const SUPPORTED_LANGUAGES = ['en', 'ja'];
-const DEFAULT_LANGUAGE = 'en';
+const DEFAULT_LANGUAGE = 'ja';
 
 export async function middleware(request: NextRequest) {
   const response = NextResponse.next();

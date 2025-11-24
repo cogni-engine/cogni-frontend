@@ -3,7 +3,7 @@ import type { Language } from '../constants/copy';
 
 export const LANGUAGE_COOKIE_NAME = 'preferred-language';
 export const SUPPORTED_LANGUAGES: Language[] = ['en', 'ja'];
-export const DEFAULT_LANGUAGE: Language = 'en';
+export const DEFAULT_LANGUAGE: Language = 'ja';
 
 /**
  * Detects the user's preferred language from cookies or headers (SSR-friendly)

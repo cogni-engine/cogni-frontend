@@ -2,6 +2,8 @@ export const SECTION_IDS = {
   solution: 'solution',
   features: 'features',
   howItWorks: 'how-it-works',
+  terms: 'terms',
+  privacy: 'privacy',
 } as const;
 
 export type Language = 'en' | 'ja';
@@ -107,6 +109,26 @@ export type LocalizedCopy = {
         label: string;
         included: boolean;
       }>;
+    }>;
+  };
+  terms: {
+    title: string;
+    effectiveDate: string;
+    preamble: string;
+    articles: Array<{
+      number: number;
+      title: string;
+      content: string[];
+    }>;
+  };
+  privacy: {
+    title: string;
+    effectiveDate: string;
+    preamble: string;
+    items: Array<{
+      number: number;
+      title: string;
+      content: string[];
     }>;
   };
 };
@@ -381,6 +403,148 @@ export const LOCALIZED_COPY: Record<Language, LocalizedCopy> = {
         },
       ],
     },
+    terms: {
+      title: 'Cogno Terms of Service',
+      effectiveDate: 'Effective Date: November 24, 2025',
+      preamble:
+        'These Terms of Service (the "Terms") set forth the terms and conditions for the use of "Cogno" (the "Service") provided by Cogno (the "Company"). Users shall use the Service after agreeing to these Terms.',
+      articles: [
+        {
+          number: 1,
+          title: 'Service Content',
+          content: [
+            'The Service is a workspace service that provides features such as task management, planning support, reminders, and prioritization using AI.',
+            'Proposals, notifications, and judgments made by AI provided by the Service are merely supplementary information, and the Company does not guarantee the accuracy, completeness, or usefulness of such content.',
+            'All responsibility for final decisions and actions made using the Service belongs to the user.',
+          ],
+        },
+        {
+          number: 2,
+          title: 'Account Management',
+          content: [
+            'Users shall manage their account information at their own responsibility.',
+            'The Company shall not be liable for any damage caused by unauthorized use of accounts due to user negligence.',
+          ],
+        },
+        {
+          number: 3,
+          title: 'Prohibited Acts',
+          content: [
+            'Users shall not engage in the following acts:',
+            'Acts that violate laws or public order and morals',
+            'Acts that infringe on the rights or interests of others',
+            'Acts that interfere with the operation of the Service',
+            'Unauthorized access, reverse engineering, or other unauthorized acts',
+            'Acts that the Company deems inappropriate',
+          ],
+        },
+        {
+          number: 4,
+          title: 'Intellectual Property Rights and Data Handling',
+          content: [
+            'Rights to data (tasks, notes, etc.) entered by users into the Service belong in principle to the user.',
+            'The Company may use such data to the extent necessary for providing the Service and improving quality.',
+          ],
+        },
+        {
+          number: 5,
+          title: 'Disclaimer',
+          content: [
+            'The Service is provided "as is," and the Company makes no warranties regarding its operation, content, or results.',
+            'The Company shall not be liable for any damage arising from the use or inability to use the Service.',
+          ],
+        },
+        {
+          number: 6,
+          title: 'Service Changes and Termination',
+          content: [
+            'The Company may change or terminate all or part of the Service without prior notice to users.',
+          ],
+        },
+        {
+          number: 7,
+          title: 'Changes to Terms',
+          content: [
+            "The Company may change these Terms at any time, and the changed Terms shall take effect when displayed on the Company's website or the Service.",
+          ],
+        },
+        {
+          number: 8,
+          title: 'Governing Law and Jurisdiction',
+          content: [
+            'These Terms shall be governed by Japanese law, and disputes concerning the Service shall be subject to the exclusive jurisdiction of the Tokyo District Court as the court of first instance.',
+          ],
+        },
+      ],
+    },
+    privacy: {
+      title: 'Cogno Privacy Policy',
+      effectiveDate: 'Effective Date: November 24, 2025',
+      preamble:
+        'Cogno (the "Company") sets forth the following Privacy Policy regarding the handling of users\' personal information in this service.',
+      items: [
+        {
+          number: 1,
+          title: 'Information We Collect',
+          content: [
+            'The Company may collect the following information:',
+            'Name, email address, and other information provided during registration',
+            'Task content, notes, and input data',
+            'Usage history and access information',
+          ],
+        },
+        {
+          number: 2,
+          title: 'Purpose of Use',
+          content: [
+            'Information collected will be used for the following purposes:',
+            'Providing and operating the Service',
+            'Improving and enhancing service quality',
+            'Notifications and communications to users',
+          ],
+        },
+        {
+          number: 3,
+          title: 'Third-Party Disclosure',
+          content: [
+            'The Company will not provide personal information to third parties without the consent of the individual, except as required by law.',
+          ],
+        },
+        {
+          number: 4,
+          title: 'Use of External Services',
+          content: [
+            'The Company may use external services to the extent necessary for operating this service.',
+          ],
+        },
+        {
+          number: 5,
+          title: 'Security Management',
+          content: [
+            'The Company will appropriately manage collected personal information and strive to prevent unauthorized access, leakage, etc.',
+          ],
+        },
+        {
+          number: 6,
+          title: 'Disclosure, Correction, and Deletion',
+          content: [
+            'Users may request disclosure, correction, or deletion of their personal information from the Company.',
+          ],
+        },
+        {
+          number: 7,
+          title: 'Revisions',
+          content: ['This policy may be revised as necessary.'],
+        },
+        {
+          number: 8,
+          title: 'Contact',
+          content: [
+            'For inquiries regarding the handling of personal information, please contact us through the inquiry window within this service.',
+          ],
+        },
+      ],
+    },
   },
   ja: {
     hero: {
@@ -632,6 +796,148 @@ export const LOCALIZED_COPY: Record<Language, LocalizedCopy> = {
             },
             { label: '監査ログ', included: true },
             { label: '法務・コンプライアンス対応', included: true },
+          ],
+        },
+      ],
+    },
+    terms: {
+      title: 'Cogno 利用規約',
+      effectiveDate: '制定日：2025年11月24日',
+      preamble:
+        '本利用規約（以下「本規約」といいます。）は、Cogno（以下「当社」といいます。）が提供する「Cogno」（以下「本サービス」といいます。）の利用条件を定めるものです。利用者は、本規約に同意したうえで本サービスを利用するものとします。',
+      articles: [
+        {
+          number: 1,
+          title: '本サービスの内容',
+          content: [
+            '本サービスは、AIを活用し、タスク管理、計画支援、リマインド、優先順位付け等の機能を提供するワークスペースサービスです。',
+            '本サービスが提供するAIによる提案・通知・判断は、あくまで補助的な情報であり、その内容の正確性・完全性・有用性を保証するものではありません。',
+            '本サービスを利用して行う最終的な意思決定および行動の責任は、すべて利用者に帰属します。',
+          ],
+        },
+        {
+          number: 2,
+          title: 'アカウント管理',
+          content: [
+            '利用者は、自己の責任においてアカウント情報を管理するものとします。',
+            '利用者の過失によるアカウントの不正使用により生じた損害について、当社は一切の責任を負いません。',
+          ],
+        },
+        {
+          number: 3,
+          title: '禁止事項',
+          content: [
+            '利用者は、以下の行為を行ってはなりません。',
+            '法令または公序良俗に違反する行為',
+            '他者の権利または利益を侵害する行為',
+            '本サービスの運営を妨害する行為',
+            '不正アクセス、リバースエンジニアリングその他不正行為',
+            '当社が不適切と判断する行為',
+          ],
+        },
+        {
+          number: 4,
+          title: '知的財産権およびデータの取扱い',
+          content: [
+            '利用者が本サービスに入力したデータ（タスク、ノート等）の権利は、原則として利用者に帰属します。',
+            '当社は、本サービスの提供および品質向上のために必要な範囲で、当該データを利用できるものとします。',
+          ],
+        },
+        {
+          number: 5,
+          title: '免責事項',
+          content: [
+            '本サービスは現状有姿で提供され、当社はその動作、内容、結果について一切の保証を行いません。',
+            '本サービスの利用または利用不能により生じたいかなる損害についても、当社は責任を負いません。',
+          ],
+        },
+        {
+          number: 6,
+          title: 'サービスの変更・終了',
+          content: [
+            '当社は、利用者への事前通知なく、本サービスの全部または一部を変更または終了できるものとします。',
+          ],
+        },
+        {
+          number: 7,
+          title: '規約の変更',
+          content: [
+            '当社は、本規約を随時変更できるものとし、変更後の規約は当社ウェブサイトまたは本サービス上に表示した時点で効力を有するものとします。',
+          ],
+        },
+        {
+          number: 8,
+          title: '準拠法・管轄',
+          content: [
+            '本規約は日本法を準拠法とし、本サービスに関する紛争については東京地方裁判所を第一審の専属的合意管轄裁判所とします。',
+          ],
+        },
+      ],
+    },
+    privacy: {
+      title: 'Cogno プライバシーポリシー',
+      effectiveDate: '制定日：2025年11月24日',
+      preamble:
+        'Cogno（以下「当社」といいます。）は、本サービスにおける利用者の個人情報の取扱いについて、以下のとおりプライバシーポリシーを定めます。',
+      items: [
+        {
+          number: 1,
+          title: '取得する情報',
+          content: [
+            '当社は、以下の情報を取得する場合があります。',
+            '氏名、メールアドレス、その他登録時に提供される情報',
+            'タスク内容、ノート、入力データ',
+            '利用履歴、アクセス情報',
+          ],
+        },
+        {
+          number: 2,
+          title: '利用目的',
+          content: [
+            '取得した情報は、以下の目的で利用します。',
+            '本サービスの提供および運営',
+            'サービス品質の向上および改善',
+            '利用者への通知および連絡',
+          ],
+        },
+        {
+          number: 3,
+          title: '第三者提供',
+          content: [
+            '当社は、法令に基づく場合を除き、本人の同意なく第三者に個人情報を提供しません。',
+          ],
+        },
+        {
+          number: 4,
+          title: '外部サービスの利用',
+          content: [
+            '当社は、本サービス運営に必要な範囲で外部サービスを利用する場合があります。',
+          ],
+        },
+        {
+          number: 5,
+          title: '安全管理',
+          content: [
+            '当社は、取得した個人情報を適切に管理し、不正アクセス、漏洩等の防止に努めます。',
+          ],
+        },
+        {
+          number: 6,
+          title: '開示・訂正・削除',
+          content: [
+            '利用者は、自身の個人情報の開示・訂正・削除を当社に請求することができます。',
+          ],
+        },
+        {
+          number: 7,
+          title: '改定',
+          content: ['本ポリシーは、必要に応じて改定されることがあります。'],
+        },
+        {
+          number: 8,
+          title: 'お問い合わせ',
+          content: [
+            '個人情報の取扱いに関するお問い合わせは、当サービス内の問い合わせ窓口よりご連絡ください。',
           ],
         },
       ],

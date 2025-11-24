@@ -6,6 +6,7 @@ import {
   useContext,
   useMemo,
   useOptimistic,
+  startTransition,
   type ReactNode,
 } from 'react';
 
@@ -41,7 +42,9 @@ export function LanguageProvider({
   const setLanguage = useCallback(
     async (newLanguage: Language) => {
       // Optimistically update the UI
-      setOptimisticLanguage(newLanguage);
+      startTransition(() => {
+        setOptimisticLanguage(newLanguage);
+      });
 
       // Update the server-side cookie
       try {
