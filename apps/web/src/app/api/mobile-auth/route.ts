@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
+import { logJWTIssuance } from '@/lib/jwtServerUtils';
 
 export async function POST(request: NextRequest) {
   try {
@@ -26,7 +27,7 @@ export async function POST(request: NextRequest) {
 
     // Verify the session by setting it
     const {
-      data: { user },
+      data: { user, session },
       error,
     } = await supabase.auth.setSession({
       access_token,
@@ -39,6 +40,11 @@ export async function POST(request: NextRequest) {
         { error: 'Invalid session tokens' },
         { status: 401 }
       );
+    }
+
+    // Log new JWT issuance from mobile auth API
+    if (session?.access_token) {
+      logJWTIssuance(session.access_token, 'MOBILE_AUTH_API');
     }
 
     // Create response with success

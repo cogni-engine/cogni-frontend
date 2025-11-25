@@ -137,3 +137,16 @@ export async function getSession() {
   return session;
 }
 
+/**
+ * Manually refresh the current session to get a new JWT
+ * This will trigger a new JWT to be issued by the backend
+ */
+export async function refreshSession() {
+  const supabase = getClient();
+  
+  const { data: { session }, error } = await supabase.auth.refreshSession();
+  if (error) throw error;
+  
+  return session;
+}
+

@@ -1,29 +1,6 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
-
-/**
- * Decode JWT payload without verification (for reading custom claims)
- */
-function decodeJWT(token: string): Record<string, unknown> | null {
-  try {
-    const parts = token.split('.');
-    if (parts.length !== 3) return null;
-
-    // Decode base64url (JWT uses base64url, not standard base64)
-    const payload = parts[1];
-    const base64 = payload.replace(/-/g, '+').replace(/_/g, '/');
-    const padded = base64.padEnd(
-      base64.length + ((4 - (base64.length % 4)) % 4),
-      '='
-    );
-    const decoded = Buffer.from(padded, 'base64').toString('utf-8');
-
-    return JSON.parse(decoded) as Record<string, unknown>;
-  } catch (error) {
-    console.error('Error decoding JWT:', error);
-    return null;
-  }
-}
+import { decodeJWT, logJWTIssuance } from '@/lib/jwtServerUtils';
 
 export async function updateSession(request: NextRequest) {
   const response = NextResponse.next({ request: { headers: request.headers } });
@@ -48,10 +25,38 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
+  // Get the previous access token from cookie to detect new JWT issuance
+  const previousToken = request.cookies.get('previous_access_token')?.value;
+
   // Get session to access JWT token
   const {
     data: { session },
   } = await supabase.auth.getSession();
+
+  // Track new JWT issuance
+  if (session?.access_token) {
+    const currentToken = session.access_token;
+    
+    // Check if this is a new JWT (different from previous)
+    if (previousToken && previousToken !== currentToken) {
+      logJWTIssuance(currentToken, 'BACKEND (REFRESHED)');
+    } else if (!previousToken && currentToken) {
+      // First time we see a token (initial login)
+      logJWTIssuance(currentToken, 'BACKEND (INITIAL)');
+    }
+
+    // Store current token as previous for next request
+    if (currentToken) {
+      response.cookies.set({
+        name: 'previous_access_token',
+        value: currentToken,
+        path: '/',
+        maxAge: 60 * 60 * 24 * 7, // 7 days
+        sameSite: 'lax',
+        httpOnly: true,
+      });
+    }
+  }
 
   // Decode JWT to extract orgs and subscription_plan
   let orgs: unknown[] = [];

@@ -2,6 +2,7 @@ import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
+import { logJWTIssuance } from '@/lib/jwtServerUtils';
 
 export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url);
@@ -38,6 +39,11 @@ export async function GET(request: NextRequest) {
       return NextResponse.redirect(new URL('/auth/error', origin));
     }
 
+    // Log new JWT issuance from OAuth callback
+    if (data?.session?.access_token) {
+      logJWTIssuance(data.session.access_token, 'OAUTH_CALLBACK');
+    }
+
     // If OAuth was successful, set user ID and fetch personal workspace
     if (data?.user?.id) {
       // The session is now set in cookies, so we can proceed with redirect
@@ -47,7 +53,7 @@ export async function GET(request: NextRequest) {
 
   // Verify the OTP/magic link
   if (token_hash && type) {
-    const { error } = await supabase.auth.verifyOtp({
+    const { data, error } = await supabase.auth.verifyOtp({
       token_hash,
       // email認証のみなので、EmailOtpTypeを使用
       type: type as
@@ -62,6 +68,11 @@ export async function GET(request: NextRequest) {
       console.error('Error verifying OTP:', error);
       // Redirect to error page
       return NextResponse.redirect(new URL('/auth/error', origin));
+    }
+
+    // Log new JWT issuance from OTP verification
+    if (data?.session?.access_token) {
+      logJWTIssuance(data.session.access_token, 'OTP_VERIFICATION');
     }
   }
 

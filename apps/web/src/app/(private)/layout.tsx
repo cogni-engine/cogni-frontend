@@ -178,6 +178,8 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
     pathname === '/user/tasks' ||
     pathname === '/user/subscription';
 
+    
+
   // モバイル判定（768px以下）
   // TODO: これって本当に必要？？？
   useEffect(() => {
@@ -195,8 +197,13 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
 
   // モバイルかつ入力中の場合のみフッターを非表示、デスクトップでは常に表示
   // Also hide footer when drawer is open
+  // Hide footer on user settings and subscription pages
+  const isUserSettingsPage = pathname === '/user/settings' || pathname === '/user/subscription';
   const shouldShowFooter =
-    showTopLevelChrome && (!isMobile || !isInputActive) && !isDrawerOpen;
+    showTopLevelChrome && 
+    (!isMobile || !isInputActive) && 
+    !isDrawerOpen && 
+    !isUserSettingsPage;
 
   return (
     <div className='relative h-screen bg-black px-2'>

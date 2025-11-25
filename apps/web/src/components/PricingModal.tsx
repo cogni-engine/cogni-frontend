@@ -47,9 +47,9 @@ export function PricingModal({ open, onOpenChange }: PricingModalProps) {
       router.push('/user/subscription');
       onOpenChange(false);
     } else {
-      // Handle upgrade logic for free users
-      console.log('Upgrade to', planId);
-      // TODO: Implement upgrade flow
+      // Navigate to checkout page for the selected plan
+      router.push(`/checkout/${planId}`);
+      onOpenChange(false);
     }
   };
 
