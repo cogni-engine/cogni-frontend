@@ -210,25 +210,25 @@ function Header() {
 
         {/* ボタンエリア（一番下に配置） */}
         <div className='p-6 pt-0 space-y-4 border-white/10'>
-            {/* 営業担当者に問い合わせるボタン */}
-            <Link
-              href={copy.cta.secondaryCta.href}
-              onClick={handleNavClick}
-              className='flex w-full items-center justify-center gap-2 rounded-full bg-black border border-white/20 px-4 py-3 text-sm font-medium text-white transition-colors hover:bg-black/80 text-center'
-            >
-              <span>{copy.cta.secondaryCta.label}</span>
-            </Link>
+          {/* 営業担当者に問い合わせるボタン */}
+          <Link
+            href={copy.cta.secondaryCta.href}
+            onClick={handleNavClick}
+            className='flex w-full items-center justify-center gap-2 rounded-full bg-black border border-white/20 px-4 py-3 text-sm font-medium text-white transition-colors hover:bg-black/80 text-center'
+          >
+            <span>{copy.cta.secondaryCta.label}</span>
+          </Link>
 
-            {/* Cognoを始めるボタン */}
-            <Link
-              href={process.env.NEXT_PUBLIC_APP_URL || '#'}
-              onClick={handleNavClick}
-              className='flex w-full items-center justify-center gap-2 rounded-full bg-white px-4 py-3 text-sm font-medium text-slate-950 transition-colors hover:bg-white/80 text-center'
-            >
-              <span>{copy.navigation.getStarted}</span>
-            </Link>
-          </div>
+          {/* Cognoを始めるボタン */}
+          <Link
+            href={process.env.NEXT_PUBLIC_APP_URL || '#'}
+            onClick={handleNavClick}
+            className='flex w-full items-center justify-center gap-2 rounded-full bg-white px-4 py-3 text-sm font-medium text-slate-950 transition-colors hover:bg-white/80 text-center'
+          >
+            <span>{copy.navigation.getStarted}</span>
+          </Link>
         </div>
+      </div>
     </>
   );
 }

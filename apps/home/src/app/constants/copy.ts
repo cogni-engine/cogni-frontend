@@ -310,7 +310,7 @@ export const LOCALIZED_COPY: Record<Language, LocalizedCopy> = {
         {
           id: 'free',
           name: 'Free',
-          description: 'Start free and experience Cogno\'s basic features',
+          description: "Start free and experience Cogno's basic features",
           price: '$0',
           priceNote: '/month',
           ctaLabel: 'Get started with Cogno',
@@ -320,7 +320,10 @@ export const LOCALIZED_COPY: Record<Language, LocalizedCopy> = {
             { label: 'Unlimited message history', included: true },
             { label: 'Note creation (limited)', included: true },
             { label: 'Limited note assignments', included: true },
-            { label: 'Advanced AI reasoning and chat (limited)', included: true },
+            {
+              label: 'Advanced AI reasoning and chat (limited)',
+              included: true,
+            },
             { label: 'Limited memory and context', included: true },
             { label: 'Limited AI notifications', included: true },
           ],
@@ -328,7 +331,8 @@ export const LOCALIZED_COPY: Record<Language, LocalizedCopy> = {
         {
           id: 'pro',
           name: 'Pro',
-          description: 'Unlock the full power of AI for your personal productivity',
+          description:
+            'Unlock the full power of AI for your personal productivity',
           price: '$120',
           priceNote: '/month',
           ctaLabel: 'Get started with Cogno',
@@ -351,7 +355,8 @@ export const LOCALIZED_COPY: Record<Language, LocalizedCopy> = {
         {
           id: 'business',
           name: 'Business',
-          description: 'Collaborate with your team and manage organizational projects efficiently',
+          description:
+            'Collaborate with your team and manage organizational projects efficiently',
           price: '$150',
           priceNote: '/ user / month',
           ctaLabel: 'Get started with Cogno',
@@ -361,13 +366,17 @@ export const LOCALIZED_COPY: Record<Language, LocalizedCopy> = {
             { label: 'All Pro features included', included: true },
             { label: 'Team invitation links', included: true },
             { label: 'Required admin controls', included: true },
-            { label: 'Organizational project management features', included: true },
+            {
+              label: 'Organizational project management features',
+              included: true,
+            },
           ],
         },
         {
           id: 'enterprise',
           name: 'Enterprise',
-          description: 'Deploy at scale with confidence and dedicated support for your organization',
+          description:
+            'Deploy at scale with confidence and dedicated support for your organization',
           price: '',
           ctaLabel: 'Contact sales',
           ctaHref: '/contact',
@@ -700,7 +709,10 @@ export const LOCALIZED_COPY: Record<Language, LocalizedCopy> = {
             { label: 'ワークスペース参加に制限あり', included: true },
             { label: 'ノート作成に制限あり', included: true },
             { label: 'ノートの割り当て数に制限あり', included: true },
-            { label: 'AIによる高度な推論とチャット（制限あり）', included: true },
+            {
+              label: 'AIによる高度な推論とチャット（制限あり）',
+              included: true,
+            },
             { label: 'メモリとコンテキストに制限あり', included: true },
             { label: 'AI通知に制限あり', included: true },
           ],
@@ -730,21 +742,40 @@ export const LOCALIZED_COPY: Record<Language, LocalizedCopy> = {
         {
           id: 'business',
           name: 'Business',
-          description: 'AIを活用して、組織のプロジェクトを効率的に管理・スケーリング',
+          description:
+            'AIを活用して、組織のプロジェクトを効率的に管理・スケーリング',
           price: '$150',
           priceNote: '/ ユーザー / 月',
           ctaLabel: 'Cognoを始める',
           ctaHref: '/contact',
           isBestValue: true,
           features: [
-            { label: '無制限のメッセージ履歴・ワークスペース参加', included: true },
+            {
+              label: '無制限のメッセージ履歴・ワークスペース参加',
+              included: true,
+            },
             { label: '無制限のノート作成・割り当て', included: true },
-            { label: 'より多くのメモリと組織のコンテキスト利用可能', included: true },
+            {
+              label: 'より多くのメモリと組織のコンテキスト利用可能',
+              included: true,
+            },
             { label: 'より多くのファイルアップロード', included: true },
-            { label: 'AIによる高度な推論とチャット・AI補助ノート', included: true },
-            { label: 'チームに最適化された、AI統合ワークスペース', included: true },
-            { label: '組織のコンテキストを元にした、AIによる自発的な通知', included: true },
-            { label: 'AIによる時間の管理・チームメンバーの進捗確認', included: true },
+            {
+              label: 'AIによる高度な推論とチャット・AI補助ノート',
+              included: true,
+            },
+            {
+              label: 'チームに最適化された、AI統合ワークスペース',
+              included: true,
+            },
+            {
+              label: '組織のコンテキストを元にした、AIによる自発的な通知',
+              included: true,
+            },
+            {
+              label: 'AIによる時間の管理・チームメンバーの進捗確認',
+              included: true,
+            },
             { label: 'チーム用の招待リンク', included: true },
             { label: '必須の管理者コントロール', included: true },
             { label: '組織プロジェクトの管理機能', included: true },
@@ -753,16 +784,31 @@ export const LOCALIZED_COPY: Record<Language, LocalizedCopy> = {
         {
           id: 'enterprise',
           name: 'Enterprise',
-          description: 'もっとも包括的なビジネスの基本システムでパフォーマンスを最大化',
+          description:
+            'もっとも包括的なビジネスの基本システムでパフォーマンスを最大化',
           price: '',
           ctaLabel: '営業担当者に問い合わせる',
           ctaHref: '/contact',
           features: [
             { label: 'すべてのBusinessの機能', included: true },
-            { label: '無制限のメッセージ履歴・ワークスペース参加・ノート作成・割り当て', included: true },
-            { label: '拡張メモリと組織のコンテキスト・ファイルアップロード', included: true },
-            { label: 'AIによる高度な推論・補助ノート・統合ワークスペース・自発的通知・時間管理', included: true },
-            { label: 'チーム招待・管理者コントロール・組織プロジェクト管理', included: true },
+            {
+              label:
+                '無制限のメッセージ履歴・ワークスペース参加・ノート作成・割り当て',
+              included: true,
+            },
+            {
+              label: '拡張メモリと組織のコンテキスト・ファイルアップロード',
+              included: true,
+            },
+            {
+              label:
+                'AIによる高度な推論・補助ノート・統合ワークスペース・自発的通知・時間管理',
+              included: true,
+            },
+            {
+              label: 'チーム招待・管理者コントロール・組織プロジェクト管理',
+              included: true,
+            },
             { label: '大規模ユーザー数対応', included: true },
             { label: '専用カスタマーサクセス', included: true },
           ],
