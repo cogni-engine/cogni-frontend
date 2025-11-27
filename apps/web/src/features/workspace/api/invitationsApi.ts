@@ -146,6 +146,46 @@ export async function getWorkspaceInviteLinks(
   return data || [];
 }
 
+/**
+ * Sync organization seats with Stripe after member addition
+ * This should be called after a member is successfully added to an organization
+ */
+async function syncOrganizationSeats(organizationId: number): Promise<void> {
+  try {
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/billing/sync-seats`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          organizationId: organizationId,
+        }),
+      }
+    );
+
+    if (!response.ok) {
+      const error = await response.json();
+      console.warn(
+        'Failed to sync seats with Stripe:',
+        error.detail || 'Unknown error'
+      );
+      // Don't throw - seat sync failure shouldn't block invitation acceptance
+    } else {
+      const data = await response.json();
+      if (data.updated) {
+        console.log(
+          `✅ Seats synced: ${data.old_seat_count} → ${data.new_seat_count}`
+        );
+      }
+    }
+  } catch (error) {
+    console.warn('Failed to sync seats with Stripe:', error);
+    // Don't throw - seat sync failure shouldn't block invitation acceptance
+  }
+}
+
 export async function acceptInvitation(token: string): Promise<void> {
   const {
     data: { user },
@@ -158,7 +198,7 @@ export async function acceptInvitation(token: string): Promise<void> {
   // First try to find in workspace_invitations (email invitations)
   const { data: invitation, error: invitationError } = await supabase
     .from('workspace_invitations')
-    .select('*')
+    .select('*, workspaces:workspace_id(organization_id)')
     .eq('token', token)
     .eq('status', 'pending')
     .single();
@@ -193,13 +233,21 @@ export async function acceptInvitation(token: string): Promise<void> {
       });
 
     if (memberError) throw memberError;
+
+    // Sync organization seats with Stripe (for Business plan)
+    // @ts-ignore - workspaces is populated from the select query
+    if (invitation.workspaces?.organization_id) {
+      // @ts-ignore
+      await syncOrganizationSeats(invitation.workspaces.organization_id);
+    }
+
     return;
   }
 
   // If not found in invitations, try workspace_invite_links
   const { data: inviteLink, error: linkError } = await supabase
     .from('workspace_invite_links')
-    .select('*')
+    .select('*, workspaces:workspace_id(organization_id)')
     .eq('token', token)
     .eq('status', 'active')
     .single();
@@ -242,6 +290,13 @@ export async function acceptInvitation(token: string): Promise<void> {
     });
 
   if (memberError) throw memberError;
+
+  // Sync organization seats with Stripe (for Business plan)
+  // @ts-ignore - workspaces is populated from the select query
+  if (inviteLink.workspaces?.organization_id) {
+    // @ts-ignore
+    await syncOrganizationSeats(inviteLink.workspaces.organization_id);
+  }
 }
 
 export async function cancelInvitation(invitationId: string): Promise<void> {

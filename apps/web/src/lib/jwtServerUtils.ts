@@ -49,8 +49,14 @@ export function logJWTIssuance(
   console.log('JWT Contents:', JSON.stringify(payload, null, 2));
   console.log('JWT Token (first 50 chars):', token.substring(0, 50) + '...');
   console.log('User ID:', payload.sub || payload.user_id || 'N/A');
-  console.log('Issued At:', payload.iat ? new Date((payload.iat as number) * 1000).toISOString() : 'N/A');
-  console.log('Expires At:', payload.exp ? new Date((payload.exp as number) * 1000).toISOString() : 'N/A');
+  console.log(
+    'Issued At:',
+    payload.iat ? new Date((payload.iat as number) * 1000).toISOString() : 'N/A'
+  );
+  console.log(
+    'Expires At:',
+    payload.exp ? new Date((payload.exp as number) * 1000).toISOString() : 'N/A'
+  );
   if (payload.orgs) {
     console.log('Organizations:', payload.orgs);
   }
@@ -58,4 +64,3 @@ export function logJWTIssuance(
     console.log('Subscription Plan:', payload.subscription_plan);
   }
 }
-

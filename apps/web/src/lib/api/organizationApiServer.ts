@@ -17,6 +17,8 @@ export type Organization = {
   stripe_subscription_item_id: string | null;
   seat_count: number;
   active_member_count: number;
+  cancel_at_period_end: boolean | null;
+  current_period_end: string | null;
   created_at: string;
 };
 
@@ -30,6 +32,7 @@ export type UserOrganizationData = {
   organization_member: OrganizationMember;
   organization: Organization;
   organization_role: OrganizationMemberRole | null;
+  role: string; // Computed from organization_role.name, defaults to 'member'
 };
 
 export type UserOrganizationsData = UserOrganizationData[];
@@ -110,6 +113,7 @@ export async function getUserOrganizationsDataServer(
         organization_member: member as OrganizationMember,
         organization: org,
         organization_role: role,
+        role: role?.name?.toLowerCase() || 'member', // Default to 'member' if no role
       };
     })
     .filter((item): item is UserOrganizationData => item !== null);

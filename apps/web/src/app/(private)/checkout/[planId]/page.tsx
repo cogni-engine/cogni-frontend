@@ -11,10 +11,15 @@ import { DEFAULT_PRICING_JA } from '@cogni/pricing/src/constants';
 import GlassCard from '@/components/glass-card/GlassCard';
 import { ArrowLeft, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { createClient } from '@/lib/supabase/browserClient';
+import { getPrimaryUserOrganizationData } from '@/lib/api/organizationApi';
 
 const stripePromise = loadStripe(
   process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || ''
 );
+
+const API_BASE_URL =
+  process.env.NEXT_PUBLIC_API_BASE_URL || 'http://0.0.0.0:8000';
 
 export default function CheckoutPage() {
   const params = useParams();
@@ -49,6 +54,63 @@ export default function CheckoutPage() {
   // Fetch client secret function for EmbeddedCheckoutProvider
   const fetchClientSecret = React.useCallback(async () => {
     try {
+      // For Pro plan, use FastAPI endpoint
+      if (planId === 'pro') {
+        console.log('🚀 Using FastAPI for Pro plan purchase');
+
+        // Get current user
+        const supabase = createClient();
+        const {
+          data: { user },
+          error: authError,
+        } = await supabase.auth.getUser();
+
+        if (authError || !user) {
+          throw new Error('You must be logged in to purchase a plan');
+        }
+
+        // Get user's primary organization
+        const primaryOrg = await getPrimaryUserOrganizationData(user.id);
+
+        if (!primaryOrg) {
+          throw new Error(
+            'No organization found. Please create an organization first.'
+          );
+        }
+
+        console.log('📦 Using organization:', primaryOrg.organization.id);
+
+        // Call FastAPI billing endpoint
+        const response = await fetch(
+          `${API_BASE_URL}/api/billing/pro/purchase`,
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              organization_id: primaryOrg.organization.id,
+            }),
+          }
+        );
+
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(
+            errorData.detail || 'Failed to create checkout session'
+          );
+        }
+
+        const data = await response.json();
+        if (!data.client_secret) {
+          throw new Error('No client secret returned');
+        }
+
+        console.log('✅ Checkout session created via FastAPI');
+        return data.client_secret;
+      }
+
+      // For other plans, use existing Next.js API (creates new organization)
       const response = await fetch('/api/stripe/create-checkout-session', {
         method: 'POST',
         headers: {
@@ -59,9 +121,7 @@ export default function CheckoutPage() {
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        throw new Error(
-          errorData.error || 'Failed to create checkout session'
-        );
+        throw new Error(errorData.error || 'Failed to create checkout session');
       }
 
       const data = await response.json();
@@ -123,11 +183,7 @@ export default function CheckoutPage() {
   return (
     <div className='min-h-screen px-4 py-8'>
       <div className='w-full max-w-7xl mx-auto space-y-6'>
-        <Button
-          onClick={() => router.back()}
-          variant='ghost'
-          className='mb-4'
-        >
+        <Button onClick={() => router.back()} variant='ghost' className='mb-4'>
           <ArrowLeft className='h-4 w-4 mr-2' />
           Back
         </Button>

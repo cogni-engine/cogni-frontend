@@ -56,7 +56,10 @@ async function getOrCreateStripeCustomer(
     .eq('id', organization.id);
 
   if (error) {
-    console.error('Error updating organization with Stripe customer ID:', error);
+    console.error(
+      'Error updating organization with Stripe customer ID:',
+      error
+    );
     throw new Error('Failed to save Stripe customer ID');
   }
 
@@ -112,14 +115,14 @@ export async function POST(req: NextRequest) {
     // Business plan allows multiple organizations, Pro plan allows only 1 (checked above)
     // Create organization using RPC function with authenticated client
     // The function returns: { id, name, seat_count, active_member_count, created_at, members }
-    
+
     // Debug: Log user info and parameters
     console.log('DEBUG: Creating organization with params:', {
       user_id: user.id,
       user_email: user.email,
       p_name: `${user.email}'s Organization`,
     });
-    
+
     // ERROR DEBUGGING:
     // If you see "invalid input syntax for type uuid: '9'" error, the database function
     // is likely trying to use role_id (a number) where a UUID is expected.
@@ -129,7 +132,7 @@ export async function POST(req: NextRequest) {
     // 3. Using role_id where user_id is expected
     // To debug: Check the function definition in Supabase Dashboard → Database → Functions
     // Look for places where role_id or numeric IDs are used with UUID columns
-    
+
     const { data: rpcResult, error: rpcError } = await supabase.rpc(
       'create_organization_with_invoker_as_owner',
       {
@@ -157,16 +160,22 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    if (rpcError || !rpcResult || (Array.isArray(rpcResult) && rpcResult.length === 0)) {
+    if (
+      rpcError ||
+      !rpcResult ||
+      (Array.isArray(rpcResult) && rpcResult.length === 0)
+    ) {
       return NextResponse.json(
-        { 
+        {
           error: 'Failed to create organization',
-          details: rpcError ? {
-            message: rpcError.message,
-            code: rpcError.code,
-            details: rpcError.details,
-            hint: rpcError.hint,
-          } : 'No result returned',
+          details: rpcError
+            ? {
+                message: rpcError.message,
+                code: rpcError.code,
+                details: rpcError.details,
+                hint: rpcError.hint,
+              }
+            : 'No result returned',
         },
         { status: 500 }
       );
@@ -256,8 +265,7 @@ export async function POST(req: NextRequest) {
     console.error('Error creating checkout session:', error);
     return NextResponse.json(
       {
-        error:
-          error instanceof Error ? error.message : 'Internal server error',
+        error: error instanceof Error ? error.message : 'Internal server error',
       },
       { status: 500 }
     );

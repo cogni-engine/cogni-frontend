@@ -24,12 +24,15 @@ export default function CheckoutSuccessPage() {
       try {
         // Refresh the session to get a new JWT with updated subscription info
         await refreshSession();
-        
+
         // Now get the subscription plan from the refreshed JWT
         const plan = await getSubscriptionPlanFromJWT();
         setSubscriptionPlan(plan);
       } catch (error) {
-        console.error('Error refreshing session or getting subscription plan:', error);
+        console.error(
+          'Error refreshing session or getting subscription plan:',
+          error
+        );
         // Fallback: try to get plan from current JWT even if refresh failed
         try {
           const plan = await getSubscriptionPlanFromJWT();
@@ -93,4 +96,3 @@ export default function CheckoutSuccessPage() {
     </div>
   );
 }
-

@@ -36,7 +36,7 @@ export async function updateSession(request: NextRequest) {
   // Track new JWT issuance
   if (session?.access_token) {
     const currentToken = session.access_token;
-    
+
     // Check if this is a new JWT (different from previous)
     if (previousToken && previousToken !== currentToken) {
       logJWTIssuance(currentToken, 'BACKEND (REFRESHED)');

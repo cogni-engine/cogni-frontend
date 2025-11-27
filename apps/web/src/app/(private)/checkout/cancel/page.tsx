@@ -20,7 +20,9 @@ export default function CheckoutCancelPage() {
           </div>
 
           <div className='space-y-2'>
-            <h1 className='text-3xl font-bold text-white'>Checkout Cancelled</h1>
+            <h1 className='text-3xl font-bold text-white'>
+              Checkout Cancelled
+            </h1>
             <p className='text-white/60'>
               Your checkout was cancelled. No charges were made.
             </p>
@@ -46,4 +48,3 @@ export default function CheckoutCancelPage() {
     </div>
   );
 }
-
