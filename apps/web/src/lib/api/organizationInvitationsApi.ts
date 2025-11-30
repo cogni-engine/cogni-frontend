@@ -46,22 +46,27 @@ export async function createOrganizationInvitation(
   roleId?: number
 ): Promise<OrganizationInvitation> {
   const token = await getAuthToken();
-  
-  const response = await fetch(`${API_BASE_URL}/api/organizations/invitations/create`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      ...(token && { Authorization: `Bearer ${token}` }),
-    },
-    body: JSON.stringify({
-      organizationId,
-      inviteeEmail,
-      roleId,
-    }),
-  });
+
+  const response = await fetch(
+    `${API_BASE_URL}/api/organizations/invitations/create`,
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token && { Authorization: `Bearer ${token}` }),
+      },
+      body: JSON.stringify({
+        organizationId,
+        inviteeEmail,
+        roleId,
+      }),
+    }
+  );
 
   if (!response.ok) {
-    const error = await response.json().catch(() => ({ detail: 'Failed to create invitation' }));
+    const error = await response
+      .json()
+      .catch(() => ({ detail: 'Failed to create invitation' }));
     throw new Error(error.detail || 'Failed to create invitation');
   }
 
@@ -78,18 +83,23 @@ export async function acceptOrganizationInvitation(token: string): Promise<{
   message: string;
 }> {
   const authToken = await getAuthToken();
-  
-  const response = await fetch(`${API_BASE_URL}/api/organizations/invitations/accept`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      ...(authToken && { Authorization: `Bearer ${authToken}` }),
-    },
-    body: JSON.stringify({ token }),
-  });
+
+  const response = await fetch(
+    `${API_BASE_URL}/api/organizations/invitations/accept`,
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(authToken && { Authorization: `Bearer ${authToken}` }),
+      },
+      body: JSON.stringify({ token }),
+    }
+  );
 
   if (!response.ok) {
-    const error = await response.json().catch(() => ({ detail: 'Failed to accept invitation' }));
+    const error = await response
+      .json()
+      .catch(() => ({ detail: 'Failed to accept invitation' }));
     throw new Error(error.detail || 'Failed to accept invitation');
   }
 
@@ -117,14 +127,18 @@ export async function getOrganizationInvitations(
 /**
  * Cancel an organization invitation
  */
-export async function cancelOrganizationInvitation(invitationId: string): Promise<void> {
+export async function cancelOrganizationInvitation(
+  invitationId: string
+): Promise<void> {
   const response = await fetch(
     `${API_BASE_URL}/api/organizations/invitations/${invitationId}`,
     { method: 'DELETE' }
   );
 
   if (!response.ok) {
-    const error = await response.json().catch(() => ({ detail: 'Failed to cancel invitation' }));
+    const error = await response
+      .json()
+      .catch(() => ({ detail: 'Failed to cancel invitation' }));
     throw new Error(error.detail || 'Failed to cancel invitation');
   }
 }
@@ -136,5 +150,3 @@ export function generateOrganizationInvitationLink(token: string): string {
   const baseUrl = typeof window !== 'undefined' ? window.location.origin : '';
   return `${baseUrl}/invite/org/${token}`;
 }
-
-

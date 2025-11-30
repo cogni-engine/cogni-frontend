@@ -1,4 +1,4 @@
-import SubscriptionClient from '@/features/users/SubscriptionClient';
+import SubscriptionClient from '@/features/users/subscriptions/SubscriptionClient';
 
 export const metadata = {
   title: 'Subscription Management',

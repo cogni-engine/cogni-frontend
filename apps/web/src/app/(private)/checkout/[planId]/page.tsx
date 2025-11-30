@@ -86,7 +86,10 @@ export default function CheckoutPage() {
       if (primaryOrg) {
         // Use existing organization
         requestBody.organizationId = primaryOrg.organization.id;
-        console.log('📦 Using existing organization:', primaryOrg.organization.id);
+        console.log(
+          '📦 Using existing organization:',
+          primaryOrg.organization.id
+        );
       } else {
         // Create new organization
         requestBody.createOrganization = true;
@@ -103,7 +106,7 @@ export default function CheckoutPage() {
       const response = await fetch(`${API_BASE_URL}/api/billing/purchase`, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${session.access_token}`,
+          Authorization: `Bearer ${session.access_token}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(requestBody),

@@ -250,4 +250,3 @@ const AiChatInput = forwardRef<AiChatInputRef, AiChatInputProps>(
 );
 
 export default AiChatInput;
-

@@ -84,10 +84,14 @@ export async function getUserOrganizationsData(
     } else {
       roles = (rolesData || []) as OrganizationMemberRole[];
       console.log('✅ Fetched roles:', roles);
-      
+
       if (roles.length === 0) {
-        console.warn('⚠️ No roles found! The organization_member_roles table may be empty.');
-        console.warn('⚠️ Run the CREATE_ORGANIZATION_ROLES.sql script to create roles.');
+        console.warn(
+          '⚠️ No roles found! The organization_member_roles table may be empty.'
+        );
+        console.warn(
+          '⚠️ Run the CREATE_ORGANIZATION_ROLES.sql script to create roles.'
+        );
       }
     }
   }

@@ -49,8 +49,7 @@ export default function OrganizationsPage() {
   const [invitations, setInvitations] = React.useState<
     OrganizationInvitation[]
   >([]);
-  const [isLoadingInvitations, setIsLoadingInvitations] =
-    React.useState(false);
+  const [isLoadingInvitations, setIsLoadingInvitations] = React.useState(false);
   const [successMessage, setSuccessMessage] = React.useState<string | null>(
     null
   );
