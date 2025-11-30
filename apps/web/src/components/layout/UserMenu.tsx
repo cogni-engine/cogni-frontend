@@ -89,7 +89,12 @@ export function UserMenu({ user }: UserMenuProps) {
     router.push('/user/tasks');
   }, [router]);
 
-  const handleUpgradePlan = React.useCallback(() => {
+  const handleSelectOrganizations = React.useCallback(() => {
+    setOpen(false);
+    router.push('/user/organizations');
+  }, [router]);
+
+  const handleSelectSubscriptions = React.useCallback(() => {
     setOpen(false);
     if (isProOrBusiness) {
       router.push('/user/subscription');
@@ -159,7 +164,7 @@ export function UserMenu({ user }: UserMenuProps) {
                 className='flex items-center gap-2'
               >
                 <Settings className='h-4 w-4' />
-                <span>User settings</span>
+                <span>User Settings</span>
               </DropdownMenuItem>
               <DropdownMenuItem
                 onSelect={event => {
@@ -175,21 +180,26 @@ export function UserMenu({ user }: UserMenuProps) {
               <DropdownMenuItem
                 onSelect={event => {
                   event.preventDefault();
-                  handleUpgradePlan();
+                  handleSelectOrganizations();
+                }}
+                className='flex items-center gap-2'
+              >
+                <Building2 className='h-4 w-4' />
+                <span>Organizations</span>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                onSelect={event => {
+                  event.preventDefault();
+                  handleSelectSubscriptions();
                 }}
                 className={`flex items-center gap-2 ${
                   isProOrBusiness ? '' : 'text-blue-400 hover:text-blue-300'
                 }`}
               >
-                {isProOrBusiness ? (
-                  <Building2 className='h-4 w-4' />
-                ) : (
-                  <ArrowUpCircle className='h-4 w-4' />
-                )}
+                <ArrowUpCircle className='h-4 w-4' />
                 <span>
-                  {isProOrBusiness
-                    ? 'Subscriptions & Organizations'
-                    : 'Upgrade Plan'}
+                  {isProOrBusiness ? 'Subscriptions' : 'Upgrade Plan'}
                 </span>
               </DropdownMenuItem>
               <DropdownMenuSeparator />

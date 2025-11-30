@@ -46,12 +46,10 @@ export default function SubscriptionClient() {
   >([]);
   const [currentOrg, setCurrentOrg] =
     React.useState<UserOrganizationData | null>(null);
-  const [showCancelDialog, setShowCancelDialog] = React.useState(false);
   const [showSwitchDialog, setShowSwitchDialog] = React.useState(false);
   const [showUpgradeDialog, setShowUpgradeDialog] = React.useState(false);
   const [showUpdateSeatsDialog, setShowUpdateSeatsDialog] =
     React.useState(false);
-  const [isCanceling, setIsCanceling] = React.useState(false);
   const [isSwitching, setIsSwitching] = React.useState(false);
   const [isUpgrading, setIsUpgrading] = React.useState(false);
   const [isUpdatingSeats, setIsUpdatingSeats] = React.useState(false);
@@ -149,40 +147,8 @@ export default function SubscriptionClient() {
     console.log('Change plan to', planId);
   };
 
-  const handleCancelSubscription = async () => {
-    if (!currentOrg) return;
-
-    setIsCanceling(true);
-    setError(null);
-
-    try {
-      const response = await fetch('/api/stripe/cancel-subscription', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          organizationId: currentOrg.organization.id,
-        }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to cancel subscription');
-      }
-
-      setShowCancelDialog(false);
-      // Refresh the page to show updated subscription status
-      window.location.reload();
-    } catch (err) {
-      setError(
-        err instanceof Error ? err.message : 'Failed to cancel subscription'
-      );
-    } finally {
-      setIsCanceling(false);
-    }
-  };
+  // Cancellation is handled via Stripe Customer Portal
+  // Users click "Manage Subscription" → Portal → Cancel there
 
   const handleSwitchToTeamBilling = async () => {
     if (!currentOrg) return;
@@ -191,25 +157,51 @@ export default function SubscriptionClient() {
     setError(null);
 
     try {
-      const response = await fetch('/api/stripe/switch-to-team-billing', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          organizationId: currentOrg.organization.id,
-        }),
-      });
+      // Get JWT token for authentication
+      const supabase = createClient();
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      
+      if (!session) {
+        throw new Error('No active session found');
+      }
+
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (!user) {
+        throw new Error('User not found');
+      }
+
+      // Call FastAPI unified purchase endpoint
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/billing/purchase`,
+        {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${session.access_token}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            planId: 'business',
+            createOrganization: true,
+            organizationName: `${user.email}'s Team`,
+            seatCount: 1,
+          }),
+        }
+      );
 
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || 'Failed to switch to team billing');
+        throw new Error(data.detail || 'Failed to switch to team billing');
       }
 
       // Set client secret for checkout
-      if (data.clientSecret) {
-        setTeamBillingClientSecret(data.clientSecret);
+      if (data.client_secret) {
+        setTeamBillingClientSecret(data.client_secret);
       } else {
         throw new Error('No client secret returned');
       }
@@ -239,20 +231,36 @@ export default function SubscriptionClient() {
     setError(null);
 
     try {
-      const response = await fetch('/api/stripe/create-portal-session', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          organizationId: currentOrg.organization.id,
-        }),
-      });
+      // Get JWT token for authentication
+      const supabase = createClient();
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      
+      if (!session) {
+        throw new Error('No active session found');
+      }
+
+      // Call FastAPI portal session endpoint
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/billing/portal-session`,
+        {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${session.access_token}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            organizationId: currentOrg.organization.id,
+            returnUrl: `${window.location.origin}/user/subscription`,
+          }),
+        }
+      );
 
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || 'Failed to create portal session');
+        throw new Error(data.detail || 'Failed to create portal session');
       }
 
       // Redirect to Stripe Customer Portal
@@ -379,7 +387,7 @@ export default function SubscriptionClient() {
         <div className='mb-6'>
           <Button
             variant='ghost'
-            onClick={() => router.back()}
+            onClick={() => router.push('/')}
             className='text-white/60 hover:text-white mb-4'
           >
             <ArrowLeft className='h-4 w-4 mr-2' />
@@ -651,44 +659,6 @@ export default function SubscriptionClient() {
           </div>
         )}
       </div>
-
-      {/* Cancel Subscription Dialog */}
-      <Dialog open={showCancelDialog} onOpenChange={setShowCancelDialog}>
-        <DialogContent className='bg-gray-900 border-white/10 text-white'>
-          <DialogHeader>
-            <DialogTitle>Cancel Subscription</DialogTitle>
-            <DialogDescription className='text-white/60'>
-              Are you sure you want to cancel your subscription? Your
-              subscription will remain active until the end of the current
-              billing period, after which it will be canceled and you will lose
-              access to premium features.
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <Button
-              variant='outline'
-              onClick={() => setShowCancelDialog(false)}
-              disabled={isCanceling}
-            >
-              Keep Subscription
-            </Button>
-            <Button
-              variant='destructive'
-              onClick={handleCancelSubscription}
-              disabled={isCanceling}
-            >
-              {isCanceling ? (
-                <>
-                  <Loader2 className='mr-2 h-4 w-4 animate-spin' />
-                  Canceling...
-                </>
-              ) : (
-                'Cancel Subscription'
-              )}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
 
       {/* Upgrade to Business Dialog */}
       <Dialog open={showUpgradeDialog} onOpenChange={setShowUpgradeDialog}>

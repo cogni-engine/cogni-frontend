@@ -195,9 +195,11 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
 
   // モバイルかつ入力中の場合のみフッターを非表示、デスクトップでは常に表示
   // Also hide footer when drawer is open
-  // Hide footer on user settings and subscription pages
+  // Hide footer on user settings, organizations, and subscription pages
   const isUserSettingsPage =
-    pathname === '/user/settings' || pathname === '/user/subscription';
+    pathname === '/user/settings' ||
+    pathname === '/user/subscription' ||
+    pathname === '/user/organizations';
   const shouldShowFooter =
     showTopLevelChrome &&
     (!isMobile || !isInputActive) &&

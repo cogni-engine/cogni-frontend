@@ -54,82 +54,75 @@ export default function CheckoutPage() {
   // Fetch client secret function for EmbeddedCheckoutProvider
   const fetchClientSecret = React.useCallback(async () => {
     try {
-      // For Pro plan, use FastAPI endpoint
-      if (planId === 'pro') {
-        console.log('🚀 Using FastAPI for Pro plan purchase');
+      console.log(`🚀 Using FastAPI for ${planId} plan purchase`);
 
-        // Get current user
-        const supabase = createClient();
-        const {
-          data: { user },
-          error: authError,
-        } = await supabase.auth.getUser();
+      // Get current user
+      const supabase = createClient();
+      const {
+        data: { user },
+        error: authError,
+      } = await supabase.auth.getUser();
 
-        if (authError || !user) {
-          throw new Error('You must be logged in to purchase a plan');
-        }
-
-        // Get user's primary organization
-        const primaryOrg = await getPrimaryUserOrganizationData(user.id);
-
-        if (!primaryOrg) {
-          throw new Error(
-            'No organization found. Please create an organization first.'
-          );
-        }
-
-        console.log('📦 Using organization:', primaryOrg.organization.id);
-
-        // Call FastAPI billing endpoint
-        const response = await fetch(
-          `${API_BASE_URL}/api/billing/pro/purchase`,
-          {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              organization_id: primaryOrg.organization.id,
-            }),
-          }
-        );
-
-        if (!response.ok) {
-          const errorData = await response.json().catch(() => ({}));
-          throw new Error(
-            errorData.detail || 'Failed to create checkout session'
-          );
-        }
-
-        const data = await response.json();
-        if (!data.client_secret) {
-          throw new Error('No client secret returned');
-        }
-
-        console.log('✅ Checkout session created via FastAPI');
-        return data.client_secret;
+      if (authError || !user) {
+        throw new Error('You must be logged in to purchase a plan');
       }
 
-      // For other plans, use existing Next.js API (creates new organization)
-      const response = await fetch('/api/stripe/create-checkout-session', {
+      // Get JWT token for authentication
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      if (!session) {
+        throw new Error('No active session found');
+      }
+
+      // Get user's primary organization
+      const primaryOrg = await getPrimaryUserOrganizationData(user.id);
+
+      // Prepare request body
+      const requestBody: any = {
+        planId: planId,
+      };
+
+      if (primaryOrg) {
+        // Use existing organization
+        requestBody.organizationId = primaryOrg.organization.id;
+        console.log('📦 Using existing organization:', primaryOrg.organization.id);
+      } else {
+        // Create new organization
+        requestBody.createOrganization = true;
+        requestBody.organizationName = `${user.email}'s Organization`;
+        console.log('📝 Will create new organization');
+      }
+
+      // Add seat count for business plan
+      if (planId === 'business') {
+        requestBody.seatCount = 1;
+      }
+
+      // Call unified FastAPI endpoint
+      const response = await fetch(`${API_BASE_URL}/api/billing/purchase`, {
         method: 'POST',
         headers: {
+          'Authorization': `Bearer ${session.access_token}`,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ planId }),
+        body: JSON.stringify(requestBody),
       });
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error || 'Failed to create checkout session');
+        throw new Error(
+          errorData.detail || 'Failed to create checkout session'
+        );
       }
 
       const data = await response.json();
-      if (!data.clientSecret) {
+      if (!data.client_secret) {
         throw new Error('No client secret returned');
       }
 
-      return data.clientSecret;
+      console.log('✅ Checkout session created via FastAPI');
+      return data.client_secret;
     } catch (err) {
       setError(
         err instanceof Error ? err.message : 'Failed to initialize checkout'

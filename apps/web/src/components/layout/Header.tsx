@@ -27,6 +27,8 @@ export default function Header() {
     '/personal': 'Personal',
     '/user/settings': 'User Settings',
     '/user/tasks': 'My Tasks',
+    '/user/organizations': 'Organizations',
+    '/user/subscription': 'Subscriptions',
   };
   const pageTitle = pageTitleMap[pathname] ?? null;
   const [isMounted, setIsMounted] = useState(false);

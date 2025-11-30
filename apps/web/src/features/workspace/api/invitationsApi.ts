@@ -235,9 +235,7 @@ export async function acceptInvitation(token: string): Promise<void> {
     if (memberError) throw memberError;
 
     // Sync organization seats with Stripe (for Business plan)
-    // @ts-ignore - workspaces is populated from the select query
     if (invitation.workspaces?.organization_id) {
-      // @ts-ignore
       await syncOrganizationSeats(invitation.workspaces.organization_id);
     }
 
@@ -292,9 +290,7 @@ export async function acceptInvitation(token: string): Promise<void> {
   if (memberError) throw memberError;
 
   // Sync organization seats with Stripe (for Business plan)
-  // @ts-ignore - workspaces is populated from the select query
   if (inviteLink.workspaces?.organization_id) {
-    // @ts-ignore
     await syncOrganizationSeats(inviteLink.workspaces.organization_id);
   }
 }
