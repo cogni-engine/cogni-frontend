@@ -138,11 +138,11 @@ export default function CheckoutPage() {
     () => ({
       fetchClientSecret,
       onComplete: () => {
-        // Redirect to success page after payment completion
-        router.push('/checkout/success');
+        // Redirect to success page after payment completion with plan parameter
+        router.push(`/checkout/success?plan=${planId}`);
       },
     }),
-    [fetchClientSecret, router]
+    [fetchClientSecret, router, planId]
   );
 
   if (isLoading) {

@@ -3,7 +3,14 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft } from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { ArrowLeft, ChevronDown } from 'lucide-react';
 import {
   useUserId,
   useManagedOrganizationsWithSubscriptions,
@@ -127,10 +134,7 @@ export default function SubscriptionClient() {
 
     upgradeMutation.mutate({
       organizationId: currentOrg.organization.id,
-      seatCount:
-        seatCount > (currentOrg.organization.active_member_count || 1)
-          ? seatCount
-          : undefined, // Only send if user wants more than current members
+      seatCount,
     });
   };
 
@@ -193,46 +197,47 @@ export default function SubscriptionClient() {
           <h1 className='text-3xl font-bold text-white mb-2'>
             Subscription Management
           </h1>
-          <p className='text-white/60'>
-            {isFreePlan
-              ? 'Choose a plan that fits your needs'
-              : `You are currently on the ${(currentOrgPlan ?? '').toUpperCase()} plan. Manage your subscription below.`}
-          </p>
         </div>
 
         {/* Organization Selector - Show if multiple organizations */}
-        {isProOrBusiness &&
-          managedOrgs &&
-          managedOrgs.length > 1 &&
-          currentOrg && (
-            <div className='mt-8 mb-4'>
-              <label className='text-sm font-medium text-white/60 mb-2 block'>
-                Select Organization
-              </label>
-              <select
-                value={selectedOrgId || ''}
-                onChange={e => setSelectedOrgId(Number(e.target.value))}
-                className='w-full md:w-auto px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500'
+        {managedOrgs && managedOrgs.length > 1 && currentOrg && (
+          <div className='mt-8 mb-4'>
+            <label className='text-sm font-medium text-white/60 mb-2 block'>
+              Select Organization
+            </label>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant='outline'
+                  className='w-full md:w-auto justify-between text-left font-normal'
+                >
+                  <span>
+                    {currentOrg.organization.name} ({currentOrg.role})
+                  </span>
+                  <ChevronDown className='ml-2 h-4 w-4 opacity-50' />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent
+                className='w-[--radix-dropdown-menu-trigger-width]'
+                align='start'
               >
-                {managedOrgs.map((org: UserOrganizationData) => {
-                  const orgPlan = getOrganizationSubscriptionPlan(
-                    org.organization
-                  );
-                  const planLabel = orgPlan
-                    ? ` (${orgPlan.toUpperCase()})`
-                    : '';
-                  return (
-                    <option
+                <DropdownMenuRadioGroup
+                  value={String(selectedOrgId || '')}
+                  onValueChange={value => setSelectedOrgId(Number(value))}
+                >
+                  {managedOrgs.map((org: UserOrganizationData) => (
+                    <DropdownMenuRadioItem
                       key={org.organization.id}
-                      value={org.organization.id}
+                      value={String(org.organization.id)}
                     >
-                      {org.organization.name} ({org.role}){planLabel}
-                    </option>
-                  );
-                })}
-              </select>
-            </div>
-          )}
+                      {org.organization.name} ({org.role})
+                    </DropdownMenuRadioItem>
+                  ))}
+                </DropdownMenuRadioGroup>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        )}
 
         {/* Subscription Details - Only show if user has pro/business plan */}
         {isProOrBusiness && currentOrg && (
@@ -247,7 +252,7 @@ export default function SubscriptionClient() {
         )}
 
         {/* Pricing Cards Grid - Hide for business plan */}
-        {currentOrgPlan !== 'business' && (
+        {currentOrgPlan && currentOrgPlan !== 'business' && (
           <PricingCardsGrid
             subscriptionPlan={currentOrgPlan ?? null}
             onPlanClick={handlePlanClick}

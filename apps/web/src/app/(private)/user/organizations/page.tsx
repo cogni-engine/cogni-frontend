@@ -11,6 +11,11 @@ import {
   Crown,
   Users as UsersIcon,
   Mail,
+  Shield,
+  User,
+  Edit,
+  Info,
+  ChevronDown,
 } from 'lucide-react';
 import {
   Dialog,
@@ -20,6 +25,13 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { createClient } from '@/lib/supabase/browserClient';
 import { getUserOrganizationsData } from '@/lib/api/organizationApi';
 import type { UserOrganizationData } from '@/lib/api/organizationApi';
@@ -28,6 +40,7 @@ import {
   getOrganizationInvitations,
   cancelOrganizationInvitation,
   deleteMember,
+  updateMemberRole,
   type OrganizationInvitation,
 } from '@/lib/api/organizationInvitationsApi';
 
@@ -43,8 +56,13 @@ export default function OrganizationsPage() {
   const [showRemoveDialog, setShowRemoveDialog] = React.useState(false);
   const [memberToRemove, setMemberToRemove] = React.useState<any>(null);
   const [inviteEmail, setInviteEmail] = React.useState('');
+  const [inviteRoleId, setInviteRoleId] = React.useState<number>(3); // Default to 'member' role
   const [isInviting, setIsInviting] = React.useState(false);
   const [isRemoving, setIsRemoving] = React.useState(false);
+  const [showUpdateRoleDialog, setShowUpdateRoleDialog] = React.useState(false);
+  const [memberToUpdateRole, setMemberToUpdateRole] = React.useState<any>(null);
+  const [newRoleId, setNewRoleId] = React.useState<number>(3);
+  const [isUpdatingRole, setIsUpdatingRole] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
   const [members, setMembers] = React.useState<any[]>([]);
   const [invitations, setInvitations] = React.useState<
@@ -171,7 +189,8 @@ export default function OrganizationsPage() {
     try {
       const invitation = await createOrganizationInvitation(
         currentOrg.organization.id,
-        inviteEmail
+        inviteEmail,
+        inviteRoleId
       );
 
       // Copy link to clipboard
@@ -186,6 +205,7 @@ export default function OrganizationsPage() {
 
       setShowInviteDialog(false);
       setInviteEmail('');
+      setInviteRoleId(3); // Reset to default 'member' role
 
       // Reload members and invitations
       await loadMembers(currentOrg.organization.id);
@@ -241,6 +261,38 @@ export default function OrganizationsPage() {
     }
   };
 
+  const handleUpdateMemberRole = async () => {
+    if (!currentOrg || !memberToUpdateRole) return;
+
+    setIsUpdatingRole(true);
+    setError(null);
+    setSuccessMessage(null);
+
+    try {
+      const result = await updateMemberRole(
+        currentOrg.organization.id,
+        memberToUpdateRole.id,
+        newRoleId
+      );
+
+      setSuccessMessage(result.message);
+      setShowUpdateRoleDialog(false);
+      setMemberToUpdateRole(null);
+
+      // Reload members to show updated roles
+      await loadMembers(currentOrg.organization.id);
+
+      // Clear success message after 3 seconds
+      setTimeout(() => setSuccessMessage(null), 3000);
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : 'Failed to update member role'
+      );
+    } finally {
+      setIsUpdatingRole(false);
+    }
+  };
+
   if (isLoading) {
     return (
       <div className='flex items-center justify-center min-h-screen'>
@@ -286,6 +338,18 @@ export default function OrganizationsPage() {
     role: currentOrg.role,
   });
 
+  // Calculate available seats
+  const pendingInvitationsCount = invitations.filter(
+    inv => inv.status === 'pending'
+  ).length;
+  const usedSeats =
+    currentOrg.organization.active_member_count + pendingInvitationsCount;
+  const availableSeats =
+    currentOrg.organization.seat_count > 0
+      ? currentOrg.organization.seat_count - usedSeats
+      : 0;
+  const canInvite = availableSeats > 0;
+
   return (
     <div className='h-full overflow-y-auto pt-20 pb-24 px-4 md:px-6'>
       <div className='max-w-7xl mx-auto py-8'>
@@ -310,29 +374,44 @@ export default function OrganizationsPage() {
             </div>
 
             {/* Organization Selector */}
-            {organizations.length > 1 && (
+            {organizations.length > 1 && currentOrg && (
               <div className='flex flex-col items-end gap-1'>
                 <label className='text-xs text-white/60'>
                   Select Organization
                 </label>
-                <select
-                  value={currentOrg.organization.id}
-                  onChange={e =>
-                    handleOrganizationChange(Number(e.target.value))
-                  }
-                  className='px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500 cursor-pointer'
-                >
-                  {organizations.map(org => (
-                    <option
-                      key={org.organization.id}
-                      value={org.organization.id}
-                      className='bg-gray-900'
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant='outline'
+                      className='w-full md:w-auto justify-between text-left font-normal'
                     >
-                      {org.organization.name}
-                      {org.organization.stripe_subscription_id && ' ⭐'}
-                    </option>
-                  ))}
-                </select>
+                      <span>
+                        {currentOrg.organization.name} ({currentOrg.role})
+                      </span>
+                      <ChevronDown className='ml-2 h-4 w-4 opacity-50' />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent
+                    className='w-[--radix-dropdown-menu-trigger-width]'
+                    align='start'
+                  >
+                    <DropdownMenuRadioGroup
+                      value={String(currentOrg.organization.id)}
+                      onValueChange={value =>
+                        handleOrganizationChange(Number(value))
+                      }
+                    >
+                      {organizations.map((org: UserOrganizationData) => (
+                        <DropdownMenuRadioItem
+                          key={org.organization.id}
+                          value={String(org.organization.id)}
+                        >
+                          {org.organization.name} ({org.role})
+                        </DropdownMenuRadioItem>
+                      ))}
+                    </DropdownMenuRadioGroup>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
             )}
           </div>
@@ -357,13 +436,27 @@ export default function OrganizationsPage() {
             </div>
 
             {isAdmin && (
-              <Button
-                onClick={() => setShowInviteDialog(true)}
-                className='bg-purple-500 hover:bg-purple-600'
-              >
-                <UserPlus className='mr-2 h-4 w-4' />
-                Invite Member
-              </Button>
+              <div className='flex flex-col items-end gap-1'>
+                <Button
+                  onClick={() => setShowInviteDialog(true)}
+                  disabled={!canInvite}
+                  className='bg-purple-500 hover:bg-purple-600 disabled:opacity-50 disabled:cursor-not-allowed'
+                  title={
+                    !canInvite
+                      ? `No available seats. ${usedSeats}/${currentOrg.organization.seat_count} seats used (${currentOrg.organization.active_member_count} members + ${pendingInvitationsCount} pending invitations)`
+                      : undefined
+                  }
+                >
+                  <UserPlus className='mr-2 h-4 w-4' />
+                  Invite Member
+                </Button>
+                {!canInvite && (
+                  <p className='text-xs text-white/40 text-right max-w-[200px]'>
+                    No available seats ({usedSeats}/
+                    {currentOrg.organization.seat_count} used)
+                  </p>
+                )}
+              </div>
             )}
           </div>
 
@@ -435,17 +528,31 @@ export default function OrganizationsPage() {
                       </span>
 
                       {isAdmin && !isCurrentUser && !memberIsOwner && (
-                        <Button
-                          variant='outline'
-                          size='sm'
-                          onClick={() => {
-                            setMemberToRemove(member);
-                            setShowRemoveDialog(true);
-                          }}
-                          className='bg-red-500/10 border-red-500/50 text-red-300 hover:bg-red-500/20'
-                        >
-                          <UserMinus className='h-4 w-4' />
-                        </Button>
+                        <>
+                          <Button
+                            variant='outline'
+                            size='sm'
+                            onClick={() => {
+                              setMemberToUpdateRole(member);
+                              setNewRoleId(member.role_id || 3);
+                              setShowUpdateRoleDialog(true);
+                            }}
+                            className='bg-blue-500/10 border-blue-500/50 text-blue-300 hover:bg-blue-500/20'
+                          >
+                            <Edit className='h-4 w-4' />
+                          </Button>
+                          <Button
+                            variant='outline'
+                            size='sm'
+                            onClick={() => {
+                              setMemberToRemove(member);
+                              setShowRemoveDialog(true);
+                            }}
+                            className='bg-red-500/10 border-red-500/50 text-red-300 hover:bg-red-500/20'
+                          >
+                            <UserMinus className='h-4 w-4' />
+                          </Button>
+                        </>
                       )}
                     </div>
                   </div>
@@ -549,20 +656,48 @@ export default function OrganizationsPage() {
             </DialogDescription>
           </DialogHeader>
 
-          <div className='py-4'>
-            <label className='text-sm font-medium text-white mb-2 block'>
-              Email address
-            </label>
-            <div className='relative'>
-              <Mail className='absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-white/40' />
-              <input
-                type='email'
-                value={inviteEmail}
-                onChange={e => setInviteEmail(e.target.value)}
-                placeholder='member@example.com'
-                className='w-full pl-10 pr-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-purple-500'
+          <div className='py-4 space-y-4'>
+            <div>
+              <label className='text-sm font-medium text-white mb-2 block'>
+                Email address
+              </label>
+              <div className='relative'>
+                <Mail className='absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-white/40' />
+                <input
+                  type='email'
+                  value={inviteEmail}
+                  onChange={e => setInviteEmail(e.target.value)}
+                  placeholder='member@example.com'
+                  className='w-full pl-10 pr-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-purple-500'
+                  disabled={isInviting}
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className='text-sm font-medium text-white mb-2 block'>
+                Role
+              </label>
+              <select
+                value={inviteRoleId}
+                onChange={e => setInviteRoleId(Number(e.target.value))}
+                className='w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500'
                 disabled={isInviting}
-              />
+              >
+                <option value={3} className='bg-gray-900'>
+                  Member - Basic access
+                </option>
+                <option value={2} className='bg-gray-900'>
+                  Admin - Can manage members and invitations
+                </option>
+              </select>
+              <div className='mt-2 flex items-start gap-2 text-xs text-white/50'>
+                <Info className='h-3 w-3 mt-0.5 flex-shrink-0' />
+                <p>
+                  Admins can invite and remove members. Owner role cannot be
+                  assigned.
+                </p>
+              </div>
             </div>
           </div>
 
@@ -572,6 +707,7 @@ export default function OrganizationsPage() {
               onClick={() => {
                 setShowInviteDialog(false);
                 setInviteEmail('');
+                setInviteRoleId(3);
                 setError(null);
               }}
               disabled={isInviting}
@@ -649,6 +785,115 @@ export default function OrganizationsPage() {
                 <>
                   <UserMinus className='mr-2 h-4 w-4' />
                   Remove Member
+                </>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Update Member Role Dialog */}
+      <Dialog
+        open={showUpdateRoleDialog}
+        onOpenChange={setShowUpdateRoleDialog}
+      >
+        <DialogContent className='bg-gray-900 border-white/10 text-white'>
+          <DialogHeader>
+            <DialogTitle>Update Member Role</DialogTitle>
+            <DialogDescription className='text-white/60'>
+              Change the role and permissions for this member.
+            </DialogDescription>
+          </DialogHeader>
+
+          {memberToUpdateRole && (
+            <div className='space-y-4'>
+              <div className='py-4 px-4 bg-white/5 rounded-lg border border-white/10'>
+                <p className='text-white font-medium'>
+                  {(memberToUpdateRole as any).name ||
+                    (memberToUpdateRole as any).email ||
+                    'Unknown'}
+                </p>
+                <p className='text-sm text-white/60'>
+                  {(memberToUpdateRole as any).email}
+                </p>
+                <p className='text-xs text-white/40 mt-2'>
+                  Current role:{' '}
+                  <span className='capitalize'>
+                    {(memberToUpdateRole as any).role_name || 'Member'}
+                  </span>
+                </p>
+              </div>
+
+              <div>
+                <label className='text-sm font-medium text-white mb-2 block'>
+                  New Role
+                </label>
+                <select
+                  value={newRoleId}
+                  onChange={e => setNewRoleId(Number(e.target.value))}
+                  className='w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500'
+                  disabled={isUpdatingRole}
+                >
+                  <option value={3} className='bg-gray-900'>
+                    Member - Basic access
+                  </option>
+                  <option value={2} className='bg-gray-900'>
+                    Admin - Can manage members and invitations
+                  </option>
+                </select>
+
+                <div className='mt-3 p-3 bg-blue-500/10 border border-blue-500/30 rounded-lg'>
+                  <div className='flex items-start gap-2 text-xs text-blue-200'>
+                    <Info className='h-4 w-4 mt-0.5 flex-shrink-0' />
+                    <div className='space-y-1'>
+                      <p className='font-medium'>Role Permissions:</p>
+                      {newRoleId === 2 ? (
+                        <ul className='list-disc list-inside space-y-0.5 text-blue-200/80'>
+                          <li>Invite new members</li>
+                          <li>Remove members (except owners)</li>
+                          <li>Change member roles</li>
+                          <li>View all organization data</li>
+                        </ul>
+                      ) : (
+                        <ul className='list-disc list-inside space-y-0.5 text-blue-200/80'>
+                          <li>View organization members</li>
+                          <li>Access organization resources</li>
+                          <li>Basic member privileges</li>
+                        </ul>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          <DialogFooter>
+            <Button
+              variant='outline'
+              onClick={() => {
+                setShowUpdateRoleDialog(false);
+                setMemberToUpdateRole(null);
+                setError(null);
+              }}
+              disabled={isUpdatingRole}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleUpdateMemberRole}
+              disabled={isUpdatingRole}
+              className='bg-purple-500 hover:bg-purple-600'
+            >
+              {isUpdatingRole ? (
+                <>
+                  <Loader2 className='mr-2 h-4 w-4 animate-spin' />
+                  Updating...
+                </>
+              ) : (
+                <>
+                  <Shield className='mr-2 h-4 w-4' />
+                  Update Role
                 </>
               )}
             </Button>

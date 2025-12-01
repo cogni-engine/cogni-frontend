@@ -43,7 +43,7 @@ export function useUpgradeToBusiness() {
       seatCount,
     }: {
       organizationId: number;
-      seatCount?: number;
+      seatCount: number;
     }) => upgradeToBusiness(organizationId, seatCount),
     onSuccess: () => {
       // Invalidate subscription and organization queries

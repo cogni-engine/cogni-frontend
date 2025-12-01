@@ -108,7 +108,7 @@ export async function createPortalSession(
  */
 export async function upgradeToBusiness(
   organizationId: number,
-  seatCount?: number
+  seatCount: number
 ): Promise<void> {
   const supabase = createClient();
   const {
