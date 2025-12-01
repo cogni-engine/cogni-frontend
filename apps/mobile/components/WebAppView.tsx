@@ -19,8 +19,10 @@ export default function WebAppView({ url = 'https://app.cogno.studio', session }
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [webViewReady, setWebViewReady] = useState(false);
+  const [showLoading, setShowLoading] = useState(true);
   const insets = useSafeAreaInsets();
   const slideAnim = useRef(new Animated.Value(1000)).current; // Start off-screen (below)
+  const loadingOpacity = useRef(new Animated.Value(1)).current; // Start fully visible
   const params = useLocalSearchParams();
   const pendingNavigationRef = useRef<NotificationData | null>(null);
   const lastProcessedParamsRef = useRef<string>('');
@@ -135,6 +137,24 @@ export default function WebAppView({ url = 'https://app.cogno.studio', session }
       slideAnim.setValue(1000);
     }
   }, [loading, error, slideAnim]);
+
+  // Fade out loading screen when loading completes
+  useEffect(() => {
+    if (!loading && !error) {
+      Animated.timing(loadingOpacity, {
+        toValue: 0,
+        duration: 300,
+        useNativeDriver: true,
+      }).start(() => {
+        // Hide component after fade completes
+        setShowLoading(false);
+      });
+    } else if (loading) {
+      // Reset opacity and show when loading starts
+      loadingOpacity.setValue(1);
+      setShowLoading(true);
+    }
+  }, [loading, error, loadingOpacity]);
 
   const handleError = (syntheticEvent: any) => {
     const { nativeEvent } = syntheticEvent;
@@ -289,15 +309,15 @@ export default function WebAppView({ url = 'https://app.cogno.studio', session }
         sharedCookiesEnabled={true}
       />
 
-        {/* Loading Screen - shown until page loads */}
-        {loading && !error && (
-          <View style={styles.loadingContainer}>
+        {/* Loading Screen - shown until page loads, fades out */}
+        {showLoading && !error && (
+          <Animated.View style={[styles.loadingContainer, { opacity: loadingOpacity }]}>
             <ActivityIndicator 
               size="large" 
               color="#fff"
             />
             <Text style={styles.loadingText}>Loading...</Text>
-          </View>
+          </Animated.View>
         )}
         
         {/* Error Screen */}

@@ -89,7 +89,12 @@ function RootNavigator() {
   }, [router, isLoggedIn]);
 
   return (
-    <Stack>
+    <Stack
+      screenOptions={{
+        animation: 'none', // Disable slide animations for smoother transitions
+        headerShown: false,
+      }}
+    >
       <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
       <Stack.Screen name="auth/login" options={{ headerShown: false }} />
       <Stack.Screen name="auth/register" options={{ headerShown: false }} />

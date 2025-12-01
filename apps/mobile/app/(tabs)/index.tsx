@@ -1,5 +1,3 @@
-import { StyleSheet, ActivityIndicator } from 'react-native';
-import { ThemedView } from '@/components/themed-view';
 import { router } from 'expo-router';
 import { useAuthContext } from '@/hooks/use-auth-context';
 import { useEffect } from 'react';
@@ -15,25 +13,11 @@ export default function HomeScreen() {
     }
   }, [isLoading, isLoggedIn]);
 
-  if (isLoading) {
-    return (
-      <ThemedView style={styles.container}>
-        <ActivityIndicator size="large" />
-      </ThemedView>
-    );
-  }
-
-  if (!isLoggedIn) {
-    return null;
+  // Don't show loading screen here - splash screen handles initial loading
+  // and WebAppView handles its own loading state
+  if (!isLoggedIn || isLoading) {
+    return null; // Return null while loading/not logged in - splash screen is visible
   }
 
   return <WebAppView url={Config.webAppUrl} session={session} />;
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});

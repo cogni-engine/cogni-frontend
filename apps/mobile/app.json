@@ -4,7 +4,7 @@
     "slug": "cogni-mobile",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
+    "icon": "./assets/images/cogno-icon.png",
     "scheme": "cogni",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
@@ -21,10 +21,10 @@
     },
     "android": {
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
-        "foregroundImage": "./assets/images/android-icon-foreground.png",
-        "backgroundImage": "./assets/images/android-icon-background.png",
-        "monochromeImage": "./assets/images/android-icon-monochrome.png"
+        "backgroundColor": "#000000",
+        "foregroundImage": "./assets/images/cogno-icon.png",
+        "backgroundImage": "./assets/images/cogno-icon.png",
+        "monochromeImage": "./assets/images/cogno-icon.png"
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
@@ -47,8 +47,8 @@
       [
         "expo-splash-screen",
         {
-          "image": "./assets/images/splash-icon.png",
-          "imageWidth": 200,
+          "image": "./assets/images/cogno-icon.png",
+          "imageWidth": 600,
           "resizeMode": "contain",
           "backgroundColor": "#ffffff",
           "dark": {
@@ -60,7 +60,7 @@
       [
         "expo-notifications",
         {
-          "icon": "./assets/images/icon.png",
+          "icon": "./assets/images/cogno-icon.png",
           "color": "#ffffff",
           "sounds": [],
           "mode": "production"
