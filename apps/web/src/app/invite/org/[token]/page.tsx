@@ -93,7 +93,7 @@ export default function AcceptOrganizationInvitePage() {
                 Welcome! 🎉
               </h2>
               <p className='text-white/90'>
-                You've successfully joined{' '}
+                You&apos;ve successfully joined{' '}
                 <span className='font-semibold text-purple-300'>
                   {organizationName}
                 </span>
