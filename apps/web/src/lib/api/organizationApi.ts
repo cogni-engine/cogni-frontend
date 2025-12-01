@@ -20,6 +20,7 @@ export type Organization = {
   cancel_at_period_end: boolean | null;
   current_period_end: string | null;
   created_at: string;
+  plan_type: 'free' | 'pro' | 'business';
 };
 
 export type OrganizationMemberRole = {
@@ -131,11 +132,17 @@ export async function getUserOrganizationsData(
 }
 
 /**
- * Get the primary organization (first/most recent) for a user (client-side)
+ * Get the primary organization where user is an owner (client-side)
+ * Falls back to first organization if no owner organization found
  */
 export async function getPrimaryUserOrganizationData(
   userId: string
 ): Promise<UserOrganizationData | null> {
   const allOrgs = await getUserOrganizationsData(userId);
-  return allOrgs.length > 0 ? allOrgs[0] : null;
+
+  // First, try to find an organization where user is owner
+  const ownerOrg = allOrgs.find(org => org.role === 'owner');
+
+  // Return owner org if found, otherwise return first org, or null if no orgs
+  return ownerOrg || (allOrgs.length > 0 ? allOrgs[0] : null);
 }

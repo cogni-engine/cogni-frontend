@@ -110,11 +110,21 @@ export async function upgradeToBusiness(
   organizationId: number,
   seatCount?: number
 ): Promise<void> {
+  const supabase = createClient();
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+
+  if (!session) {
+    throw new Error('No active session found');
+  }
+
   const response = await fetch(
     `${API_BASE_URL}/api/billing/upgrade-to-business`,
     {
       method: 'POST',
       headers: {
+        Authorization: `Bearer ${session.access_token}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
@@ -138,9 +148,19 @@ export async function updateSeats(
   organizationId: number,
   seatCount: number
 ): Promise<void> {
+  const supabase = createClient();
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+
+  if (!session) {
+    throw new Error('No active session found');
+  }
+
   const response = await fetch(`${API_BASE_URL}/api/billing/update-seats`, {
     method: 'POST',
     headers: {
+      Authorization: `Bearer ${session.access_token}`,
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({

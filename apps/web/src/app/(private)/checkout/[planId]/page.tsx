@@ -177,63 +177,71 @@ export default function CheckoutPage() {
   }
 
   return (
-    <div className='min-h-screen px-4 py-8'>
-      <div className='w-full max-w-7xl mx-auto space-y-6'>
-        <Button onClick={() => router.back()} variant='ghost' className='mb-4'>
-          <ArrowLeft className='h-4 w-4 mr-2' />
-          Back
-        </Button>
+    <div className='h-full overflow-y-auto'>
+      <div className='min-h-full px-4 py-8'>
+        <div className='w-full max-w-7xl mx-auto space-y-6 pb-8'>
+          <Button
+            onClick={() => router.back()}
+            variant='ghost'
+            className='mb-4'
+          >
+            <ArrowLeft className='h-4 w-4 mr-2' />
+            Back
+          </Button>
 
-        <div className='flex flex-col lg:flex-row gap-6'>
-          {/* Left side - Plan info (desktop) / Top (mobile) */}
-          <div className='w-full lg:w-1/2 lg:sticky lg:top-8 lg:self-start lg:max-h-[calc(100vh-4rem)] lg:overflow-y-auto'>
-            <GlassCard className='p-6 md:p-8'>
-              <div className='space-y-6'>
-                <div>
-                  <h1 className='text-3xl font-bold text-white mb-2'>
-                    Complete Your Purchase
-                  </h1>
-                  <p className='text-white/60'>Upgrade to {plan.name} plan</p>
-                </div>
+          <div className='flex flex-col lg:flex-row gap-6'>
+            {/* Left side - Plan info (desktop) / Top (mobile) */}
+            <div className='w-full lg:w-1/2 lg:sticky lg:top-8 lg:self-start lg:max-h-[calc(100vh-4rem)] lg:overflow-y-auto'>
+              <GlassCard className='p-6 md:p-8'>
+                <div className='space-y-6'>
+                  <div>
+                    <h1 className='text-3xl font-bold text-white mb-2'>
+                      Complete Your Purchase
+                    </h1>
+                    <p className='text-white/60'>Upgrade to {plan.name} plan</p>
+                  </div>
 
-                <div className='rounded-lg border border-white/10 bg-white/5 p-4'>
-                  <div className='space-y-2'>
-                    <div className='flex justify-between items-center'>
-                      <p className='text-white font-semibold'>{plan.name}</p>
-                      <p className='text-2xl font-bold text-white'>
-                        {plan.price}
-                        <span className='text-sm font-normal text-white/60 ml-1'>
-                          {plan.priceNote}
-                        </span>
+                  <div className='rounded-lg border border-white/10 bg-white/5 p-4'>
+                    <div className='space-y-2'>
+                      <div className='flex justify-between items-center'>
+                        <p className='text-white font-semibold'>{plan.name}</p>
+                        <p className='text-2xl font-bold text-white'>
+                          {plan.price}
+                          <span className='text-sm font-normal text-white/60 ml-1'>
+                            {plan.priceNote}
+                          </span>
+                        </p>
+                      </div>
+                      <p className='text-sm text-white/60'>
+                        {plan.description}
                       </p>
                     </div>
-                    <p className='text-sm text-white/60'>{plan.description}</p>
                   </div>
                 </div>
-              </div>
-            </GlassCard>
-          </div>
+              </GlassCard>
+            </div>
 
-          {/* Right side - Checkout (desktop) / Bottom (mobile) */}
-          <div className='w-full lg:w-1/2 lg:max-h-[calc(100vh-4rem)] lg:overflow-y-auto'>
-            <GlassCard className='p-6 md:p-8'>
-              <div className='space-y-4'>
-                <div className='lg:hidden'>
-                  <h2 className='text-xl font-semibold text-white mb-2'>
-                    Payment Details
-                  </h2>
+            {/* Right side - Checkout (desktop) / Bottom (mobile) */}
+            <div className='w-full lg:w-1/2'>
+              <GlassCard className='p-6 md:p-8'>
+                <div className='space-y-4'>
+                  <div className='lg:hidden'>
+                    <h2 className='text-xl font-semibold text-white mb-2'>
+                      Payment Details
+                    </h2>
+                  </div>
+                  {/* Embedded Checkout using official React components */}
+                  <div id='checkout' className='min-h-[600px]'>
+                    <EmbeddedCheckoutProvider
+                      stripe={stripePromise}
+                      options={options}
+                    >
+                      <EmbeddedCheckout />
+                    </EmbeddedCheckoutProvider>
+                  </div>
                 </div>
-                {/* Embedded Checkout using official React components */}
-                <div id='checkout' className='min-h-[600px]'>
-                  <EmbeddedCheckoutProvider
-                    stripe={stripePromise}
-                    options={options}
-                  >
-                    <EmbeddedCheckout />
-                  </EmbeddedCheckoutProvider>
-                </div>
-              </div>
-            </GlassCard>
+              </GlassCard>
+            </div>
           </div>
         </div>
       </div>

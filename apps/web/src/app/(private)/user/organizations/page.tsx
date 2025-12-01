@@ -27,6 +27,7 @@ import {
   createOrganizationInvitation,
   getOrganizationInvitations,
   cancelOrganizationInvitation,
+  deleteMember,
   type OrganizationInvitation,
 } from '@/lib/api/organizationInvitationsApi';
 
@@ -63,23 +64,42 @@ export default function OrganizationsPage() {
       } = await supabase.auth.getUser();
 
       if (user) {
-        const orgs = await getUserOrganizationsData(user.id);
-        setOrganizations(orgs);
+        const allOrgs = await getUserOrganizationsData(user.id);
+        // Filter to only show Business organizations
+        const businessOrgs = allOrgs.filter(
+          org => org.organization.plan_type === 'business'
+        );
+        setOrganizations(businessOrgs);
 
-        // If we don't have a current org selected, pick one
-        // (Prefer one with subscription, or first one)
-        if (!currentOrg && orgs.length > 0) {
-          const orgWithSubscription = orgs.find(
-            org => org.organization.stripe_subscription_id
+        // Check if current org is still valid (must be a business org)
+        const isCurrentOrgValid =
+          currentOrg &&
+          businessOrgs.some(
+            org => org.organization.id === currentOrg.organization.id
           );
-          const selectedOrg = orgWithSubscription || orgs[0];
-          setCurrentOrg(selectedOrg);
 
-          // Load members and invitations for the selected organization
-          if (selectedOrg) {
-            await loadMembers(selectedOrg.organization.id);
-            await loadInvitations(selectedOrg.organization.id);
+        // If current org is not valid or not set, pick one
+        if (!isCurrentOrgValid) {
+          if (businessOrgs.length > 0) {
+            const orgWithSubscription = businessOrgs.find(
+              org => org.organization.stripe_subscription_id
+            );
+            const selectedOrg = orgWithSubscription || businessOrgs[0];
+            setCurrentOrg(selectedOrg);
+
+            // Load members and invitations for the selected organization
+            if (selectedOrg) {
+              await loadMembers(selectedOrg.organization.id);
+              await loadInvitations(selectedOrg.organization.id);
+            }
+          } else {
+            // No business organizations available
+            setCurrentOrg(null);
           }
+        } else if (currentOrg) {
+          // Current org is still valid, just refresh members and invitations
+          await loadMembers(currentOrg.organization.id);
+          await loadInvitations(currentOrg.organization.id);
         }
       }
     } catch (err) {
@@ -203,15 +223,8 @@ export default function OrganizationsPage() {
     setError(null);
 
     try {
-      const supabase = createClient();
-
-      // Update member status to inactive
-      const { error: updateError } = await supabase
-        .from('organization_members')
-        .update({ status: 'inactive' })
-        .eq('id', memberToRemove.id);
-
-      if (updateError) throw updateError;
+      // Use the API endpoint instead of direct Supabase call
+      await deleteMember(currentOrg.organization.id, memberToRemove.id);
 
       setShowRemoveDialog(false);
       setMemberToRemove(null);

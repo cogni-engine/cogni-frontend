@@ -130,9 +130,16 @@ export async function getOrganizationInvitations(
 export async function cancelOrganizationInvitation(
   invitationId: string
 ): Promise<void> {
+  const token = await getAuthToken();
+
   const response = await fetch(
     `${API_BASE_URL}/api/organizations/invitations/${invitationId}`,
-    { method: 'DELETE' }
+    {
+      method: 'DELETE',
+      headers: {
+        ...(token && { Authorization: `Bearer ${token}` }),
+      },
+    }
   );
 
   if (!response.ok) {
@@ -149,4 +156,80 @@ export async function cancelOrganizationInvitation(
 export function generateOrganizationInvitationLink(token: string): string {
   const baseUrl = typeof window !== 'undefined' ? window.location.origin : '';
   return `${baseUrl}/invite/org/${token}`;
+}
+
+/**
+ * Update a member's role in the organization
+ */
+export async function updateMemberRole(
+  organizationId: number,
+  memberId: number,
+  roleId: number
+): Promise<{
+  success: boolean;
+  message: string;
+  member_id: number;
+  new_role_id: number;
+  new_role_name: string | null;
+}> {
+  const token = await getAuthToken();
+
+  const response = await fetch(
+    `${API_BASE_URL}/api/organizations/members/update-role`,
+    {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token && { Authorization: `Bearer ${token}` }),
+      },
+      body: JSON.stringify({
+        organizationId,
+        memberId,
+        roleId,
+      }),
+    }
+  );
+
+  if (!response.ok) {
+    const error = await response
+      .json()
+      .catch(() => ({ detail: 'Failed to update member role' }));
+    throw new Error(error.detail || 'Failed to update member role');
+  }
+
+  return response.json();
+}
+
+/**
+ * Remove a member from the organization
+ */
+export async function deleteMember(
+  organizationId: number,
+  memberId: number
+): Promise<{ success: boolean; message: string }> {
+  const token = await getAuthToken();
+
+  const response = await fetch(
+    `${API_BASE_URL}/api/organizations/members/delete`,
+    {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token && { Authorization: `Bearer ${token}` }),
+      },
+      body: JSON.stringify({
+        organizationId,
+        memberId,
+      }),
+    }
+  );
+
+  if (!response.ok) {
+    const error = await response
+      .json()
+      .catch(() => ({ detail: 'Failed to delete member' }));
+    throw new Error(error.detail || 'Failed to delete member');
+  }
+
+  return response.json();
 }

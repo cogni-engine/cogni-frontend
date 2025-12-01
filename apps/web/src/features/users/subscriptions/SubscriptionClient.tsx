@@ -55,9 +55,7 @@ export default function SubscriptionClient() {
   }, [managedOrgs, selectedOrgId]);
 
   // Compute subscription plan from current organization
-  const currentOrgPlan = useMemo(() => {
-    return getOrganizationSubscriptionPlan(currentOrg?.organization);
-  }, [currentOrg]);
+  const currentOrgPlan = currentOrg?.organization.plan_type;
 
   // Set selected org ID when currentOrg changes
   useEffect(() => {
@@ -95,8 +93,24 @@ export default function SubscriptionClient() {
       // Already on this plan
       return;
     }
-    // TODO: Implement plan change logic
-    console.log('Change plan to', planId);
+
+    // Handle Pro → Business upgrade via dialog (existing flow)
+    if (currentOrgPlan === 'pro' && planId === 'business') {
+      setShowUpgradeDialog(true);
+      return;
+    }
+
+    // Handle Free → Pro/Business via checkout page
+    if (
+      (!currentOrgPlan || currentOrgPlan === 'free') &&
+      (planId === 'pro' || planId === 'business')
+    ) {
+      router.push(`/checkout/${planId}`);
+      return;
+    }
+
+    // No downgrades allowed - this shouldn't happen if UI is correct
+    console.warn('Invalid plan transition:', currentOrgPlan, '→', planId);
   };
 
   const handleManageBilling = async () => {
