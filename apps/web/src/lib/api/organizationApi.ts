@@ -1,4 +1,4 @@
-cimport { createClient } from '@/lib/supabase/browserClient';
+import { createClient } from '@/lib/supabase/browserClient';
 
 export type OrganizationMember = {
   id: number;

@@ -5,6 +5,7 @@ export interface UseMessageAutoScrollOptions {
   messages: Message[];
   scrollContainerRef: React.RefObject<HTMLDivElement | null>;
   streamingContainerRef?: React.RefObject<HTMLDivElement | null>;
+  isInitialMount: boolean;
   delay?: number;
   headerHeight?: number;
 }
@@ -20,6 +21,7 @@ export function useMessageAutoScroll({
   messages,
   scrollContainerRef,
   streamingContainerRef,
+  isInitialMount,
   delay = 100,
   headerHeight = DEFAULT_HEADER_HEIGHT,
 }: UseMessageAutoScrollOptions) {
@@ -36,8 +38,11 @@ export function useMessageAutoScroll({
       setTimeout(() => {
         if (!scrollContainerRef.current) return;
 
-        if (streamingContainerRef?.current) {
-          // If streaming container exists, scroll to align its top with viewport top
+        if (
+          streamingContainerRef?.current &&
+          streamingContainerRef.current.children.length > 0
+        ) {
+          // If streaming container exists and has messages, scroll to align its top with viewport top
           // Account for the header height by subtracting it from the offset
           const offsetTop = streamingContainerRef.current.offsetTop;
           scrollContainerRef.current.scrollTo({
@@ -45,12 +50,14 @@ export function useMessageAutoScroll({
             behavior: 'smooth',
           });
         } else {
+          console.log('isInitialMount', isInitialMount);
           // No streaming messages, scroll to bottom normally
           const container = scrollContainerRef.current;
-          const targetScroll = container.scrollHeight - container.clientHeight;
+          const targetScroll =
+            container.scrollHeight - container.clientHeight + 400; // 400 for the footer etc
           container.scrollTo({
             top: targetScroll,
-            behavior: 'smooth',
+            behavior: isInitialMount ? 'auto' : 'smooth',
           });
         }
       }, delay);
@@ -63,5 +70,6 @@ export function useMessageAutoScroll({
     streamingContainerRef,
     delay,
     headerHeight,
+    isInitialMount,
   ]);
 }

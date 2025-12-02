@@ -1,8 +1,7 @@
-import { useCallback, useEffect } from 'react';
+import { useEffect } from 'react';
 import { useThreads } from './useThreads';
 import { useMessages } from './useMessages';
 import { useSendMessage } from './useSendMessage';
-import type { Thread, Message } from '@cogni/types';
 
 export interface UseChatOptions {
   workspaceId: number | null;

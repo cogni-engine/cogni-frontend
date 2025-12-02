@@ -20,6 +20,7 @@ type ChatContainerProps = {
   streamingContainerRef?: React.RefObject<HTMLDivElement | null>;
   workspaceMembers?: WorkspaceMember[];
   workspaceNotes?: Note[];
+  isInitialMount?: React.RefObject<boolean>;
 };
 
 const ChatContainer = forwardRef<HTMLDivElement, ChatContainerProps>(
@@ -30,6 +31,7 @@ const ChatContainer = forwardRef<HTMLDivElement, ChatContainerProps>(
       streamingContainerRef,
       workspaceMembers = [],
       workspaceNotes = [],
+      isInitialMount,
     },
     ref
   ) => {
@@ -66,7 +68,7 @@ const ChatContainer = forwardRef<HTMLDivElement, ChatContainerProps>(
       }
 
       // If we found a user message, split the messages
-      if (lastUserMessageIndex !== -1) {
+      if (lastUserMessageIndex !== -1 && !isInitialMount?.current) {
         messagesBeforeRecent = committedMessages.slice(0, lastUserMessageIndex);
         recentMessages = committedMessages.slice(lastUserMessageIndex);
       }
@@ -76,7 +78,9 @@ const ChatContainer = forwardRef<HTMLDivElement, ChatContainerProps>(
     const containerMessages = hasStreamingMessages
       ? streamingMessages
       : recentMessages;
-    const shouldShowContainer = containerMessages.length > 0;
+    // Don't show container on initial mount
+    const shouldShowContainer =
+      !isInitialMount?.current && containerMessages.length > 0;
 
     return (
       <div className='flex flex-col flex-1 bg-linear-to-br from-slate-950 via-black to-slate-950 relative overflow-hidden'>
@@ -85,68 +89,82 @@ const ChatContainer = forwardRef<HTMLDivElement, ChatContainerProps>(
           ref={ref}
           className={`pt-20 md:px-8 ${
             isInputActive ? 'pb-6' : 'pb-20'
-          } space-y-6 scroll-smooth`}
+          } space-y-6`}
         >
-          {messages.length === 0 ? (
+          {/* Empty State - shown when no messages */}
+          <div
+            className={`transition-opacity duration-300 delay-150 ${
+              messages.length === 0
+                ? 'opacity-100 pointer-events-auto absolute inset-0 flex items-center justify-center'
+                : 'opacity-0 pointer-events-none absolute inset-0'
+            }`}
+          >
             <EmptyState />
-          ) : (
-            <>
-              {/* Messages before the recent/streaming section */}
-              {messagesBeforeRecent.map((message, i) => {
-                const messageId =
-                  'id' in message && typeof message.id === 'number'
-                    ? message.id
-                    : `committed-${i}`;
-                const key = `${messageId}-${i}`;
+          </div>
 
-                return (
-                  <div key={key} data-message-index={i}>
-                    <MessageItem
-                      message={message}
-                      sendMessage={sendMessage}
-                      workspaceMembers={workspaceMembers}
-                      workspaceNotes={workspaceNotes}
-                    />
-                  </div>
-                );
-              })}
+          {/* Messages Content - shown when messages exist */}
+          <div
+            className={`transition-opacity duration-300 delay-150 ${
+              messages.length === 0
+                ? 'opacity-0 pointer-events-none absolute inset-0'
+                : 'opacity-100 pointer-events-auto relative'
+            }`}
+          >
+            {/* Messages before the recent/streaming section */}
+            {messagesBeforeRecent.map((message, i) => {
+              const messageId =
+                'id' in message && typeof message.id === 'number'
+                  ? message.id
+                  : `committed-${i}`;
+              const key = `${messageId}-${i}`;
 
-              {/* Small spacing when no container to show */}
-              {!shouldShowContainer && <div className='h-16'></div>}
-
-              {/* Streaming/Recent messages container with min-height of container minus header */}
-              {shouldShowContainer && (
-                <div
-                  ref={streamingContainerRef}
-                  className='flex flex-col pb-32'
-                  style={{ minHeight: 'calc(100%)' }}
-                >
-                  {containerMessages.map((message, i) => {
-                    const messageId = hasStreamingMessages
-                      ? `streaming-${message.id}-${i}`
-                      : `recent-${message.id}-${i}`;
-                    const key = messageId;
-
-                    return (
-                      <div
-                        key={key}
-                        data-message-index={messagesBeforeRecent.length + i}
-                      >
-                        <MessageItem
-                          message={message}
-                          sendMessage={sendMessage}
-                          workspaceMembers={workspaceMembers}
-                          workspaceNotes={workspaceNotes}
-                        />
-                      </div>
-                    );
-                  })}
-                  {/* Extra space to ensure content can grow */}
-                  <div className='grow'></div>
+              return (
+                <div key={key} data-message-index={i}>
+                  <MessageItem
+                    message={message}
+                    sendMessage={sendMessage}
+                    workspaceMembers={workspaceMembers}
+                    workspaceNotes={workspaceNotes}
+                  />
                 </div>
-              )}
-            </>
-          )}
+              );
+            })}
+
+            {/* Small spacing when no container to show */}
+            {!shouldShowContainer && <div className='h-16'></div>}
+
+            {/* Streaming/Recent messages container with min-height of container minus header */}
+            {shouldShowContainer && (
+              <div
+                ref={streamingContainerRef}
+                className='flex flex-col pb-32'
+                style={{ minHeight: 'calc(100%)' }}
+              >
+                {containerMessages.map((message, i) => {
+                  const messageId = hasStreamingMessages
+                    ? `streaming-${message.id}-${i}`
+                    : `recent-${message.id}-${i}`;
+                  const key = messageId;
+
+                  return (
+                    <div
+                      key={key}
+                      data-message-index={messagesBeforeRecent.length + i}
+                    >
+                      <MessageItem
+                        message={message}
+                        sendMessage={sendMessage}
+                        workspaceMembers={workspaceMembers}
+                        workspaceNotes={workspaceNotes}
+                      />
+                    </div>
+                  );
+                })}
+                {/* Extra space to ensure content can grow */}
+                <div className='grow'></div>
+              </div>
+            )}
+          </div>
         </ScrollableView>
       </div>
     );
