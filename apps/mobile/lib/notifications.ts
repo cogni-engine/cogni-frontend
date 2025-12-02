@@ -9,6 +9,8 @@ Notifications.setNotificationHandler({
     shouldShowAlert: true,
     shouldPlaySound: true,
     shouldSetBadge: true,
+    shouldShowBanner: true,
+    shouldShowList: true,
   }),
 });
 
@@ -34,9 +36,15 @@ export async function registerForPushNotificationsAsync(): Promise<string | null
   const { status: existingStatus } = await Notifications.getPermissionsAsync();
   let finalStatus = existingStatus;
 
-  // Request permissions if not granted
+  // Request permissions if not granted (including badge permission for iOS)
   if (existingStatus !== 'granted') {
-    const { status } = await Notifications.requestPermissionsAsync();
+    const { status } = await Notifications.requestPermissionsAsync({
+      ios: {
+        allowAlert: true,
+        allowBadge: true, // 🔥 必須: ホーム画面バッジを表示するために必要
+        allowSound: true,
+      },
+    });
     finalStatus = status;
   }
 
@@ -204,5 +212,56 @@ export async function setBadgeCount(count: number): Promise<void> {
  */
 export async function clearAllNotifications(): Promise<void> {
   await Notifications.dismissAllNotificationsAsync();
+}
+
+/**
+ * Get unread message count from Supabase using RPC function
+ * This counts unread messages across all group workspaces for the current user
+ */
+export async function getUnreadMessageCount(): Promise<number> {
+  try {
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+
+    if (authError || !user) {
+      console.log('❌ No user found for badge count');
+      return 0;
+    }
+
+    // Use RPC function to get unread message count
+    const { data, error } = await supabase.rpc(
+      'get_unread_workspace_message_count_excl_self',
+      {
+        p_user_id: user.id,
+      }
+    );
+
+    if (error) {
+      console.error('❌ Error fetching unread message count:', error);
+      return 0;
+    }
+
+    const count = typeof data === 'number' ? data : 0;
+    console.log(`✅ Total unread messages: ${count}`);
+    return count;
+  } catch (error) {
+    console.error('❌ Error fetching unread message count:', error);
+    return 0;
+  }
+}
+
+/**
+ * Sync app icon badge with unread message count
+ */
+export async function syncBadgeCount(): Promise<void> {
+  try {
+    const unreadCount = await getUnreadMessageCount();
+    await setBadgeCount(unreadCount);
+    console.log(`📱 App icon badge updated to: ${unreadCount}`);
+  } catch (error) {
+    console.error('Error syncing badge count:', error);
+  }
 }
 

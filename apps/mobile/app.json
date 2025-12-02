@@ -63,7 +63,8 @@
           "icon": "./assets/images/cogno-icon.png",
           "color": "#ffffff",
           "sounds": [],
-          "mode": "production"
+          "mode": "production",
+          "enableBackgroundRemoteNotifications": true
         }
       ]
     ],

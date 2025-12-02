@@ -8,10 +8,12 @@ import * as Notifications from 'expo-notifications';
 import { SplashScreenController } from '@/components/splash-screen-controller';
 import { useAuthContext } from '@/hooks/use-auth-context';
 import { useColorScheme } from '@/hooks/use-color-scheme';
+import { useNotificationBadge } from '@/hooks/use-notification-badge';
 import AuthProvider from '@/providers/auth-provider';
 import {
   registerForPushNotificationsAsync,
   setupNotificationListeners,
+  syncBadgeCount,
   type NotificationData,
 } from '@/lib/notifications';
 import { handleNotificationResponse } from '@/lib/deep-linking';
@@ -22,6 +24,9 @@ function RootNavigator() {
   const segments = useSegments();
   const router = useRouter();
   const notificationListener = useRef<(() => void) | null>(null);
+  
+  // Manage app icon badge count
+  useNotificationBadge();
 
   // Handle authentication redirects
   useEffect(() => {
@@ -57,14 +62,20 @@ function RootNavigator() {
     // Set up new listeners
     const cleanup = setupNotificationListeners(
       // On notification received (foreground)
-      (notification) => {
+      async (notification) => {
         console.log('📬 Notification received in foreground');
+        // Sync badge count when notification is received
+        await syncBadgeCount();
       },
       // On notification tapped (user interaction)
-      (response) => {
+      async (response) => {
         const data = response.notification.request.content.data as NotificationData;
         console.log('🔔 Notification tapped:', data);
         handleNotificationResponse(data, router);
+        // Sync badge count after a short delay to allow message to be marked as read
+        setTimeout(async () => {
+          await syncBadgeCount();
+        }, 1000);
       }
     );
 
@@ -72,11 +83,16 @@ function RootNavigator() {
 
     // Also handle notification that opened the app
     Notifications.getLastNotificationResponseAsync().then(
-      (response: Notifications.NotificationResponse | null) => {
+      async (response: Notifications.NotificationResponse | null) => {
         if (response && isLoggedIn) {
           const data = response.notification.request.content
             .data as NotificationData;
           handleNotificationResponse(data, router);
+          // Sync badge when app opens from notification
+          await syncBadgeCount();
+        } else if (isLoggedIn) {
+          // Even if no notification opened the app, sync badge on app start
+          await syncBadgeCount();
         }
       }
     );

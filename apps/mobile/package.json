@@ -15,7 +15,10 @@
     "build:preview:android": "eas build --profile preview --platform android",
     "build:production": "eas build --profile production --platform all",
     "build:production:ios": "eas build --profile production --platform ios",
-    "build:production:android": "eas build --profile production --platform android"
+    "build:production:android": "eas build --profile production --platform android",
+    "build:testflight": "eas build --profile testflight --platform ios",
+    "submit:testflight": "eas submit --profile testflight --platform ios",
+    "publish:testflight": "eas build --profile testflight --platform ios --auto-submit"
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.3",
