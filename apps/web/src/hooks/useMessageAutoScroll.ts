@@ -42,15 +42,12 @@ export function useMessageAutoScroll({
           streamingContainerRef?.current &&
           streamingContainerRef.current.children.length > 0
         ) {
-          // If streaming container exists and has messages, scroll to align its top with viewport top
-          // Account for the header height by subtracting it from the offset
           const offsetTop = streamingContainerRef.current.offsetTop;
           scrollContainerRef.current.scrollTo({
-            top: offsetTop - headerHeight,
+            top: offsetTop,
             behavior: 'smooth',
           });
         } else {
-          console.log('isInitialMount', isInitialMount);
           // No streaming messages, scroll to bottom normally
           const container = scrollContainerRef.current;
           const targetScroll =

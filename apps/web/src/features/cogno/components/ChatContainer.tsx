@@ -137,8 +137,8 @@ const ChatContainer = forwardRef<HTMLDivElement, ChatContainerProps>(
             {shouldShowContainer && (
               <div
                 ref={streamingContainerRef}
-                className='flex flex-col pb-32'
-                style={{ minHeight: 'calc(100%)' }}
+                className={`flex flex-col pb-32`}
+                style={{ minHeight: 'calc(100vh)' }}
               >
                 {containerMessages.map((message, i) => {
                   const messageId = hasStreamingMessages
