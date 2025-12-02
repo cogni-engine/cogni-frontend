@@ -80,7 +80,7 @@ const TiptapChatInput = forwardRef<TiptapChatInputRef, TiptapChatInputProps>(
         editorProps: {
           attributes: {
             class:
-              'w-full bg-transparent text-white px-5 py-3.5 pr-[140px] focus:outline-none resize-none overflow-y-auto chat-input-editor',
+              'w-full bg-transparent text-white px-5 py-3.5 pr-[90px] focus:outline-none resize-none overflow-y-auto chat-input-editor',
             style: 'max-height: 140px;', // ~7 lines
             'data-placeholder': placeholder,
           },
@@ -186,7 +186,6 @@ const TiptapChatInput = forwardRef<TiptapChatInputRef, TiptapChatInputProps>(
         >
           <EditorContent editor={editor} />
         </div>
-
         {/* マイクボタン - 送信ボタンの左 */}
         <div className='absolute right-[50px] bottom-1.5 z-10'>
           <VoiceInputButton
