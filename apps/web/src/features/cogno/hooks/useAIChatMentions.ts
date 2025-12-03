@@ -5,7 +5,6 @@ import { getAllWorkspaceMembersForUser } from '@/lib/api/workspaceApi';
 import { useNotes } from '@cogni/api';
 import { getPersonalWorkspaceId } from '@cogni/utils';
 import type { WorkspaceMember } from '@/types/workspace';
-import type { NoteWithParsed } from '@cogni/types';
 
 /**
  * Hook to fetch all workspace members and notes for AI chat mentions

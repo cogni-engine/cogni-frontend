@@ -1,14 +1,14 @@
 'use client';
 
-import { useRef, useCallback, useMemo, useLayoutEffect } from 'react';
-import ChatContainer from '@/features/cogno/components/ChatContainer';
+import { useRef, useCallback, useMemo } from 'react';
+import ChatContainer from './components/ChatContainer';
 import AiChatInput from '@/components/chat-input/AiChatInput';
 import NotificationPanel from '@/features/notifications/components/NotificationPanel';
 import { useChat } from '@cogni/api';
 import { getPersonalWorkspaceId } from '@cogni/utils';
 import { useGlobalUI } from '@/contexts/GlobalUIContext';
-import { useAIChatMentions } from '@/hooks/useAIChatMentions';
-import { useMessageAutoScroll } from '@/hooks/useMessageAutoScroll';
+import { useAIChatMentions } from './hooks/useAIChatMentions';
+import { useMessageAutoScroll } from './hooks/useMessageAutoScroll';
 import { useThreadContext } from '@/contexts/ThreadContext';
 
 interface HomeCognoChatProps {
@@ -54,7 +54,7 @@ export default function HomeCognoChat({ isInitialMount }: HomeCognoChatProps) {
         timerCompleted,
       });
     },
-    [chat.sendMessage]
+    [chat]
   );
 
   // Auto-scroll when new messages arrive
@@ -69,7 +69,7 @@ export default function HomeCognoChat({ isInitialMount }: HomeCognoChatProps) {
     <div className='flex flex-col h-full transition-all duration-300'>
       <ChatContainer
         ref={scrollContainerRef}
-        messages={chat.messages as any}
+        messages={chat.messages}
         sendMessage={handleSendMessage}
         streamingContainerRef={streamingContainerRef}
         workspaceMembers={memoizedMembers}

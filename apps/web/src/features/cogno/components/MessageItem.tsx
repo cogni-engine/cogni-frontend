@@ -2,7 +2,7 @@ import { useCallback } from 'react';
 import { Message, AIMessage } from '@/types/chat';
 import { TimerDisplay } from './TimerDisplay';
 import { AIInitiatedMessageWrapper } from './AIInitiatedMessageWrapper';
-import MessageFiles from '@/features/workspace/components/MessageFiles';
+import MessageFiles from '@/features/workspace/components/MessageFiles'; // TODO: Move to @cogni/components
 import { TiptapRenderer } from '@/components/tiptap/TiptapRenderer';
 import { useGlobalUI } from '@/contexts/GlobalUIContext';
 import type { WorkspaceMember } from '@/types/workspace';
