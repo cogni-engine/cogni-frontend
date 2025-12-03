@@ -1,0 +1,181 @@
+export function EditorStyles() {
+  return (
+    <style jsx global>{`
+      .ProseMirror {
+        outline: none;
+        min-height: 100%;
+        padding: 0;
+      }
+      .ProseMirror p {
+        margin: 0.75em 0;
+      }
+      .ProseMirror p:first-child {
+        margin-top: 0;
+      }
+      .ProseMirror p:last-child {
+        margin-bottom: 0;
+      }
+      .ProseMirror h1,
+      .ProseMirror h2,
+      .ProseMirror h3 {
+        margin-top: 1em;
+        margin-bottom: 0.5em;
+        font-weight: 600;
+        line-height: 1.2;
+      }
+      .ProseMirror h1 {
+        font-size: 2em;
+      }
+      .ProseMirror h2 {
+        font-size: 1.5em;
+      }
+      .ProseMirror h3 {
+        font-size: 1.25em;
+      }
+      .ProseMirror ul,
+      .ProseMirror ol {
+        margin: 0.75em 0;
+        padding-left: 1.5em !important;
+        list-style-position: outside !important;
+      }
+      .ProseMirror ul {
+        list-style-type: disc !important;
+      }
+      .ProseMirror ul li {
+        display: list-item !important;
+        list-style-type: disc !important;
+      }
+      .ProseMirror ol {
+        list-style-type: decimal !important;
+      }
+      .ProseMirror ol li {
+        display: list-item !important;
+        list-style-type: decimal !important;
+      }
+      .ProseMirror li {
+        margin: 0.25em 0;
+      }
+      .ProseMirror ul.task-list,
+      .ProseMirror ul[data-type='taskList'] {
+        list-style: none !important;
+        padding-left: 0 !important;
+        margin: 0.75em 0;
+      }
+      .ProseMirror ul.task-list > li,
+      .ProseMirror ul[data-type='taskList'] > li {
+        list-style: none !important;
+        display: flex !important;
+        align-items: flex-start;
+        gap: 0.6em;
+        margin: 0.3em 0;
+      }
+      .ProseMirror ul.task-list > li::marker,
+      .ProseMirror ul[data-type='taskList'] > li::marker {
+        content: '';
+      }
+      .ProseMirror li.task-item,
+      .ProseMirror li[data-type='taskItem'] {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.6em;
+      }
+      .ProseMirror li.task-item > label,
+      .ProseMirror li[data-type='taskItem'] > label {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        cursor: pointer;
+        user-select: none;
+        margin-top: 0.15em;
+      }
+      .ProseMirror li.task-item > label input[type='checkbox'],
+      .ProseMirror li[data-type='taskItem'] > label input[type='checkbox'] {
+        width: 1.1em;
+        height: 1.1em;
+        cursor: pointer;
+        accent-color: rgba(59, 130, 246, 0.8);
+        border-radius: 0.25em;
+        margin: 0;
+      }
+      .ProseMirror li.task-item > div,
+      .ProseMirror li[data-type='taskItem'] > div {
+        flex: 1;
+        min-width: 0;
+      }
+      .ProseMirror li.task-item[data-checked='true'] > div,
+      .ProseMirror li[data-type='taskItem'][data-checked='true'] > div {
+        text-decoration: line-through;
+        opacity: 0.7;
+        color: rgba(255, 255, 255, 0.5);
+      }
+      .ProseMirror blockquote {
+        border-left: 3px solid rgba(255, 255, 255, 0.2);
+        padding-left: 1em;
+        margin: 1em 0;
+        font-style: italic;
+        color: rgba(255, 255, 255, 0.7);
+      }
+      .ProseMirror strong {
+        font-weight: 600;
+      }
+      .ProseMirror em {
+        font-style: italic;
+      }
+      .ProseMirror s {
+        text-decoration: line-through;
+      }
+      .ProseMirror p.is-editor-empty:first-child::before {
+        content: attr(data-placeholder);
+        float: left;
+        color: rgba(156, 163, 175, 0.6);
+        pointer-events: none;
+        height: 0;
+      }
+      .ProseMirror img.editor-image {
+        max-width: 100%;
+        height: auto;
+        border-radius: 0.5rem;
+        margin: 1em 0;
+        display: block;
+        cursor: pointer;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+      }
+      .ProseMirror img.editor-image:hover {
+        border-color: rgba(255, 255, 255, 0.2);
+      }
+      .ProseMirror img.editor-image.ProseMirror-selectednode {
+        outline: 2px solid rgba(59, 130, 246, 0.5);
+        outline-offset: 2px;
+      }
+      /* Member mention styles */
+      .ProseMirror .mention {
+        color: rgb(96, 165, 250);
+        font-weight: 600;
+        cursor: pointer;
+        transition: color 0.2s;
+      }
+      .ProseMirror .mention:hover {
+        color: rgb(147, 197, 253);
+      }
+      /* Note mention styles */
+      .ProseMirror .note-mention {
+        color: rgb(22, 163, 74);
+        font-weight: 600;
+        cursor: pointer;
+        transition: color 0.2s;
+      }
+      .ProseMirror .note-mention:hover {
+        color: rgb(34, 197, 94);
+      }
+      /* AI Completion ghost text styles */
+      .ProseMirror .ai-completion-ghost-text {
+        color: rgb(156, 163, 175);
+        opacity: 0.5;
+        pointer-events: none;
+        user-select: none;
+        font-style: italic;
+      }
+    `}</style>
+  );
+}

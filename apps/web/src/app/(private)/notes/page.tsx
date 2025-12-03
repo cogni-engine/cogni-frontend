@@ -1,6 +1,6 @@
 'use client';
 
-import NoteList from '@/features/notes/components/NoteList';
+import NoteList from '@/features/notes/NoteList';
 import { useNotes, useNoteFolders, formatDate } from '@cogni/api';
 import { useRouter } from 'next/navigation';
 import { useState, useMemo } from 'react';

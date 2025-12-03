@@ -282,7 +282,7 @@ export default function NoteList({
                     className='w-4 h-4 rounded-md object-cover'
                   />
                 ) : (
-                  <div className='w-4 h-4 rounded-md bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-[8px] text-white font-bold'>
+                  <div className='w-4 h-4 rounded-md bg-linear-to-br from-purple-500 to-pink-500 flex items-center justify-center text-[8px] text-white font-bold'>
                     {note.workspace.title.charAt(0).toUpperCase()}
                   </div>
                 )}
