@@ -1,6 +1,6 @@
 'use client';
 
-import { useLanguage } from '../context/language-context';
+import { useLanguage } from '../../context/language-context';
 import { PricingCard } from './components/PricingCard';
 
 export default function PricingPage() {

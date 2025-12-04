@@ -5,8 +5,8 @@ import Link from 'next/link';
 import { useMemo, useState, useRef, useEffect } from 'react';
 import type { ReactNode } from 'react';
 
-import { LanguageProvider, useLanguage } from './context/language-context';
-import { SECTION_IDS, type Language } from './constants/copy';
+import { LanguageProvider, useLanguage } from '../context/language-context';
+import { SECTION_IDS, type Language } from '../constants/copy';
 
 type ClientLayoutProps = {
   children: ReactNode;

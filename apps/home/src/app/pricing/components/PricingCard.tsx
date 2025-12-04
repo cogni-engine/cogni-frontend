@@ -2,7 +2,7 @@
 
 import { Check, X, ArrowUpRight } from 'lucide-react';
 import Link from 'next/link';
-import { useLanguage } from '../../context/language-context';
+import { useLanguage } from '../../../context/language-context';
 
 type PricingCardProps = {
   id: string;
