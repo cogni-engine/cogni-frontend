@@ -111,7 +111,8 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
     pathname === '/notes' ||
     pathname === '/workspace' ||
     pathname === '/personal' ||
-    pathname === '/user/settings';
+    pathname === '/user/settings' ||
+    pathname === '/user/tasks';
 
   // モバイル判定（768px以下）
   useEffect(() => {

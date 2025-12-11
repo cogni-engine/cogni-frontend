@@ -1,7 +1,7 @@
 'use client';
 
 import * as React from 'react';
-import { LogOut, Settings } from 'lucide-react';
+import { LogOut, Settings, CheckSquare } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import type { User } from '@supabase/supabase-js';
 
@@ -55,6 +55,11 @@ export function UserMenu({ user }: UserMenuProps) {
   const handleSelectSettings = React.useCallback(() => {
     setOpen(false);
     router.push('/user/settings');
+  }, [router]);
+
+  const handleSelectTasks = React.useCallback(() => {
+    setOpen(false);
+    router.push('/user/tasks');
   }, [router]);
 
   const handleSignOut = React.useCallback(async () => {
@@ -151,6 +156,16 @@ export function UserMenu({ user }: UserMenuProps) {
             >
               <Settings className='h-4 w-4' />
               <span>User settings</span>
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onSelect={event => {
+                event.preventDefault();
+                handleSelectTasks();
+              }}
+              className='flex items-center gap-2'
+            >
+              <CheckSquare className='h-4 w-4' />
+              <span>My Tasks</span>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem

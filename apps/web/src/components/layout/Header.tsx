@@ -21,6 +21,7 @@ export default function Header() {
     '/workspace': 'Workspaces',
     '/personal': 'Personal',
     '/user/settings': 'User Settings',
+    '/user/tasks': 'My Tasks',
   };
   const pageTitle = pageTitleMap[pathname] ?? null;
   const [user, setUser] = useState<User | null>(null);
@@ -146,7 +147,7 @@ export default function Header() {
 
         {/* Logo */}
         <h1
-          className={`text-lg font-semibold text-white ${pathname === '/workspace' || pathname === '/notes' ? 'ml-2' : ''}`}
+          className={`text-lg font-semibold text-white ${pathname === '/workspace' || pathname === '/notes' || pathname === '/user/tasks' ? 'ml-2' : ''}`}
         >
           Cogno
           {pageTitle && (
