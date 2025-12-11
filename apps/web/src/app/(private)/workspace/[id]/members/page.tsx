@@ -100,6 +100,7 @@ export default function WorkspaceMembersPage() {
           <GlassButton
             onClick={() => setShowInviteModal(true)}
             title='Invite Member'
+            className='size-12'
           >
             <Plus className='w-5 h-5 text-white' />
           </GlassButton>

@@ -686,7 +686,7 @@ export default function WorkspaceNotesPage() {
               onClick={handleCreateNote}
               disabled={isCreating}
               size='icon'
-              className='size-11 disabled:cursor-not-allowed shrink-0'
+              className='size-11 disabled:cursor-not-allowed shrink-0 size-12'
             >
               {isCreating ? (
                 <div className='animate-spin rounded-full h-5 w-5 border-b-2 border-gray-300'></div>

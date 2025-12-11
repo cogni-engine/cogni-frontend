@@ -521,8 +521,7 @@ export default function WorkspaceChatPage() {
           <GlassButton
             type='button'
             onClick={() => scrollToBottom('smooth')}
-            size='icon'
-            className='size-10 hover:scale-102'
+            className='size-12 hover:scale-102'
             aria-label='Scroll to bottom'
           >
             <ChevronDown className='h-5 w-5' />

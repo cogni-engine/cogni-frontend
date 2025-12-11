@@ -264,7 +264,7 @@ export default function WorkspaceForm({
             type='button'
             disabled={isLoading}
             size='icon'
-            className='size-11 disabled:cursor-not-allowed'
+            className='size-12 disabled:cursor-not-allowed'
           >
             <Plus className='size-6' />
           </GlassButton>

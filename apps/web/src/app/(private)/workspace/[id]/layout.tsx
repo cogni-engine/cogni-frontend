@@ -10,9 +10,9 @@ import {
   Users,
   Settings,
 } from 'lucide-react';
-import { useNotes } from '@cogni/api';
 import GlassCard from '@/components/glass-card/GlassCard';
 import GlassButton from '@/components/glass-card/GlassButton';
+import { useWorkspace } from '@/hooks/useWorkspace';
 
 type ViewType = 'chat' | 'notes' | 'members' | 'menu';
 
@@ -26,13 +26,7 @@ export default function WorkspaceLayout({
   const pathname = usePathname();
   const workspaceId = parseInt(params.id as string);
 
-  const { notes } = useNotes({
-    workspaceId: workspaceId,
-    includeDeleted: false,
-  });
-
-  // Extract workspace from the first note (if available)
-  const workspace = notes.length > 0 ? notes[0].workspace : null;
+  const { workspace } = useWorkspace(workspaceId);
 
   const getCurrentView = (): ViewType => {
     if (pathname.includes('/members')) return 'members';
@@ -90,13 +84,19 @@ export default function WorkspaceLayout({
   }, []);
 
   const basePath = `/workspace/${workspaceId}`;
+  console.log(workspace);
 
   return (
     <div className='flex flex-col h-full relative overflow-hidden'>
       {/* Header - Absolutely Positioned with Glass Effect */}
       <div className='absolute top-0 left-0 right-0 z-100 px-4 md:px-6 pt-4 md:pt-6 pointer-events-none'>
         <div className='flex items-center gap-3 w-full pointer-events-auto'>
-          <GlassButton onClick={handleBackNavigation} title='Go back'>
+          <GlassButton
+            onClick={handleBackNavigation}
+            title='Go back'
+            size='icon'
+            className='size-12'
+          >
             <ArrowLeft className='w-5 h-5' />
           </GlassButton>
           <h1 className='flex-1 min-w-0 text-xl font-bold bg-linear-to-r from-white to-gray-300 bg-clip-text text-transparent truncate'>
@@ -109,6 +109,7 @@ export default function WorkspaceLayout({
               aria-expanded={isMenuOpen}
               aria-label='Open workspace menu'
               title='More actions'
+              className='size-12'
             >
               <EllipsisVertical className='w-5 h-5 text-white' />
             </GlassButton>
@@ -146,7 +147,7 @@ export default function WorkspaceLayout({
 
       {/* Navigation Tabs - Absolutely Positioned */}
       {(currentView === 'chat' || currentView === 'notes') && (
-        <div className='absolute w-full top-16 left-1/2 -translate-x-1/2 z-50 px-4 md:px-6 pointer-events-none'>
+        <div className='absolute w-full top-17 left-1/2 -translate-x-1/2 z-50 px-4 md:px-6 pointer-events-none'>
           <GlassCard className='flex w-full divide-x divide-white/10 overflow-hidden rounded-3xl border backdrop-blur-md shadow-[0_8px_32px_rgba(0,0,0,0.15)] pointer-events-auto'>
             <button
               onClick={() => handleViewChange('chat')}

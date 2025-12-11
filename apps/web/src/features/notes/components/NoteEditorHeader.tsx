@@ -3,6 +3,7 @@
 import { ArrowLeft, Users } from 'lucide-react';
 import { AssignmentDropdown } from './AssignmentDropdown';
 import { WorkspaceMember } from '@/types/workspace';
+import GlassButton from '@/components/glass-card/GlassButton';
 
 interface NoteEditorHeaderProps {
   title: string;
@@ -30,14 +31,11 @@ export function NoteEditorHeader({
   onToggleAssignee,
 }: NoteEditorHeaderProps) {
   return (
-    <header className='flex items-center gap-3 py-4 relative z-100'>
+    <header className='flex items-center gap-3 p-4 relative z-100'>
       {/* 戻るボタン - 丸く浮き出る */}
-      <button
-        onClick={onBack}
-        className='w-[50px] h-[50px] min-w-[50px] shrink-0 rounded-full bg-white/10 backdrop-blur-xl text-white border border-black transition-all duration-300 shadow-[0_8px_32px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.12)] hover:bg-white/15 hover:scale-102 hover:shadow-[0_12px_40px_rgba(0,0,0,0.25),inset_0_1px_0_rgba(255,255,255,0.18)] flex items-center justify-center'
-      >
+      <GlassButton onClick={onBack} className='size-12'>
         <ArrowLeft className='w-5 h-5' />
-      </button>
+      </GlassButton>
       <input
         type='text'
         value={title}
@@ -48,9 +46,9 @@ export function NoteEditorHeader({
       {/* Assignment button for group notes */}
       {isGroupNote && (
         <div className='relative shrink-0'>
-          <button
+          <GlassButton
             onClick={onToggleAssignmentDropdown}
-            className='w-[50px] h-[50px] min-w-[50px] shrink-0 rounded-full bg-white/10 backdrop-blur-xl text-white border border-black transition-all duration-300 shadow-[0_8px_32px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.12)] hover:bg-white/15 hover:scale-102 hover:shadow-[0_12px_40px_rgba(0,0,0,0.25),inset_0_1px_0_rgba(255,255,255,0.18)] flex items-center justify-center relative'
+            className='size-12'
             title='担当者'
           >
             <Users className='w-5 h-5' />
@@ -59,7 +57,7 @@ export function NoteEditorHeader({
                 {assigneeIds.length}
               </span>
             )}
-          </button>
+          </GlassButton>
 
           <AssignmentDropdown
             isOpen={showAssignmentDropdown}
