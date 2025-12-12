@@ -90,19 +90,29 @@ export async function updateTask(
   id: number,
   taskData: TaskUpdate
 ): Promise<Task> {
+  // Only include defined fields in the request body
+  const body: Record<string, unknown> = {};
+
+  if (taskData.title !== undefined) body.title = taskData.title;
+  if (taskData.description !== undefined)
+    body.description = taskData.description;
+  if (taskData.recurrence_pattern !== undefined)
+    body.recurrence_pattern = taskData.recurrence_pattern;
+  if (taskData.is_ai_task !== undefined) body.is_ai_task = taskData.is_ai_task;
+  if (taskData.next_run_time !== undefined)
+    body.next_run_time = taskData.next_run_time;
+  if (taskData.is_recurring_task_active !== undefined)
+    body.is_recurring_task_active = taskData.is_recurring_task_active;
+  if (taskData.status !== undefined) body.status = taskData.status;
+  if (taskData.completed_at !== undefined)
+    body.completed_at = taskData.completed_at;
+
   const response = await fetch(`${API_BASE_URL}/api/tasks/${id}`, {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({
-      title: taskData.title,
-      description: taskData.description,
-      recurrence_pattern: taskData.recurrence_pattern,
-      is_ai_task: taskData.is_ai_task,
-      next_run_time: taskData.next_run_time,
-      is_recurring_task_active: taskData.is_recurring_task_active,
-    }),
+    body: JSON.stringify(body),
   });
 
   if (!response.ok) {
