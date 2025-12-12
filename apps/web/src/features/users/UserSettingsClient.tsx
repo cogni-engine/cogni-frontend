@@ -28,9 +28,11 @@ export default function UserSettingsClient() {
     setNameStatus,
     savingAvatar,
     removingAvatar,
+    generatingAvatar,
     avatarStatus,
     updateAvatar,
     removeAvatar,
+    generateAvatar,
     setAvatarStatus,
     enableAiSuggestion,
     savingAiSuggestion,
@@ -164,6 +166,14 @@ export default function UserSettingsClient() {
     fileInputRef.current?.click();
   }, []);
 
+  const handleGenerateAvatar = useCallback(async () => {
+    try {
+      await generateAvatar();
+    } catch (error) {
+      console.error('Failed to generate avatar', error);
+    }
+  }, [generateAvatar]);
+
   return (
     <div className='flex h-full flex-col gap-6 overflow-auto p-6 py-20'>
       {isLoading ? (
@@ -205,6 +215,8 @@ export default function UserSettingsClient() {
             removingAvatar={removingAvatar}
             removeDisabled={removingAvatar || !profile?.avatar_url}
             status={avatarStatus}
+            onGenerate={handleGenerateAvatar}
+            generatingAvatar={generatingAvatar}
           />
         </div>
       )}

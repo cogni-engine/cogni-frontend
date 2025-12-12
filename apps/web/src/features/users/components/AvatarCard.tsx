@@ -1,6 +1,7 @@
 'use client';
 
 import type { ChangeEvent, RefObject } from 'react';
+import { Sparkles } from 'lucide-react';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
@@ -27,6 +28,8 @@ type AvatarCardProps = {
   removingAvatar: boolean;
   removeDisabled: boolean;
   status: StatusMessage | null;
+  onGenerate?: () => void;
+  generatingAvatar?: boolean;
 };
 
 export function AvatarCard({
@@ -41,13 +44,17 @@ export function AvatarCard({
   removingAvatar,
   removeDisabled,
   status,
+  onGenerate,
+  generatingAvatar,
 }: AvatarCardProps) {
+  const isProcessing = savingAvatar || generatingAvatar;
+
   return (
     <Card className='h-fit'>
       <CardHeader>
         <CardTitle>Avatar</CardTitle>
         <CardDescription>
-          Upload an image to personalize your workspace presence.
+          Upload an image or generate a unique abstract avatar.
         </CardDescription>
       </CardHeader>
       <CardContent className='flex flex-col items-center gap-6'>
@@ -63,15 +70,15 @@ export function AvatarCard({
           <span>Supported formats: PNG or JPG.</span>
         </div>
       </CardContent>
-      <CardFooter className='flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between'>
-        <div className='flex gap-2'>
+      <CardFooter className='flex flex-col gap-3'>
+        <div className='flex flex-wrap gap-2'>
           <Button
             type='button'
             variant='secondary'
             onClick={onUploadClick}
-            disabled={savingAvatar}
+            disabled={isProcessing}
           >
-            {savingAvatar ? 'Processing…' : 'Upload new avatar'}
+            {savingAvatar ? 'Processing…' : 'Upload'}
           </Button>
           <input
             ref={fileInputRef}
@@ -80,13 +87,25 @@ export function AvatarCard({
             className='hidden'
             onChange={onFileChange}
           />
+          {onGenerate && (
+            <Button
+              type='button'
+              variant='outline'
+              onClick={onGenerate}
+              disabled={isProcessing}
+              className='gap-1.5'
+            >
+              <Sparkles className='h-4 w-4' />
+              {generatingAvatar ? 'Generating…' : 'Generate'}
+            </Button>
+          )}
           <Button
             type='button'
             variant='ghost'
             onClick={onRemove}
-            disabled={removeDisabled}
+            disabled={removeDisabled || isProcessing}
           >
-            {removingAvatar ? 'Removing…' : 'Remove avatar'}
+            {removingAvatar ? 'Removing…' : 'Remove'}
           </Button>
         </div>
         {status && (

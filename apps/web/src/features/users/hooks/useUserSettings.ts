@@ -13,6 +13,7 @@ import { createClient } from '@/lib/supabase/browserClient';
 import type { UserProfile } from '@/types/userProfile';
 
 import type { StatusMessage } from '../utils/avatar';
+import { generateAvatarBlob } from '../utils/avatarGenerator';
 
 type UseUserSettingsReturn = {
   userId: string | null;
@@ -27,9 +28,11 @@ type UseUserSettingsReturn = {
   setNameStatus: React.Dispatch<React.SetStateAction<StatusMessage | null>>;
   savingAvatar: boolean;
   removingAvatar: boolean;
+  generatingAvatar: boolean;
   avatarStatus: StatusMessage | null;
   updateAvatar: (file: File, previousAvatarUrl?: string) => Promise<void>;
   removeAvatar: () => Promise<void>;
+  generateAvatar: () => Promise<void>;
   setAvatarStatus: React.Dispatch<React.SetStateAction<StatusMessage | null>>;
   enableAiSuggestion: boolean;
   savingAiSuggestion: boolean;
@@ -48,7 +51,9 @@ export function useUserSettings(): UseUserSettingsReturn {
 
   const [savingAvatar, setSavingAvatar] = useState(false);
   const [removingAvatar, setRemovingAvatar] = useState(false);
+  const [generatingAvatar, setGeneratingAvatar] = useState(false);
   const [avatarStatus, setAvatarStatus] = useState<StatusMessage | null>(null);
+  const [generationCounter, setGenerationCounter] = useState(0);
 
   const [enableAiSuggestion, setEnableAiSuggestion] = useState(false);
   const [savingAiSuggestion, setSavingAiSuggestion] = useState(false);
@@ -71,7 +76,7 @@ export function useUserSettings(): UseUserSettingsReturn {
 
         let userProfile = await getUserProfile(user.id);
         if (!userProfile) {
-          userProfile = await createUserProfile(user.id);
+          userProfile = await createUserProfile(user.id, user.email ?? undefined);
         }
 
         setProfile(userProfile);
@@ -167,6 +172,49 @@ export function useUserSettings(): UseUserSettingsReturn {
     }
   }, [profile?.avatar_url, userId]);
 
+  const generateAvatar = useCallback(async () => {
+    if (!userId || !profile) return;
+
+    try {
+      setGeneratingAvatar(true);
+      setAvatarStatus(null);
+
+      // Use email/name as base seed with counter for variation
+      const seed = userEmail || profile.name || userId;
+      const uniqueSeed = `${seed}-${generationCounter}`;
+
+      const avatarBlob = await generateAvatarBlob(uniqueSeed, {
+        style: 'cosmic',
+        includeInitials: true,
+      });
+
+      const { avatarUrl } = await uploadUserAvatar(
+        userId,
+        avatarBlob,
+        profile.avatar_url ?? undefined
+      );
+
+      const updated = await updateUserProfile(userId, {
+        avatar_url: avatarUrl,
+      });
+
+      setProfile(updated);
+      setGenerationCounter(prev => prev + 1);
+      setAvatarStatus({
+        type: 'success',
+        message: 'Avatar generated successfully.',
+      });
+    } catch (error) {
+      console.error('Failed to generate avatar', error);
+      setAvatarStatus({
+        type: 'error',
+        message: 'Failed to generate avatar. Please try again.',
+      });
+    } finally {
+      setGeneratingAvatar(false);
+    }
+  }, [generationCounter, profile, userId, userEmail]);
+
   const toggleAiSuggestion = useCallback(async () => {
     if (!userId || !profile) return;
 
@@ -201,9 +249,11 @@ export function useUserSettings(): UseUserSettingsReturn {
     setNameStatus,
     savingAvatar,
     removingAvatar,
+    generatingAvatar,
     avatarStatus,
     updateAvatar,
     removeAvatar,
+    generateAvatar,
     setAvatarStatus,
     enableAiSuggestion,
     savingAiSuggestion,

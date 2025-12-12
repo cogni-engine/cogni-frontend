@@ -11,11 +11,13 @@ import type { UserProfile, UserProfileUpdateInput } from '@/types/userProfile';
 
 type UseUserProfileOptions = {
   userId?: string | null;
+  email?: string | null;
   loadOnInit?: boolean;
 };
 
 export function useUserProfile({
   userId,
+  email,
   loadOnInit = true,
 }: UseUserProfileOptions) {
   const [profile, setProfile] = useState<UserProfile | null>(null);
@@ -31,7 +33,7 @@ export function useUserProfile({
       let data = await getUserProfile(userId);
 
       if (!data) {
-        data = await createUserProfile(userId);
+        data = await createUserProfile(userId, email ?? undefined);
       }
 
       setProfile(data);
@@ -45,7 +47,7 @@ export function useUserProfile({
     } finally {
       setLoading(false);
     }
-  }, [userId]);
+  }, [userId, email]);
 
   const updateProfile = useCallback(
     async (updates: UserProfileUpdateInput) => {

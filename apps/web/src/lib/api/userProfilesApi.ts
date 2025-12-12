@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/browserClient';
 import type { UserProfile, UserProfileUpdateInput } from '@/types/userProfile';
+import { generateAvatarBlob } from '@/features/users/utils/avatarGenerator';
 
 const supabase = createClient();
 
@@ -31,7 +32,10 @@ export async function getUserProfile(
   return data ?? null;
 }
 
-export async function createUserProfile(userId: string): Promise<UserProfile> {
+export async function createUserProfile(
+  userId: string,
+  email?: string
+): Promise<UserProfile> {
   const { data, error } = await supabase
     .from('user_profiles')
     .insert({ id: userId })
@@ -39,7 +43,23 @@ export async function createUserProfile(userId: string): Promise<UserProfile> {
     .single();
 
   if (error) throw error;
-  return data;
+
+  // Generate and upload default avatar
+  try {
+    const seed = email || userId;
+    const avatarBlob = await generateAvatarBlob(seed, {
+      style: 'cosmic',
+      includeInitials: true,
+    });
+
+    const { avatarUrl } = await uploadUserAvatar(userId, avatarBlob);
+
+    // Update profile with avatar URL
+    return await updateUserProfile(userId, { avatar_url: avatarUrl });
+  } catch (avatarError) {
+    console.warn('Failed to generate default avatar:', avatarError);
+    return data; // Return profile without avatar if generation fails
+  }
 }
 
 export async function updateUserProfile(
