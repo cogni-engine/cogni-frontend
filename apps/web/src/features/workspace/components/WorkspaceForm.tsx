@@ -11,7 +11,7 @@ import {
 } from 'react';
 import type { Area } from 'react-easy-crop';
 import type { Workspace } from '@/types/workspace';
-import { Plus } from 'lucide-react';
+import { Plus, Sparkles } from 'lucide-react';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import GlassButton from '@/components/glass-card/GlassButton';
@@ -34,6 +34,7 @@ import {
   getInitials,
   readFileAsDataUrl,
 } from '@/features/users/utils/avatar';
+import { generateAvatarBlob } from '@/features/users/utils/avatarGenerator';
 
 interface WorkspaceFormProps {
   workspace?: Workspace | null;
@@ -58,6 +59,8 @@ export default function WorkspaceForm({
   const [iconError, setIconError] = useState<string | null>(null);
   const [iconFile, setIconFile] = useState<File | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [generatingIcon, setGeneratingIcon] = useState(false);
+  const [generationCounter, setGenerationCounter] = useState(0);
 
   const [iconPreviewUrl, setIconPreviewUrl] = useState<string | null>(
     () => workspace?.icon_url ?? null
@@ -220,6 +223,36 @@ export default function WorkspaceForm({
     }
   }, [updateIconPreview, workspace?.icon_url]);
 
+  const handleGenerateIcon = useCallback(async () => {
+    try {
+      setGeneratingIcon(true);
+      setIconError(null);
+
+      // Use workspace title or default seed
+      const seed =
+        title.trim() || workspace?.title || `workspace-${Date.now()}`;
+      const uniqueSeed = `${seed}-${generationCounter}`;
+
+      const iconBlob = await generateAvatarBlob(uniqueSeed, {
+        style: 'cosmic',
+        includeInitials: false,
+      });
+
+      const file = new File([iconBlob], 'workspace-icon.png', {
+        type: 'image/png',
+      });
+      const previewUrl = URL.createObjectURL(file);
+      updateIconPreview(previewUrl);
+      setIconFile(file);
+      setGenerationCounter(prev => prev + 1);
+    } catch (err) {
+      console.error('Failed to generate workspace icon', err);
+      setIconError('Failed to generate icon. Please try again.');
+    } finally {
+      setGeneratingIcon(false);
+    }
+  }, [generationCounter, title, workspace?.title, updateIconPreview]);
+
   const initials = useMemo(
     () => getInitials(title || workspace?.title || 'Workspace', 'Workspace'),
     [title, workspace?.title]
@@ -314,16 +347,26 @@ export default function WorkspaceForm({
                   type='button'
                   variant='secondary'
                   onClick={handleUploadClick}
-                  disabled={isSubmitting}
+                  disabled={isSubmitting || generatingIcon}
                 >
                   {iconPreviewUrl ? 'Change icon' : 'Upload icon'}
+                </Button>
+                <Button
+                  type='button'
+                  variant='secondary'
+                  onClick={handleGenerateIcon}
+                  disabled={isSubmitting || generatingIcon}
+                  className='gap-2'
+                >
+                  <Sparkles className='w-4 h-4' />
+                  {generatingIcon ? 'Generating…' : 'Generate icon'}
                 </Button>
                 {iconPreviewUrl && iconFile && (
                   <Button
                     type='button'
                     variant='ghost'
                     onClick={handleClearSelectedIcon}
-                    disabled={isSubmitting}
+                    disabled={isSubmitting || generatingIcon}
                   >
                     Reset selection
                   </Button>

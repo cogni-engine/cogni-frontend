@@ -1,6 +1,7 @@
 'use client';
 
 import type { ChangeEvent, RefObject } from 'react';
+import { Sparkles } from 'lucide-react';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
@@ -22,7 +23,9 @@ type WorkspaceIconCardProps = {
   fileInputRef: RefObject<HTMLInputElement | null>;
   onFileChange: (event: ChangeEvent<HTMLInputElement>) => void;
   onUploadClick: () => void;
+  onGenerateClick: () => void;
   savingIcon: boolean;
+  generatingIcon: boolean;
   onRemove: () => void;
   removingIcon: boolean;
   removeDisabled: boolean;
@@ -36,7 +39,9 @@ export function WorkspaceIconCard({
   fileInputRef,
   onFileChange,
   onUploadClick,
+  onGenerateClick,
   savingIcon,
+  generatingIcon,
   onRemove,
   removingIcon,
   removeDisabled,
@@ -64,12 +69,12 @@ export function WorkspaceIconCard({
         </div>
       </CardContent>
       <CardFooter className='flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between'>
-        <div className='flex gap-2'>
+        <div className='flex flex-wrap gap-2'>
           <Button
             type='button'
             variant='secondary'
             onClick={onUploadClick}
-            disabled={savingIcon}
+            disabled={savingIcon || generatingIcon}
           >
             {savingIcon ? 'Processing…' : 'Upload new icon'}
           </Button>
@@ -82,9 +87,19 @@ export function WorkspaceIconCard({
           />
           <Button
             type='button'
+            variant='secondary'
+            onClick={onGenerateClick}
+            disabled={savingIcon || generatingIcon}
+            className='gap-2'
+          >
+            <Sparkles className='w-4 h-4' />
+            {generatingIcon ? 'Generating…' : 'Generate icon'}
+          </Button>
+          <Button
+            type='button'
             variant='ghost'
             onClick={onRemove}
-            disabled={removeDisabled}
+            disabled={removeDisabled || generatingIcon}
           >
             {removingIcon ? 'Removing…' : 'Remove icon'}
           </Button>

@@ -8,6 +8,7 @@ import {
   uploadWorkspaceIcon,
 } from '@/lib/api/workspaceApi';
 import { useWorkspace, useWorkspaceMutations } from '@/hooks/useWorkspace';
+import { generateAvatarBlob } from '@/features/users/utils/avatarGenerator';
 
 import type { StatusMessage } from '@/features/users/utils/avatar';
 import type { Workspace } from '@/types/workspace';
@@ -24,10 +25,12 @@ type UseWorkspaceSettingsReturn = {
   setTitleStatus: React.Dispatch<React.SetStateAction<StatusMessage | null>>;
   saveTitle: () => Promise<void>;
   savingIcon: boolean;
+  generatingIcon: boolean;
   removingIcon: boolean;
   iconStatus: StatusMessage | null;
   setIconStatus: React.Dispatch<React.SetStateAction<StatusMessage | null>>;
   updateIcon: (file: File) => Promise<void>;
+  generateIcon: () => Promise<void>;
   removeIcon: () => Promise<void>;
   iconUrl: string | null | undefined;
   deleteWorkspace: () => Promise<void>;
@@ -45,9 +48,11 @@ export function useWorkspaceSettings(
   const [titleStatus, setTitleStatus] = useState<StatusMessage | null>(null);
 
   const [savingIcon, setSavingIcon] = useState(false);
+  const [generatingIcon, setGeneratingIcon] = useState(false);
   const [removingIcon, setRemovingIcon] = useState(false);
   const [iconStatus, setIconStatus] = useState<StatusMessage | null>(null);
   const [deletingWorkspace, setDeletingWorkspace] = useState(false);
+  const [generationCounter, setGenerationCounter] = useState(0);
 
   useEffect(() => {
     if (workspace) {
@@ -126,6 +131,46 @@ export function useWorkspaceSettings(
     [update, workspace, workspaceId]
   );
 
+  const generateIcon = useCallback(async () => {
+    if (!workspaceId || !workspace) return;
+
+    try {
+      setGeneratingIcon(true);
+      setIconStatus(null);
+
+      // Use workspace title as base seed with counter for variation
+      const seed = workspace.title || `workspace-${workspaceId}`;
+      const uniqueSeed = `${seed}-${generationCounter}`;
+
+      const iconBlob = await generateAvatarBlob(uniqueSeed, {
+        style: 'cosmic',
+        includeInitials: false,
+      });
+
+      const { iconUrl } = await uploadWorkspaceIcon(
+        workspaceId,
+        iconBlob,
+        workspace.icon_url ?? undefined
+      );
+
+      await update(workspaceId, { icon_url: iconUrl });
+      setGenerationCounter(prev => prev + 1);
+      setIconStatus({
+        type: 'success',
+        message: 'Workspace icon generated successfully.',
+      });
+    } catch (err) {
+      console.error('Failed to generate workspace icon', err);
+      setIconStatus({
+        type: 'error',
+        message: 'Failed to generate workspace icon. Please try again.',
+      });
+      throw err;
+    } finally {
+      setGeneratingIcon(false);
+    }
+  }, [generationCounter, update, workspace, workspaceId]);
+
   const removeIcon = useCallback(async () => {
     if (!workspaceId || !workspace?.icon_url) return;
 
@@ -179,10 +224,12 @@ export function useWorkspaceSettings(
     setTitleStatus,
     saveTitle,
     savingIcon,
+    generatingIcon,
     removingIcon,
     iconStatus,
     setIconStatus,
     updateIcon,
+    generateIcon,
     removeIcon,
     iconUrl: workspace?.icon_url,
     deleteWorkspace,

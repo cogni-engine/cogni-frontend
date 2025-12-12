@@ -51,10 +51,12 @@ export default function WorkspaceSettingsClient({
     setTitleStatus,
     saveTitle,
     savingIcon,
+    generatingIcon,
     removingIcon,
     iconStatus,
     setIconStatus,
     updateIcon,
+    generateIcon,
     removeIcon,
     iconUrl,
     deleteWorkspace,
@@ -175,6 +177,14 @@ export default function WorkspaceSettingsClient({
     fileInputRef.current?.click();
   }, []);
 
+  const handleGenerateIcon = useCallback(async () => {
+    try {
+      await generateIcon();
+    } catch (err) {
+      console.error('Failed to generate workspace icon', err);
+    }
+  }, [generateIcon]);
+
   const handleRemoveIcon = useCallback(async () => {
     try {
       await removeIcon();
@@ -269,7 +279,9 @@ export default function WorkspaceSettingsClient({
             fileInputRef={fileInputRef}
             onFileChange={handleFileChange}
             onUploadClick={handleUploadClick}
+            onGenerateClick={handleGenerateIcon}
             savingIcon={savingIcon}
+            generatingIcon={generatingIcon}
             onRemove={handleRemoveIcon}
             removingIcon={removingIcon}
             removeDisabled={removingIcon || !iconUrl}

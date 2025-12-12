@@ -4,6 +4,7 @@ import {
   type SupabaseWorkspaceMember,
 } from '@/lib/api/profileUtils';
 import type { Workspace, WorkspaceMember } from '@/types/workspace';
+import { generateAvatarBlob } from '@/features/users/utils/avatarGenerator';
 
 const supabase = createClient();
 const WORKSPACE_ICON_BUCKET = 'workspace_icon';
@@ -201,14 +202,31 @@ export async function createWorkspace(
 
   // Fetch the created workspace to return it with full details
   if (data && data.length > 0 && data[0].workspace_id) {
+    const workspaceId = data[0].workspace_id;
+
     const { data: workspace, error: fetchError } = await supabase
       .from('workspace')
       .select('*')
-      .eq('id', data[0].workspace_id)
+      .eq('id', workspaceId)
       .single();
 
     if (fetchError) throw fetchError;
-    return workspace;
+
+    // Generate and upload default workspace icon
+    try {
+      const iconBlob = await generateAvatarBlob(title, {
+        style: 'cosmic',
+        includeInitials: false,
+      });
+
+      const { iconUrl } = await uploadWorkspaceIcon(workspaceId, iconBlob);
+
+      // Update workspace with icon URL
+      return await updateWorkspace(workspaceId, { icon_url: iconUrl });
+    } catch (iconError) {
+      console.warn('Failed to generate default workspace icon:', iconError);
+      return workspace; // Return workspace without icon if generation fails
+    }
   }
 
   throw new Error('Failed to create workspace');

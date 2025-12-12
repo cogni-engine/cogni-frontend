@@ -76,7 +76,10 @@ export function useUserSettings(): UseUserSettingsReturn {
 
         let userProfile = await getUserProfile(user.id);
         if (!userProfile) {
-          userProfile = await createUserProfile(user.id, user.email ?? undefined);
+          userProfile = await createUserProfile(
+            user.id,
+            user.email ?? undefined
+          );
         }
 
         setProfile(userProfile);
