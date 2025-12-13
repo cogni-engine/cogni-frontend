@@ -2,9 +2,10 @@
 
 import { useState, useCallback, useEffect } from 'react';
 import type { Message } from '@/types/chat';
+import type { ThreadId } from '@/contexts/ThreadContext';
 
 export interface UseMessagesOptions {
-  threadId: number | null;
+  threadId: ThreadId;
   apiBaseUrl?: string;
 }
 
@@ -47,7 +48,9 @@ export function useMessages({
   );
 
   useEffect(() => {
-    if (threadId) {
+    // Only fetch messages for existing threads (numeric IDs)
+    // For 'new' threads or null, show empty messages
+    if (typeof threadId === 'number') {
       fetchMessages(threadId);
     } else {
       setMessages([]);

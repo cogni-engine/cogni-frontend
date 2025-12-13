@@ -13,6 +13,7 @@ import { uploadAIChatFile } from '@/lib/api/aiChatFilesApi';
 import { type UploadedFile } from '@/lib/api/workspaceFilesApi';
 import type { WorkspaceMember } from '@/types/workspace';
 import type { Note } from '@/types/note';
+import type { ThreadId } from '@/contexts/ThreadContext';
 
 export type FileUploadItem = {
   file: File;
@@ -35,7 +36,7 @@ type AiChatInputProps = {
   isLoading?: boolean;
   placeholder?: string;
   canStop?: boolean;
-  threadId?: number | null;
+  threadId?: ThreadId;
   workspaceMembers?: WorkspaceMember[];
   workspaceNotes?: Note[];
 };
@@ -159,7 +160,8 @@ const AiChatInput = forwardRef<AiChatInputRef, AiChatInputProps>(
 
         let fileIds: number[] = [];
 
-        if (uploadItems.length > 0 && threadId) {
+        // File uploads only work with existing threads (numeric IDs)
+        if (uploadItems.length > 0 && typeof threadId === 'number') {
           setIsUploading(true);
           try {
             const uploadPromises = uploadItems.map(async item => {
@@ -203,8 +205,8 @@ const AiChatInput = forwardRef<AiChatInputRef, AiChatInputProps>(
 
     return (
       <div className='relative z-100 rounded-t-3xl'>
-        {/* File Upload Preview */}
-        {threadId && uploadItems.length > 0 && (
+        {/* File Upload Preview - only shown for existing threads */}
+        {typeof threadId === 'number' && uploadItems.length > 0 && (
           <FileUploadPreview
             files={uploadItems}
             workspaceId={threadId}

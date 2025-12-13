@@ -2,15 +2,17 @@
 
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 
+export type ThreadId = number | 'new' | null;
+
 interface ThreadContextType {
-  selectedThreadId: number | null;
-  setSelectedThreadId: (id: number | null) => void;
+  selectedThreadId: ThreadId;
+  setSelectedThreadId: (id: ThreadId) => void;
 }
 
 const ThreadContext = createContext<ThreadContextType | undefined>(undefined);
 
 export function ThreadProvider({ children }: { children: ReactNode }) {
-  const [selectedThreadId, setSelectedThreadId] = useState<number | null>(null);
+  const [selectedThreadId, setSelectedThreadId] = useState<ThreadId>(null);
 
   return (
     <ThreadContext.Provider value={{ selectedThreadId, setSelectedThreadId }}>

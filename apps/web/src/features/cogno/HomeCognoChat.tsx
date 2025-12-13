@@ -9,16 +9,22 @@ import { useGlobalUI } from '@/contexts/GlobalUIContext';
 import { useAIChatMentions } from './hooks/useAIChatMentions';
 import { useMessageAutoScroll } from './hooks/useMessageAutoScroll';
 import { useThreadContext } from '@/contexts/ThreadContext';
+import { dispatchHeaderEvent, HEADER_EVENTS } from '@/lib/headerEvents';
 
 interface HomeCognoChatProps {
   isInitialMount: React.RefObject<boolean>;
 }
 
 export default function HomeCognoChat({ isInitialMount }: HomeCognoChatProps) {
-  const { selectedThreadId } = useThreadContext();
+  const { selectedThreadId, setSelectedThreadId } = useThreadContext();
 
   const { messages, sendMessage, isSending, stopStream } = useChat({
     selectedThreadId,
+    onThreadCreated: (newThreadId: number) => {
+      setSelectedThreadId(newThreadId);
+      // Refresh the threads list in the sidebar
+      dispatchHeaderEvent(HEADER_EVENTS.REFRESH_THREADS);
+    },
   });
 
   const scrollContainerRef = useRef<HTMLDivElement>(null);

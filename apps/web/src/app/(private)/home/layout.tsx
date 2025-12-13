@@ -4,34 +4,14 @@ import { ReactNode, useEffect } from 'react';
 import { ThreadProvider, useThreadContext } from '@/contexts/ThreadContext';
 import { HomeUIProvider, useHomeUI } from '@/contexts/HomeUIContext';
 import ThreadSidebar from '@/features/thread/ThreadSidebar';
-import { useThreads } from '@/hooks/useThreads';
 import { onHeaderEvent, HEADER_EVENTS } from '@/lib/headerEvents';
 
 function HomeLayoutContent({ children }: { children: ReactNode }) {
-  const { createThread } = useThreads();
   const { setSelectedThreadId } = useThreadContext();
   const { toggleThreadSidebar, toggleNotificationPanel } = useHomeUI();
 
-  const handleCreateThread = async () => {
-    try {
-      const now = new Date();
-      const dateTimeTitle = now.toLocaleString('en-US', {
-        month: 'short',
-        day: 'numeric',
-        year: 'numeric',
-        hour: 'numeric',
-        minute: '2-digit',
-        hour12: true,
-      });
-
-      const newThread = await createThread(dateTimeTitle);
-      // Auto-select the newly created thread
-      if (newThread && newThread.id) {
-        setSelectedThreadId(newThread.id);
-      }
-    } catch (error) {
-      console.error('Failed to create thread:', error);
-    }
+  const handleCreateThread = () => {
+    setSelectedThreadId('new');
   };
 
   // Listen to header events

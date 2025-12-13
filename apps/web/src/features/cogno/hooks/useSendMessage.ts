@@ -2,6 +2,9 @@
 
 import { useState, useCallback, useRef } from 'react';
 import type { Message } from '@/types/chat';
+import type { ThreadId } from '@/contexts/ThreadContext';
+import { createThread } from '@/lib/api/threadsApi';
+import { getPersonalWorkspaceId } from '@/lib/cookies';
 
 export interface SendMessageOptions {
   content: string;
@@ -13,11 +16,12 @@ export interface SendMessageOptions {
 }
 
 export interface UseSendMessageOptions {
-  threadId: number | null;
+  threadId: ThreadId;
   messages: Message[];
   apiBaseUrl?: string;
   onMessageUpdate?: (messages: Message[]) => void;
   onComplete?: () => void;
+  onThreadCreated?: (threadId: number) => void;
 }
 
 export function useSendMessage({
@@ -26,6 +30,7 @@ export function useSendMessage({
   apiBaseUrl = '/api',
   onMessageUpdate,
   onComplete,
+  onThreadCreated,
 }: UseSendMessageOptions) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -48,7 +53,36 @@ export function useSendMessage({
       notificationId,
       timerCompleted,
     }: SendMessageOptions) => {
-      if (!threadId) {
+      // Determine the actual thread ID to use
+      let actualThreadId: number | null = null;
+      let isNewlyCreatedThread = false;
+
+      if (threadId === 'new') {
+        // Create a new thread first
+        const workspaceId = getPersonalWorkspaceId();
+        if (!workspaceId) {
+          console.error('Cannot create thread: No workspace found');
+          return;
+        }
+
+        try {
+          // Use first 20 characters of the message as the thread title
+          const title = content.trim().slice(0, 20) || 'New Thread';
+
+          const newThread = await createThread(workspaceId, title);
+          actualThreadId = newThread.id;
+          isNewlyCreatedThread = true;
+          // Don't call onThreadCreated here - wait until streaming completes
+          // to avoid useMessages refetching and wiping optimistic messages
+        } catch (err) {
+          console.error('Failed to create thread:', err);
+          return;
+        }
+      } else if (typeof threadId === 'number') {
+        actualThreadId = threadId;
+      }
+
+      if (!actualThreadId) {
         console.error('Cannot send message: No threadId');
         return;
       }
@@ -99,7 +133,7 @@ export function useSendMessage({
       try {
         const url = `${apiBaseUrl}/cogno/conversations/stream`;
         const requestBody = {
-          thread_id: threadId,
+          thread_id: actualThreadId,
           messages: updatedMessages,
           ...(mentionedMemberIds &&
             mentionedMemberIds.length > 0 && {
@@ -183,6 +217,12 @@ export function useSendMessage({
           return;
         }
 
+        // Notify about newly created thread after streaming completes
+        // This prevents useMessages from refetching and wiping optimistic messages
+        if (isNewlyCreatedThread && actualThreadId) {
+          onThreadCreated?.(actualThreadId);
+        }
+
         onComplete?.();
       } catch (err) {
         if (err instanceof Error && err.name === 'AbortError') {
@@ -205,7 +245,14 @@ export function useSendMessage({
         abortControllerRef.current = null;
       }
     },
-    [threadId, messages, apiBaseUrl, onMessageUpdate, onComplete]
+    [
+      threadId,
+      messages,
+      apiBaseUrl,
+      onMessageUpdate,
+      onComplete,
+      onThreadCreated,
+    ]
   );
 
   return {
