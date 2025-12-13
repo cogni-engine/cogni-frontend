@@ -14,12 +14,12 @@ export default function BottomNav() {
 
   const tabs = [
     {
-      name: 'Chat',
+      name: 'Workspace',
       path: '/workspace',
       icon: <MessageSquare className='w-6 h-6' />,
     },
     { name: 'Cogno', path: '/home', icon: <HomeIcon className='w-6 h-6' /> },
-    { name: 'Notes', path: '/notes', icon: <Notebook className='w-6 h-6' /> },
+    { name: 'Note', path: '/notes', icon: <Notebook className='w-6 h-6' /> },
   ];
 
   // Find active tab index
