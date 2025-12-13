@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
 import { useNoteEditor, useNotes } from '@cogni/api';
 import { EditorContent } from '@tiptap/react';
 import { getPersonalWorkspaceId } from '@cogni/utils';
@@ -16,6 +16,8 @@ import { useNoteEditorSetup } from './hooks/useNoteEditorSetup';
 import { useNoteAssignments } from './hooks/useNoteAssignments';
 import { useNoteMentions } from './hooks/useNoteMentions';
 import { useEditorImageUpload } from './hooks/useEditorImageUpload';
+import { NoteAIDiffDrawer } from './components/NoteAIDiffDrawer';
+import AiChatInput from '@/components/chat-input/AiChatInput';
 
 export default function NoteEditor({ noteId }: { noteId: string }) {
   const router = useRouter();
@@ -42,6 +44,12 @@ export default function NoteEditor({ noteId }: { noteId: string }) {
     }
     return false;
   });
+
+  // AI Edit state
+  const [isAIEditLoading, setIsAIEditLoading] = useState(false);
+  const [isAIDiffDrawerOpen, setIsAIDiffDrawerOpen] = useState(false);
+  const [aiEditOriginalContent, setAIEditOriginalContent] = useState('');
+  const [aiEditedContent, setAIEditedContent] = useState('');
 
   // Fetch workspace members if this is a group note
   const { members } = useWorkspaceMembers(
@@ -269,6 +277,70 @@ export default function NoteEditor({ noteId }: { noteId: string }) {
     }
   };
 
+  // Handle AI edit submission
+  const handleAIEditSubmit = useCallback(
+    async (
+      instruction: string,
+      fileIds?: number[],
+      mentionedMemberIds?: number[],
+      mentionedNoteIds?: number[]
+    ) => {
+      if (!content || !instruction.trim()) return;
+
+      setIsAIEditLoading(true);
+      setAIEditOriginalContent(content);
+
+      try {
+        const response = await fetch('/api/note-ai-editor/edit', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            note_content: content,
+            user_instruction: instruction,
+            file_contents: undefined, // File upload not implemented yet
+          }),
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to edit note with AI');
+        }
+
+        const data = await response.json();
+        setAIEditedContent(data.edited_content);
+        setIsAIDiffDrawerOpen(true);
+      } catch (error) {
+        console.error('AI edit error:', error);
+        alert('AIによる編集に失敗しました。もう一度お試しください。');
+      } finally {
+        setIsAIEditLoading(false);
+      }
+    },
+    [content]
+  );
+
+  // Handle applying AI edit
+  const handleApplyAIEdit = useCallback(
+    (finalContent: string) => {
+      if (editor) {
+        setContent(finalContent);
+        editor.commands.setContent(finalContent, { contentType: 'markdown' });
+        setIsAIDiffDrawerOpen(false);
+        setAIEditedContent('');
+        setAIEditOriginalContent('');
+      }
+    },
+    [editor, setContent]
+  );
+
+  // Handle closing AI diff drawer
+  const handleCloseAIDiffDrawer = useCallback(() => {
+    setIsAIDiffDrawerOpen(false);
+    setAIEditedContent('');
+    setAIEditOriginalContent('');
+  }, []);
+
   // Provide context to CopilotKit
   useCopilotReadable({
     description: 'Current note being edited in the editor',
@@ -396,6 +468,28 @@ export default function NoteEditor({ noteId }: { noteId: string }) {
         accept='image/*'
         className='hidden'
         onChange={handleImageUpload}
+      />
+
+      {/* AI Edit Input */}
+      <div className='border-t border-white/10 bg-transparent'>
+        <AiChatInput
+          onSend={handleAIEditSubmit}
+          isLoading={isAIEditLoading}
+          placeholder='AIに編集を依頼...'
+          canStop={false}
+          threadId={null}
+          workspaceMembers={members}
+          workspaceNotes={workspaceNotes.filter(n => n.id !== id)}
+        />
+      </div>
+
+      {/* AI Diff Drawer */}
+      <NoteAIDiffDrawer
+        isOpen={isAIDiffDrawerOpen}
+        onClose={handleCloseAIDiffDrawer}
+        onApply={handleApplyAIEdit}
+        originalContent={aiEditOriginalContent}
+        editedContent={aiEditedContent}
       />
 
       <EditorStyles />
