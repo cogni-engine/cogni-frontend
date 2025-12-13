@@ -1,7 +1,7 @@
 'use client';
 
 import Image from 'next/image';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import {
   Image as ImageIcon,
@@ -10,6 +10,7 @@ import {
   X,
 } from 'lucide-react';
 import { createClient } from '@/lib/supabase/browserClient';
+import { useGlobalUI } from '@/contexts/GlobalUIContext';
 
 const supabase = createClient();
 const WORKSPACE_FILES_BUCKET = 'workspace-files';
@@ -24,13 +25,18 @@ export interface MessageFile {
 
 type MessageFilesProps = {
   files: MessageFile[];
+  bucket?: 'workspace' | 'ai-chat';
 };
 
 const isImage = (mimeType: string): boolean => {
   return mimeType.startsWith('image/');
 };
 
-export default function MessageFiles({ files }: MessageFilesProps) {
+export default function MessageFiles({
+  files,
+  bucket = 'workspace',
+}: MessageFilesProps) {
+  const { openFileDrawer } = useGlobalUI();
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [imageUrls, setImageUrls] = useState<Map<number, string>>(new Map());
   const [loadingImages, setLoadingImages] = useState<Set<number>>(new Set());
@@ -100,19 +106,30 @@ export default function MessageFiles({ files }: MessageFilesProps) {
   // Lock body scroll when image is open
   useEffect(() => {
     if (selectedImage) {
-      // Lock body scroll
       document.body.style.overflow = 'hidden';
       return () => {
-        // Unlock body scroll when modal closes
         document.body.style.overflow = '';
       };
     }
   }, [selectedImage]);
 
+  const handleFileClick = useCallback(
+    (file: MessageFile) => {
+      openFileDrawer({
+        id: file.id,
+        original_filename: file.original_filename,
+        file_path: file.file_path,
+        mime_type: file.mime_type,
+        file_size: file.file_size,
+        bucket,
+      });
+    },
+    [openFileDrawer, bucket]
+  );
+
   const handleImageClick = async (file: MessageFile) => {
     if (!imageUrls.has(file.id)) {
       try {
-        // Get signed URL for private bucket (valid for 1 hour)
         const { data: signedUrlData, error: signedUrlError } =
           await supabase.storage
             .from(WORKSPACE_FILES_BUCKET)
@@ -178,7 +195,11 @@ export default function MessageFiles({ files }: MessageFilesProps) {
         {nonImageFiles.length > 0 && (
           <div className='flex flex-col gap-2'>
             {nonImageFiles.map(file => (
-              <div key={file.id} className='relative group overflow-hidden'>
+              <div
+                key={file.id}
+                className='relative group overflow-hidden cursor-pointer'
+                onClick={() => handleFileClick(file)}
+              >
                 <div className='flex items-center gap-2 bg-white/13 backdrop-blur-xl border border-black rounded-3xl px-4 py-2.5 shadow-[0_8px_32px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.12)] hover:bg-white/16 transition-all min-w-0'>
                   <FileIcon className='w-5 h-5 text-white/60 flex-shrink-0' />
                   <div className='flex-1 min-w-0 overflow-hidden'>
@@ -193,7 +214,10 @@ export default function MessageFiles({ files }: MessageFilesProps) {
                     </p>
                   </div>
                   <button
-                    onClick={() => handleDownload(file)}
+                    onClick={e => {
+                      e.stopPropagation();
+                      handleDownload(file);
+                    }}
                     className='ml-2 p-1.5 rounded-md hover:bg-white/10 transition-colors flex-shrink-0'
                     aria-label='Download file'
                   >

@@ -16,6 +16,7 @@ import {
 } from '@cogni/utils';
 import { getPersonalWorkspace } from '@/lib/api/workspaceApi';
 import NoteDrawer from '@/components/NoteDrawer';
+import FilePreviewDrawer from '@/components/FilePreviewDrawer';
 
 function LayoutContent({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -26,6 +27,9 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
     noteDrawerOpen,
     selectedNoteId,
     closeNoteDrawer,
+    fileDrawerOpen,
+    selectedFile,
+    closeFileDrawer,
   } = useGlobalUI();
   const [isMobile, setIsMobile] = useState(false);
   const supabase = createClient();
@@ -159,6 +163,13 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
         isOpen={noteDrawerOpen}
         onClose={closeNoteDrawer}
         noteId={selectedNoteId}
+      />
+
+      {/* Global File Preview Drawer */}
+      <FilePreviewDrawer
+        isOpen={fileDrawerOpen}
+        onClose={closeFileDrawer}
+        file={selectedFile}
       />
     </div>
   );

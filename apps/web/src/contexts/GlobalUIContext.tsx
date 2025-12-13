@@ -8,6 +8,7 @@ import {
   useEffect,
   useCallback,
 } from 'react';
+import type { FilePreviewData } from '@/components/FilePreviewDrawer';
 
 /**
  * GlobalUIContext - Manages global UI state across the application
@@ -16,6 +17,7 @@ import {
  * - Input focus tracking (isInputActive)
  * - General drawer state (isDrawerOpen)
  * - Global Note Drawer management
+ * - Global File Preview Drawer management
  *
  * Note Drawer Usage:
  * The Note Drawer is available globally across all screens in the (private) layout.
@@ -35,6 +37,25 @@ import {
  *   return <button onClick={() => handleNoteClick(123)}>View Note</button>;
  * }
  * ```
+ *
+ * File Preview Drawer Usage:
+ * The File Preview Drawer is available globally across all screens in the (private) layout.
+ * To open a file preview from any component:
+ *
+ * @example
+ * ```tsx
+ * import { useGlobalUI } from '@/contexts/GlobalUIContext';
+ *
+ * function MyComponent() {
+ *   const { openFileDrawer } = useGlobalUI();
+ *
+ *   const handleFileClick = (file: FilePreviewData) => {
+ *     openFileDrawer(file);
+ *   };
+ *
+ *   return <button onClick={() => handleFileClick(fileData)}>View File</button>;
+ * }
+ * ```
  */
 interface GlobalUIContextType {
   isInputActive: boolean;
@@ -45,6 +66,11 @@ interface GlobalUIContextType {
   selectedNoteId: number | null;
   openNoteDrawer: (noteId: number) => void;
   closeNoteDrawer: () => void;
+  // File Preview Drawer state
+  fileDrawerOpen: boolean;
+  selectedFile: FilePreviewData | null;
+  openFileDrawer: (file: FilePreviewData) => void;
+  closeFileDrawer: () => void;
 }
 
 const GlobalUIContext = createContext<GlobalUIContextType | undefined>(
@@ -56,6 +82,10 @@ export function GlobalUIProvider({ children }: { children: ReactNode }) {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [noteDrawerOpen, setNoteDrawerOpen] = useState(false);
   const [selectedNoteId, setSelectedNoteId] = useState<number | null>(null);
+  const [fileDrawerOpen, setFileDrawerOpen] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<FilePreviewData | null>(
+    null
+  );
 
   useEffect(() => {
     const checkIfInputActive = () => {
@@ -94,6 +124,16 @@ export function GlobalUIProvider({ children }: { children: ReactNode }) {
     setSelectedNoteId(null);
   }, []);
 
+  const openFileDrawer = useCallback((file: FilePreviewData) => {
+    setSelectedFile(file);
+    setFileDrawerOpen(true);
+  }, []);
+
+  const closeFileDrawer = useCallback(() => {
+    setFileDrawerOpen(false);
+    setSelectedFile(null);
+  }, []);
+
   return (
     <GlobalUIContext.Provider
       value={{
@@ -104,6 +144,10 @@ export function GlobalUIProvider({ children }: { children: ReactNode }) {
         selectedNoteId,
         openNoteDrawer,
         closeNoteDrawer,
+        fileDrawerOpen,
+        selectedFile,
+        openFileDrawer,
+        closeFileDrawer,
       }}
     >
       {children}
