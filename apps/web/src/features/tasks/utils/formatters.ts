@@ -15,14 +15,25 @@ export function formatTime(nextRunTime: string | null | undefined): string {
  * Formats a recurrence pattern to lowercase display text
  */
 export function formatRecurrence(pattern: string | null | undefined): string {
+  if (!pattern) return '';
+
   const map: Record<string, string> = {
-    daily: 'every day',
-    weekly: 'every week',
-    biweekly: 'every 2 weeks',
-    monthly: 'every month',
-    yearly: 'every year',
+    EVERY_DAY: 'every day',
+    EVERY_WEEK: 'every week',
+    EVERY_MONTH: 'every month',
+    EVERY_YEAR: 'every year',
+    EVERY_MONDAY: 'every Monday',
+    EVERY_TUESDAY: 'every Tuesday',
+    EVERY_WEDNESDAY: 'every Wednesday',
+    EVERY_THURSDAY: 'every Thursday',
+    EVERY_FRIDAY: 'every Friday',
+    EVERY_SATURDAY: 'every Saturday',
+    EVERY_SUNDAY: 'every Sunday',
   };
-  return map[pattern || ''] || pattern || '';
+
+  // カンマ区切りの複数パターンに対応
+  const patterns = pattern.split(',').map(p => p.trim());
+  return patterns.map(p => map[p] || p).join(', ');
 }
 
 /**
@@ -31,23 +42,40 @@ export function formatRecurrence(pattern: string | null | undefined): string {
 export function formatRecurrenceDisplay(
   pattern: string | null | undefined
 ): string {
+  if (!pattern) return 'Every day';
+
   const map: Record<string, string> = {
-    daily: 'Every day',
-    weekly: 'Every week',
-    biweekly: 'Every 2 weeks',
-    monthly: 'Every month',
-    yearly: 'Every year',
+    EVERY_DAY: 'Every day',
+    EVERY_WEEK: 'Every week',
+    EVERY_MONTH: 'Every month',
+    EVERY_YEAR: 'Every year',
+    EVERY_MONDAY: 'Every Monday',
+    EVERY_TUESDAY: 'Every Tuesday',
+    EVERY_WEDNESDAY: 'Every Wednesday',
+    EVERY_THURSDAY: 'Every Thursday',
+    EVERY_FRIDAY: 'Every Friday',
+    EVERY_SATURDAY: 'Every Saturday',
+    EVERY_SUNDAY: 'Every Sunday',
   };
-  return map[pattern || ''] || pattern || 'Every day';
+
+  const patterns = pattern.split(',').map(p => p.trim());
+  const first = patterns[0];
+  return map[first] || pattern;
 }
 
 /**
  * Available recurrence options for task scheduling
  */
 export const RECURRENCE_OPTIONS = [
-  { value: 'daily', label: 'Every day' },
-  { value: 'weekly', label: 'Every week' },
-  { value: 'biweekly', label: 'Every 2 weeks' },
-  { value: 'monthly', label: 'Every month' },
-  { value: 'yearly', label: 'Every year' },
+  { value: 'EVERY_DAY', label: 'Every day' },
+  { value: 'EVERY_WEEK', label: 'Every week' },
+  { value: 'EVERY_MONTH', label: 'Every month' },
+  { value: 'EVERY_YEAR', label: 'Every year' },
+  { value: 'EVERY_MONDAY', label: 'Every Monday' },
+  { value: 'EVERY_TUESDAY', label: 'Every Tuesday' },
+  { value: 'EVERY_WEDNESDAY', label: 'Every Wednesday' },
+  { value: 'EVERY_THURSDAY', label: 'Every Thursday' },
+  { value: 'EVERY_FRIDAY', label: 'Every Friday' },
+  { value: 'EVERY_SATURDAY', label: 'Every Saturday' },
+  { value: 'EVERY_SUNDAY', label: 'Every Sunday' },
 ] as const;

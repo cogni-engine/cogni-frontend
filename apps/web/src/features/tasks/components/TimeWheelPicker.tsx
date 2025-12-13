@@ -24,20 +24,20 @@ export function TimeWheelPicker({ value, onChange }: TimeWheelPickerProps) {
   const [isDraggingHours, setIsDraggingHours] = useState(false);
   const [isDraggingMinutes, setIsDraggingMinutes] = useState(false);
 
-  const hours = Array.from({ length: 24 }, (_, i) => i);
-  const minutes = Array.from({ length: 60 }, (_, i) => i);
+  const hours = Array.from({ length: 24 * 15 }, (_, i) => i % 24);
+  const minutes = Array.from({ length: 60 * 15 }, (_, i) => i % 60);
 
   const centerOffset = Math.floor(VISIBLE_ITEMS / 2) * ITEM_HEIGHT;
 
   useEffect(() => {
     if (hoursRef.current && !isDraggingHours) {
-      hoursRef.current.scrollTop = value.hours * ITEM_HEIGHT;
+      hoursRef.current.scrollTop = (value.hours + 24 * 7) * ITEM_HEIGHT;
     }
   }, [value.hours, isDraggingHours]);
 
   useEffect(() => {
     if (minutesRef.current && !isDraggingMinutes) {
-      minutesRef.current.scrollTop = value.minutes * ITEM_HEIGHT;
+      minutesRef.current.scrollTop = (value.minutes + 60 * 7) * ITEM_HEIGHT;
     }
   }, [value.minutes, isDraggingMinutes]);
 
@@ -48,13 +48,13 @@ export function TimeWheelPicker({ value, onChange }: TimeWheelPickerProps) {
     if (!ref.current) return;
     const scrollTop = ref.current.scrollTop;
     const index = Math.round(scrollTop / ITEM_HEIGHT);
-    const maxIndex = type === 'hours' ? 23 : 59;
-    const clampedIndex = Math.max(0, Math.min(index, maxIndex));
+    const mod = type === 'hours' ? 24 : 60;
+    const newValue = index % mod;
 
-    if (type === 'hours' && clampedIndex !== value.hours) {
-      onChange({ ...value, hours: clampedIndex });
-    } else if (type === 'minutes' && clampedIndex !== value.minutes) {
-      onChange({ ...value, minutes: clampedIndex });
+    if (type === 'hours' && newValue !== value.hours) {
+      onChange({ ...value, hours: newValue });
+    } else if (type === 'minutes' && newValue !== value.minutes) {
+      onChange({ ...value, minutes: newValue });
     }
   };
 
@@ -65,11 +65,9 @@ export function TimeWheelPicker({ value, onChange }: TimeWheelPickerProps) {
     if (!ref.current) return;
     const scrollTop = ref.current.scrollTop;
     const index = Math.round(scrollTop / ITEM_HEIGHT);
-    const maxIndex = type === 'hours' ? 23 : 59;
-    const clampedIndex = Math.max(0, Math.min(index, maxIndex));
 
     ref.current.scrollTo({
-      top: clampedIndex * ITEM_HEIGHT,
+      top: index * ITEM_HEIGHT,
       behavior: 'smooth',
     });
 
@@ -88,20 +86,22 @@ export function TimeWheelPicker({ value, onChange }: TimeWheelPickerProps) {
       {/* Hours */}
       <div
         ref={hoursRef}
-        className='relative h-full w-[100px] overflow-y-auto scrollbar-hide snap-y snap-mandatory z-10'
+        className='relative h-full w-[100px] overflow-y-auto scrollbar-hide snap-y snap-mandatory z-10 [&::-webkit-scrollbar]:hidden'
         style={{
           paddingTop: centerOffset,
           paddingBottom: centerOffset,
           scrollSnapType: 'y mandatory',
+          scrollbarWidth: 'none',
+          msOverflowStyle: 'none',
         }}
         onScroll={() => handleScroll(hoursRef, 'hours')}
         onScrollCapture={() => setIsDraggingHours(true)}
         onTouchEnd={() => handleScrollEnd(hoursRef, 'hours')}
         onMouseUp={() => handleScrollEnd(hoursRef, 'hours')}
       >
-        {hours.map(h => (
+        {hours.map((h, idx) => (
           <div
-            key={h}
+            key={idx}
             className={`h-[44px] flex items-center justify-center text-[22px] font-light snap-center transition-all duration-150 ${
               h === value.hours ? 'text-white' : 'text-white/30'
             }`}
@@ -117,20 +117,22 @@ export function TimeWheelPicker({ value, onChange }: TimeWheelPickerProps) {
       {/* Minutes */}
       <div
         ref={minutesRef}
-        className='relative h-full w-[100px] overflow-y-auto scrollbar-hide snap-y snap-mandatory z-10'
+        className='relative h-full w-[100px] overflow-y-auto scrollbar-hide snap-y snap-mandatory z-10 [&::-webkit-scrollbar]:hidden'
         style={{
           paddingTop: centerOffset,
           paddingBottom: centerOffset,
           scrollSnapType: 'y mandatory',
+          scrollbarWidth: 'none',
+          msOverflowStyle: 'none',
         }}
         onScroll={() => handleScroll(minutesRef, 'minutes')}
         onScrollCapture={() => setIsDraggingMinutes(true)}
         onTouchEnd={() => handleScrollEnd(minutesRef, 'minutes')}
         onMouseUp={() => handleScrollEnd(minutesRef, 'minutes')}
       >
-        {minutes.map(m => (
+        {minutes.map((m, idx) => (
           <div
-            key={m}
+            key={idx}
             className={`h-[44px] flex items-center justify-center text-[22px] font-light snap-center transition-all duration-150 ${
               m === value.minutes ? 'text-white' : 'text-white/30'
             }`}

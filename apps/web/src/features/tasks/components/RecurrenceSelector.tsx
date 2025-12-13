@@ -25,7 +25,7 @@ export function RecurrenceSelector({
 }: RecurrenceSelectorProps) {
   return (
     <Drawer open={true} onOpenChange={open => !open && onClose()}>
-      <DrawerContent zIndex={80} swipeToClose={false}>
+      <DrawerContent zIndex={120} swipeToClose={false}>
         {/* Header */}
         <DrawerHeader className='p-4'>
           <button onClick={onClose} className='text-blue-400 text-[15px]'>

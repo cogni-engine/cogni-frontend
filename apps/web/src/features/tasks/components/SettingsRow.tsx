@@ -20,21 +20,28 @@ export function SettingsRow({
   showChevron = true,
   customRight,
 }: SettingsRowProps) {
+  const className =
+    'w-full flex items-center justify-between py-3.5 border-b border-white/10 last:border-b-0';
+
+  // customRightがある場合は<button>ではなく<div>を使う
+  // （customRightに<button>が含まれる可能性があるため、ネストされた<button>を避ける）
+  if (customRight) {
+    return (
+      <div className={className}>
+        <span className='text-white text-[15px]'>{label}</span>
+        <div className='flex items-center gap-1'>{customRight}</div>
+      </div>
+    );
+  }
+
+  // onClickがある場合は<button>を使用
   return (
-    <button
-      onClick={onClick}
-      disabled={!onClick && !customRight}
-      className='w-full flex items-center justify-between py-3.5 border-b border-white/10 last:border-b-0'
-    >
+    <button onClick={onClick} className={className}>
       <span className='text-white text-[15px]'>{label}</span>
       <div className='flex items-center gap-1'>
-        {customRight || (
-          <>
-            <span className='text-white/50 text-[15px]'>{value}</span>
-            {showChevron && onClick && (
-              <ChevronRight className='w-4 h-4 text-white/30' />
-            )}
-          </>
+        <span className='text-white/50 text-[15px]'>{value}</span>
+        {showChevron && onClick && (
+          <ChevronRight className='w-4 h-4 text-white/30' />
         )}
       </div>
     </button>

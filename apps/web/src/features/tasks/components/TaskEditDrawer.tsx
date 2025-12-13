@@ -128,16 +128,6 @@ export function TaskEditDrawer({
                     />
                   }
                 />
-                <SettingsRow
-                  label='Active'
-                  showChevron={false}
-                  customRight={
-                    <Toggle
-                      checked={formIsActive}
-                      onChange={onIsActiveChange}
-                    />
-                  }
-                />
               </GlassCard>
             </div>
 

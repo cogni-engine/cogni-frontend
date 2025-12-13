@@ -1,6 +1,5 @@
 'use client';
 
-import { Bot } from 'lucide-react';
 import GlassCard from '@/components/glass-card/GlassCard';
 import type { Task } from '@/types/task';
 
@@ -21,24 +20,32 @@ export function TaskCard({ task, onEdit, onToggleActive }: TaskCardProps) {
 
   return (
     <GlassCard
-      className='p-4 rounded-2xl cursor-pointer hover:bg-white/5 transition-colors'
+      className='px-5 py-[8px] rounded-[20px] cursor-pointer transition-colors'
       onClick={() => onEdit(task)}
     >
       <div className='flex items-center justify-between'>
         <div
           className={`flex-1 ${!isActive ? 'opacity-40' : ''} transition-opacity`}
         >
-          <div className='text-[56px] font-extralight leading-none tracking-tight'>
+          <div className='text-[32px] font-extralight leading-none tracking-tight'>
             {formatTime(task.next_run_time)}
           </div>
           <div className='flex items-center gap-2 mt-1'>
             <span className='text-white/50 text-sm'>
-              {task.title}
-              {task.recurrence_pattern && (
-                <>, {formatRecurrence(task.recurrence_pattern)}</>
+              {task.title !== 'タスク' && task.title !== 'Task' && (
+                <>
+                  {task.title.replace(/^タスク\s*-\s*/, '').trim()}
+                  {task.recurrence_pattern && ', '}
+                </>
               )}
+              {task.recurrence_pattern &&
+                formatRecurrence(task.recurrence_pattern)}
             </span>
-            {task.is_ai_task && <Bot className='w-4 h-4 text-blue-400' />}
+            {task.is_ai_task && (
+              <span className='px-1.5 py-0.5 text-[10px] font-medium text-blue-300/70 bg-blue-500/10 rounded'>
+                AI
+              </span>
+            )}
           </div>
         </div>
         <Toggle
