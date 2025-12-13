@@ -4,7 +4,6 @@ export const HEADER_EVENTS = {
   TOGGLE_THREAD_SIDEBAR: 'header:toggleThreadSidebar',
   TOGGLE_NOTIFICATION_PANEL: 'header:toggleNotificationPanel',
   REFRESH_NOTIFICATION_COUNT: 'header:refreshNotificationCount',
-  REFRESH_THREADS: 'header:refreshThreads',
 } as const;
 
 export type HeaderEventType =

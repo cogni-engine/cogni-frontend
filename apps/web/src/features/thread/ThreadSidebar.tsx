@@ -1,24 +1,21 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useThreads } from '@/hooks/useThreads';
+import { useState } from 'react';
 import { useThreadContext } from '@/contexts/ThreadContext';
 import { useHomeUI } from '@/contexts/HomeUIContext';
-import { onHeaderEvent, HEADER_EVENTS } from '@/lib/headerEvents';
 
 export default function ThreadSidebar() {
-  const { threads, updateThread, deleteThread, refetch } = useThreads();
-  const { selectedThreadId, setSelectedThreadId } = useThreadContext();
+  const {
+    threads,
+    updateThread,
+    deleteThread,
+    selectedThreadId,
+    setSelectedThreadId,
+  } = useThreadContext();
   const { isThreadSidebarOpen, closeThreadSidebar } = useHomeUI();
   const [menuOpenId, setMenuOpenId] = useState<number | null>(null);
   const [renamingId, setRenamingId] = useState<number | null>(null);
   const [renameValue, setRenameValue] = useState('');
-
-  // Listen for thread refresh events
-  useEffect(() => {
-    const unsubscribe = onHeaderEvent(HEADER_EVENTS.REFRESH_THREADS, refetch);
-    return unsubscribe;
-  }, [refetch]);
 
   const handleSelectThread = (threadId: number) => {
     setSelectedThreadId(threadId);
