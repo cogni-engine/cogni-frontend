@@ -5,10 +5,11 @@ import type { Message } from '@/types/chat';
 import type { ThreadId } from '@/contexts/ThreadContext';
 import { createThread } from '@/lib/api/threadsApi';
 import { getPersonalWorkspaceId } from '@/lib/cookies';
+import type { UploadedFile } from '@/lib/api/workspaceFilesApi';
 
 export interface SendMessageOptions {
   content: string;
-  fileIds?: number[];
+  files?: UploadedFile[];
   mentionedMemberIds?: number[];
   mentionedNoteIds?: number[];
   notificationId?: number;
@@ -47,7 +48,7 @@ export function useSendMessage({
   const sendMessage = useCallback(
     async ({
       content,
-      fileIds,
+      files,
       mentionedMemberIds,
       mentionedNoteIds,
       notificationId,
@@ -100,12 +101,20 @@ export function useSendMessage({
 
       // Create temporary user message
       let tempUserMsg: Message | null = null;
-      if (content.trim()) {
+      if (content.trim() || (files && files.length > 0)) {
         tempUserMsg = {
           id: Date.now().toString(),
           content,
           role: 'user',
-          file_ids: fileIds,
+          file_ids: files?.map(f => f.id),
+          // Include full file objects for immediate UI rendering during streaming
+          files: files?.map(f => ({
+            id: f.id,
+            original_filename: f.original_filename,
+            file_path: f.file_path,
+            mime_type: f.mime_type,
+            file_size: f.file_size,
+          })),
         };
       }
 

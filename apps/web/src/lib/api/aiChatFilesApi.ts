@@ -7,12 +7,10 @@ const WORKSPACE_FILES_BUCKET = 'workspace-files';
 
 /**
  * Upload a file for AI chat (reusing workspace-files bucket)
- * Path structure: ai-chat/{thread_id}/uploads/{uuid}/{filename}
+ * Path structure: {workspace_id}/ai-chat/uploads/{uuid}/{filename}
+ * Files are linked to messages via ai_message_files table, not via path
  */
-export async function uploadAIChatFile(
-  threadId: number,
-  file: File
-): Promise<UploadedFile> {
+export async function uploadAIChatFile(file: File): Promise<UploadedFile> {
   // Get workspace ID from cookie
   const personalWorkspaceId = Cookies.get('personal_workspace_id');
   if (!personalWorkspaceId) {
@@ -25,9 +23,9 @@ export async function uploadAIChatFile(
   const storageUuid = crypto.randomUUID();
   const sanitizedFilename = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
 
-  // Storage path: {workspace_id}/ai-chat/{thread_id}/uploads/{uuid}/{filename}
-  // This matches workspace-files pattern but organized under ai-chat subdirectory
-  const filePath = `${workspaceId}/ai-chat/${threadId}/uploads/${storageUuid}/${sanitizedFilename}`;
+  // Storage path: {workspace_id}/ai-chat/uploads/{uuid}/{filename}
+  // Files are linked to messages via ai_message_files table
+  const filePath = `${workspaceId}/ai-chat/uploads/${storageUuid}/${sanitizedFilename}`;
 
   // Upload to Supabase Storage
   const { error: uploadError } = await supabase.storage

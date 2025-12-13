@@ -9,6 +9,7 @@ import { useGlobalUI } from '@/contexts/GlobalUIContext';
 import { useAIChatMentions } from './hooks/useAIChatMentions';
 import { useMessageAutoScroll } from './hooks/useMessageAutoScroll';
 import { useThreadContext } from '@/contexts/ThreadContext';
+import type { UploadedFile } from '@/lib/api/workspaceFilesApi';
 
 interface HomeCognoChatProps {
   isInitialMount: React.RefObject<boolean>;
@@ -40,7 +41,7 @@ export default function HomeCognoChat({ isInitialMount }: HomeCognoChatProps) {
   const handleSendMessage = useCallback(
     (
       content: string,
-      fileIds?: number[],
+      files?: UploadedFile[],
       mentionedMemberIds?: number[],
       mentionedNoteIds?: number[],
       notificationId?: number,
@@ -48,7 +49,7 @@ export default function HomeCognoChat({ isInitialMount }: HomeCognoChatProps) {
     ) => {
       return sendMessage({
         content,
-        fileIds,
+        files,
         mentionedMemberIds,
         mentionedNoteIds,
         notificationId,
@@ -87,21 +88,20 @@ export default function HomeCognoChat({ isInitialMount }: HomeCognoChatProps) {
         <AiChatInput
           onSend={(
             content: string,
-            fileIds?: number[],
+            files?: UploadedFile[],
             mentionedMemberIds?: number[],
             mentionedNoteIds?: number[]
           ) => {
             isInitialMount.current = false; // Crucial for separate behaviour between intial mount and message sends
             void sendMessage({
               content,
-              fileIds,
+              files,
               mentionedMemberIds,
               mentionedNoteIds,
             });
           }}
           onStop={stopStream}
           isLoading={isSending}
-          threadId={selectedThreadId}
           workspaceMembers={memoizedMembers}
           workspaceNotes={memoizedNotes}
         />

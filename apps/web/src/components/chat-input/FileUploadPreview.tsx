@@ -16,15 +16,13 @@ export interface FileUploadItem {
 
 type FileUploadPreviewProps = {
   files: FileUploadItem[];
-  workspaceId: number;
   onRemove: (id: string) => void;
-  onUploadComplete: (id: string, uploadedFile: UploadedFile) => void;
-  onUploadError: (id: string, error: string) => void;
 };
 
-export default function FileUploadPreview(props: FileUploadPreviewProps) {
-  const { files, onRemove } = props;
-
+export default function FileUploadPreview({
+  files,
+  onRemove,
+}: FileUploadPreviewProps) {
   if (files.length === 0) return null;
 
   const formatFileSize = (bytes: number): string => {

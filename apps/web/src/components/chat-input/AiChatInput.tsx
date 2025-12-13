@@ -13,7 +13,6 @@ import { uploadAIChatFile } from '@/lib/api/aiChatFilesApi';
 import { type UploadedFile } from '@/lib/api/workspaceFilesApi';
 import type { WorkspaceMember } from '@/types/workspace';
 import type { Note } from '@/types/note';
-import type { ThreadId } from '@/contexts/ThreadContext';
 
 export type FileUploadItem = {
   file: File;
@@ -28,7 +27,7 @@ export type FileUploadItem = {
 type AiChatInputProps = {
   onSend: (
     content: string,
-    fileIds?: number[],
+    files?: UploadedFile[],
     mentionedMemberIds?: number[],
     mentionedNoteIds?: number[]
   ) => void;
@@ -36,7 +35,6 @@ type AiChatInputProps = {
   isLoading?: boolean;
   placeholder?: string;
   canStop?: boolean;
-  threadId?: ThreadId;
   workspaceMembers?: WorkspaceMember[];
   workspaceNotes?: Note[];
 };
@@ -54,7 +52,6 @@ const AiChatInput = forwardRef<AiChatInputRef, AiChatInputProps>(
       isLoading = false,
       placeholder = 'Ask anything',
       canStop = true,
-      threadId,
       workspaceMembers = [],
       workspaceNotes = [],
     },
@@ -62,7 +59,6 @@ const AiChatInput = forwardRef<AiChatInputRef, AiChatInputProps>(
   ) {
     const inputRef = useRef<TiptapChatInputRef | null>(null);
     const [uploadItems, setUploadItems] = useState<FileUploadItem[]>([]);
-    const [isUploading, setIsUploading] = useState(false);
 
     const hasAttachments = uploadItems.length > 0;
 
@@ -75,36 +71,56 @@ const AiChatInput = forwardRef<AiChatInputRef, AiChatInputProps>(
       },
     }));
 
-    const handleFilesSelected = useCallback(
-      (files: File[]) => {
-        if (!threadId) return;
+    const handleFilesSelected = useCallback((files: File[]) => {
+      const newItems: FileUploadItem[] = files.map(file => {
+        const id = `${Date.now()}-${Math.random()}`;
+        const isImage = file.type.startsWith('image/');
+        let preview: string | undefined;
 
-        const newItems: FileUploadItem[] = files.map(file => {
-          const id = `${Date.now()}-${Math.random()}`;
-          const isImage = file.type.startsWith('image/');
-          let preview: string | undefined;
+        if (isImage) {
+          preview = URL.createObjectURL(file);
+        }
 
-          if (isImage) {
-            preview = URL.createObjectURL(file);
-          }
+        return {
+          file,
+          id,
+          preview,
+          uploading: true, // Start in uploading state
+          progress: 0,
+        };
+      });
 
-          return {
-            file,
-            id,
-            preview,
-            uploading: false,
-            progress: 0,
-          };
-        });
+      setUploadItems(prev => {
+        const combined = [...prev, ...newItems];
+        // Limit to 4 files
+        return combined.slice(0, 4);
+      });
 
-        setUploadItems(prev => {
-          const combined = [...prev, ...newItems];
-          // Limit to 4 files
-          return combined.slice(0, 4);
-        });
-      },
-      [threadId]
-    );
+      // Upload files immediately
+      newItems.forEach(async item => {
+        try {
+          const uploaded = await uploadAIChatFile(item.file);
+          setUploadItems(prev =>
+            prev.map(entry =>
+              entry.id === item.id
+                ? { ...entry, uploaded, uploading: false }
+                : entry
+            )
+          );
+        } catch (error) {
+          console.error('Error uploading file:', error);
+          const errorMessage =
+            error instanceof Error ? error.message : 'Upload failed';
+          setUploadItems(prev =>
+            prev.map(entry =>
+              entry.id === item.id
+                ? { ...entry, error: errorMessage, uploading: false }
+                : entry
+            )
+          );
+        }
+      });
+    }, []);
 
     const handleRemoveFile = useCallback((id: string) => {
       setUploadItems(prev => {
@@ -114,25 +130,6 @@ const AiChatInput = forwardRef<AiChatInputRef, AiChatInputProps>(
         }
         return prev.filter(entry => entry.id !== id);
       });
-    }, []);
-
-    const handleUploadComplete = useCallback(
-      (id: string, uploadedFile: UploadedFile) => {
-        setUploadItems(prev =>
-          prev.map(item =>
-            item.id === id ? { ...item, uploaded: uploadedFile } : item
-          )
-        );
-      },
-      []
-    );
-
-    const handleUploadError = useCallback((id: string, error: string) => {
-      setUploadItems(prev =>
-        prev.map(item =>
-          item.id === id ? { ...item, error, uploading: false } : item
-        )
-      );
     }, []);
 
     useEffect(() => {
@@ -145,47 +142,39 @@ const AiChatInput = forwardRef<AiChatInputRef, AiChatInputProps>(
       };
     }, [uploadItems]);
 
+    // Check if any files are still uploading
+    const hasUploadingFiles = uploadItems.some(item => item.uploading);
+
     const handleSend = useCallback(
       async (
         content: string,
         mentionedMemberIds: number[],
         mentionedNoteIds: number[]
       ) => {
-        if (isLoading || isUploading) return;
+        if (isLoading || hasUploadingFiles) return;
 
         const trimmed = content.trim();
         const hasText = trimmed.length > 0;
 
         if (!hasText && uploadItems.length === 0) return;
 
-        let fileIds: number[] = [];
-
-        // File uploads only work with existing threads (numeric IDs)
-        if (uploadItems.length > 0 && typeof threadId === 'number') {
-          setIsUploading(true);
-          try {
-            const uploadPromises = uploadItems.map(async item => {
-              if (item.uploaded) {
-                return item.uploaded.id;
-              }
-
-              const uploaded = await uploadAIChatFile(threadId, item.file);
-              return uploaded.id;
-            });
-
-            fileIds = await Promise.all(uploadPromises);
-          } catch (error) {
-            console.error('Error uploading files:', error);
-            alert('Failed to upload files. Please try again.');
-            setIsUploading(false);
-            return;
-          }
-          setIsUploading(false);
+        // Check if any uploads failed
+        const failedUploads = uploadItems.filter(item => item.error);
+        if (failedUploads.length > 0) {
+          alert(
+            'Some files failed to upload. Please remove them and try again.'
+          );
+          return;
         }
+
+        // Get all successfully uploaded files
+        const uploadedFiles = uploadItems
+          .filter(item => item.uploaded)
+          .map(item => item.uploaded!);
 
         onSend(
           trimmed || '',
-          fileIds.length ? fileIds : undefined,
+          uploadedFiles.length > 0 ? uploadedFiles : undefined,
           mentionedMemberIds,
           mentionedNoteIds
         );
@@ -200,37 +189,29 @@ const AiChatInput = forwardRef<AiChatInputRef, AiChatInputProps>(
           return [];
         });
       },
-      [isLoading, isUploading, onSend, uploadItems, threadId]
+      [isLoading, hasUploadingFiles, onSend, uploadItems]
     );
 
     return (
       <div className='relative z-100 rounded-t-3xl'>
-        {/* File Upload Preview - only shown for existing threads */}
-        {typeof threadId === 'number' && uploadItems.length > 0 && (
-          <FileUploadPreview
-            files={uploadItems}
-            workspaceId={threadId}
-            onRemove={handleRemoveFile}
-            onUploadComplete={handleUploadComplete}
-            onUploadError={handleUploadError}
-          />
+        {/* File Upload Preview */}
+        {uploadItems.length > 0 && (
+          <FileUploadPreview files={uploadItems} onRemove={handleRemoveFile} />
         )}
         {/* Input UI */}
         <div className='px-4 md:px-6 py-2'>
           <div className='w-full md:max-w-4xl md:mx-auto'>
             <div className='relative'>
               {/* File Upload Menu - Plus button */}
-              {threadId && (
-                <div className='absolute left-0 z-100'>
-                  <FileUploadMenu
-                    onFilesSelected={handleFilesSelected}
-                    maxFiles={4}
-                    disabled={
-                      isLoading || isUploading || uploadItems.length >= 4
-                    }
-                  />
-                </div>
-              )}
+              <div className='absolute left-0 z-100'>
+                <FileUploadMenu
+                  onFilesSelected={handleFilesSelected}
+                  maxFiles={4}
+                  disabled={
+                    isLoading || hasUploadingFiles || uploadItems.length >= 4
+                  }
+                />
+              </div>
               <TiptapChatInput
                 ref={inputRef}
                 placeholder={placeholder}
@@ -238,7 +219,7 @@ const AiChatInput = forwardRef<AiChatInputRef, AiChatInputProps>(
                 onStop={onStop}
                 isLoading={isLoading}
                 canStop={canStop}
-                isUploading={isUploading}
+                isUploading={hasUploadingFiles}
                 hasAttachments={hasAttachments}
                 workspaceMembers={workspaceMembers}
                 workspaceNotes={workspaceNotes}
