@@ -59,9 +59,9 @@ const ChatInput = forwardRef<ChatInputRef, ChatInputProps>(function ChatInput(
     clearContent: () => void;
   } | null>(null);
   const [uploadItems, setUploadItems] = useState<FileUploadItem[]>([]);
-  const [isUploading, setIsUploading] = useState(false);
 
   const hasAttachments = uploadItems.length > 0;
+  const hasUploadingFiles = uploadItems.some(item => item.uploading);
 
   useImperativeHandle(ref, () => ({
     focus: () => {
@@ -99,7 +99,7 @@ const ChatInput = forwardRef<ChatInputRef, ChatInputProps>(function ChatInput(
           file,
           id,
           preview,
-          uploading: false,
+          uploading: true, // Start in uploading state
           progress: 0,
         };
       });
@@ -108,6 +108,31 @@ const ChatInput = forwardRef<ChatInputRef, ChatInputProps>(function ChatInput(
         const combined = [...prev, ...newItems];
         // Limit to 4 files
         return combined.slice(0, 4);
+      });
+
+      // Upload files immediately
+      newItems.forEach(async item => {
+        try {
+          const uploaded = await uploadWorkspaceFile(workspaceId, item.file);
+          setUploadItems(prev =>
+            prev.map(entry =>
+              entry.id === item.id
+                ? { ...entry, uploaded, uploading: false }
+                : entry
+            )
+          );
+        } catch (error) {
+          console.error('Error uploading file:', error);
+          const errorMessage =
+            error instanceof Error ? error.message : 'Upload failed';
+          setUploadItems(prev =>
+            prev.map(entry =>
+              entry.id === item.id
+                ? { ...entry, error: errorMessage, uploading: false }
+                : entry
+            )
+          );
+        }
       });
     },
     [workspaceId]
@@ -139,7 +164,7 @@ const ChatInput = forwardRef<ChatInputRef, ChatInputProps>(function ChatInput(
       mentionedMemberIds?: number[],
       mentionedNoteIds?: number[]
     ) => {
-      if (isLoading || isUploading) return;
+      if (isLoading || hasUploadingFiles) return;
 
       // Allow sending if there's text or files
       const trimmed = content.trim();
@@ -147,37 +172,26 @@ const ChatInput = forwardRef<ChatInputRef, ChatInputProps>(function ChatInput(
 
       if (!hasText && uploadItems.length === 0) return;
 
-      let workspaceFileIds: number[] = [];
-
-      if (uploadItems.length > 0 && workspaceId) {
-        setIsUploading(true);
-        try {
-          const uploadPromises = uploadItems.map(async item => {
-            if (item.uploaded) {
-              return item.uploaded.id;
-            }
-
-            const uploaded = await uploadWorkspaceFile(workspaceId, item.file);
-            return uploaded.id;
-          });
-
-          workspaceFileIds = await Promise.all(uploadPromises);
-        } catch (error) {
-          console.error('Error uploading files:', error);
-          alert('Failed to upload files. Please try again.');
-          setIsUploading(false);
-          return;
-        }
-        setIsUploading(false);
+      // Check if any uploads failed
+      const failedUploads = uploadItems.filter(item => item.error);
+      if (failedUploads.length > 0) {
+        alert('Some files failed to upload. Please remove them and try again.');
+        return;
       }
+
+      // Get all successfully uploaded file IDs
+      const workspaceFileIds = uploadItems
+        .filter(item => item.uploaded)
+        .map(item => item.uploaded!.id);
 
       onSend(
         trimmed || '',
-        workspaceFileIds.length ? workspaceFileIds : undefined,
+        workspaceFileIds.length > 0 ? workspaceFileIds : undefined,
         mentionedMemberIds,
         mentionedNoteIds
       );
 
+      // Clear upload items
       setUploadItems(prev => {
         prev.forEach(item => {
           if (item.preview) {
@@ -187,7 +201,7 @@ const ChatInput = forwardRef<ChatInputRef, ChatInputProps>(function ChatInput(
         return [];
       });
     },
-    [isLoading, isUploading, onSend, uploadItems, workspaceId]
+    [isLoading, hasUploadingFiles, onSend, uploadItems]
   );
 
   return (
@@ -201,21 +215,19 @@ const ChatInput = forwardRef<ChatInputRef, ChatInputProps>(function ChatInput(
           />
         </div>
       )}
-      {/* File Upload Preview */}
-      {workspaceId && uploadItems.length > 0 && (
-        <FileUploadPreview files={uploadItems} onRemove={handleRemoveFile} />
-      )}
       {/* 入力UI */}
       <div className='px-4 md:px-6 py-2'>
         <div className='w-full md:max-w-4xl md:mx-auto'>
           <div className='relative'>
             {/* File Upload Menu - Plus button */}
             {workspaceId && (
-              <div className='absolute left-0 z-100'>
+              <div className='absolute left-0 bottom-0 z-100'>
                 <FileUploadMenu
                   onFilesSelected={handleFilesSelected}
                   maxFiles={4}
-                  disabled={isLoading || isUploading || uploadItems.length >= 4}
+                  disabled={
+                    isLoading || hasUploadingFiles || uploadItems.length >= 4
+                  }
                 />
               </div>
             )}
@@ -226,10 +238,18 @@ const ChatInput = forwardRef<ChatInputRef, ChatInputProps>(function ChatInput(
               onStop={onStop}
               isLoading={isLoading}
               canStop={canStop}
-              isUploading={isUploading}
+              isUploading={hasUploadingFiles}
               hasAttachments={hasAttachments}
               workspaceMembers={workspaceMembers}
               workspaceNotes={workspaceNotes}
+              topContent={
+                workspaceId && uploadItems.length > 0 ? (
+                  <FileUploadPreview
+                    files={uploadItems}
+                    onRemove={handleRemoveFile}
+                  />
+                ) : undefined
+              }
             />
           </div>
         </div>
