@@ -28,7 +28,6 @@ export { useAuth } from './hooks/useAuth';
 export { useThreads } from './hooks/useThreads';
 export { useMessages } from './hooks/useMessages';
 export { useSendMessage } from './hooks/useSendMessage';
-export { useChat } from './hooks/useChat';
 
 // Export note functions
 export {

@@ -10,7 +10,7 @@ import {
   deleteThread,
 } from '@/lib/api/threadsApi';
 import type { Thread } from '@/types/thread';
-import { getPersonalWorkspaceId } from '@cogni/utils';
+import { getPersonalWorkspaceId } from '@/lib/cookies';
 
 export function useThreads() {
   const [threads, setThreads] = useState<Thread[]>([]);

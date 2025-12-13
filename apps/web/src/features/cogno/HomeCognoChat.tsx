@@ -4,8 +4,7 @@ import { useRef, useCallback, useMemo } from 'react';
 import ChatContainer from './components/ChatContainer';
 import AiChatInput from '@/components/chat-input/AiChatInput';
 import NotificationPanel from '@/features/notifications/components/NotificationPanel';
-import { useChat } from '@cogni/api';
-import { getPersonalWorkspaceId } from '@cogni/utils';
+import { useChat } from './hooks/useChat';
 import { useGlobalUI } from '@/contexts/GlobalUIContext';
 import { useAIChatMentions } from './hooks/useAIChatMentions';
 import { useMessageAutoScroll } from './hooks/useMessageAutoScroll';
@@ -16,14 +15,10 @@ interface HomeCognoChatProps {
 }
 
 export default function HomeCognoChat({ isInitialMount }: HomeCognoChatProps) {
-  const workspaceId = getPersonalWorkspaceId();
-  const { selectedThreadId, setSelectedThreadId } = useThreadContext();
+  const { selectedThreadId } = useThreadContext();
 
-  // Pass thread selection state to useChat (single source of truth)
-  const chat = useChat({
-    workspaceId,
+  const { messages, sendMessage, isSending, stopStream } = useChat({
     selectedThreadId,
-    onThreadSelect: setSelectedThreadId,
   });
 
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -45,7 +40,7 @@ export default function HomeCognoChat({ isInitialMount }: HomeCognoChatProps) {
       notificationId?: number,
       timerCompleted?: boolean
     ) => {
-      return chat.sendMessage({
+      return sendMessage({
         content,
         fileIds,
         mentionedMemberIds,
@@ -54,12 +49,12 @@ export default function HomeCognoChat({ isInitialMount }: HomeCognoChatProps) {
         timerCompleted,
       });
     },
-    [chat]
+    [sendMessage]
   );
 
   // Auto-scroll when new messages arrive
   useMessageAutoScroll({
-    messages: chat.messages,
+    messages: messages,
     scrollContainerRef,
     streamingContainerRef,
     isInitialMount: isInitialMount.current,
@@ -69,7 +64,7 @@ export default function HomeCognoChat({ isInitialMount }: HomeCognoChatProps) {
     <div className='flex flex-col h-full transition-all duration-300'>
       <ChatContainer
         ref={scrollContainerRef}
-        messages={chat.messages}
+        messages={messages}
         sendMessage={handleSendMessage}
         streamingContainerRef={streamingContainerRef}
         workspaceMembers={memoizedMembers}
@@ -91,15 +86,15 @@ export default function HomeCognoChat({ isInitialMount }: HomeCognoChatProps) {
             mentionedNoteIds?: number[]
           ) => {
             isInitialMount.current = false; // Crucial for separate behaviour between intial mount and message sends
-            void chat.sendMessage({
+            void sendMessage({
               content,
               fileIds,
               mentionedMemberIds,
               mentionedNoteIds,
             });
           }}
-          onStop={chat.stopStream}
-          isLoading={chat.isSending}
+          onStop={stopStream}
+          isLoading={isSending}
           threadId={selectedThreadId}
           workspaceMembers={memoizedMembers}
           workspaceNotes={memoizedNotes}
@@ -109,7 +104,7 @@ export default function HomeCognoChat({ isInitialMount }: HomeCognoChatProps) {
       {/* NotificationPanel */}
       <NotificationPanel
         sendMessage={(content: string, notificationId?: number) =>
-          chat.sendMessage({ content, notificationId })
+          sendMessage({ content, notificationId })
         }
       />
     </div>
