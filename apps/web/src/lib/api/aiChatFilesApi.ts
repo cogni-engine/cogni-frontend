@@ -41,7 +41,7 @@ export async function uploadAIChatFile(file: File): Promise<UploadedFile> {
   const { data: fileData, error: dbError } = await supabase
     .from('workspace_files')
     .insert({
-      orginal_file_name: file.name,
+      original_file_name: file.name,
       file_path: filePath,
       mime_type: file.type,
       file_size: file.size,

@@ -32,7 +32,7 @@ type RawWorkspaceMessageFile = {
   workspace_file_id: number; // bigint (foreign key to workspace_files.id)
   workspace_file?: {
     id: number; // bigint (database primary key)
-    orginal_file_name: string;
+    original_file_name: string;
     file_path: string; // Contains UUID in path: {workspace_id}/uploads/{uuid}/{filename}
     mime_type: string;
     file_size: number;
@@ -93,7 +93,7 @@ function transformMessageRow(
     .filter(fileLink => fileLink.workspace_file)
     .map(fileLink => ({
       id: fileLink.workspace_file!.id,
-      original_filename: fileLink.workspace_file!.orginal_file_name, // Note: schema typo
+      original_filename: fileLink.workspace_file!.original_file_name,
       file_path: fileLink.workspace_file!.file_path,
       mime_type: fileLink.workspace_file!.mime_type,
       file_size: fileLink.workspace_file!.file_size,
@@ -158,7 +158,7 @@ export async function getWorkspaceMessages(
         workspace_file_id,
         workspace_file:workspace_file_id(
           id,
-          orginal_file_name,
+          original_file_name,
           file_path,
           mime_type,
           file_size

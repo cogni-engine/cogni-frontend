@@ -49,7 +49,7 @@ export async function uploadWorkspaceFile(
   const { data: fileData, error: dbError } = await supabase
     .from('workspace_files')
     .insert({
-      orginal_file_name: file.name, // Note: schema has typo "orginal" instead of "original"
+      original_file_name: file.name,
       file_path: filePath,
       mime_type: file.type,
       file_size: file.size,
@@ -141,7 +141,7 @@ export async function getWorkspaceFiles(
   const { data, error } = await supabase
     .from('workspace_files')
     .select(
-      'id, orginal_file_name, file_path, file_size, mime_type, created_at'
+      'id, original_file_name, file_path, file_size, mime_type, created_at'
     )
     .eq('workspace_id', workspaceId)
     .order('created_at', { ascending: false })
@@ -152,7 +152,7 @@ export async function getWorkspaceFiles(
   // Map the typo field name to correct one
   return (data || []).map(file => ({
     id: file.id,
-    original_filename: file.orginal_file_name,
+    original_filename: file.original_file_name,
     file_path: file.file_path,
     file_size: file.file_size,
     mime_type: file.mime_type,
