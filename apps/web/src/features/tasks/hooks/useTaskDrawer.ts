@@ -1,8 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef, useCallback } from 'react';
-import { useDrag } from '@use-gesture/react';
-import { useGlobalUI } from '@/contexts/GlobalUIContext';
+import { useState, useCallback } from 'react';
 import type { Task, TaskCreate, TaskUpdate } from '@/types/task';
 
 export interface TimeValue {
@@ -25,8 +23,6 @@ export interface UseTaskDrawerReturn {
   saving: boolean;
   showRecurrenceSelector: boolean;
   showLabelInput: boolean;
-  dragOffset: number;
-  drawerRef: React.RefObject<HTMLDivElement | null>;
 
   // Form state
   formTime: TimeValue;
@@ -49,9 +45,6 @@ export interface UseTaskDrawerReturn {
   setShowRecurrenceSelector: (value: boolean) => void;
   setShowLabelInput: (value: boolean) => void;
 
-  // Gesture binding
-  bindDrag: ReturnType<typeof useDrag>;
-
   // Save handler
   handleSave: (
     onCreateTask: (data: TaskCreate) => Promise<Task>,
@@ -71,16 +64,12 @@ const DEFAULT_FORM_STATE: TaskFormState = {
 };
 
 export function useTaskDrawer(): UseTaskDrawerReturn {
-  const { setDrawerOpen } = useGlobalUI();
-  const drawerRef = useRef<HTMLDivElement>(null);
-
   // Drawer state
   const [isOpen, setIsOpen] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [saving, setSaving] = useState(false);
   const [showRecurrenceSelector, setShowRecurrenceSelector] = useState(false);
   const [showLabelInput, setShowLabelInput] = useState(false);
-  const [dragOffset, setDragOffset] = useState(0);
 
   // Form state
   const [formTime, setFormTime] = useState(DEFAULT_FORM_STATE.formTime);
@@ -94,21 +83,6 @@ export function useTaskDrawer(): UseTaskDrawerReturn {
   const [formIsActive, setFormIsActive] = useState(
     DEFAULT_FORM_STATE.formIsActive
   );
-
-  // Handle drawer open/close for global UI state
-  useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = 'hidden';
-      setDrawerOpen(true);
-    } else {
-      document.body.style.overflow = 'unset';
-      setDrawerOpen(false);
-    }
-    return () => {
-      document.body.style.overflow = 'unset';
-      setDrawerOpen(false);
-    };
-  }, [isOpen, setDrawerOpen]);
 
   const resetForm = useCallback(() => {
     setFormTime(DEFAULT_FORM_STATE.formTime);
@@ -125,30 +99,6 @@ export function useTaskDrawer(): UseTaskDrawerReturn {
     setShowLabelInput(false);
     resetForm();
   }, [resetForm]);
-
-  // Swipe down to close gesture handler
-  const bindDrag = useDrag(
-    ({ last, movement: [, my], velocity: [, vy], direction: [, dy] }) => {
-      if (my > 0) {
-        if (last) {
-          if (my > 100 || (vy > 0.5 && dy > 0)) {
-            close();
-            setDragOffset(0);
-          } else {
-            setDragOffset(0);
-          }
-        } else {
-          setDragOffset(my);
-        }
-      }
-    },
-    {
-      axis: 'y',
-      filterTaps: true,
-      bounds: { top: 0 },
-      rubberband: true,
-    }
-  );
 
   const openCreate = useCallback(() => {
     resetForm();
@@ -253,8 +203,6 @@ export function useTaskDrawer(): UseTaskDrawerReturn {
     saving,
     showRecurrenceSelector,
     showLabelInput,
-    dragOffset,
-    drawerRef,
 
     // Form state
     formTime,
@@ -276,9 +224,6 @@ export function useTaskDrawer(): UseTaskDrawerReturn {
     close,
     setShowRecurrenceSelector,
     setShowLabelInput,
-
-    // Gesture binding
-    bindDrag,
 
     // Handlers
     handleSave,

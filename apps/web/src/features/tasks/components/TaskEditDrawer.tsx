@@ -1,6 +1,13 @@
 'use client';
 
 import { X, Check, Trash2 } from 'lucide-react';
+import {
+  Drawer,
+  DrawerContent,
+  DrawerHandle,
+  DrawerHeader,
+  DrawerBody,
+} from '@/components/ui/drawer';
 import GlassCard from '@/components/glass-card/GlassCard';
 import type { Task } from '@/types/task';
 
@@ -14,12 +21,11 @@ import type { TimeValue } from '../hooks/useTaskDrawer';
 
 interface TaskEditDrawerProps {
   // Drawer state
+  isOpen: boolean;
   editingTask: Task | null;
   saving: boolean;
   showRecurrenceSelector: boolean;
   showLabelInput: boolean;
-  dragOffset: number;
-  drawerRef: React.RefObject<HTMLDivElement | null>;
 
   // Form state
   formTime: TimeValue;
@@ -41,21 +47,17 @@ interface TaskEditDrawerProps {
   onDelete: () => void;
   onShowRecurrenceSelector: (value: boolean) => void;
   onShowLabelInput: (value: boolean) => void;
-
-  // Gesture binding
-  bindDrag: () => React.HTMLAttributes<HTMLDivElement>;
 }
 
 /**
  * Main task edit/create drawer component
  */
 export function TaskEditDrawer({
+  isOpen,
   editingTask,
   saving,
   showRecurrenceSelector,
   showLabelInput,
-  dragOffset,
-  drawerRef,
   formTime,
   formTitle,
   formRecurrence,
@@ -71,36 +73,15 @@ export function TaskEditDrawer({
   onDelete,
   onShowRecurrenceSelector,
   onShowLabelInput,
-  bindDrag,
 }: TaskEditDrawerProps) {
   return (
     <>
-      {/* Backdrop */}
-      <div
-        className='fixed inset-0 bg-black/50 backdrop-blur-sm z-50'
-        onClick={onClose}
-      />
-
-      {/* Drawer */}
-      <div
-        ref={drawerRef}
-        className='fixed inset-x-0 bottom-0 z-60 animate-[slide-up_0.3s_ease-out]'
-        style={{
-          transform: `translateY(${dragOffset}px)`,
-          transition: dragOffset === 0 ? 'transform 0.2s ease-out' : 'none',
-        }}
-      >
-        <GlassCard className='rounded-t-3xl rounded-b-none max-h-[85vh] flex flex-col'>
-          {/* Drag Handle */}
-          <div
-            {...bindDrag()}
-            className='pt-2 pb-1 cursor-grab active:cursor-grabbing touch-none'
-          >
-            <div className='w-12 h-1 bg-white/20 rounded-full mx-auto' />
-          </div>
+      <Drawer open={isOpen} onOpenChange={open => !open && onClose()}>
+        <DrawerContent>
+          <DrawerHandle />
 
           {/* Header */}
-          <div className='flex items-center justify-between px-4 pb-3 pt-1 border-b border-white/10'>
+          <DrawerHeader className='px-4 pb-3 pt-1'>
             <button
               onClick={onClose}
               className='w-8 h-8 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 transition-colors'
@@ -117,10 +98,10 @@ export function TaskEditDrawer({
             >
               <Check className='w-5 h-5 text-white' />
             </button>
-          </div>
+          </DrawerHeader>
 
           {/* Content */}
-          <div className='flex-1 overflow-y-auto'>
+          <DrawerBody className='p-0'>
             {/* Time Picker */}
             <TimeWheelPicker value={formTime} onChange={onTimeChange} />
 
@@ -174,9 +155,9 @@ export function TaskEditDrawer({
                 </GlassCard>
               </div>
             )}
-          </div>
-        </GlassCard>
-      </div>
+          </DrawerBody>
+        </DrawerContent>
+      </Drawer>
 
       {/* Recurrence Selector */}
       {showRecurrenceSelector && (

@@ -82,32 +82,28 @@ export default function TasksClient() {
       </div>
 
       {/* Edit Drawer */}
-      {drawer.isOpen && (
-        <TaskEditDrawer
-          editingTask={drawer.editingTask}
-          saving={drawer.saving}
-          showRecurrenceSelector={drawer.showRecurrenceSelector}
-          showLabelInput={drawer.showLabelInput}
-          dragOffset={drawer.dragOffset}
-          drawerRef={drawer.drawerRef}
-          formTime={drawer.formTime}
-          formTitle={drawer.formTitle}
-          formRecurrence={drawer.formRecurrence}
-          formIsAiTask={drawer.formIsAiTask}
-          formIsActive={drawer.formIsActive}
-          onTimeChange={drawer.setFormTime}
-          onTitleChange={drawer.setFormTitle}
-          onRecurrenceChange={drawer.setFormRecurrence}
-          onIsAiTaskChange={drawer.setFormIsAiTask}
-          onIsActiveChange={drawer.setFormIsActive}
-          onClose={drawer.close}
-          onSave={handleSave}
-          onDelete={handleDelete}
-          onShowRecurrenceSelector={drawer.setShowRecurrenceSelector}
-          onShowLabelInput={drawer.setShowLabelInput}
-          bindDrag={drawer.bindDrag}
-        />
-      )}
+      <TaskEditDrawer
+        isOpen={drawer.isOpen}
+        editingTask={drawer.editingTask}
+        saving={drawer.saving}
+        showRecurrenceSelector={drawer.showRecurrenceSelector}
+        showLabelInput={drawer.showLabelInput}
+        formTime={drawer.formTime}
+        formTitle={drawer.formTitle}
+        formRecurrence={drawer.formRecurrence}
+        formIsAiTask={drawer.formIsAiTask}
+        formIsActive={drawer.formIsActive}
+        onTimeChange={drawer.setFormTime}
+        onTitleChange={drawer.setFormTitle}
+        onRecurrenceChange={drawer.setFormRecurrence}
+        onIsAiTaskChange={drawer.setFormIsAiTask}
+        onIsActiveChange={drawer.setFormIsActive}
+        onClose={drawer.close}
+        onSave={handleSave}
+        onDelete={handleDelete}
+        onShowRecurrenceSelector={drawer.setShowRecurrenceSelector}
+        onShowLabelInput={drawer.setShowLabelInput}
+      />
 
       <style jsx>{`
         .scrollbar-hide {
