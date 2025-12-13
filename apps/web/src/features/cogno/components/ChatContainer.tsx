@@ -6,12 +6,13 @@ import { useGlobalUI } from '@/contexts/GlobalUIContext';
 import ScrollableView from '@/components/layout/ScrollableView';
 import type { WorkspaceMember } from '@/types/workspace';
 import type { Note } from '@/types/note';
+import type { UploadedFile } from '@/lib/api/workspaceFilesApi';
 
 type ChatContainerProps = {
   messages: Message[] | AIMessage[];
   sendMessage: (
     content: string,
-    fileIds?: number[],
+    files?: UploadedFile[],
     mentionedMemberIds?: number[],
     mentionedNoteIds?: number[],
     notificationId?: number,

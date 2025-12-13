@@ -1,13 +1,17 @@
 'use client';
 
 import { useState } from 'react';
-import { useThreads } from '@/hooks/useThreads';
 import { useThreadContext } from '@/contexts/ThreadContext';
 import { useHomeUI } from '@/contexts/HomeUIContext';
 
 export default function ThreadSidebar() {
-  const { threads, updateThread, deleteThread } = useThreads();
-  const { selectedThreadId, setSelectedThreadId } = useThreadContext();
+  const {
+    threads,
+    updateThread,
+    deleteThread,
+    selectedThreadId,
+    setSelectedThreadId,
+  } = useThreadContext();
   const { isThreadSidebarOpen, closeThreadSidebar } = useHomeUI();
   const [menuOpenId, setMenuOpenId] = useState<number | null>(null);
   const [renamingId, setRenamingId] = useState<number | null>(null);

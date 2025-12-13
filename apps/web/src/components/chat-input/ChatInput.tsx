@@ -11,10 +11,7 @@ import {
 } from 'react';
 import FileUploadMenu from './FileUploadMenu';
 import FileUploadPreview, { type FileUploadItem } from './FileUploadPreview';
-import {
-  uploadWorkspaceFile,
-  type UploadedFile,
-} from '@/lib/api/workspaceFilesApi';
+import { uploadWorkspaceFile } from '@/lib/api/workspaceFilesApi';
 import { ReplyIndicator } from './ReplyIndicator';
 import type { WorkspaceMember } from '@/types/workspace';
 import type { Note } from '@/types/note';
@@ -126,25 +123,6 @@ const ChatInput = forwardRef<ChatInputRef, ChatInputProps>(function ChatInput(
     });
   }, []);
 
-  const handleUploadComplete = useCallback(
-    (id: string, uploadedFile: UploadedFile) => {
-      setUploadItems(prev =>
-        prev.map(item =>
-          item.id === id ? { ...item, uploaded: uploadedFile } : item
-        )
-      );
-    },
-    []
-  );
-
-  const handleUploadError = useCallback((id: string, error: string) => {
-    setUploadItems(prev =>
-      prev.map(item =>
-        item.id === id ? { ...item, error, uploading: false } : item
-      )
-    );
-  }, []);
-
   useEffect(() => {
     return () => {
       uploadItems.forEach(item => {
@@ -225,13 +203,7 @@ const ChatInput = forwardRef<ChatInputRef, ChatInputProps>(function ChatInput(
       )}
       {/* File Upload Preview */}
       {workspaceId && uploadItems.length > 0 && (
-        <FileUploadPreview
-          files={uploadItems}
-          workspaceId={workspaceId}
-          onRemove={handleRemoveFile}
-          onUploadComplete={handleUploadComplete}
-          onUploadError={handleUploadError}
-        />
+        <FileUploadPreview files={uploadItems} onRemove={handleRemoveFile} />
       )}
       {/* 入力UI */}
       <div className='px-4 md:px-6 py-2'>
