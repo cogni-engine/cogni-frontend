@@ -141,14 +141,20 @@ export function TaskEditDrawer({
                   label='AI Task'
                   showChevron={false}
                   customRight={
-                    <Toggle checked={formIsAiTask} onChange={onIsAiTaskChange} />
+                    <Toggle
+                      checked={formIsAiTask}
+                      onChange={onIsAiTaskChange}
+                    />
                   }
                 />
                 <SettingsRow
                   label='Active'
                   showChevron={false}
                   customRight={
-                    <Toggle checked={formIsActive} onChange={onIsActiveChange} />
+                    <Toggle
+                      checked={formIsActive}
+                      onChange={onIsActiveChange}
+                    />
                   }
                 />
               </GlassCard>
@@ -192,4 +198,3 @@ export function TaskEditDrawer({
     </>
   );
 }
-

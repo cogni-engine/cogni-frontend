@@ -49,4 +49,3 @@ export function TaskCard({ task, onEdit, onToggleActive }: TaskCardProps) {
     </GlassCard>
   );
 }
-

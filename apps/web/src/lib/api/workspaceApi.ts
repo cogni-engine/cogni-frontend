@@ -59,7 +59,10 @@ export async function getWorkspaces(): Promise<Workspace[]> {
     .select('*')
     .in('id', workspaceIds)
     .eq('type', 'group')
-    .order('created_at', { ascending: false });
+    .order('workspace_messages_updated_at', {
+      ascending: false,
+      nullsFirst: false,
+    });
 
   if (error) throw error;
 

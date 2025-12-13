@@ -29,4 +29,3 @@ export function Toggle({ checked, onChange, disabled }: ToggleProps) {
     </button>
   );
 }
-

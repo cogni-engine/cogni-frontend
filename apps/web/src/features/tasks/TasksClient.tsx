@@ -11,8 +11,15 @@ import { EmptyTasksState } from './components/EmptyTasksState';
 import { TaskEditDrawer } from './components/TaskEditDrawer';
 
 export default function TasksClient() {
-  const { tasks, loading, error, createTask, updateTask, deleteTask, toggleTaskActive } =
-    useTasks();
+  const {
+    tasks,
+    loading,
+    error,
+    createTask,
+    updateTask,
+    deleteTask,
+    toggleTaskActive,
+  } = useTasks();
 
   const drawer = useTaskDrawer();
 
@@ -114,4 +121,3 @@ export default function TasksClient() {
     </div>
   );
 }
-

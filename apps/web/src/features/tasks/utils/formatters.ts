@@ -51,4 +51,3 @@ export const RECURRENCE_OPTIONS = [
   { value: 'monthly', label: 'Every month' },
   { value: 'yearly', label: 'Every year' },
 ] as const;
-
