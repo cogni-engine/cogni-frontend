@@ -56,34 +56,53 @@ export default function FileUploadMenu({
   }, [disabled]);
 
   return (
-    <div className='relative flex flex-col items-center gap-3'>
-      <button
-        type='button'
-        onClick={() => {
-          if (disabled) return;
-          setIsOpen(true);
-        }}
-        disabled={disabled}
-        className='flex h-[52px] w-[52px] items-center justify-center rounded-full bg-white/3 backdrop-blur-md text-white/80 border border-black transition-all duration-300 shadow-[0_8px_32px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.12)] hover:bg-white/15 hover:text-white hover:shadow-[0_12px_40px_rgba(0,0,0,0.25),inset_0_1px_0_rgba(255,255,255,0.18)] disabled:opacity-50 disabled:cursor-not-allowed'
-        aria-label='Add files'
-      >
-        <svg
-          xmlns='http://www.w3.org/2000/svg'
-          width='20'
-          height='20'
-          viewBox='0 0 24 24'
-          fill='none'
-          stroke='currentColor'
-          strokeWidth='2'
-          strokeLinecap='round'
-          strokeLinejoin='round'
+    <>
+      <div className='relative flex flex-col items-center gap-3'>
+        <button
+          type='button'
+          onClick={() => {
+            if (disabled) return;
+            setIsOpen(true);
+          }}
+          disabled={disabled}
+          className='flex h-[52px] w-[52px] items-center justify-center rounded-full bg-white/3 backdrop-blur-md text-white/80 border border-black transition-all duration-300 shadow-[0_8px_32px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.12)] hover:bg-white/15 hover:text-white hover:shadow-[0_12px_40px_rgba(0,0,0,0.25),inset_0_1px_0_rgba(255,255,255,0.18)] disabled:opacity-50 disabled:cursor-not-allowed'
+          aria-label='Add files'
         >
-          <line x1='12' y1='5' x2='12' y2='19'></line>
-          <line x1='5' y1='12' x2='19' y2='12'></line>
-        </svg>
-      </button>
+          <svg
+            xmlns='http://www.w3.org/2000/svg'
+            width='20'
+            height='20'
+            viewBox='0 0 24 24'
+            fill='none'
+            stroke='currentColor'
+            strokeWidth='2'
+            strokeLinecap='round'
+            strokeLinejoin='round'
+          >
+            <line x1='12' y1='5' x2='12' y2='19'></line>
+            <line x1='5' y1='12' x2='19' y2='12'></line>
+          </svg>
+        </button>
 
-      {/* File Upload Drawer */}
+        {/* Hidden file inputs */}
+        <input
+          ref={imageInputRef}
+          type='file'
+          accept='image/*'
+          multiple
+          className='hidden'
+          onChange={handleFileSelect}
+        />
+        <input
+          ref={fileInputRef}
+          type='file'
+          multiple
+          className='hidden'
+          onChange={handleFileSelect}
+        />
+      </div>
+
+      {/* File Upload Drawer - outside relative container to avoid stacking context issues */}
       <Drawer open={isOpen} onOpenChange={setIsOpen}>
         <DrawerContent maxHeight='auto'>
           <DrawerHandle />
@@ -115,23 +134,6 @@ export default function FileUploadMenu({
           </DrawerBody>
         </DrawerContent>
       </Drawer>
-
-      {/* Hidden file inputs */}
-      <input
-        ref={imageInputRef}
-        type='file'
-        accept='image/*'
-        multiple
-        className='hidden'
-        onChange={handleFileSelect}
-      />
-      <input
-        ref={fileInputRef}
-        type='file'
-        multiple
-        className='hidden'
-        onChange={handleFileSelect}
-      />
-    </div>
+    </>
   );
 }
