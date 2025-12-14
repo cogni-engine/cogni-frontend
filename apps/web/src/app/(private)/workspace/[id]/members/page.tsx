@@ -7,8 +7,8 @@ import { useWorkspaceInvitations } from '@/hooks/useWorkspaceInvitations';
 import { useWorkspaceMembers } from '@/hooks/useWorkspace';
 import { generateInvitationLink } from '@/lib/api/invitationsApi';
 import { Plus, X, Mail, Link, Copy } from 'lucide-react';
-import GlassCard from '@/components/glass-card/GlassCard';
-import GlassButton from '@/components/glass-card/GlassButton';
+import GlassCard from '@/components/glass-design/GlassCard';
+import GlassButton from '@/components/glass-design/GlassButton';
 
 export default function WorkspaceMembersPage() {
   const params = useParams();

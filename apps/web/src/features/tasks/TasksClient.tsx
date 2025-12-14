@@ -1,8 +1,8 @@
 'use client';
 
 import { Plus } from 'lucide-react';
-import GlassCard from '@/components/glass-card/GlassCard';
-import GlassButton from '@/components/glass-card/GlassButton';
+import GlassCard from '@/components/glass-design/GlassCard';
+import GlassButton from '@/components/glass-design/GlassButton';
 import ScrollableView from '@/components/layout/ScrollableView';
 
 import { useTasks } from './hooks/useTasks';

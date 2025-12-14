@@ -1,8 +1,10 @@
 'use client';
 
+// TODO: move to the note feature
+
 import { useState, useEffect, useRef } from 'react';
 import { ArrowUpDown, Check, ChevronRight } from 'lucide-react';
-import GlassCard from '@/components/glass-card/GlassCard';
+import GlassCard from '@/components/glass-design/GlassCard';
 
 interface SortDropdownProps {
   sortBy: 'time' | 'folder';

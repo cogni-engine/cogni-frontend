@@ -10,8 +10,8 @@ import {
   Users,
   Settings,
 } from 'lucide-react';
-import GlassCard from '@/components/glass-card/GlassCard';
-import GlassButton from '@/components/glass-card/GlassButton';
+import GlassCard from '@/components/glass-design/GlassCard';
+import GlassButton from '@/components/glass-design/GlassButton';
 import { useWorkspace } from '@/hooks/useWorkspace';
 
 type ViewType = 'chat' | 'notes' | 'members' | 'menu';

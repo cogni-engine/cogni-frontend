@@ -6,7 +6,7 @@ import React, {
 } from 'react';
 import { SuggestionProps } from '@tiptap/suggestion';
 import type { WorkspaceFile } from '@/lib/api/workspaceFilesApi';
-import GlassCard from '../glass-card/GlassCard';
+import GlassCard from '../glass-design/GlassCard';
 
 export interface FileListRef {
   onKeyDown: (props: { event: KeyboardEvent }) => boolean;

@@ -3,7 +3,7 @@
 import { ArrowLeft, Users } from 'lucide-react';
 import { AssignmentDropdown } from './AssignmentDropdown';
 import { WorkspaceMember } from '@/types/workspace';
-import GlassButton from '@/components/glass-card/GlassButton';
+import GlassButton from '@/components/glass-design/GlassButton';
 
 interface NoteEditorHeaderProps {
   title: string;

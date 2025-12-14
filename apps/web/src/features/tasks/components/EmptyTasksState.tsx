@@ -1,7 +1,7 @@
 'use client';
 
 import { RefreshCw } from 'lucide-react';
-import GlassButton from '@/components/glass-card/GlassButton';
+import GlassButton from '@/components/glass-design/GlassButton';
 
 interface EmptyTasksStateProps {
   onAddTask: () => void;

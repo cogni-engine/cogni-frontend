@@ -14,7 +14,7 @@ import type { Workspace } from '@/types/workspace';
 import { Plus, Sparkles } from 'lucide-react';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import GlassButton from '@/components/glass-card/GlassButton';
+import GlassButton from '@/components/glass-design/GlassButton';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,

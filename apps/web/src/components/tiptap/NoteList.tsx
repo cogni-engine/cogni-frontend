@@ -8,7 +8,7 @@ import React, {
 } from 'react';
 import { NoteWithParsed } from '@/types/note';
 import { FileText } from 'lucide-react';
-import GlassCard from '../glass-card/GlassCard';
+import GlassCard from '../glass-design/GlassCard';
 
 export interface NoteListProps {
   items: NoteWithParsed[];

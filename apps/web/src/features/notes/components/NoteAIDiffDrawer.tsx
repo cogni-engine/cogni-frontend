@@ -4,7 +4,7 @@ import { useState, useEffect, useRef, useMemo } from 'react';
 import { X, Check } from 'lucide-react';
 import { useDrag } from '@use-gesture/react';
 import { useEditor, EditorContent } from '@tiptap/react';
-import GlassCard from '@/components/glass-card/GlassCard';
+import GlassCard from '@/components/glass-design/GlassCard';
 import { createEditorExtensions } from '../lib/editorExtensions';
 
 interface NoteAIDiffDrawerProps {

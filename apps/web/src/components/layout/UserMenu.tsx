@@ -1,5 +1,7 @@
 'use client';
 
+// TODO: this needs to be moved to a feature
+
 import * as React from 'react';
 import { LogOut, Settings, CheckSquare } from 'lucide-react';
 import { useRouter } from 'next/navigation';
@@ -18,7 +20,7 @@ import { Button } from '@/components/ui/button';
 import { signOut } from '@cogni/api';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import type { UserProfile } from '@/types/userProfile';
-import GlassCard from '@/components/glass-card/GlassCard';
+import GlassCard from '@/components/glass-design/GlassCard';
 import { isInMobileWebView, notifyNativeLogout } from '@/lib/webview';
 
 type UserMenuProps = {

@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation';
 import type { Workspace } from '@/types/workspace';
 import { Building2 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import GlassCard from '@/components/glass-card/GlassCard';
+import GlassCard from '@/components/glass-design/GlassCard';
 
 interface WorkspaceListProps {
   workspaces: Workspace[];

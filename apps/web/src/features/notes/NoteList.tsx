@@ -3,7 +3,7 @@
 import Image from 'next/image';
 import { useRef, memo } from 'react';
 
-import GlassCard from '@/components/glass-card/GlassCard';
+import GlassCard from '@/components/glass-design/GlassCard';
 import type { NoteFolder } from '@/types/note';
 
 type NoteListItem = {

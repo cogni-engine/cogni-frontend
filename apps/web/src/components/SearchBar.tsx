@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { MicIcon, SearchIcon } from 'lucide-react';
 
-import GlassCard from '@/components/glass-card/GlassCard';
+import GlassCard from '@/components/glass-design/GlassCard';
 import { cn } from '@/lib/utils';
 
 export interface SearchBarProps

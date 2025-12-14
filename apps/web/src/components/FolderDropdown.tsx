@@ -10,7 +10,7 @@ import {
   Check,
 } from 'lucide-react';
 import type { NoteFolder } from '@/types/note';
-import GlassCard from '@/components/glass-card/GlassCard';
+import GlassCard from '@/components/glass-design/GlassCard';
 
 interface FolderDropdownProps {
   folders: NoteFolder[];

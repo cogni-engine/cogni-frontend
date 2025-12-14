@@ -9,7 +9,7 @@ import React, {
 import { WorkspaceMember } from '@/types/workspace';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { User } from 'lucide-react';
-import GlassCard from '../glass-card/GlassCard';
+import GlassCard from '../glass-design/GlassCard';
 
 export interface MentionListProps {
   items: WorkspaceMember[];

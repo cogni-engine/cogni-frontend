@@ -3,7 +3,7 @@
 import { usePathname, useRouter } from 'next/navigation';
 import { HomeIcon, MessageSquare, Notebook } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
-import GlassCard from '../glass-card/GlassCard';
+import GlassCard from '../glass-design/GlassCard';
 
 export default function BottomNav() {
   const pathname = usePathname();

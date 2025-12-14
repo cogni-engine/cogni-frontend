@@ -1,6 +1,6 @@
 'use client';
 
-import GlassCard from '@/components/glass-card/GlassCard';
+import GlassCard from '@/components/glass-design/GlassCard';
 import type { Task } from '@/types/task';
 
 import { Toggle } from './Toggle';

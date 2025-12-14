@@ -8,7 +8,7 @@ import {
   DrawerHeader,
   DrawerBody,
 } from '@/components/ui/drawer';
-import GlassCard from '@/components/glass-card/GlassCard';
+import GlassCard from '@/components/glass-design/GlassCard';
 import type { Task } from '@/types/task';
 
 import { TimeWheelPicker } from './TimeWheelPicker';
