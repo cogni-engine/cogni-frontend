@@ -1,7 +1,7 @@
 'use client';
 
 import { useEditor, EditorContent } from '@tiptap/react';
-import { useMemo, memo, useEffect } from 'react';
+import { useMemo, useEffect } from 'react';
 import { useTiptapExtensions } from './extensions/useTiptapExtensions';
 import type { WorkspaceMember } from '@/types/workspace';
 import type { Note } from '@/types/note';

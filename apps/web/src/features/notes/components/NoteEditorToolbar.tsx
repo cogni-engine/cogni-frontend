@@ -16,7 +16,7 @@ import {
   Sparkles,
 } from 'lucide-react';
 import { ToolbarButton } from './ToolbarButton';
-import { StrikeChain, TaskListChain } from '../types';
+import { StrikeChain } from '../types';
 
 interface NoteEditorToolbarProps {
   editor: Editor | null;
