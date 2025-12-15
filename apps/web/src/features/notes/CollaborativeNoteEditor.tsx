@@ -6,7 +6,7 @@ import { useNotes } from '@cogni/api';
 import { EditorContent } from '@tiptap/react';
 import { getPersonalWorkspaceId } from '@cogni/utils';
 import { useWorkspaceMembers } from '@/hooks/useWorkspace';
-import { Wifi, WifiOff, Loader2, Users } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import { TaskListChain } from './types';
 import { NoteEditorHeader } from './components/NoteEditorHeader';
 import { NoteEditorToolbar } from './components/NoteEditorToolbar';
@@ -179,15 +179,13 @@ export default function CollaborativeNoteEditor({
   }, []);
 
   // Initialize collaborative editor
-  // Pass note.text for migration when Y.Doc is empty (legacy notes)
-  const { editor, provider, isConnected, isSynced, connectionStatus } =
-    useCollaborativeEditor({
-      noteId: isValidId ? id : null,
-      isGroupNote,
-      membersRef,
-      notesRef,
-      user: userInfo,
-    });
+  const { editor, isSynced } = useCollaborativeEditor({
+    noteId: isValidId ? id : null,
+    isGroupNote,
+    membersRef,
+    notesRef,
+    user: userInfo,
+  });
 
   // Use image upload hook
   const {
@@ -282,17 +280,18 @@ export default function CollaborativeNoteEditor({
     );
   }
 
+  // Show loading state while connecting
+  if (!isSynced) {
+    return (
+      <div className='flex flex-col h-full bg-linear-to-br from-slate-950 via-black to-slate-950 text-gray-100 items-center justify-center'>
+        <Loader2 className='w-8 h-8 animate-spin text-blue-400 mb-4' />
+        <span className='text-gray-400'>Connecting to document...</span>
+      </div>
+    );
+  }
+
   return (
     <div className='flex flex-col h-full bg-linear-to-br from-slate-950 via-black to-slate-950 text-gray-100 relative overflow-hidden'>
-      {/* Connection Status Banner */}
-      <div className='absolute top-0 right-0 m-4 z-50 flex items-center gap-2'>
-        <ConnectionStatus
-          status={connectionStatus}
-          isSynced={isSynced}
-          provider={provider}
-        />
-      </div>
-
       <NoteEditorHeader
         title={title}
         onTitleChange={handleTitleChange}
@@ -330,13 +329,7 @@ export default function CollaborativeNoteEditor({
           WebkitOverflowScrolling: 'touch',
         }}
       >
-        {!isSynced && (
-          <div className='flex items-center justify-center py-8'>
-            <Loader2 className='w-6 h-6 animate-spin text-blue-400 mr-2' />
-            <span className='text-gray-400'>Syncing document...</span>
-          </div>
-        )}
-        <div className={`flex-1 min-h-full ${!isSynced ? 'opacity-50' : ''}`}>
+        <div className='flex-1 min-h-full'>
           <EditorContent editor={editor} />
           <div className='h-1/2'></div>
         </div>
@@ -353,79 +346,6 @@ export default function CollaborativeNoteEditor({
 
       <EditorStyles />
       <CollaborativeEditorStyles />
-    </div>
-  );
-}
-
-// Connection status indicator component
-function ConnectionStatus({
-  status,
-  isSynced,
-  provider,
-}: {
-  status: 'connecting' | 'connected' | 'disconnected';
-  isSynced: boolean;
-  provider: any;
-}) {
-  const [collaboratorCount, setCollaboratorCount] = useState(0);
-
-  // Track connected collaborators
-  useEffect(() => {
-    if (!provider) return;
-
-    const updateCollaborators = () => {
-      const states = provider.awareness?.getStates();
-      if (states) {
-        // Subtract 1 to not count self
-        setCollaboratorCount(Math.max(0, states.size - 1));
-      }
-    };
-
-    provider.on('awarenessChange', updateCollaborators);
-    updateCollaborators();
-
-    return () => {
-      provider.off('awarenessChange', updateCollaborators);
-    };
-  }, [provider]);
-
-  return (
-    <div className='flex items-center gap-2'>
-      {/* Collaborator count */}
-      {collaboratorCount > 0 && (
-        <div className='flex items-center gap-1 px-2 py-1 rounded-full bg-purple-500/20 text-purple-300 text-xs'>
-          <Users className='w-3 h-3' />
-          <span>{collaboratorCount}</span>
-        </div>
-      )}
-
-      {/* Connection status */}
-      <div
-        className={`flex items-center gap-1.5 px-2 py-1 rounded-full text-xs font-medium transition-colors ${
-          status === 'connected' && isSynced
-            ? 'bg-green-500/20 text-green-300'
-            : status === 'connecting'
-              ? 'bg-yellow-500/20 text-yellow-300'
-              : 'bg-red-500/20 text-red-300'
-        }`}
-      >
-        {status === 'connected' && isSynced ? (
-          <>
-            <Wifi className='w-3 h-3' />
-            <span>Live</span>
-          </>
-        ) : status === 'connecting' ? (
-          <>
-            <Loader2 className='w-3 h-3 animate-spin' />
-            <span>Connecting</span>
-          </>
-        ) : (
-          <>
-            <WifiOff className='w-3 h-3' />
-            <span>Offline</span>
-          </>
-        )}
-      </div>
     </div>
   );
 }
