@@ -44,9 +44,9 @@ export function createCollaborativeExtensions({
         levels: [1, 2, 3, 4, 5, 6],
       },
       code: false,
-      // Disable history - Y.js handles this
+      // Disable history - Y.js handles this via Collaboration extension
       history: false,
-    }),
+    } as Parameters<typeof StarterKit.configure>[0]),
 
     // Placeholder text when editor is empty
     Placeholder.configure({
