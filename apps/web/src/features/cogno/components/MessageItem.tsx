@@ -109,7 +109,7 @@ export default function MessageItem({
 
   return (
     <div className='w-full max-w-5xl mx-auto flex justify-end mb-4 px-1 md:px-3'>
-      <div className='max-w-[75%] flex flex-col items-end gap-2'>
+      <div className='max-w-[80%] flex flex-col items-end gap-2'>
         {/* File attachments */}
         {hasFiles && 'files' in message && (
           <div className='w-full'>

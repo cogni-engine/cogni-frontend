@@ -3,12 +3,9 @@
 import Image from 'next/image';
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { createPortal } from 'react-dom';
-import {
-  Image as ImageIcon,
-  File as FileIcon,
-  Download,
-  X,
-} from 'lucide-react';
+import { X } from 'lucide-react';
+import SquareImage from '@/components/sendable/SquareImage';
+import SendableDefaultFile from '@/components/sendable/SendableDefaultFile';
 import { createClient } from '@/lib/supabase/browserClient';
 import { useGlobalUI } from '@/contexts/GlobalUIContext';
 
@@ -26,6 +23,7 @@ export interface MessageFile {
 type MessageFilesProps = {
   files: MessageFile[];
   bucket?: 'workspace' | 'ai-chat';
+  align?: 'left' | 'right';
 };
 
 const isImage = (mimeType: string): boolean => {
@@ -35,6 +33,7 @@ const isImage = (mimeType: string): boolean => {
 export default function MessageFiles({
   files,
   bucket = 'workspace',
+  align = 'right',
 }: MessageFilesProps) {
   const { openFileDrawer } = useGlobalUI();
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
@@ -94,14 +93,6 @@ export default function MessageFiles({
 
     loadImageUrls();
   }, [files]);
-
-  const formatFileSize = (bytes: number): string => {
-    if (bytes === 0) return '0 Bytes';
-    const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + ' ' + sizes[i];
-  };
 
   // Lock body scroll when image is open
   useEffect(() => {
@@ -193,99 +184,36 @@ export default function MessageFiles({
       <div className='space-y-2 inline-block'>
         {/* Non-image files - vertical layout */}
         {nonImageFiles.length > 0 && (
-          <div className='flex flex-col gap-2'>
+          <div
+            className={`flex flex-col gap-2 ${align === 'right' ? 'items-end' : 'items-start'}`}
+          >
             {nonImageFiles.map(file => (
-              <div
+              <SendableDefaultFile
                 key={file.id}
-                className='relative group overflow-hidden cursor-pointer'
+                filename={file.original_filename}
+                fileSize={file.file_size}
                 onClick={() => handleFileClick(file)}
-              >
-                <div className='flex items-center gap-2 bg-white/13 backdrop-blur-xl border border-black rounded-3xl px-4 py-2.5 shadow-[0_8px_32px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.12)] hover:bg-white/16 transition-all min-w-0'>
-                  <FileIcon className='w-5 h-5 text-white/60 flex-shrink-0' />
-                  <div className='flex-1 min-w-0 overflow-hidden'>
-                    <p
-                      className='text-sm text-white truncate'
-                      title={file.original_filename}
-                    >
-                      {file.original_filename}
-                    </p>
-                    <p className='text-xs text-white/40 truncate'>
-                      {formatFileSize(file.file_size)}
-                    </p>
-                  </div>
-                  <button
-                    onClick={e => {
-                      e.stopPropagation();
-                      handleDownload(file);
-                    }}
-                    className='ml-2 p-1.5 rounded-md hover:bg-white/10 transition-colors flex-shrink-0'
-                    aria-label='Download file'
-                  >
-                    <Download className='w-4 h-4 text-white/60' />
-                  </button>
-                </div>
-              </div>
+                onDownload={() => handleDownload(file)}
+              />
             ))}
           </div>
         )}
 
         {/* Image files - horizontal wrapping layout */}
         {imageFiles.length > 0 && (
-          <div className='flex flex-wrap gap-2'>
-            {imageFiles.map(file => {
-              const imageUrl = imageUrls.get(file.id);
-
-              return (
-                <div key={file.id} className='relative group cursor-pointer'>
-                  <div
-                    data-image-clickable
-                    onClick={() => handleImageClick(file)}
-                    onTouchEnd={e => {
-                      // Prevent parent touch handlers from interfering
-                      e.stopPropagation();
-                      // Don't prevent default here - let the click happen naturally
-                      handleImageClick(file);
-                    }}
-                    onTouchStart={e => {
-                      // Stop propagation to prevent parent swipe handlers
-                      e.stopPropagation();
-                    }}
-                    onPointerDown={e => {
-                      // Ensure pointer events work on mobile
-                      e.stopPropagation();
-                    }}
-                    className='relative w-32 h-32 rounded-lg overflow-hidden border border-white/10 bg-white/5 hover:border-white/20 transition-all'
-                    style={{
-                      touchAction: 'manipulation',
-                      WebkitTapHighlightColor: 'transparent',
-                    }}
-                  >
-                    {imageUrl ? (
-                      <Image
-                        src={imageUrl}
-                        alt={file.original_filename}
-                        fill
-                        sizes='128px'
-                        className='object-cover pointer-events-none select-none'
-                        draggable={false}
-                        loading='lazy'
-                      />
-                    ) : loadingImages.has(file.id) ? (
-                      <div className='w-full h-full flex items-center justify-center'>
-                        <div className='animate-spin rounded-full h-6 w-6 border-b-2 border-white/40'></div>
-                      </div>
-                    ) : (
-                      <div className='w-full h-full flex items-center justify-center'>
-                        <ImageIcon className='w-8 h-8 text-white/40' />
-                      </div>
-                    )}
-                    <div className='absolute inset-0 bg-black/0 hover:bg-black/20 transition-colors flex items-center justify-center pointer-events-none'>
-                      <ImageIcon className='w-6 h-6 text-white/60 opacity-0 group-hover:opacity-100 transition-opacity' />
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
+          <div
+            className={`flex flex-wrap gap-2 ${align === 'right' ? 'justify-end' : 'justify-start'}`}
+          >
+            {imageFiles.map(file => (
+              <SquareImage
+                key={file.id}
+                src={imageUrls.get(file.id)}
+                alt={file.original_filename}
+                size={128}
+                isLoading={loadingImages.has(file.id)}
+                onClick={() => handleImageClick(file)}
+              />
+            ))}
           </div>
         )}
       </div>

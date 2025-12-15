@@ -469,7 +469,7 @@ function WorkspaceMessageItem({
                 </div>
               )}
               {message.files && message.files.length > 0 && (
-                <MessageFiles files={message.files} />
+                <MessageFiles files={message.files} align='left' />
               )}
             </div>
             <p className='text-xs text-gray-500 mt-1'>
