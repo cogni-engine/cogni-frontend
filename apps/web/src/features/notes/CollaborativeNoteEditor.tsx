@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
 import { useNotes } from '@cogni/api';
 import { EditorContent } from '@tiptap/react';
 import { getPersonalWorkspaceId } from '@cogni/utils';
@@ -18,7 +18,7 @@ import {
 } from './hooks/useCollaborativeEditor';
 import { useNoteAssignments } from './hooks/useNoteAssignments';
 import { useEditorImageUpload } from './hooks/useEditorImageUpload';
-import { getNote } from '@/lib/api/notesApi';
+import { getNote, updateNoteTitle } from '@/lib/api/notesApi';
 import { createClient } from '@/lib/supabase/browserClient';
 import type { Note } from '@/types/note';
 
@@ -75,6 +75,9 @@ export default function CollaborativeNoteEditor({
     noteId: note?.id,
   });
 
+  // Ref for debounced title save
+  const titleSaveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
   // Fetch note data
   useEffect(() => {
     if (!isValidId) {
@@ -89,14 +92,19 @@ export default function CollaborativeNoteEditor({
         const data = await getNote(id);
         if (data) {
           setNote(data);
-          // Extract title from first line of note text
-          const lines = data.text?.split('\n') || [];
-          const firstLine = lines.find(
-            (line: string) => line.trim().length > 0
-          );
-          const noteTitle =
-            firstLine?.replace(/^#{1,6}\s+/, '').trim() || 'Untitled';
-          setTitle(noteTitle);
+          // Use title column if available, otherwise fallback to parsing from text
+          if (data.title) {
+            setTitle(data.title);
+          } else {
+            // Fallback for legacy notes without title column
+            const lines = data.text?.split('\n') || [];
+            const firstLine = lines.find(
+              (line: string) => line.trim().length > 0
+            );
+            const noteTitle =
+              firstLine?.replace(/^#{1,6}\s+/, '').trim() || 'Untitled';
+            setTitle(noteTitle);
+          }
         } else {
           setError('Note not found');
         }
@@ -110,6 +118,38 @@ export default function CollaborativeNoteEditor({
 
     fetchNote();
   }, [id, isValidId]);
+
+  // Handle title change - debounced save to database
+  const handleTitleChange = useCallback(
+    (newTitle: string) => {
+      setTitle(newTitle);
+
+      // Clear existing timeout
+      if (titleSaveTimeoutRef.current) {
+        clearTimeout(titleSaveTimeoutRef.current);
+      }
+
+      // Debounce save to database
+      titleSaveTimeoutRef.current = setTimeout(async () => {
+        try {
+          await updateNoteTitle(id, newTitle);
+          console.log('Title saved:', newTitle);
+        } catch (err) {
+          console.error('Error saving title:', err);
+        }
+      }, 500); // 500ms debounce
+    },
+    [id]
+  );
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (titleSaveTimeoutRef.current) {
+        clearTimeout(titleSaveTimeoutRef.current);
+      }
+    };
+  }, []);
 
   // Fetch user info for collaboration
   useEffect(() => {
@@ -139,6 +179,7 @@ export default function CollaborativeNoteEditor({
   }, []);
 
   // Initialize collaborative editor
+  // Pass note.text for migration when Y.Doc is empty (legacy notes)
   const { editor, provider, isConnected, isSynced, connectionStatus } =
     useCollaborativeEditor({
       noteId: isValidId ? id : null,
@@ -180,34 +221,6 @@ export default function CollaborativeNoteEditor({
       console.warn('Task list command not available');
     }
   };
-
-  // Save title changes to the note
-  useEffect(() => {
-    if (!note?.id || !title || loading) return;
-
-    const saveTitle = async () => {
-      const supabase = createClient();
-      // We just save the title - the content is handled by Hocuspocus
-      // For now, we update the text field to keep title in sync
-      // In the future, you might want a separate title field
-      const lines = note.text?.split('\n') || [];
-      const firstNonEmpty = lines.findIndex(
-        (line: string) => line.trim().length > 0
-      );
-      if (firstNonEmpty >= 0) {
-        lines[firstNonEmpty] = `# ${title}`;
-      }
-      const newText = lines.join('\n');
-
-      await supabase
-        .from('notes')
-        .update({ text: newText, updated_at: new Date().toISOString() })
-        .eq('id', note.id);
-    };
-
-    const timeout = setTimeout(saveTitle, 700);
-    return () => clearTimeout(timeout);
-  }, [title, note?.id, note?.text, loading]);
 
   // Validate that noteId is a valid number
   if (!isValidId) {
@@ -282,7 +295,7 @@ export default function CollaborativeNoteEditor({
 
       <NoteEditorHeader
         title={title}
-        onTitleChange={setTitle}
+        onTitleChange={handleTitleChange}
         onBack={() => router.back()}
         isGroupNote={isGroupNote}
         showAssignmentDropdown={showAssignmentDropdown}

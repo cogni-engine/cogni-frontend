@@ -15,6 +15,7 @@ export interface Note {
   id: number;
   created_at: string;
   updated_at: string;
+  title: string | null;
   text: string;
   workspace_id: number;
   deleted_at?: string | null;

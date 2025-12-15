@@ -41,7 +41,7 @@ export function createCollaborativeExtensions({
     // We disable history since Y.js handles undo/redo
     StarterKit.configure({
       heading: {
-        levels: [1, 2, 3],
+        levels: [1, 2, 3, 4, 5, 6],
       },
       code: false,
       // Disable history - Y.js handles this
@@ -105,25 +105,25 @@ export function createCollaborativeExtensions({
         name: user.name,
         color: user.color,
       },
-      render: (user) => {
+      render: user => {
         // Create cursor container
         const cursor = document.createElement('span');
         cursor.classList.add('collaboration-cursor');
-        
+
         // Create the caret (vertical line)
         const caret = document.createElement('span');
         caret.classList.add('collaboration-cursor__caret');
         caret.style.backgroundColor = user.color;
-        
+
         // Create the label (user name)
         const label = document.createElement('span');
         label.classList.add('collaboration-cursor__label');
         label.style.backgroundColor = user.color;
         label.textContent = user.name;
-        
+
         cursor.appendChild(caret);
         cursor.appendChild(label);
-        
+
         return cursor;
       },
     }),
