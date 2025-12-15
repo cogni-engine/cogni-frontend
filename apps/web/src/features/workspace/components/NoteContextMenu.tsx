@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { Copy, Trash2, RotateCcw, Trash, FolderInput } from 'lucide-react';
-import type { NoteFolder } from '@/types/note';
 
 interface NoteContextMenuProps {
   x: number;

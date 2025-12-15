@@ -7,7 +7,7 @@ export function EditorStyles() {
         padding: 0;
       }
       .ProseMirror p {
-        margin: 0.75em 0;
+        margin: 0.4em 0;
       }
       .ProseMirror p:first-child {
         margin-top: 0;
@@ -17,20 +17,38 @@ export function EditorStyles() {
       }
       .ProseMirror h1,
       .ProseMirror h2,
-      .ProseMirror h3 {
-        margin-top: 1em;
+      .ProseMirror h3,
+      .ProseMirror h4,
+      .ProseMirror h5,
+      .ProseMirror h6 {
+        margin-top: 1.5em;
         margin-bottom: 0.5em;
-        font-weight: 600;
-        line-height: 1.2;
+        font-weight: 700;
+        line-height: 1.3;
+        color: rgba(255, 255, 255, 0.95);
       }
       .ProseMirror h1 {
-        font-size: 2em;
+        font-size: 2.25em;
+        letter-spacing: -0.02em;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        padding-bottom: 0.3em;
       }
       .ProseMirror h2 {
-        font-size: 1.5em;
+        font-size: 1.75em;
+        letter-spacing: -0.01em;
       }
       .ProseMirror h3 {
-        font-size: 1.25em;
+        font-size: 1.4em;
+      }
+      .ProseMirror h4 {
+        font-size: 1.2em;
+      }
+      .ProseMirror h5 {
+        font-size: 1.1em;
+      }
+      .ProseMirror h6 {
+        font-size: 1em;
+        color: rgba(255, 255, 255, 0.8);
       }
       .ProseMirror ul,
       .ProseMirror ol {

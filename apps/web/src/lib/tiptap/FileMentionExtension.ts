@@ -1,5 +1,6 @@
-import { createInlineMarkdownSpec, mergeAttributes } from '@tiptap/core';
+import { mergeAttributes } from '@tiptap/core';
 import Mention from '@tiptap/extension-mention';
+import type { Node as ProseMirrorNode } from '@tiptap/pm/model';
 
 export interface FileMentionNodeAttrs {
   id: string;
@@ -62,13 +63,7 @@ export const FileMention = Mention.extend({
     ];
   },
 
-  renderHTML({
-    node,
-    HTMLAttributes,
-  }: {
-    node: Node;
-    HTMLAttributes: { [key: string]: string };
-  }) {
+  renderHTML({ HTMLAttributes }: { HTMLAttributes: Record<string, string> }) {
     return [
       'span',
       mergeAttributes(
@@ -80,17 +75,9 @@ export const FileMention = Mention.extend({
     ];
   },
 
-  renderText({ node }: { node: any }) {
+  renderText({ node }: { node: ProseMirrorNode }) {
     return `📎${node.attrs.label}`;
   },
-
-  // Markdown support using Tiptap utility
-  ...createInlineMarkdownSpec({
-    nodeName: 'fileMention',
-    name: '📎',
-    selfClosing: true,
-    allowedAttributes: ['id', 'label', 'fileId'],
-  }),
 
   addKeyboardShortcuts() {
     return {

@@ -116,6 +116,7 @@ export async function createNote(
     .from('notes')
     .insert({
       workspace_id: workspaceId,
+      title,
       text,
       note_folder_id: folderId,
     })
@@ -139,7 +140,29 @@ export async function updateNote(
   const { data, error } = await supabase
     .from('notes')
     .update({
+      title,
       text,
+      updated_at: new Date().toISOString(),
+    })
+    .eq('id', id)
+    .select()
+    .single();
+
+  if (error) throw error;
+  return data;
+}
+
+/**
+ * Update just the title of a note
+ */
+export async function updateNoteTitle(
+  id: number,
+  title: string
+): Promise<Note> {
+  const { data, error } = await supabase
+    .from('notes')
+    .update({
+      title,
       updated_at: new Date().toISOString(),
     })
     .eq('id', id)
@@ -202,17 +225,18 @@ export async function duplicateNote(id: number): Promise<Note> {
 
   if (fetchError) throw fetchError;
 
-  // Parse the original title
-  const { title, content } = parseNoteText(originalNote.text);
-  const newTitle = `${title} (Copy)`;
-  const newText = combineNoteText(newTitle, content);
+  // Use the title column if available, otherwise parse from text
+  const originalTitle =
+    originalNote.title || parseNoteText(originalNote.text).title;
+  const newTitle = `${originalTitle} (Copy)`;
 
   // Create the duplicate
   const { data, error } = await supabase
     .from('notes')
     .insert({
       workspace_id: originalNote.workspace_id,
-      text: newText,
+      title: newTitle,
+      text: originalNote.text,
     })
     .select()
     .single();

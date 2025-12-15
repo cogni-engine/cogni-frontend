@@ -35,6 +35,7 @@ export {
   getNote,
   createNote,
   updateNote,
+  updateNoteTitle,
   deleteNote,
   softDeleteNote,
   restoreNote,

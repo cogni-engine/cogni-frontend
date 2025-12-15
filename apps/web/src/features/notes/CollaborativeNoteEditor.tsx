@@ -1,31 +1,48 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useEffect, useState, useRef } from 'react';
-import { useNoteEditor, useNotes } from '@cogni/api';
+import { useEffect, useState, useRef, useCallback } from 'react';
+import { useNotes } from '@cogni/api';
 import { EditorContent } from '@tiptap/react';
 import { getPersonalWorkspaceId } from '@cogni/utils';
 import { useWorkspaceMembers } from '@/hooks/useWorkspace';
-import { useAICompletion } from '@/hooks/useAICompletion';
-import { useCopilotReadable } from '@copilotkit/react-core';
+import { Loader2 } from 'lucide-react';
 import { TaskListChain } from './types';
 import { NoteEditorHeader } from './components/NoteEditorHeader';
 import { NoteEditorToolbar } from './components/NoteEditorToolbar';
 import { EditorStyles } from './lib/editorStyles';
-import { useNoteEditorSetup } from './hooks/useNoteEditorSetup';
+import { CollaborativeEditorStyles } from './lib/collaborativeEditorStyles';
+import {
+  useCollaborativeEditor,
+  generateUserColor,
+} from './hooks/useCollaborativeEditor';
 import { useNoteAssignments } from './hooks/useNoteAssignments';
-import { useNoteMentions } from './hooks/useNoteMentions';
 import { useEditorImageUpload } from './hooks/useEditorImageUpload';
+import { getNote, updateNoteTitle } from '@/lib/api/notesApi';
+import { createClient } from '@/lib/supabase/browserClient';
+import type { Note } from '@/types/note';
 
-export default function NoteEditor({ noteId }: { noteId: string }) {
+export default function CollaborativeNoteEditor({
+  noteId,
+}: {
+  noteId: string;
+}) {
   const router = useRouter();
   const id = parseInt(noteId, 10);
   const isValidId = !isNaN(id);
 
-  const { note, title, content, loading, error, setTitle, setContent } =
-    useNoteEditor({
-      noteId: isValidId ? id : null,
-    });
+  // Note data state
+  const [note, setNote] = useState<Note | null>(null);
+  const [title, setTitle] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // User info state
+  const [userInfo, setUserInfo] = useState<{
+    name: string;
+    color: string;
+    id: string;
+  } | null>(null);
 
   // Check if this is a group workspace note (not personal)
   const personalWorkspaceId = getPersonalWorkspaceId();
@@ -33,15 +50,6 @@ export default function NoteEditor({ noteId }: { noteId: string }) {
 
   // Assignment dropdown state
   const [showAssignmentDropdown, setShowAssignmentDropdown] = useState(false);
-
-  // AI Completion state
-  const [aiSuggestionsEnabled, setAiSuggestionsEnabled] = useState(() => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('aiSuggestionsEnabled');
-      return saved !== null ? saved === 'true' : false;
-    }
-    return false;
-  });
 
   // Fetch workspace members if this is a group note
   const { members } = useWorkspaceMembers(
@@ -67,173 +75,116 @@ export default function NoteEditor({ noteId }: { noteId: string }) {
     noteId: note?.id,
   });
 
-  // Store note title in a ref for AI context
-  const noteTitleRef = useRef(title);
+  // Ref for debounced title save
+  const titleSaveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Fetch note data
   useEffect(() => {
-    noteTitleRef.current = title;
-  }, [title]);
+    if (!isValidId) {
+      setLoading(false);
+      return;
+    }
 
-  // Create placeholder callbacks for initial editor setup
-  const acceptSuggestionRef = useRef<() => void>(() => {});
-  const dismissSuggestionRef = useRef<() => void>(() => {});
+    async function fetchNote() {
+      try {
+        setLoading(true);
+        setError(null);
+        const data = await getNote(id);
+        if (data) {
+          setNote(data);
+          // Use title column if available, otherwise fallback to parsing from text
+          if (data.title) {
+            setTitle(data.title);
+          } else {
+            // Fallback for legacy notes without title column
+            const lines = data.text?.split('\n') || [];
+            const firstLine = lines.find(
+              (line: string) => line.trim().length > 0
+            );
+            const noteTitle =
+              firstLine?.replace(/^#{1,6}\s+/, '').trim() || 'Untitled';
+            setTitle(noteTitle);
+          }
+        } else {
+          setError('Note not found');
+        }
+      } catch (err) {
+        console.error('Error fetching note:', err);
+        setError('Failed to load note');
+      } finally {
+        setLoading(false);
+      }
+    }
 
-  // Initialize editor with setup hook (using placeholder callbacks)
-  const editor = useNoteEditorSetup({
-    content,
-    setContent,
+    fetchNote();
+  }, [id, isValidId]);
+
+  // Handle title change - debounced save to database
+  const handleTitleChange = useCallback(
+    (newTitle: string) => {
+      setTitle(newTitle);
+
+      // Clear existing timeout
+      if (titleSaveTimeoutRef.current) {
+        clearTimeout(titleSaveTimeoutRef.current);
+      }
+
+      // Debounce save to database
+      titleSaveTimeoutRef.current = setTimeout(async () => {
+        try {
+          await updateNoteTitle(id, newTitle);
+          console.log('Title saved:', newTitle);
+        } catch (err) {
+          console.error('Error saving title:', err);
+        }
+      }, 500); // 500ms debounce
+    },
+    [id]
+  );
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (titleSaveTimeoutRef.current) {
+        clearTimeout(titleSaveTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  // Fetch user info for collaboration
+  useEffect(() => {
+    async function fetchUserInfo() {
+      const supabase = createClient();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (user) {
+        // Try to get user profile name
+        const { data: profile } = await supabase
+          .from('user_profiles')
+          .select('name')
+          .eq('id', user.id)
+          .single();
+
+        setUserInfo({
+          id: user.id,
+          name: profile?.name || user.email?.split('@')[0] || 'Anonymous',
+          color: generateUserColor(user.id),
+        });
+      }
+    }
+
+    fetchUserInfo();
+  }, []);
+
+  // Initialize collaborative editor
+  const { editor, isSynced } = useCollaborativeEditor({
+    noteId: isValidId ? id : null,
     isGroupNote,
     membersRef,
     notesRef,
-    aiSuggestionsEnabled,
-    acceptSuggestion: () => acceptSuggestionRef.current(),
-    dismissSuggestion: () => dismissSuggestionRef.current(),
-  });
-
-  // AI Completion hook (now that editor exists)
-  const {
-    suggestion,
-    isLoading: isSuggestionLoading,
-    acceptSuggestion,
-    dismissSuggestion,
-    requestSuggestion,
-  } = useAICompletion({
-    editor,
-    noteTitle: title,
-    noteId: note?.id,
-    workspaceId: note?.workspace_id,
-    enabled: aiSuggestionsEnabled,
-    debounceMs: 1000,
-  });
-
-  // Update refs when callbacks change
-  useEffect(() => {
-    acceptSuggestionRef.current = acceptSuggestion;
-    dismissSuggestionRef.current = dismissSuggestion;
-  }, [acceptSuggestion, dismissSuggestion]);
-
-  // Update AI completion hook with editor once it's ready
-  useEffect(() => {
-    if (editor && typeof window !== 'undefined') {
-      // Expose editor for debugging
-      (window as { __TIPTAP_EDITOR__?: typeof editor }).__TIPTAP_EDITOR__ =
-        editor;
-    }
-  }, [editor]);
-
-  // Clear suggestion when cursor moves
-  const lastCursorPosRef = useRef<number | null>(null);
-  useEffect(() => {
-    if (!editor || !aiSuggestionsEnabled) return;
-
-    const updateHandler = () => {
-      const currentPos = editor.state.selection.from;
-
-      if (
-        lastCursorPosRef.current !== null &&
-        lastCursorPosRef.current !== currentPos &&
-        suggestion
-      ) {
-        console.log('🔄 Cursor moved, clearing suggestion');
-        dismissSuggestion();
-      }
-
-      lastCursorPosRef.current = currentPos;
-    };
-
-    editor.on('selectionUpdate', updateHandler);
-    return () => {
-      editor.off('selectionUpdate', updateHandler);
-    };
-  }, [editor, suggestion, dismissSuggestion, aiSuggestionsEnabled]);
-
-  // Update AI completion extension options when suggestion changes
-  useEffect(() => {
-    if (editor && !editor.isDestroyed) {
-      const aiCompletionExt = editor.extensionManager.extensions.find(
-        ext => ext.name === 'aiCompletion'
-      );
-      if (aiCompletionExt) {
-        aiCompletionExt.options.onAccept = acceptSuggestion;
-        aiCompletionExt.options.onDismiss = dismissSuggestion;
-      }
-
-      const tr = editor.state.tr;
-      tr.setMeta('aiCompletionSuggestion', suggestion);
-      tr.setMeta('aiCompletionEnabled', aiSuggestionsEnabled);
-      editor.view.dispatch(tr);
-    }
-  }, [
-    editor,
-    suggestion,
-    acceptSuggestion,
-    dismissSuggestion,
-    aiSuggestionsEnabled,
-  ]);
-
-  // Trigger AI suggestions on content change
-  useEffect(() => {
-    console.log('🔍 AI suggestion effect triggered', {
-      hasEditor: !!editor,
-      aiEnabled: aiSuggestionsEnabled,
-      isLoading: isSuggestionLoading,
-      hasSuggestion: !!suggestion,
-    });
-
-    if (!editor || !aiSuggestionsEnabled || isSuggestionLoading) {
-      console.log('⏹️ Skipping - disabled or loading');
-      return;
-    }
-
-    if (suggestion) {
-      console.log('⏹️ Skipping - suggestion already showing');
-      return;
-    }
-
-    const { from } = editor.state.selection;
-    const textBefore = editor.state.doc.textBetween(
-      Math.max(0, from - 500),
-      from,
-      '\n'
-    );
-
-    console.log('📝 Text context:', {
-      length: textBefore.trim().length,
-      preview: textBefore.slice(-50),
-    });
-
-    if (textBefore.trim().length > 10) {
-      console.log('✅ Requesting AI suggestion');
-      requestSuggestion(textBefore, noteTitleRef.current);
-    } else {
-      console.log('❌ Text too short for suggestion');
-    }
-  }, [
-    content,
-    editor,
-    aiSuggestionsEnabled,
-    isSuggestionLoading,
-    requestSuggestion,
-    suggestion,
-  ]);
-
-  // Persist AI suggestions setting to localStorage
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      localStorage.setItem(
-        'aiSuggestionsEnabled',
-        String(aiSuggestionsEnabled)
-      );
-    }
-  }, [aiSuggestionsEnabled]);
-
-  // Use mentions hook
-  useNoteMentions({
-    isGroupNote,
-    noteId: note?.id,
-    workspaceId: note?.workspace_id,
-    editor,
-    members,
-    content,
+    user: userInfo,
   });
 
   // Use image upload hook
@@ -268,18 +219,6 @@ export default function NoteEditor({ noteId }: { noteId: string }) {
       console.warn('Task list command not available');
     }
   };
-
-  // Provide context to CopilotKit
-  useCopilotReadable({
-    description: 'Current note being edited in the editor',
-    value: JSON.stringify({
-      title: title || 'Untitled',
-      content: content?.substring(0, 1000) || '',
-      workspaceId: note?.workspace_id,
-      noteId: note?.id,
-    }),
-    categories: ['note_editor'],
-  });
 
   // Validate that noteId is a valid number
   if (!isValidId) {
@@ -341,15 +280,21 @@ export default function NoteEditor({ noteId }: { noteId: string }) {
     );
   }
 
-  if (!editor) {
-    return null;
+  // Show loading state while connecting
+  if (!isSynced) {
+    return (
+      <div className='flex flex-col h-full bg-linear-to-br from-slate-950 via-black to-slate-950 text-gray-100 items-center justify-center'>
+        <Loader2 className='w-8 h-8 animate-spin text-blue-400 mb-4' />
+        <span className='text-gray-400'>Connecting to document...</span>
+      </div>
+    );
   }
 
   return (
     <div className='flex flex-col h-full bg-linear-to-br from-slate-950 via-black to-slate-950 text-gray-100 relative overflow-hidden'>
       <NoteEditorHeader
         title={title}
-        onTitleChange={setTitle}
+        onTitleChange={handleTitleChange}
         onBack={() => router.back()}
         isGroupNote={isGroupNote}
         showAssignmentDropdown={showAssignmentDropdown}
@@ -361,6 +306,7 @@ export default function NoteEditor({ noteId }: { noteId: string }) {
         assigneeIds={assigneeIds}
         onToggleAssignee={toggleAssignee}
       />
+
       <div className='hidden md:block'>
         <NoteEditorToolbar
           editor={editor}
@@ -368,9 +314,9 @@ export default function NoteEditor({ noteId }: { noteId: string }) {
           canUploadImage={!!note?.workspace_id}
           onImageUpload={triggerImageInput}
           onToggleTaskList={handleToggleTaskList}
-          aiSuggestionsEnabled={aiSuggestionsEnabled}
-          isSuggestionLoading={isSuggestionLoading}
-          onToggleAI={() => setAiSuggestionsEnabled(!aiSuggestionsEnabled)}
+          aiSuggestionsEnabled={false}
+          isSuggestionLoading={false}
+          onToggleAI={() => {}}
         />
       </div>
 
@@ -399,6 +345,7 @@ export default function NoteEditor({ noteId }: { noteId: string }) {
       />
 
       <EditorStyles />
+      <CollaborativeEditorStyles />
     </div>
   );
 }
