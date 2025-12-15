@@ -5,7 +5,7 @@ const supabase = createClient();
 
 /**
  * Parse note text into title and content
- * First line is title, rest is content
+ * @deprecated Title is now stored as a separate field in the database
  */
 export function parseNoteText(text: string): {
   title: string;
@@ -15,13 +15,6 @@ export function parseNoteText(text: string): {
   const title = lines[0] || 'Untitled';
   const content = lines.slice(1).join('\n');
   return { title, content };
-}
-
-/**
- * Combine title and content into text format for storage
- */
-export function combineNoteText(title: string, content: string): string {
-  return `${title}\n${content}`;
 }
 
 /**
@@ -110,14 +103,12 @@ export async function createNote(
   content: string,
   folderId?: number | null
 ): Promise<Note> {
-  const text = combineNoteText(title, content);
-
   const { data, error } = await supabase
     .from('notes')
     .insert({
       workspace_id: workspaceId,
       title,
-      text,
+      text: content,
       note_folder_id: folderId,
     })
     .select()
@@ -135,13 +126,11 @@ export async function updateNote(
   title: string,
   content: string
 ): Promise<Note> {
-  const text = combineNoteText(title, content);
-
   const { data, error } = await supabase
     .from('notes')
     .update({
       title,
-      text,
+      text: content,
       updated_at: new Date().toISOString(),
     })
     .eq('id', id)
@@ -225,9 +214,9 @@ export async function duplicateNote(id: number): Promise<Note> {
 
   if (fetchError) throw fetchError;
 
-  // Use the title column if available, otherwise parse from text
+  // Get the title - use dedicated field if available, otherwise parse from text
   const originalTitle =
-    originalNote.title || parseNoteText(originalNote.text).title;
+    originalNote.title || originalNote.text.split('\n')[0] || 'Untitled';
   const newTitle = `${originalTitle} (Copy)`;
 
   // Create the duplicate
@@ -237,6 +226,7 @@ export async function duplicateNote(id: number): Promise<Note> {
       workspace_id: originalNote.workspace_id,
       title: newTitle,
       text: originalNote.text,
+      note_folder_id: originalNote.note_folder_id,
     })
     .select()
     .single();
@@ -259,7 +249,7 @@ export async function emptyTrash(workspaceId: number): Promise<void> {
 }
 
 /**
- * Search notes by text content
+ * Search notes by title and text content
  */
 export async function searchNotes(
   workspaceId: number,
@@ -286,7 +276,7 @@ export async function searchNotes(
     `
     )
     .eq('workspace_id', workspaceId)
-    .ilike('text', `%${searchQuery}%`)
+    .or(`title.ilike.%${searchQuery}%,text.ilike.%${searchQuery}%`)
     .order('updated_at', { ascending: false });
 
   if (error) throw error;

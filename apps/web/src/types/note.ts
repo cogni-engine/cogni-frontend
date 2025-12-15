@@ -15,7 +15,7 @@ export interface Note {
   id: number;
   created_at: string;
   updated_at: string;
-  title: string | null;
+  title?: string | null;
   text: string;
   workspace_id: number;
   deleted_at?: string | null;
@@ -25,6 +25,7 @@ export interface Note {
     title: string;
     type: 'group' | 'personal';
     created_at: string;
+    icon_url?: string | null;
   };
   workspace_member_note?: NoteAssignment[];
 }
