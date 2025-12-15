@@ -1,6 +1,6 @@
 'use client';
 
-import NoteEditor from '@/features/notes/NoteEditor';
+import CollaborativeNoteEditor from '@/features/notes/CollaborativeNoteEditor';
 import { use } from 'react';
 
 export default function NoteDetailPage({
@@ -9,6 +9,5 @@ export default function NoteDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = use(params);
-
-  return <NoteEditor noteId={id} />;
+  return <CollaborativeNoteEditor noteId={id} />;
 }
