@@ -7,7 +7,7 @@ export function EditorStyles() {
         padding: 0;
       }
       .ProseMirror p {
-        margin: 0.4em 0;
+        margin: 0.9em 0;
       }
       .ProseMirror p:first-child {
         margin-top: 0;
@@ -21,8 +21,8 @@ export function EditorStyles() {
       .ProseMirror h4,
       .ProseMirror h5,
       .ProseMirror h6 {
-        margin-top: 1.5em;
-        margin-bottom: 0.5em;
+        margin-top: 0.5em;
+        margin-bottom: 1.5em;
         font-weight: 700;
         line-height: 1.3;
         color: rgba(255, 255, 255, 0.95);
@@ -105,16 +105,16 @@ export function EditorStyles() {
         flex-shrink: 0;
         cursor: pointer;
         user-select: none;
-        margin-top: 0.15em;
       }
       .ProseMirror li.task-item > label input[type='checkbox'],
       .ProseMirror li[data-type='taskItem'] > label input[type='checkbox'] {
-        width: 1.1em;
-        height: 1.1em;
+        width: 1.5em;
+        height: 1.5em;
         cursor: pointer;
         accent-color: rgba(59, 130, 246, 0.8);
         border-radius: 0.25em;
         margin: 0;
+        border-radius: 100%;
       }
       .ProseMirror li.task-item > div,
       .ProseMirror li[data-type='taskItem'] > div {
@@ -193,6 +193,14 @@ export function EditorStyles() {
         pointer-events: none;
         user-select: none;
         font-style: italic;
+      }
+      /* Hide scrollbar but keep functionality */
+      .scrollbar-hide {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+      }
+      .scrollbar-hide::-webkit-scrollbar {
+        display: none;
       }
     `}</style>
   );

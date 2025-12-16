@@ -10,6 +10,7 @@ import { Loader2 } from 'lucide-react';
 import { TaskListChain } from './types';
 import { NoteEditorHeader } from './components/NoteEditorHeader';
 import { NoteEditorToolbar } from './components/NoteEditorToolbar';
+import { MobileFloatingToolbar } from './components/MobileFloatingToolbar';
 import { EditorStyles } from './lib/editorStyles';
 import { CollaborativeEditorStyles } from './lib/collaborativeEditorStyles';
 import {
@@ -342,6 +343,15 @@ export default function CollaborativeNoteEditor({
         accept='image/*'
         className='hidden'
         onChange={handleImageUpload}
+      />
+
+      {/* Mobile Floating Toolbar */}
+      <MobileFloatingToolbar
+        editor={editor}
+        uploadingImage={uploadingImage}
+        canUploadImage={!!note?.workspace_id}
+        onImageUpload={triggerImageInput}
+        onToggleTaskList={handleToggleTaskList}
       />
 
       <EditorStyles />
