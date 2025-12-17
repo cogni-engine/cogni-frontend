@@ -38,12 +38,10 @@ export function MobileFloatingToolbar({
   onImageUpload,
   onToggleTaskList,
 }: MobileFloatingToolbarProps) {
-  const [cursorTop, setCursorTop] = useState<number | null>(null);
   const [isVisible, setIsVisible] = useState(false);
   const [viewportHeight, setViewportHeight] = useState(
     typeof window !== 'undefined' ? window.innerHeight : 800
   );
-  const [renderTrigger, setRenderTrigger] = useState(0);
   const toolbarRef = useRef<HTMLDivElement>(null);
 
   // Track viewport height changes (for virtual keyboard)
@@ -64,38 +62,8 @@ export function MobileFloatingToolbar({
     };
   }, []);
 
-  const updateCursorPosition = useCallback(() => {
-    if (!editor) return;
-
-    const { selection } = editor.state;
-    const { from } = selection;
-
-    // Get coordinates from the editor's view
-    const coords = editor.view.coordsAtPos(from);
-
-    if (coords) {
-      // Position the toolbar below the cursor line
-      const lineHeight = 32; // Approximate line height
-      const toolbarHeight = 56; // Toolbar height
-      const padding = 12;
-
-      // Calculate position, ensuring toolbar stays visible
-      let newTop = coords.bottom + padding;
-
-      // Ensure toolbar doesn't go below visible viewport (accounting for keyboard)
-      const maxTop = viewportHeight - toolbarHeight - padding;
-      newTop = Math.min(newTop, maxTop);
-
-      // Ensure toolbar doesn't go above the cursor
-      newTop = Math.max(newTop, coords.top + lineHeight);
-
-      setCursorTop(newTop);
-    }
-  }, [editor, viewportHeight]);
-
   const executeCommand = useCallback((command: () => void) => {
     command();
-    setRenderTrigger(prev => prev + 1);
   }, []);
 
   useEffect(() => {
@@ -103,8 +71,6 @@ export function MobileFloatingToolbar({
 
     const handleFocus = () => {
       setIsVisible(true);
-      // Small delay to ensure keyboard is fully shown
-      setTimeout(updateCursorPosition, 100);
     };
 
     const handleBlur = () => {
@@ -117,9 +83,9 @@ export function MobileFloatingToolbar({
     };
 
     const handleSelectionUpdate = () => {
+      // Force re-render to update button states
       if (editor.isFocused) {
-        updateCursorPosition();
-        setRenderTrigger(prev => prev + 1);
+        setIsVisible(true);
       }
     };
 
@@ -130,7 +96,6 @@ export function MobileFloatingToolbar({
     // Check initial focus state
     if (editor.isFocused) {
       setIsVisible(true);
-      updateCursorPosition();
     }
 
     return () => {
@@ -138,15 +103,14 @@ export function MobileFloatingToolbar({
       editor.off('blur', handleBlur);
       editor.off('selectionUpdate', handleSelectionUpdate);
     };
-  }, [editor, updateCursorPosition]);
+  }, [editor]);
 
   if (!editor || !isVisible) return null;
 
-  // Calculate safe top position (don't go off visible screen)
-  const toolbarHeight = 56;
-  const safeTop = cursorTop
-    ? Math.min(Math.max(cursorTop, 80), viewportHeight - toolbarHeight - 8)
-    : viewportHeight - toolbarHeight - 8;
+  // Calculate bottom position to account for keyboard
+  const windowHeight = typeof window !== 'undefined' ? window.innerHeight : 800;
+  const keyboardHeight = Math.max(0, windowHeight - viewportHeight);
+  const toolbarBottom = keyboardHeight - 4; // 8px spacing from keyboard/bottom
 
   // Determine toolbar context for dynamic button display
   const getToolbarContext = () => {
@@ -210,8 +174,8 @@ export function MobileFloatingToolbar({
       ref={toolbarRef}
       className='w-full md:hidden fixed left-0 right-0 z-50 pointer-events-none'
       style={{
-        top: `${safeTop}px`,
-        transition: 'top 0.12s ease-out',
+        bottom: `${toolbarBottom}px`,
+        transition: 'bottom 0.2s ease-out',
       }}
     >
       <GlassCard className='pointer-events-auto p-2 mx-2 rounded-2xl'>

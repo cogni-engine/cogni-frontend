@@ -307,6 +307,10 @@ export default function WebAppView({ url = 'https://app.cogno.studio', session }
         // Enable third-party cookies for session management
         thirdPartyCookiesEnabled={true}
         sharedCookiesEnabled={true}
+        // Keyboard management
+        keyboardDisplayRequiresUserAction={false}
+        hideKeyboardAccessoryView={true} // iOS only - hides the toolbar above keyboard
+        autoManageStatusBarEnabled={false}
       />
 
         {/* Loading Screen - shown until page loads, fades out */}
