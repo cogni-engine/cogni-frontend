@@ -1,5 +1,7 @@
 'use client';
 
+// TODO: this needs to be refactored
+
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { Editor } from '@tiptap/react';
 import {
@@ -40,25 +42,111 @@ export function MobileFloatingToolbar({
 }: MobileFloatingToolbarProps) {
   const [isVisible, setIsVisible] = useState(false);
   const [viewportHeight, setViewportHeight] = useState(
-    typeof window !== 'undefined' ? window.innerHeight : 800
+    typeof window !== 'undefined'
+      ? (window.visualViewport?.height ?? window.innerHeight)
+      : 800
   );
+  // Use top positioning to handle iOS Safari visual viewport correctly
+  const [toolbarTop, setToolbarTop] = useState<number | null>(null);
   const toolbarRef = useRef<HTMLDivElement>(null);
+  const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Track viewport height changes (for virtual keyboard)
+  const updateToolbarPosition = useCallback(() => {
+    const vv = window.visualViewport;
+    if (!vv) return;
+
+    const vh = vv.height;
+    const offsetTop = vv.offsetTop;
+    const toolbarHeight = toolbarRef.current?.offsetHeight || 60;
+
+    // Position toolbar at the bottom of the visual viewport
+    // This accounts for both keyboard AND Safari's viewport scrolling
+    const topPosition = offsetTop + vh - toolbarHeight;
+
+    setViewportHeight(vh);
+    setToolbarTop(topPosition);
+
+    console.log('[MobileToolbar] updatePosition:', {
+      visualViewportHeight: vh,
+      offsetTop,
+      toolbarHeight,
+      topPosition,
+    });
+  }, []);
+
+  // Track viewport height and scroll changes (for virtual keyboard + Safari viewport scroll)
   useEffect(() => {
-    const handleResize = () => {
-      // Use visualViewport for better keyboard detection on mobile
-      const vh = window.visualViewport?.height ?? window.innerHeight;
-      setViewportHeight(vh);
-    };
+    // Initial position
+    updateToolbarPosition();
 
-    handleResize();
-    window.addEventListener('resize', handleResize);
-    window.visualViewport?.addEventListener('resize', handleResize);
+    window.visualViewport?.addEventListener('resize', updateToolbarPosition);
+    window.visualViewport?.addEventListener('scroll', updateToolbarPosition);
 
     return () => {
-      window.removeEventListener('resize', handleResize);
-      window.visualViewport?.removeEventListener('resize', handleResize);
+      window.visualViewport?.removeEventListener(
+        'resize',
+        updateToolbarPosition
+      );
+      window.visualViewport?.removeEventListener(
+        'scroll',
+        updateToolbarPosition
+      );
+    };
+  }, [updateToolbarPosition]);
+
+  // Helper function to scroll cursor into view above toolbar
+  const scrollCursorIntoView = useCallback(() => {
+    if (!editor || !toolbarRef.current) return;
+
+    // Debounce scroll calls
+    if (scrollTimeoutRef.current) {
+      clearTimeout(scrollTimeoutRef.current);
+    }
+
+    scrollTimeoutRef.current = setTimeout(() => {
+      try {
+        // Get the cursor position element
+        const { view } = editor;
+        const { state } = view;
+        const { selection } = state;
+
+        // Get DOM coordinates of the cursor
+        const coords = view.coordsAtPos(selection.from);
+
+        // Get toolbar height
+        const toolbarHeight = toolbarRef.current?.offsetHeight || 60;
+
+        // Calculate the available viewport (excluding toolbar)
+        const availableViewportBottom = viewportHeight - toolbarHeight - 50; // 20px padding
+
+        // Check if cursor is below the safe zone
+        if (coords.top > availableViewportBottom) {
+          // Find the scrollable container (the editor content wrapper)
+          const editorElement = view.dom;
+          const scrollContainer = editorElement.closest('.overflow-auto');
+
+          if (scrollContainer) {
+            // Calculate absolute scroll position (not relative offset)
+            const scrollNeeded = coords.top - availableViewportBottom;
+            const newScrollTop = scrollContainer.scrollTop + scrollNeeded;
+            scrollContainer.scrollTo({
+              top: newScrollTop,
+              behavior: 'instant',
+            });
+          }
+        }
+      } catch (error) {
+        console.error('Error scrolling cursor into view:', error);
+      }
+    }, 50);
+  }, [editor, viewportHeight]);
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (scrollTimeoutRef.current) {
+        clearTimeout(scrollTimeoutRef.current);
+      }
     };
   }, []);
 
@@ -71,6 +159,8 @@ export function MobileFloatingToolbar({
 
     const handleFocus = () => {
       setIsVisible(true);
+      // Scroll cursor into view when toolbar appears
+      scrollCursorIntoView();
     };
 
     const handleBlur = () => {
@@ -86,6 +176,8 @@ export function MobileFloatingToolbar({
       // Force re-render to update button states
       if (editor.isFocused) {
         setIsVisible(true);
+        // Scroll cursor into view when selection changes (e.g., pressing Enter)
+        scrollCursorIntoView();
       }
     };
 
@@ -96,6 +188,7 @@ export function MobileFloatingToolbar({
     // Check initial focus state
     if (editor.isFocused) {
       setIsVisible(true);
+      scrollCursorIntoView();
     }
 
     return () => {
@@ -103,14 +196,18 @@ export function MobileFloatingToolbar({
       editor.off('blur', handleBlur);
       editor.off('selectionUpdate', handleSelectionUpdate);
     };
-  }, [editor]);
+  }, [editor, scrollCursorIntoView]);
+
+  // Scroll when viewport height changes (keyboard appears/disappears)
+  useEffect(() => {
+    if (isVisible && editor?.isFocused) {
+      scrollCursorIntoView();
+    }
+  }, [viewportHeight, isVisible, editor, scrollCursorIntoView]);
 
   if (!editor || !isVisible) return null;
 
   // Calculate bottom position to account for keyboard
-  const windowHeight = typeof window !== 'undefined' ? window.innerHeight : 800;
-  const keyboardHeight = Math.max(0, windowHeight - viewportHeight);
-  const toolbarBottom = keyboardHeight - 4; // 8px spacing from keyboard/bottom
 
   // Determine toolbar context for dynamic button display
   const getToolbarContext = () => {
@@ -172,10 +269,10 @@ export function MobileFloatingToolbar({
   return (
     <div
       ref={toolbarRef}
-      className='w-full md:hidden fixed left-0 right-0 z-50 pointer-events-none'
+      className='fixed w-full md:hidden left-0 right-0 z-50 pointer-events-none'
       style={{
-        bottom: `${toolbarBottom}px`,
-        transition: 'bottom 0.2s ease-out',
+        top: toolbarTop !== null ? `${toolbarTop}px` : 'auto',
+        bottom: toolbarTop === null ? '0px' : 'auto',
       }}
     >
       <GlassCard className='pointer-events-auto p-2 mx-2 rounded-2xl'>
