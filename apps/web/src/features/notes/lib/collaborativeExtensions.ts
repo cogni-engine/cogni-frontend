@@ -11,6 +11,8 @@ import { CustomMention } from '@/lib/tiptap/MentionExtension';
 import { createMentionSuggestion } from '@/lib/tiptap/mentionSuggestion';
 import { NoteMention } from '@/lib/tiptap/NoteMentionExtension';
 import { createNoteMentionSuggestion } from '@/lib/tiptap/noteMentionSuggestion';
+import { DiffSuggestionMark } from '@/lib/tiptap/DiffSuggestionMark';
+import { DiffSuggestionBlockNode } from '@/lib/tiptap/DiffSuggestionBlockNode';
 import { WorkspaceMember } from '@/types/workspace';
 
 interface UserInfo {
@@ -146,6 +148,19 @@ export function createCollaborativeExtensions({
         class: 'note-mention',
       },
       suggestion: createNoteMentionSuggestion(() => notesRef.current),
+    }),
+
+    // Diff suggestion mark for AI-powered inline editing suggestions
+    // This mark syncs via Y.js since it's part of the document
+    // Configured with currentUserId for per-user ownership
+    DiffSuggestionMark.configure({
+      currentUserId: user.id,
+    }),
+
+    // Diff suggestion block node for block-level suggestions
+    // Supports adding/deleting entire paragraphs with per-user ownership
+    DiffSuggestionBlockNode.configure({
+      currentUserId: user.id,
     }),
 
     // NOTE: Markdown extension is NOT included here

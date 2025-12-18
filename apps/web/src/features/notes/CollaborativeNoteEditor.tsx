@@ -18,9 +18,11 @@ import {
 } from './hooks/useCollaborativeEditor';
 import { useNoteAssignments } from './hooks/useNoteAssignments';
 import { useEditorImageUpload } from './hooks/useEditorImageUpload';
+import { useDiffSuggestion } from './hooks/useDiffSuggestion';
 import { getNote, updateNoteTitle } from '@/lib/api/notesApi';
 import { createClient } from '@/lib/supabase/browserClient';
 import type { Note } from '@/types/note';
+import { Check, X } from 'lucide-react';
 
 export default function CollaborativeNoteEditor({
   noteId,
@@ -187,6 +189,8 @@ export default function CollaborativeNoteEditor({
     user: userInfo,
   });
 
+  console.log(JSON.stringify(editor?.getJSON(), null, 2));
+
   // Use image upload hook
   const {
     imageInputRef,
@@ -197,6 +201,17 @@ export default function CollaborativeNoteEditor({
     editor,
     workspaceId: note?.workspace_id,
   });
+
+  // Use diff suggestion hook for AI-powered editing
+  // Pass userId for per-user ownership of suggestions
+  const {
+    hasPendingSuggestions,
+    hasOtherUserSuggestions,
+    insertSuggestion,
+    insertBlockSuggestion,
+    acceptAllSuggestions,
+    rejectAllSuggestions,
+  } = useDiffSuggestion({ editor, userId: userInfo?.id || null });
 
   // Handle toggle task list
   const handleToggleTaskList = () => {
@@ -219,6 +234,94 @@ export default function CollaborativeNoteEditor({
       console.warn('Task list command not available');
     }
   };
+
+  // Handle AI suggestion - inserts test diff suggestions with per-user ownership
+  const handleTestAISuggestion = useCallback(() => {
+    if (!editor || !userInfo?.id) return;
+
+    const { from, to } = editor.state.selection;
+    const hasSelection = from !== to;
+
+    if (hasSelection) {
+      // If there's selected text, show a realistic AI rewrite (inline)
+      const selectedText = editor.state.doc.textBetween(from, to);
+
+      // Simulate different types of AI improvements based on text length
+      let improvedText: string;
+      if (selectedText.length < 20) {
+        improvedText = `${selectedText} — enhanced with additional context and clarity`;
+      } else if (selectedText.length < 100) {
+        improvedText = `[Professionally rewritten] ${selectedText.charAt(0).toUpperCase()}${selectedText.slice(1)}. This revision improves readability and impact.`;
+      } else {
+        improvedText = `[AI Summary] ${selectedText.substring(0, 50)}... Key points have been restructured for clarity and conciseness.`;
+      }
+
+      insertSuggestion(improvedText, selectedText);
+      console.log('Inserted inline replacement suggestion');
+    } else {
+      // No selection: showcase ALL diff features with a complex demo
+      const userId = userInfo.id;
+      const ts = Date.now();
+
+      // Create unique suggestion IDs for each change (allows individual accept/reject)
+      const ids = {
+        title: `title-${ts}`,
+        intro: `intro-${ts}`,
+        typo: `typo-${ts}`,
+        addition: `addition-${ts}`,
+        emphasis: `emphasis-${ts}`,
+        blockAdd: `block-add-${ts}`,
+        blockRemove: `block-remove-${ts}`,
+      };
+
+      // Complex demo HTML with multiple inline suggestions
+      const complexDemoHtml = `
+        <h2>
+          <span data-diff-suggestion data-diff-type="deleted" data-suggestion-id="${ids.title}" data-user-id="${userId}">Project Update</span><span data-diff-suggestion data-diff-type="added" data-suggestion-id="${ids.title}" data-user-id="${userId}">Q4 Project Status Report</span>
+        </h2>
+        <p>
+          <span data-diff-suggestion data-diff-type="deleted" data-suggestion-id="${ids.intro}" data-user-id="${userId}">Here is some info about the project.</span><span data-diff-suggestion data-diff-type="added" data-suggestion-id="${ids.intro}" data-user-id="${userId}">This document provides a comprehensive overview of our Q4 initiatives and progress.</span>
+        </p>
+        <p>
+          The team has made <span data-diff-suggestion data-diff-type="deleted" data-suggestion-id="${ids.typo}" data-user-id="${userId}">signifcant</span><span data-diff-suggestion data-diff-type="added" data-suggestion-id="${ids.typo}" data-user-id="${userId}">significant</span> progress on the main deliverables<span data-diff-suggestion data-diff-type="added" data-suggestion-id="${ids.addition}" data-user-id="${userId}">, exceeding initial expectations by 15%</span>.
+        </p>
+        <p>
+          Key highlights include improved performance, <span data-diff-suggestion data-diff-type="added" data-suggestion-id="${ids.emphasis}" data-user-id="${userId}"><strong>enhanced security measures</strong>, </span>and better user experience across all platforms.
+        </p>
+      `;
+
+      editor.chain().focus('end').insertContent(complexDemoHtml).run();
+
+      // Insert block-level addition (new section)
+      setTimeout(() => {
+        editor.chain().focus('end').run();
+        insertBlockSuggestion(
+          'added',
+          '📊 Recommended Addition: Consider adding a "Next Steps" section here to outline upcoming milestones and action items for Q1.'
+        );
+      }, 100);
+
+      // Insert block-level deletion (content marked for removal)
+      setTimeout(() => {
+        editor.chain().focus('end').run();
+        insertBlockSuggestion(
+          'deleted',
+          '🗑️ This legacy disclaimer is no longer required per the updated compliance guidelines from November 2024.'
+        );
+      }, 200);
+
+      // Insert another block addition for variety
+      setTimeout(() => {
+        editor.chain().focus('end').run();
+        insertBlockSuggestion(
+          'added',
+          '✅ Summary: The project is on track with all major milestones completed. Budget utilization stands at 87% with projected savings of $12,000.'
+        );
+      }, 300);
+
+      console.log('Inserted complex demo showcasing all diff features');
+    }
+  }, [editor, userInfo, insertSuggestion, insertBlockSuggestion]);
 
   // Validate that noteId is a valid number
   if (!isValidId) {
@@ -316,9 +419,43 @@ export default function CollaborativeNoteEditor({
           onToggleTaskList={handleToggleTaskList}
           aiSuggestionsEnabled={false}
           isSuggestionLoading={false}
-          onToggleAI={() => {}}
+          onToggleAI={handleTestAISuggestion}
         />
       </div>
+
+      {/* Diff Suggestions Accept/Reject Bar - shows when user has pending suggestions */}
+      {hasPendingSuggestions && (
+        <div className='mx-4 md:mx-6 mb-2 px-4 py-2 bg-linear-to-r from-blue-500/10 to-purple-500/10 border border-blue-500/20 rounded-lg flex items-center justify-between gap-4'>
+          <span className='text-sm text-blue-300'>
+            Your AI suggestions pending review
+          </span>
+          <div className='flex items-center gap-2'>
+            <button
+              onClick={acceptAllSuggestions}
+              className='flex items-center gap-1.5 px-3 py-1.5 text-sm bg-green-500/20 hover:bg-green-500/30 text-green-300 rounded-md transition-colors'
+            >
+              <Check className='w-4 h-4' />
+              Accept All
+            </button>
+            <button
+              onClick={rejectAllSuggestions}
+              className='flex items-center gap-1.5 px-3 py-1.5 text-sm bg-red-500/20 hover:bg-red-500/30 text-red-300 rounded-md transition-colors'
+            >
+              <X className='w-4 h-4' />
+              Reject All
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Info bar for other users' suggestions */}
+      {hasOtherUserSuggestions && !hasPendingSuggestions && (
+        <div className='mx-4 md:mx-6 mb-2 px-4 py-2 bg-linear-to-r from-gray-500/10 to-gray-600/10 border border-gray-500/20 rounded-lg'>
+          <span className='text-sm text-gray-400'>
+            Other users have pending suggestions (shown in muted colors)
+          </span>
+        </div>
+      )}
 
       {/* Editor Content */}
       <div

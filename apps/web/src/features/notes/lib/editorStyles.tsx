@@ -202,6 +202,265 @@ export function EditorStyles() {
       .scrollbar-hide::-webkit-scrollbar {
         display: none;
       }
+      /* Diff suggestion mark styles - Monochrome */
+      .ProseMirror .diff-added {
+        background: rgba(255, 255, 255, 0.08);
+        border-radius: 3px;
+        padding: 1px 4px;
+        margin: 0 1px;
+        border-bottom: 2px solid rgba(255, 255, 255, 0.4);
+        color: rgba(255, 255, 255, 0.95);
+        position: relative;
+        font-weight: 500;
+      }
+      .ProseMirror .diff-added::before {
+        content: '+';
+        position: absolute;
+        left: -12px;
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: 9px;
+        font-weight: 700;
+        color: rgba(255, 255, 255, 0.4);
+        opacity: 0;
+        transition: opacity 0.2s ease;
+      }
+      .ProseMirror .diff-added:hover::before {
+        opacity: 1;
+      }
+      .ProseMirror .diff-deleted {
+        background: transparent;
+        border-radius: 3px;
+        padding: 1px 4px;
+        margin: 0 1px;
+        text-decoration: line-through;
+        text-decoration-thickness: 1.5px;
+        text-decoration-color: rgba(255, 255, 255, 0.4);
+        color: rgba(255, 255, 255, 0.4);
+        position: relative;
+      }
+      .ProseMirror .diff-deleted::before {
+        content: '−';
+        position: absolute;
+        left: -12px;
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: 9px;
+        font-weight: 700;
+        color: rgba(255, 255, 255, 0.3);
+        opacity: 0;
+        transition: opacity 0.2s ease;
+      }
+      .ProseMirror .diff-deleted:hover::before {
+        opacity: 1;
+      }
+      /* Diff suggestion transitions and hover effects */
+      .ProseMirror [data-diff-suggestion] {
+        transition: all 0.2s ease;
+        cursor: default;
+      }
+      .ProseMirror [data-diff-suggestion]:hover {
+        filter: brightness(1.15);
+        transform: translateY(-1px);
+      }
+      /* Animation for newly inserted suggestions */
+      @keyframes diffPulse {
+        0%,
+        100% {
+          opacity: 1;
+        }
+        50% {
+          opacity: 0.7;
+        }
+      }
+      .ProseMirror .diff-added,
+      .ProseMirror .diff-deleted {
+        animation: diffPulse 2s ease-in-out 1;
+      }
+
+      /* ========== Per-User Ownership Styles ========== */
+
+      /* Owner styles - full color, interactive */
+      .ProseMirror .diff-owner {
+        cursor: pointer;
+      }
+
+      /* Other user styles - muted, read-only appearance */
+      .ProseMirror .diff-other-user {
+        opacity: 0.6;
+        filter: saturate(0.5);
+        cursor: not-allowed;
+      }
+      .ProseMirror .diff-other-user::before {
+        display: none;
+      }
+
+      /* ========== Block-Level Diff Styles ========== */
+
+      /* Block wrapper - NodeView container */
+      .diff-block-wrapper {
+        position: relative;
+        margin: 0.75em 0;
+        border-radius: 8px;
+        padding: 12px 16px;
+        padding-right: 80px;
+      }
+
+      /* Block added styles - Monochrome */
+      .diff-block-added-view {
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-left: 3px solid rgba(255, 255, 255, 0.5);
+      }
+
+      /* Block deleted styles - Monochrome */
+      .diff-block-deleted-view {
+        background: transparent;
+        border: 1px dashed rgba(255, 255, 255, 0.15);
+        border-left: 3px solid rgba(255, 255, 255, 0.25);
+      }
+      .diff-block-deleted-view .diff-block-inner-content {
+        text-decoration: line-through;
+        text-decoration-color: rgba(255, 255, 255, 0.4);
+        opacity: 0.5;
+      }
+
+      /* Block ownership styles */
+      .diff-block-owner-view {
+        opacity: 1;
+      }
+      .diff-block-other-view {
+        opacity: 0.6;
+        filter: saturate(0.5);
+      }
+      .diff-block-other-view .diff-block-actions {
+        display: none;
+      }
+
+      /* Block indicator label */
+      .diff-block-indicator {
+        position: absolute;
+        top: -10px;
+        left: 12px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 11px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+      .diff-block-indicator-added {
+        color: rgba(255, 255, 255, 0.9);
+        background: rgba(255, 255, 255, 0.1);
+        padding: 2px 8px;
+        border-radius: 4px;
+      }
+      .diff-block-indicator-deleted {
+        color: rgba(255, 255, 255, 0.5);
+        background: rgba(255, 255, 255, 0.05);
+        padding: 2px 8px;
+        border-radius: 4px;
+      }
+      .diff-block-other-user-label {
+        color: rgba(255, 255, 255, 0.5);
+        font-size: 10px;
+        font-weight: 400;
+        text-transform: none;
+      }
+
+      /* Block content area */
+      .diff-block-content {
+        min-height: 1em;
+      }
+      .diff-block-inner-content {
+        outline: none;
+      }
+      .diff-block-inner-content p {
+        margin: 0;
+      }
+
+      /* Block action buttons (Hanging Tab Style) */
+      .diff-block-actions {
+        position: absolute;
+        top: 0;
+        right: 12px;
+        transform: translateY(-100%);
+        display: flex;
+        align-items: stretch;
+        border-radius: 6px 6px 0 0;
+        overflow: hidden;
+        box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.3);
+        z-index: 10;
+      }
+      .diff-action-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 6px 14px;
+        border: none;
+        cursor: pointer;
+        transition: all 0.12s ease;
+        font-size: 13px;
+        font-weight: 700;
+      }
+      .diff-action-accept {
+        background: rgba(255, 255, 255, 0.9);
+        color: rgba(0, 0, 0, 0.8);
+      }
+      .diff-action-accept:hover {
+        background: rgb(255, 255, 255);
+      }
+      .diff-action-reject {
+        background: rgba(255, 255, 255, 0.3);
+        color: rgba(255, 255, 255, 0.9);
+      }
+      .diff-action-reject:hover {
+        background: rgba(255, 255, 255, 0.5);
+      }
+
+      /* ========== Inline Diff Buttons ========== */
+      .inline-diff-button-wrapper {
+        display: inline;
+        vertical-align: baseline;
+      }
+      .inline-diff-buttons {
+        display: inline-flex;
+        align-items: center;
+        margin-left: 4px;
+        gap: 2px;
+        vertical-align: middle;
+      }
+      .inline-diff-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 18px;
+        height: 18px;
+        border-radius: 4px;
+        border: none;
+        cursor: pointer;
+        transition: all 0.12s ease;
+        font-size: 11px;
+        font-weight: 700;
+        line-height: 1;
+      }
+      .inline-diff-accept {
+        background: rgba(255, 255, 255, 0.1);
+        color: rgba(255, 255, 255, 0.8);
+      }
+      .inline-diff-accept:hover {
+        background: rgba(255, 255, 255, 0.9);
+        color: rgba(0, 0, 0, 0.8);
+      }
+      .inline-diff-reject {
+        background: rgba(255, 255, 255, 0.05);
+        color: rgba(255, 255, 255, 0.5);
+      }
+      .inline-diff-reject:hover {
+        background: rgba(255, 255, 255, 0.3);
+        color: rgba(255, 255, 255, 0.9);
+      }
     `}</style>
   );
 }
