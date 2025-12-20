@@ -130,7 +130,7 @@ export async function getWorkspaceMessages(
       workspace_member:workspace_member_id(
         id,
         user_id,
-        user_profile:user_id(id, name, avatar_url)
+        user_profile:user_profiles!user_id(id, name, avatar_url)
       ),
       workspace_message_reads(
         workspace_message_id,
@@ -139,7 +139,7 @@ export async function getWorkspaceMessages(
         workspace_member:workspace_member_id(
           id,
           user_id,
-          user_profile:user_id(id, name, avatar_url)
+          user_profile:user_profiles!user_id(id, name, avatar_url)
         )
       ),
       replied_message:reply_to_id(
@@ -293,7 +293,7 @@ export async function updateWorkspaceMessage(
       workspace_member:workspace_member_id(
         id,
         user_id,
-        user_profile:user_id(id, name, avatar_url)
+        user_profile:user_profiles!user_id(id, name, avatar_url)
       ),
       workspace_message_reads(
         workspace_message_id,
@@ -302,7 +302,7 @@ export async function updateWorkspaceMessage(
         workspace_member:workspace_member_id(
           id,
           user_id,
-          user_profile:user_id(id, name, avatar_url)
+          user_profile:user_profiles!user_id(id, name, avatar_url)
         )
       ),
       replied_message:reply_to_id(
@@ -313,7 +313,7 @@ export async function updateWorkspaceMessage(
         workspace_member:workspace_member_id(
           id,
           user_id,
-          user_profile:user_id(id, name, avatar_url)
+          user_profile:user_profiles!user_id(id, name, avatar_url)
         )
       )
     `
