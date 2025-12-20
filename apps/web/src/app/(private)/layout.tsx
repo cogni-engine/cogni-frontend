@@ -17,6 +17,7 @@ import {
 import { getPersonalWorkspace } from '@/lib/api/workspaceApi';
 import NoteDrawer from '@/components/NoteDrawer';
 import FilePreviewDrawer from '@/components/FilePreviewDrawer';
+import ChatMessageDrawer from '@/components/ChatMessageDrawer';
 
 function LayoutContent({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -171,6 +172,9 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
         onClose={closeFileDrawer}
         file={selectedFile}
       />
+
+      {/* Global Chat Message Drawer */}
+      <ChatMessageDrawer />
     </div>
   );
 }

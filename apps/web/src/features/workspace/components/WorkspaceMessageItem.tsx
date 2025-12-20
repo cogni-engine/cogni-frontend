@@ -49,6 +49,20 @@ function WorkspaceMessageItem({
   const startedOnRepliedPreviewRef = useRef(false);
   const pointerStartRef = useRef<{ x: number; y: number } | null>(null);
 
+  // handlers for collapsible messages
+  const MAX_COLLAPSED_HEIGHT = 200; // IN PX
+  const [isOverflowing, setIsOverflowing] = useState(false);
+  const contentRef = useRef<HTMLDivElement>(null);
+  const { openChatMessageDrawer } = useGlobalUI();
+
+  // collapsible message handler
+  useEffect(() => {
+    if (!contentRef.current) return;
+
+    const el = contentRef.current;
+    setIsOverflowing(el.scrollHeight > MAX_COLLAPSED_HEIGHT);
+  }, [message.text]);
+
   // Close context menu on scroll
   useEffect(() => {
     const handleScroll = () => setContextMenu(null);
@@ -255,6 +269,8 @@ function WorkspaceMessageItem({
   if (!message) return null;
 
   const profile = message.workspace_member?.user_profile ?? null;
+
+  console.log(message);
   const name = profile?.name ?? 'Unknown';
   const avatarUrl = profile?.avatar_url ?? '';
   const readCount = message.read_count ?? message.reads?.length ?? 0;
@@ -364,16 +380,43 @@ function WorkspaceMessageItem({
                   )}
                   {message.text && (
                     <div className='text-sm text-white'>
-                      <TiptapRenderer
-                        content={message.text}
-                        contentType='markdown'
-                        enableMemberMentions={true}
-                        enableNoteMentions={true}
-                        workspaceMembers={workspaceMembers}
-                        workspaceNotes={workspaceNotes}
-                        className='tiptap-message-content'
-                        onNoteMentionClick={handleNoteMentionClick}
-                      />
+                      <div
+                        ref={contentRef}
+                        className={`relative transition-all ${
+                          isOverflowing ? 'overflow-hidden' : ''
+                        }`}
+                        style={{
+                          maxHeight: isOverflowing
+                            ? MAX_COLLAPSED_HEIGHT
+                            : 'none',
+                        }}
+                      >
+                        <TiptapRenderer
+                          content={message.text}
+                          contentType='markdown'
+                          enableMemberMentions
+                          enableNoteMentions
+                          workspaceMembers={workspaceMembers}
+                          workspaceNotes={workspaceNotes}
+                          className='tiptap-message-content'
+                          onNoteMentionClick={handleNoteMentionClick}
+                        />
+
+                        {/* Fade overlay (make it more nice) */}
+                        {isOverflowing && (
+                          <div className='pointer-events-none absolute bottom-0 left-0 right-0 h-10 bg-gradient-to-t from-black/60 to-transparent' />
+                        )}
+                      </div>
+
+                      {/* Toggle the thing  */}
+                      {isOverflowing && (
+                        <button
+                          onClick={() => openChatMessageDrawer(message)}
+                          className='mt-1 text-xs text-blue-400 hover:underline'
+                        >
+                          Read more
+                        </button>
+                      )}
                     </div>
                   )}
                 </div>
@@ -454,16 +497,43 @@ function WorkspaceMessageItem({
                   )}
                   {message.text && (
                     <div className='text-sm text-white'>
-                      <TiptapRenderer
-                        content={message.text}
-                        contentType='markdown'
-                        enableMemberMentions={true}
-                        enableNoteMentions={true}
-                        workspaceMembers={workspaceMembers}
-                        workspaceNotes={workspaceNotes}
-                        className='tiptap-message-content'
-                        onNoteMentionClick={handleNoteMentionClick}
-                      />
+                      <div
+                        ref={contentRef}
+                        className={`relative transition-all ${
+                          isOverflowing ? 'overflow-hidden' : ''
+                        }`}
+                        style={{
+                          maxHeight: isOverflowing
+                            ? MAX_COLLAPSED_HEIGHT
+                            : 'none',
+                        }}
+                      >
+                        <TiptapRenderer
+                          content={message.text}
+                          contentType='markdown'
+                          enableMemberMentions
+                          enableNoteMentions
+                          workspaceMembers={workspaceMembers}
+                          workspaceNotes={workspaceNotes}
+                          className='tiptap-message-content'
+                          onNoteMentionClick={handleNoteMentionClick}
+                        />
+
+                        {/* Fade overlay (to make it nice) */}
+                        {isOverflowing && (
+                          <div className='pointer-events-none absolute bottom-0 left-0 right-0 h-10 bg-gradient-to-t from-black/60 to-transparent' />
+                        )}
+                      </div>
+
+                      {/* Toggle */}
+                      {isOverflowing && (
+                        <button
+                          onClick={() => openChatMessageDrawer(message)}
+                          className='mt-1 text-xs text-blue-400 hover:underline'
+                        >
+                          Read more
+                        </button>
+                      )}
                     </div>
                   )}
                 </div>

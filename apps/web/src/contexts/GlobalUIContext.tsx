@@ -9,68 +9,28 @@ import {
   useCallback,
 } from 'react';
 import type { FilePreviewData } from '@/components/FilePreviewDrawer';
+import type { WorkspaceMessage } from '@/types/workspace';
 
-/**
- * GlobalUIContext - Manages global UI state across the application
- *
- * Features:
- * - Input focus tracking (isInputActive)
- * - General drawer state (isDrawerOpen)
- * - Global Note Drawer management
- * - Global File Preview Drawer management
- *
- * Note Drawer Usage:
- * The Note Drawer is available globally across all screens in the (private) layout.
- * To open a note from any component:
- *
- * @example
- * ```tsx
- * import { useGlobalUI } from '@/contexts/GlobalUIContext';
- *
- * function MyComponent() {
- *   const { openNoteDrawer } = useGlobalUI();
- *
- *   const handleNoteClick = (noteId: number) => {
- *     openNoteDrawer(noteId);
- *   };
- *
- *   return <button onClick={() => handleNoteClick(123)}>View Note</button>;
- * }
- * ```
- *
- * File Preview Drawer Usage:
- * The File Preview Drawer is available globally across all screens in the (private) layout.
- * To open a file preview from any component:
- *
- * @example
- * ```tsx
- * import { useGlobalUI } from '@/contexts/GlobalUIContext';
- *
- * function MyComponent() {
- *   const { openFileDrawer } = useGlobalUI();
- *
- *   const handleFileClick = (file: FilePreviewData) => {
- *     openFileDrawer(file);
- *   };
- *
- *   return <button onClick={() => handleFileClick(fileData)}>View File</button>;
- * }
- * ```
- */
 interface GlobalUIContextType {
   isInputActive: boolean;
+
   isDrawerOpen: boolean;
   setDrawerOpen: (open: boolean) => void;
-  // Note Drawer state
+
   noteDrawerOpen: boolean;
   selectedNoteId: number | null;
   openNoteDrawer: (noteId: number) => void;
   closeNoteDrawer: () => void;
-  // File Preview Drawer state
+
   fileDrawerOpen: boolean;
   selectedFile: FilePreviewData | null;
   openFileDrawer: (file: FilePreviewData) => void;
   closeFileDrawer: () => void;
+
+  chatMessageDrawerOpen: boolean;
+  selectedChatMessage: WorkspaceMessage | null;
+  openChatMessageDrawer: (message: WorkspaceMessage) => void;
+  closeChatMessageDrawer: () => void;
 }
 
 const GlobalUIContext = createContext<GlobalUIContextType | undefined>(
@@ -80,58 +40,75 @@ const GlobalUIContext = createContext<GlobalUIContextType | undefined>(
 export function GlobalUIProvider({ children }: { children: ReactNode }) {
   const [isInputActive, setIsInputActive] = useState(false);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+
   const [noteDrawerOpen, setNoteDrawerOpen] = useState(false);
   const [selectedNoteId, setSelectedNoteId] = useState<number | null>(null);
+
   const [fileDrawerOpen, setFileDrawerOpen] = useState(false);
   const [selectedFile, setSelectedFile] = useState<FilePreviewData | null>(
     null
   );
 
+  const [chatMessageDrawerOpen, setChatMessageDrawerOpen] = useState(false);
+  const [selectedChatMessage, setSelectedChatMessage] =
+    useState<WorkspaceMessage | null>(null);
+
   useEffect(() => {
     const checkIfInputActive = () => {
-      const activeElement = document.activeElement;
+      const el = document.activeElement;
       const isInput =
-        activeElement instanceof HTMLInputElement ||
-        activeElement instanceof HTMLTextAreaElement ||
-        (activeElement?.hasAttribute('contenteditable') ?? false);
+        el instanceof HTMLInputElement ||
+        el instanceof HTMLTextAreaElement ||
+        (el?.hasAttribute('contenteditable') ?? false);
 
       setIsInputActive(isInput);
     };
 
-    // Check on focus/blur events
-    const handleFocusIn = () => checkIfInputActive();
-    const handleFocusOut = () => checkIfInputActive();
+    document.addEventListener('focusin', checkIfInputActive);
+    document.addEventListener('focusout', checkIfInputActive);
 
-    document.addEventListener('focusin', handleFocusIn);
-    document.addEventListener('focusout', handleFocusOut);
-
-    // Initial check
     checkIfInputActive();
 
     return () => {
-      document.removeEventListener('focusin', handleFocusIn);
-      document.removeEventListener('focusout', handleFocusOut);
+      document.removeEventListener('focusin', checkIfInputActive);
+      document.removeEventListener('focusout', checkIfInputActive);
     };
   }, []);
 
   const openNoteDrawer = useCallback((noteId: number) => {
     setSelectedNoteId(noteId);
     setNoteDrawerOpen(true);
+    setIsDrawerOpen(true);
   }, []);
 
   const closeNoteDrawer = useCallback(() => {
     setNoteDrawerOpen(false);
     setSelectedNoteId(null);
+    setIsDrawerOpen(false);
   }, []);
 
   const openFileDrawer = useCallback((file: FilePreviewData) => {
     setSelectedFile(file);
     setFileDrawerOpen(true);
+    setIsDrawerOpen(true);
   }, []);
 
   const closeFileDrawer = useCallback(() => {
     setFileDrawerOpen(false);
     setSelectedFile(null);
+    setIsDrawerOpen(false);
+  }, []);
+
+  const openChatMessageDrawer = useCallback((message: WorkspaceMessage) => {
+    setSelectedChatMessage(message);
+    setChatMessageDrawerOpen(true);
+    setIsDrawerOpen(true);
+  }, []);
+
+  const closeChatMessageDrawer = useCallback(() => {
+    setChatMessageDrawerOpen(false);
+    setSelectedChatMessage(null);
+    setIsDrawerOpen(false);
   }, []);
 
   return (
@@ -140,14 +117,21 @@ export function GlobalUIProvider({ children }: { children: ReactNode }) {
         isInputActive,
         isDrawerOpen,
         setDrawerOpen: setIsDrawerOpen,
+
         noteDrawerOpen,
         selectedNoteId,
         openNoteDrawer,
         closeNoteDrawer,
+
         fileDrawerOpen,
         selectedFile,
         openFileDrawer,
         closeFileDrawer,
+
+        chatMessageDrawerOpen,
+        selectedChatMessage,
+        openChatMessageDrawer,
+        closeChatMessageDrawer,
       }}
     >
       {children}
@@ -157,7 +141,7 @@ export function GlobalUIProvider({ children }: { children: ReactNode }) {
 
 export function useGlobalUI() {
   const context = useContext(GlobalUIContext);
-  if (context === undefined) {
+  if (!context) {
     throw new Error('useGlobalUI must be used within a GlobalUIProvider');
   }
   return context;
