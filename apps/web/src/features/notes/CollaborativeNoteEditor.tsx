@@ -2,9 +2,9 @@
 
 import { useRouter } from 'next/navigation';
 import { useEffect, useState, useRef, useCallback } from 'react';
-import { useNotes } from '@cogni/api';
+import { useNotes } from './hooks/useNotes';
 import { EditorContent } from '@tiptap/react';
-import { getPersonalWorkspaceId } from '@cogni/utils';
+import { getPersonalWorkspaceId } from '@/lib/cookies';
 import { useWorkspaceMembers } from '@/hooks/useWorkspace';
 import { Loader2 } from 'lucide-react';
 import { TaskListChain } from './types';
