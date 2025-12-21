@@ -401,11 +401,6 @@ function WorkspaceMessageItem({
                           className='tiptap-message-content'
                           onNoteMentionClick={handleNoteMentionClick}
                         />
-
-                        {/* Fade overlay (make it more nice) */}
-                        {isOverflowing && (
-                          <div className='pointer-events-none absolute bottom-0 left-0 right-0 h-10 bg-gradient-to-t from-black/60 to-transparent' />
-                        )}
                       </div>
 
                       {/* Toggle the thing  */}
@@ -414,7 +409,7 @@ function WorkspaceMessageItem({
                           onClick={() => openChatMessageDrawer(message)}
                           className='mt-1 text-xs text-blue-400 hover:underline'
                         >
-                          Read more
+                          See All
                         </button>
                       )}
                     </div>
@@ -518,11 +513,6 @@ function WorkspaceMessageItem({
                           className='tiptap-message-content'
                           onNoteMentionClick={handleNoteMentionClick}
                         />
-
-                        {/* Fade overlay (to make it nice) */}
-                        {isOverflowing && (
-                          <div className='pointer-events-none absolute bottom-0 left-0 right-0 h-10 bg-gradient-to-t from-black/60 to-transparent' />
-                        )}
                       </div>
 
                       {/* Toggle */}
@@ -531,7 +521,7 @@ function WorkspaceMessageItem({
                           onClick={() => openChatMessageDrawer(message)}
                           className='mt-1 text-xs text-blue-400 hover:underline'
                         >
-                          Read more
+                          See All
                         </button>
                       )}
                     </div>
