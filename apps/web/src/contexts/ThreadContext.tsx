@@ -6,9 +6,15 @@ import React, {
   useState,
   useCallback,
   useEffect,
+  useRef,
   ReactNode,
 } from 'react';
-import { getThreads, updateThread, deleteThread } from '@/lib/api/threadsApi';
+import useSWR from 'swr';
+import {
+  getThreads,
+  updateThread as apiUpdateThread,
+  deleteThread as apiDeleteThread,
+} from '@/lib/api/threadsApi';
 import type { Thread } from '@/types/thread';
 import { getPersonalWorkspaceId } from '@/lib/cookies';
 
@@ -29,77 +35,68 @@ interface ThreadContextType {
 
 const ThreadContext = createContext<ThreadContextType | undefined>(undefined);
 
+async function fetchThreads(workspaceId: number): Promise<Thread[]> {
+  return getThreads(workspaceId);
+}
+
 export function ThreadProvider({ children }: { children: ReactNode }) {
   const [selectedThreadId, setSelectedThreadId] = useState<ThreadId>(null);
-  const [threads, setThreads] = useState<Thread[]>([]);
-  const [threadsLoading, setThreadsLoading] = useState(true);
-  const [threadsError, setThreadsError] = useState<string | null>(null);
+  const hasAutoSelected = useRef(false);
 
-  const fetchThreads = useCallback(async (selectMostRecent = false) => {
-    try {
-      setThreadsLoading(true);
-      setThreadsError(null);
+  const workspaceId = getPersonalWorkspaceId();
+  const swrKey = workspaceId ? `/threads/${workspaceId}` : null;
 
-      const workspaceId = getPersonalWorkspaceId();
-      if (!workspaceId) {
-        throw new Error('No personal workspace found');
-      }
+  const {
+    data: threads = [],
+    error,
+    isLoading,
+    mutate,
+  } = useSWR(swrKey, () => fetchThreads(workspaceId!), {
+    revalidateOnFocus: false,
+    revalidateOnReconnect: false,
+  });
 
-      const data = await getThreads(workspaceId);
-      setThreads(data);
-
-      // Select the most recent thread on initial load
-      if (selectMostRecent && data.length > 0) {
-        setSelectedThreadId(data[0].id);
-      }
-    } catch (err) {
-      setThreadsError(
-        err instanceof Error ? err.message : 'Failed to fetch threads'
-      );
-      console.error('Error fetching threads:', err);
-    } finally {
-      setThreadsLoading(false);
+  // Auto-select most recent thread on initial data load
+  useEffect(() => {
+    if (!hasAutoSelected.current && threads.length > 0 && !isLoading) {
+      hasAutoSelected.current = true;
+      setSelectedThreadId(threads[0].id);
     }
-  }, []);
+  }, [threads, isLoading]);
 
   const updateExistingThread = useCallback(
     async (id: number, title: string) => {
-      try {
-        setThreadsError(null);
-        const updatedThread = await updateThread(id, title);
-        setThreads(prev =>
-          prev.map(thread => (thread.id === id ? updatedThread : thread))
-        );
-        return updatedThread;
-      } catch (err) {
-        setThreadsError(
-          err instanceof Error ? err.message : 'Failed to update thread'
-        );
-        console.error('Error updating thread:', err);
-        throw err;
-      }
+      const updatedThread = await apiUpdateThread(id, title);
+
+      // Optimistically update the cache
+      mutate(
+        current =>
+          current?.map(thread => (thread.id === id ? updatedThread : thread)) ??
+          [],
+        false
+      );
+
+      return updatedThread;
     },
-    []
+    [mutate]
   );
 
-  const deleteExistingThread = useCallback(async (id: number) => {
-    try {
-      setThreadsError(null);
-      await deleteThread(id);
-      setThreads(prev => prev.filter(thread => thread.id !== id));
-    } catch (err) {
-      setThreadsError(
-        err instanceof Error ? err.message : 'Failed to delete thread'
-      );
-      console.error('Error deleting thread:', err);
-      throw err;
-    }
-  }, []);
+  const deleteExistingThread = useCallback(
+    async (id: number) => {
+      await apiDeleteThread(id);
 
-  // Fetch threads on mount and select the most recent one
-  useEffect(() => {
-    fetchThreads(true);
-  }, [fetchThreads]);
+      // Optimistically update the cache
+      mutate(
+        current => current?.filter(thread => thread.id !== id) ?? [],
+        false
+      );
+    },
+    [mutate]
+  );
+
+  const refetchThreads = useCallback(async () => {
+    await mutate();
+  }, [mutate]);
 
   return (
     <ThreadContext.Provider
@@ -107,9 +104,9 @@ export function ThreadProvider({ children }: { children: ReactNode }) {
         selectedThreadId,
         setSelectedThreadId,
         threads,
-        threadsLoading,
-        threadsError,
-        refetchThreads: fetchThreads,
+        threadsLoading: isLoading,
+        threadsError: error?.message ?? null,
+        refetchThreads,
         updateThread: updateExistingThread,
         deleteThread: deleteExistingThread,
       }}

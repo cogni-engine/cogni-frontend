@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useCallback, useRef } from 'react';
-import type { Message } from '@/types/chat';
+import type { AIMessage } from '@/types/chat';
 import type { ThreadId } from '@/contexts/ThreadContext';
 import { createThread } from '@/lib/api/threadsApi';
 import { getPersonalWorkspaceId } from '@/lib/cookies';
@@ -18,9 +18,9 @@ export interface SendMessageOptions {
 
 export interface UseSendMessageOptions {
   threadId: ThreadId;
-  messages: Message[];
+  messages: AIMessage[];
   apiBaseUrl?: string;
-  onMessageUpdate?: (messages: Message[]) => void;
+  onMessageUpdate?: (messages: AIMessage[]) => void;
   onComplete?: () => void;
   onThreadCreated?: (threadId: number) => void;
 }
@@ -99,15 +99,16 @@ export function useSendMessage({
       setIsLoading(true);
       setError(null);
 
-      // Create temporary user message
-      let tempUserMsg: Message | null = null;
+      // Create temporary user message (negative IDs for temp messages)
+      const tempUserMsgId = -Date.now();
+      let tempUserMsg: AIMessage | null = null;
       if (content.trim() || (files && files.length > 0)) {
         tempUserMsg = {
-          id: Date.now().toString(),
+          id: tempUserMsgId,
           content,
           role: 'user',
-          file_ids: files?.map(f => f.id),
-          // Include full file objects for immediate UI rendering during streaming
+          thread_id: actualThreadId,
+          created_at: new Date().toISOString(),
           files: files?.map(f => ({
             id: f.id,
             original_filename: f.original_filename,
@@ -119,15 +120,18 @@ export function useSendMessage({
       }
 
       // Create temporary AI message
-      const tempAIMsg: Message = {
-        id: (Date.now() + (tempUserMsg ? 1 : 0)).toString(),
+      const tempAIMsgId = tempUserMsgId - 1;
+      const tempAIMsg: AIMessage = {
+        id: tempAIMsgId,
         content: '',
         role: 'assistant',
+        thread_id: actualThreadId,
+        created_at: new Date().toISOString(),
       };
 
       // Update messages
-      let updatedMessages: Message[] = [];
-      let newMessages: Message[] = [];
+      let updatedMessages: AIMessage[] = [];
+      let newMessages: AIMessage[] = [];
 
       if (tempUserMsg) {
         updatedMessages = [...messages, tempUserMsg];

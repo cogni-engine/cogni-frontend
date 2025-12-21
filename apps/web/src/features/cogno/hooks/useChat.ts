@@ -25,7 +25,7 @@ export function useChat({
   const actualThreadIdRef = useRef<number | null>(null);
 
   // Message management
-  const messagesHook = useMessages({ threadId: selectedThreadId, apiBaseUrl });
+  const messagesHook = useMessages({ threadId: selectedThreadId });
 
   // Message sending
   const sendMessageHook = useSendMessage({
@@ -43,7 +43,7 @@ export function useChat({
         actualThreadIdRef.current ??
         (typeof selectedThreadId === 'number' ? selectedThreadId : null);
       if (threadIdToRefetch) {
-        messagesHook.refetch(threadIdToRefetch);
+        messagesHook.refetch();
         // Reset the ref after using it
         actualThreadIdRef.current = null;
       }

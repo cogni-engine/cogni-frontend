@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import useSWR from 'swr';
 import { getAllWorkspaceMembersForUser } from '@/lib/api/workspaceApi';
-import { useNotes } from '@cogni/api';
+import { useNotes } from '@/features/notes/hooks/useNotes';
 import { getPersonalWorkspaceId } from '@cogni/utils';
 import type { WorkspaceMember } from '@/types/workspace';
 
@@ -11,44 +11,33 @@ import type { WorkspaceMember } from '@/types/workspace';
  * Returns members from all workspaces the user belongs to and all accessible notes
  */
 export function useAIChatMentions() {
-  const [members, setMembers] = useState<WorkspaceMember[]>([]);
-  const [membersLoading, setMembersLoading] = useState(true);
-  const [membersError, setMembersError] = useState<string | null>(null);
-
   const personalWorkspaceId = getPersonalWorkspaceId();
 
-  // Fetch notes using existing hook (personal + assigned notes)
+  // Fetch members with SWR for caching
+  const {
+    data: members = [],
+    error: membersError,
+    isLoading: membersLoading,
+  } = useSWR<WorkspaceMember[]>(
+    '/api/workspace-members/all',
+    getAllWorkspaceMembersForUser,
+    {
+      revalidateOnFocus: false,
+      revalidateOnReconnect: false,
+    }
+  );
+
+  // Fetch notes using local SWR-based hook (shares cache with NotesProvider)
   const { notes, loading: notesLoading } = useNotes({
     workspaceId: personalWorkspaceId || 0,
     includeDeleted: true,
     includeAssignedNotes: true,
   });
 
-  // Fetch all workspace members
-  useEffect(() => {
-    const fetchMembers = async () => {
-      try {
-        setMembersLoading(true);
-        setMembersError(null);
-        const data = await getAllWorkspaceMembersForUser();
-        setMembers(data);
-      } catch (err) {
-        setMembersError(
-          err instanceof Error ? err.message : 'Failed to fetch members'
-        );
-        console.error('Error fetching workspace members:', err);
-      } finally {
-        setMembersLoading(false);
-      }
-    };
-
-    fetchMembers();
-  }, []);
-
   return {
     members,
     notes,
     isLoading: membersLoading || notesLoading,
-    error: membersError,
+    error: membersError?.message ?? null,
   };
 }
