@@ -16,8 +16,8 @@ interface FolderDropdownProps {
   folders: NoteFolder[];
   selectedFolder: 'all' | 'notes' | 'trash' | number;
   onFolderSelect: (folderId: 'all' | 'notes' | 'trash' | number) => void;
-  onCreateFolder: (name: string) => Promise<void>;
-  onUpdateFolder: (id: number, name: string) => Promise<void>;
+  onCreateFolder: (title: string) => Promise<NoteFolder>;
+  onUpdateFolder: (id: number, title: string) => Promise<NoteFolder>;
   onDeleteFolder: (id: number) => Promise<void>;
   noteCounts: {
     all: number;

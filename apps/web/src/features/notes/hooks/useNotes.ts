@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useCallback } from 'react';
+import useSWR from 'swr';
 import type { Note, NoteWithParsed } from '@/types/note';
 import {
   getNotes,
@@ -15,6 +16,29 @@ import {
   getUserAssignedNotes,
 } from '@/lib/api/notesApi';
 import { parseNote } from '../lib/noteHelpers';
+
+// SWR Keys
+const notesKey = (workspaceId: number, includeDeleted: boolean) =>
+  `/workspaces/${workspaceId}/notes?includeDeleted=${includeDeleted}`;
+
+const assignedNotesKey = () => '/notes/assigned';
+
+const combinedNotesKey = (
+  workspaceId: number | undefined,
+  includeDeleted: boolean,
+  includeAssignedNotes: boolean
+) => {
+  if (workspaceId && includeAssignedNotes) {
+    return `/notes/combined?workspace=${workspaceId}&deleted=${includeDeleted}&assigned=true`;
+  }
+  if (workspaceId) {
+    return notesKey(workspaceId, includeDeleted);
+  }
+  if (includeAssignedNotes) {
+    return assignedNotesKey();
+  }
+  return null;
+};
 
 interface UseNotesOptions {
   workspaceId?: number;
@@ -46,8 +70,37 @@ interface UseNotesReturn {
   emptyTrash: () => Promise<void>;
 }
 
+// Fetcher function for SWR
+async function fetchNotes(
+  workspaceId: number | undefined,
+  includeDeleted: boolean,
+  includeAssignedNotes: boolean
+): Promise<NoteWithParsed[]> {
+  let allNotes: Note[] = [];
+
+  // Fetch workspace notes
+  if (workspaceId) {
+    const workspaceNotes = await getNotes(workspaceId, includeDeleted);
+    allNotes = [...workspaceNotes];
+  }
+
+  // Fetch assigned notes from other workspaces
+  if (includeAssignedNotes) {
+    const assignedNotes = await getUserAssignedNotes();
+
+    // Merge and deduplicate by note ID
+    const notesMap = new Map<number, Note>();
+    [...allNotes, ...assignedNotes].forEach(note => {
+      notesMap.set(note.id, note);
+    });
+    allNotes = Array.from(notesMap.values());
+  }
+
+  return allNotes.map(parseNote);
+}
+
 /**
- * Unified hook for managing notes
+ * Unified hook for managing notes with SWR
  * Can be used for personal notes, workspace notes, or both
  */
 export function useNotes(options: UseNotesOptions = {}): UseNotesReturn {
@@ -58,73 +111,43 @@ export function useNotes(options: UseNotesOptions = {}): UseNotesReturn {
     autoFetch = true,
   } = options;
 
-  const [notes, setNotes] = useState<NoteWithParsed[]>([]);
-  const [loading, setLoading] = useState(autoFetch);
-  const [error, setError] = useState<string | null>(null);
+  // Generate the SWR key
+  const swrKey =
+    autoFetch && (workspaceId || includeAssignedNotes)
+      ? combinedNotesKey(workspaceId, includeDeleted, includeAssignedNotes)
+      : null;
 
-  const fetchNotes = useCallback(async () => {
-    if (!workspaceId && !includeAssignedNotes) {
-      setError('Either workspaceId or includeAssignedNotes must be specified');
-      setLoading(false);
-      return;
+  // Use SWR for data fetching
+  const {
+    data: notes = [],
+    error: swrError,
+    isLoading,
+    mutate: mutateNotes,
+  } = useSWR<NoteWithParsed[]>(
+    swrKey,
+    () => fetchNotes(workspaceId, includeDeleted, includeAssignedNotes),
+    {
+      revalidateOnFocus: false,
+      revalidateOnReconnect: false,
     }
+  );
 
-    try {
-      setLoading(true);
-      setError(null);
-
-      let allNotes: Note[] = [];
-
-      // Fetch workspace notes
-      if (workspaceId) {
-        const workspaceNotes = await getNotes(workspaceId, includeDeleted);
-        allNotes = [...workspaceNotes];
-      }
-
-      // Fetch assigned notes from other workspaces
-      if (includeAssignedNotes) {
-        const assignedNotes = await getUserAssignedNotes();
-
-        // Merge and deduplicate by note ID
-        const notesMap = new Map<number, Note>();
-        [...allNotes, ...assignedNotes].forEach(note => {
-          notesMap.set(note.id, note);
-        });
-        allNotes = Array.from(notesMap.values());
-      }
-
-      const parsedNotes = allNotes.map(parseNote);
-      setNotes(parsedNotes);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to fetch notes');
-      console.error('Error fetching notes:', err);
-    } finally {
-      setLoading(false);
-    }
-  }, [workspaceId, includeDeleted, includeAssignedNotes]);
+  const refetch = useCallback(async () => {
+    await mutateNotes();
+  }, [mutateNotes]);
 
   const searchNotesQuery = useCallback(
     async (query: string) => {
       if (!workspaceId) {
-        setError('workspaceId is required for search');
-        return;
+        throw new Error('workspaceId is required for search');
       }
 
-      try {
-        setLoading(true);
-        setError(null);
-
-        const data = await searchNotes(workspaceId, query);
-        const parsedNotes = data.map(parseNote);
-        setNotes(parsedNotes);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to search notes');
-        console.error('Error searching notes:', err);
-      } finally {
-        setLoading(false);
-      }
+      const data = await searchNotes(workspaceId, query);
+      const parsedNotes = data.map(parseNote);
+      // Update the cache with search results
+      mutateNotes(parsedNotes, false);
     },
-    [workspaceId]
+    [workspaceId, mutateNotes]
   );
 
   const createNewNote = useCallback(
@@ -133,121 +156,119 @@ export function useNotes(options: UseNotesOptions = {}): UseNotesReturn {
         throw new Error('workspaceId is required to create a note');
       }
 
-      try {
-        setError(null);
-        const newNote = await createNote(workspaceId, title, content, folderId);
-        const parsedNote = parseNote(newNote);
-        setNotes(prev => [parsedNote, ...prev]);
-        return parsedNote;
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to create note');
-        console.error('Error creating note:', err);
-        throw err;
-      }
+      const newNote = await createNote(workspaceId, title, content, folderId);
+      const parsedNote = parseNote(newNote);
+
+      // Optimistically update the cache
+      mutateNotes(
+        current => (current ? [parsedNote, ...current] : [parsedNote]),
+        false
+      );
+
+      return parsedNote;
     },
-    [workspaceId]
+    [workspaceId, mutateNotes]
   );
 
   const updateExistingNote = useCallback(
     async (id: number, title: string, content: string) => {
-      try {
-        setError(null);
-        const updatedNote = await updateNote(id, title, content);
-        const parsedNote = parseNote(updatedNote);
-        setNotes(prev =>
-          prev.map(note => (note.id === id ? parsedNote : note))
-        );
-        return parsedNote;
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to update note');
-        console.error('Error updating note:', err);
-        throw err;
-      }
+      const updatedNote = await updateNote(id, title, content);
+      const parsedNote = parseNote(updatedNote);
+
+      // Optimistically update the cache
+      mutateNotes(
+        current =>
+          current?.map(note => (note.id === id ? parsedNote : note)) ?? [],
+        false
+      );
+
+      return parsedNote;
     },
-    []
+    [mutateNotes]
   );
 
-  const deleteExistingNote = useCallback(async (id: number) => {
-    try {
-      setError(null);
+  const deleteExistingNote = useCallback(
+    async (id: number) => {
       await deleteNote(id);
-      setNotes(prev => prev.filter(note => note.id !== id));
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to delete note');
-      console.error('Error deleting note:', err);
-      throw err;
-    }
-  }, []);
 
-  const softDeleteExistingNote = useCallback(async (id: number) => {
-    try {
-      setError(null);
+      // Optimistically update the cache
+      mutateNotes(
+        current => current?.filter(note => note.id !== id) ?? [],
+        false
+      );
+    },
+    [mutateNotes]
+  );
+
+  const softDeleteExistingNote = useCallback(
+    async (id: number) => {
       const deletedNote = await softDeleteNote(id);
       const parsedNote = parseNote(deletedNote);
-      setNotes(prev => prev.map(note => (note.id === id ? parsedNote : note)));
-      return parsedNote;
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to delete note');
-      console.error('Error soft deleting note:', err);
-      throw err;
-    }
-  }, []);
 
-  const restoreExistingNote = useCallback(async (id: number) => {
-    try {
-      setError(null);
+      // Optimistically update the cache
+      mutateNotes(
+        current =>
+          current?.map(note => (note.id === id ? parsedNote : note)) ?? [],
+        false
+      );
+
+      return parsedNote;
+    },
+    [mutateNotes]
+  );
+
+  const restoreExistingNote = useCallback(
+    async (id: number) => {
       const restoredNote = await restoreNote(id);
       const parsedNote = parseNote(restoredNote);
-      setNotes(prev => prev.map(note => (note.id === id ? parsedNote : note)));
-      return parsedNote;
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to restore note');
-      console.error('Error restoring note:', err);
-      throw err;
-    }
-  }, []);
 
-  const duplicateExistingNote = useCallback(async (id: number) => {
-    try {
-      setError(null);
+      // Optimistically update the cache
+      mutateNotes(
+        current =>
+          current?.map(note => (note.id === id ? parsedNote : note)) ?? [],
+        false
+      );
+
+      return parsedNote;
+    },
+    [mutateNotes]
+  );
+
+  const duplicateExistingNote = useCallback(
+    async (id: number) => {
       const newNote = await duplicateNote(id);
       const parsedNote = parseNote(newNote);
-      setNotes(prev => [parsedNote, ...prev]);
+
+      // Optimistically update the cache
+      mutateNotes(
+        current => (current ? [parsedNote, ...current] : [parsedNote]),
+        false
+      );
+
       return parsedNote;
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to duplicate note');
-      console.error('Error duplicating note:', err);
-      throw err;
-    }
-  }, []);
+    },
+    [mutateNotes]
+  );
 
   const emptyWorkspaceTrash = useCallback(async () => {
     if (!workspaceId) {
       throw new Error('workspaceId is required to empty trash');
     }
 
-    try {
-      setError(null);
-      await emptyTrash(workspaceId);
-      setNotes(prev => prev.filter(note => !note.deleted_at));
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to empty trash');
-      console.error('Error emptying trash:', err);
-      throw err;
-    }
-  }, [workspaceId]);
+    await emptyTrash(workspaceId);
 
-  useEffect(() => {
-    if (autoFetch) {
-      fetchNotes();
-    }
-  }, [fetchNotes, autoFetch]);
+    // Optimistically update the cache - remove all deleted notes
+    mutateNotes(
+      current => current?.filter(note => !note.deleted_at) ?? [],
+      false
+    );
+  }, [workspaceId, mutateNotes]);
 
   return {
     notes,
-    loading,
-    error,
-    refetch: fetchNotes,
+    loading: isLoading,
+    error: swrError?.message ?? null,
+    refetch,
     searchNotes: searchNotesQuery,
     createNote: createNewNote,
     updateNote: updateExistingNote,
