@@ -2,6 +2,7 @@
 
 import { TrashView } from './TrashView';
 import { NotesView } from './NotesView';
+import { NotesListSkeleton } from './NotesListSkeleton';
 import { useNotesContext } from '../NotesProvider';
 import { useNoteActions } from './NoteActionsLayer';
 import { useRouter } from 'next/navigation';
@@ -27,11 +28,7 @@ export function NotesPageContent() {
   };
 
   if (loading) {
-    return (
-      <div className='flex justify-center items-center py-12'>
-        <div className='animate-spin rounded-full h-8 w-8 border-b-2 border-white'></div>
-      </div>
-    );
+    return <NotesListSkeleton />;
   }
 
   if (error) {

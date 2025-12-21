@@ -120,6 +120,7 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
     pathname === '/user/tasks';
 
   // モバイル判定（768px以下）
+  // TODO: これって本当に必要？？？
   useEffect(() => {
     const checkMobile = () => {
       setIsMobile(window.innerWidth < 768);

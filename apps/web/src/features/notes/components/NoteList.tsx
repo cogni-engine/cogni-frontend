@@ -123,8 +123,8 @@ function NoteCardComponent({
           {note.date}
         </span>
       </div>
-      <p className='text-[13px] text-gray-400 leading-[1.6] line-clamp-2'>
-        {note.preview}
+      <p className='text-[13px] text-gray-400 leading-[1.6] line-clamp-1'>
+        {note.preview || 'No content'}
       </p>
     </GlassCard>
   );
