@@ -1,8 +1,7 @@
 import { useEffect, useRef } from 'react';
-import type { Message } from '@cogni/types';
 
 export interface UseMessageAutoScrollOptions {
-  messages: Message[];
+  messages: { length: number }; // Only need length for scroll logic
   scrollContainerRef: React.RefObject<HTMLDivElement | null>;
   streamingContainerRef?: React.RefObject<HTMLDivElement | null>;
   isInitialMount: boolean;

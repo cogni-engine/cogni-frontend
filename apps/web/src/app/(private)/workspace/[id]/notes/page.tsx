@@ -570,15 +570,9 @@ export default function WorkspaceNotesPage() {
           folders={folders}
           selectedFolder={selectedFolder}
           onFolderSelect={setSelectedFolder}
-          onCreateFolder={async (name: string) => {
-            await createFolder(name);
-          }}
-          onUpdateFolder={async (id: number, name: string) => {
-            await updateFolder(id, name);
-          }}
-          onDeleteFolder={async (id: number) => {
-            await deleteFolder(id);
-          }}
+          onCreateFolder={createFolder}
+          onUpdateFolder={updateFolder}
+          onDeleteFolder={deleteFolder}
           noteCounts={noteCounts}
         />
         {/* Sort Dropdown - Only show when "All Notes" is selected */}
@@ -686,7 +680,7 @@ export default function WorkspaceNotesPage() {
               onClick={handleCreateNote}
               disabled={isCreating}
               size='icon'
-              className='size-11 disabled:cursor-not-allowed shrink-0 size-12'
+              className='disabled:cursor-not-allowed shrink-0 size-12'
             >
               {isCreating ? (
                 <div className='animate-spin rounded-full h-5 w-5 border-b-2 border-gray-300'></div>
@@ -745,11 +739,7 @@ export default function WorkspaceNotesPage() {
             setShowMoveDrawer(false);
             setNoteToMove(null);
           }}
-          folders={folders}
           onMove={handleMove}
-          onCreateFolder={async (name: string) => {
-            await createFolder(name);
-          }}
           currentFolderId={
             noteToMove
               ? notes.find(n => n.id.toString() === noteToMove)

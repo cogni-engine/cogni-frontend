@@ -10,6 +10,7 @@ import type { UploadedFile } from '@/lib/api/workspaceFilesApi';
 
 type ChatContainerProps = {
   messages: Message[] | AIMessage[];
+  isLoading?: boolean;
   sendMessage: (
     content: string,
     files?: UploadedFile[],
@@ -28,6 +29,7 @@ const ChatContainer = forwardRef<HTMLDivElement, ChatContainerProps>(
   (
     {
       messages,
+      isLoading = false,
       sendMessage,
       streamingContainerRef,
       workspaceMembers = [],
@@ -92,10 +94,10 @@ const ChatContainer = forwardRef<HTMLDivElement, ChatContainerProps>(
             isInputActive ? 'pb-6' : 'pb-20'
           } space-y-6`}
         >
-          {/* Empty State - shown when no messages */}
+          {/* Empty State - shown when not loading and no messages */}
           <div
-            className={`transition-opacity duration-300 delay-150 ${
-              messages.length === 0
+            className={`transition-opacity duration-100 ${
+              !isLoading && messages.length === 0
                 ? 'opacity-100 pointer-events-auto absolute inset-0 flex items-center justify-center'
                 : 'opacity-0 pointer-events-none absolute inset-0'
             }`}
@@ -105,7 +107,7 @@ const ChatContainer = forwardRef<HTMLDivElement, ChatContainerProps>(
 
           {/* Messages Content - shown when messages exist */}
           <div
-            className={`transition-opacity duration-300 delay-150 ${
+            className={`transition-opacity duration-100 ${
               messages.length === 0
                 ? 'opacity-0 pointer-events-none absolute inset-0'
                 : 'opacity-100 pointer-events-auto relative'

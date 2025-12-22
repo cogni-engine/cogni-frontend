@@ -20,6 +20,8 @@ import { getPersonalWorkspaceId } from '@/lib/cookies';
 
 export type ThreadId = number | 'new' | null;
 
+const SELECTED_THREAD_CACHE_KEY = 'cogno-selected-thread';
+
 interface ThreadContextType {
   // Selected thread
   selectedThreadId: ThreadId;
@@ -40,7 +42,8 @@ async function fetchThreads(workspaceId: number): Promise<Thread[]> {
 }
 
 export function ThreadProvider({ children }: { children: ReactNode }) {
-  const [selectedThreadId, setSelectedThreadId] = useState<ThreadId>(null);
+  const [selectedThreadId, setSelectedThreadIdState] = useState<ThreadId>(null);
+  const hasHydrated = useRef(false);
   const hasAutoSelected = useRef(false);
 
   const workspaceId = getPersonalWorkspaceId();
@@ -56,13 +59,44 @@ export function ThreadProvider({ children }: { children: ReactNode }) {
     revalidateOnReconnect: false,
   });
 
-  // Auto-select most recent thread on initial data load
+  // Wrapper to persist selected thread to localStorage
+  const setSelectedThreadId = useCallback((id: ThreadId) => {
+    setSelectedThreadIdState(id);
+    if (typeof id === 'number') {
+      try {
+        localStorage.setItem(SELECTED_THREAD_CACHE_KEY, id.toString());
+      } catch {
+        // Ignore storage errors
+      }
+    }
+  }, []);
+
+  // Hydrate selectedThreadId from localStorage after mount
+  useEffect(() => {
+    if (hasHydrated.current) return;
+    hasHydrated.current = true;
+
+    try {
+      const cached = localStorage.getItem(SELECTED_THREAD_CACHE_KEY);
+      if (cached) {
+        const threadId = parseInt(cached, 10);
+        if (!isNaN(threadId)) {
+          setSelectedThreadIdState(threadId);
+          hasAutoSelected.current = true; // Don't auto-select if we have a cached selection
+        }
+      }
+    } catch {
+      // Ignore storage errors
+    }
+  }, []);
+
+  // Auto-select most recent thread only if no cached selection
   useEffect(() => {
     if (!hasAutoSelected.current && threads.length > 0 && !isLoading) {
       hasAutoSelected.current = true;
       setSelectedThreadId(threads[0].id);
     }
-  }, [threads, isLoading]);
+  }, [threads, isLoading, setSelectedThreadId]);
 
   const updateExistingThread = useCallback(
     async (id: number, title: string) => {
@@ -98,13 +132,17 @@ export function ThreadProvider({ children }: { children: ReactNode }) {
     await mutate();
   }, [mutate]);
 
+  // Loading until we've hydrated from localStorage and have a selected thread
+  const stillLoading =
+    !hasHydrated.current || (isLoading && selectedThreadId === null);
+
   return (
     <ThreadContext.Provider
       value={{
         selectedThreadId,
         setSelectedThreadId,
         threads,
-        threadsLoading: isLoading,
+        threadsLoading: stillLoading,
         threadsError: error?.message ?? null,
         refetchThreads,
         updateThread: updateExistingThread,

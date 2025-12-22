@@ -19,14 +19,15 @@ export default function HomeCognoChat({ isInitialMount }: HomeCognoChatProps) {
   const { selectedThreadId, setSelectedThreadId, refetchThreads } =
     useThreadContext();
 
-  const { messages, sendMessage, isSending, stopStream } = useChat({
-    selectedThreadId,
-    onThreadCreated: (newThreadId: number) => {
-      setSelectedThreadId(newThreadId);
-      // Refresh the threads list in the sidebar
-      refetchThreads();
-    },
-  });
+  const { messages, messagesLoading, sendMessage, isSending, stopStream } =
+    useChat({
+      selectedThreadId,
+      onThreadCreated: (newThreadId: number) => {
+        setSelectedThreadId(newThreadId);
+        // Refresh the threads list in the sidebar
+        refetchThreads();
+      },
+    });
 
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const streamingContainerRef = useRef<HTMLDivElement>(null);
@@ -72,6 +73,7 @@ export default function HomeCognoChat({ isInitialMount }: HomeCognoChatProps) {
       <ChatContainer
         ref={scrollContainerRef}
         messages={messages}
+        isLoading={messagesLoading}
         sendMessage={handleSendMessage}
         streamingContainerRef={streamingContainerRef}
         workspaceMembers={memoizedMembers}
