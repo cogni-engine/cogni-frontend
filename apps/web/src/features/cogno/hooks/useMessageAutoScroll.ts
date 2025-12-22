@@ -21,7 +21,6 @@ export function useMessageAutoScroll({
   scrollContainerRef,
   streamingContainerRef,
   isInitialMount,
-  delay = 100,
   headerHeight = DEFAULT_HEADER_HEIGHT,
 }: UseMessageAutoScrollOptions) {
   const prevMessageCountRef = useRef(0);
@@ -56,7 +55,7 @@ export function useMessageAutoScroll({
             behavior: isInitialMount ? 'auto' : 'smooth',
           });
         }
-      }, delay);
+      }, 0);
     }
 
     prevMessageCountRef.current = currentCount;
@@ -64,7 +63,6 @@ export function useMessageAutoScroll({
     messages,
     scrollContainerRef,
     streamingContainerRef,
-    delay,
     headerHeight,
     isInitialMount,
   ]);
