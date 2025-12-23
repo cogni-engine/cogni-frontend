@@ -239,6 +239,7 @@ export default function CollaborativeNoteEditor({
     );
   }
 
+  // phase 1 loading
   if (loading) {
     return (
       <div className='flex flex-col h-full bg-linear-to-br from-slate-950 via-black to-slate-950 text-gray-100 items-center justify-center'>
@@ -281,12 +282,11 @@ export default function CollaborativeNoteEditor({
     );
   }
 
-  // Show loading state while connecting
+  // Show loading state while connecting (phase 2)
   if (!isSynced) {
     return (
       <div className='flex flex-col h-full bg-linear-to-br from-slate-950 via-black to-slate-950 text-gray-100 items-center justify-center'>
-        <Loader2 className='w-8 h-8 animate-spin text-blue-400 mb-4' />
-        <span className='text-gray-400'>Connecting to document...</span>
+        <div className='animate-spin rounded-full h-12 w-12 border-b-2 border-white'></div>
       </div>
     );
   }
