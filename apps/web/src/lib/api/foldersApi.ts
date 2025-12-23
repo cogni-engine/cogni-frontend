@@ -92,35 +92,6 @@ export async function deleteFolder(id: number): Promise<void> {
 }
 
 /**
- * Get folder with note count
- */
-export async function getFolderWithNoteCount(
-  workspaceId: number
-): Promise<NoteFolder[]> {
-  const { data, error } = await supabase
-    .from('note_folders')
-    .select(
-      `
-      *,
-      notes:notes(count)
-    `
-    )
-    .eq('workspace_id', workspaceId)
-    .order('created_at', { ascending: false });
-
-  if (error) throw error;
-
-  // Transform the data to include note_count
-  return (data || []).map((folder: any) => ({
-    id: folder.id,
-    created_at: folder.created_at,
-    title: folder.title,
-    workspace_id: folder.workspace_id,
-    note_count: folder.notes?.[0]?.count || 0,
-  }));
-}
-
-/**
  * Move a note to a folder
  */
 export async function moveNoteToFolder(
@@ -133,28 +104,4 @@ export async function moveNoteToFolder(
     .eq('id', noteId);
 
   if (error) throw error;
-}
-
-/**
- * Get notes count for each folder in a workspace
- */
-export async function getFolderNoteCounts(
-  workspaceId: number
-): Promise<Record<number, number>> {
-  const { data, error } = await supabase
-    .from('notes')
-    .select('note_folder_id')
-    .eq('workspace_id', workspaceId)
-    .is('deleted_at', null);
-
-  if (error) throw error;
-
-  const counts: Record<number, number> = {};
-  (data || []).forEach(note => {
-    if (note.note_folder_id) {
-      counts[note.note_folder_id] = (counts[note.note_folder_id] || 0) + 1;
-    }
-  });
-
-  return counts;
 }

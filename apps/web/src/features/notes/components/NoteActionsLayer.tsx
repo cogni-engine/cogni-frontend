@@ -50,7 +50,8 @@ export function NoteActionsLayer({ children }: { children: ReactNode }) {
     emptyTrash,
     moveNote,
     refetch,
-    setSelectedFolder,
+    folders,
+    createFolder,
   } = useNotesContext();
 
   const [contextMenu, setContextMenu] = useState<ContextMenuState>(null);
@@ -132,9 +133,16 @@ export function NoteActionsLayer({ children }: { children: ReactNode }) {
       await refetch();
       setShowMoveDrawer(false);
       setNoteToMove(null);
-      setSelectedFolder(folderId === null ? 'notes' : folderId);
     } catch (err) {
       console.error('Failed to move note:', err);
+      // エラーメッセージを表示
+      if (err instanceof Error) {
+        alert(`Failed to move note: ${err.message}`);
+      } else if (err && typeof err === 'object' && 'message' in err) {
+        alert(`Failed to move note: ${String(err.message)}`);
+      } else {
+        alert('Failed to move note');
+      }
     }
   };
 
@@ -191,6 +199,8 @@ export function NoteActionsLayer({ children }: { children: ReactNode }) {
             : null
         }
         onMove={handleMove}
+        folders={folders}
+        createFolder={createFolder}
       />
 
       <HardDeleteModal

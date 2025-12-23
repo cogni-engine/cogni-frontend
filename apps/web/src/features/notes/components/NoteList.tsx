@@ -1,12 +1,13 @@
 'use client';
 
 import Image from 'next/image';
-import { useRef, memo } from 'react';
+import { useRef, memo, useState } from 'react';
 
 import GlassCard from '@/components/glass-design/GlassCard';
 import type { NoteFolder } from '@/types/note';
 import type { FormattedNote } from '../NotesProvider';
 import { groupAndSortNotes } from '../lib/noteListHelpers';
+import { FolderGroupHeader } from './FolderGroupHeader';
 
 type NoteListProps = {
   notes: FormattedNote[];
@@ -14,6 +15,8 @@ type NoteListProps = {
   onContextMenu?: (e: React.MouseEvent, id: string, isDeleted: boolean) => void;
   groupBy?: 'time' | 'folder';
   folders?: NoteFolder[];
+  selectedFolder?: 'trash' | number | null;
+  onBackFromFolder?: () => void;
 };
 
 function NoteCardComponent({
@@ -136,30 +139,117 @@ export default function NoteList({
   notes,
   onNoteClick,
   onContextMenu,
-  groupBy = 'time',
+  groupBy = 'folder',
   folders = [],
+  selectedFolder = null,
+  onBackFromFolder,
 }: NoteListProps) {
   const { groups, sortedKeys } = groupAndSortNotes(notes, groupBy, folders);
+  const [collapsedFolders, setCollapsedFolders] = useState<Set<string>>(
+    new Set()
+  );
+
+  // Determine folder name for selected folder
+  const selectedFolderName =
+    selectedFolder === 'trash'
+      ? 'Trash'
+      : selectedFolder !== null
+        ? folders.find(f => f.id === selectedFolder)?.title || ''
+        : null;
+
+  // If a folder is selected, show only that folder
+  if (selectedFolder !== null && groupBy === 'folder') {
+    const folderName = selectedFolderName || '';
+    // When selectedFolder is 'trash', notes already contains only deleted notes (formattedDeletedNotes)
+    // When selectedFolder is a number, notes already contains only notes from that folder
+    const folderNotes = notes;
+
+    return (
+      <div className='flex flex-col gap-6'>
+        <FolderGroupHeader
+          folderName={folderName}
+          isCollapsed={false}
+          onToggle={() => {}}
+          showBackButton={true}
+          onBack={onBackFromFolder}
+        />
+        <div className='flex flex-col gap-[14px]'>
+          {folderNotes.map(note => (
+            <NoteCard
+              key={note.id}
+              note={note}
+              onNoteClick={onNoteClick}
+              onContextMenu={onContextMenu}
+            />
+          ))}
+          {folderNotes.length === 0 && (
+            <div className='text-center py-12 text-gray-400'>
+              {selectedFolder === 'trash'
+                ? 'Trash is empty'
+                : 'No notes in this folder'}
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className='flex flex-col gap-6'>
-      {sortedKeys.map(group => (
-        <div key={group}>
-          <h3 className='text-sm font-medium text-gray-400 mb-3 px-1'>
-            {group}
-          </h3>
-          <div className='flex flex-col gap-[14px]'>
-            {groups[group].map(note => (
-              <NoteCard
-                key={note.id}
-                note={note}
-                onNoteClick={onNoteClick}
-                onContextMenu={onContextMenu}
-              />
-            ))}
+      {sortedKeys.map(group => {
+        const isCollapsed = collapsedFolders.has(group);
+        return (
+          <div key={group}>
+            {groupBy === 'folder' ? (
+              <>
+                <FolderGroupHeader
+                  folderName={group}
+                  isCollapsed={isCollapsed}
+                  onToggle={() => {
+                    setCollapsedFolders(prev => {
+                      const next = new Set(prev);
+                      if (next.has(group)) {
+                        next.delete(group);
+                      } else {
+                        next.add(group);
+                      }
+                      return next;
+                    });
+                  }}
+                />
+                {!isCollapsed && (
+                  <div className='flex flex-col gap-[14px]'>
+                    {groups[group].map(note => (
+                      <NoteCard
+                        key={note.id}
+                        note={note}
+                        onNoteClick={onNoteClick}
+                        onContextMenu={onContextMenu}
+                      />
+                    ))}
+                  </div>
+                )}
+              </>
+            ) : (
+              <>
+                <h3 className='text-sm font-medium text-gray-400 mb-3 px-1'>
+                  {group}
+                </h3>
+                <div className='flex flex-col gap-[14px]'>
+                  {groups[group].map(note => (
+                    <NoteCard
+                      key={note.id}
+                      note={note}
+                      onNoteClick={onNoteClick}
+                      onContextMenu={onContextMenu}
+                    />
+                  ))}
+                </div>
+              </>
+            )}
           </div>
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
 }

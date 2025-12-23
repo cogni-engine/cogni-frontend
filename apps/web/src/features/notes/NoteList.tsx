@@ -1,10 +1,11 @@
 'use client';
 
 import Image from 'next/image';
-import { useRef, memo } from 'react';
+import { useRef, memo, useState } from 'react';
 
 import GlassCard from '@/components/glass-design/GlassCard';
 import type { NoteFolder } from '@/types/note';
+import { FolderGroupHeader } from './components/FolderGroupHeader';
 
 type NoteListItem = {
   id: string;
@@ -180,7 +181,7 @@ export default function NoteList({
   notes,
   onNoteClick,
   onContextMenu,
-  groupBy = 'time',
+  groupBy = 'folder',
   folders = [],
 }: NoteListProps) {
   const groupedNotes =
@@ -191,6 +192,9 @@ export default function NoteList({
     groupBy === 'folder'
       ? sortFolderGroupKeys(Object.keys(groupedNotes))
       : sortGroupKeys(Object.keys(groupedNotes));
+  const [collapsedFolders, setCollapsedFolders] = useState<Set<string>>(
+    new Set()
+  );
 
   // Note card component with touch handlers - memoized to prevent flickering
   const NoteCardComponent = ({ note }: { note: NoteListItem }) => {
@@ -307,20 +311,52 @@ export default function NoteList({
 
   return (
     <div className='flex flex-col gap-6'>
-      {sortedGroups.map(group => (
-        <div key={group}>
-          {/* Group Header */}
-          <h3 className='text-sm font-medium text-gray-400 mb-3 px-1'>
-            {group}
-          </h3>
-          {/* Notes in this group */}
-          <div className='flex flex-col gap-[14px]'>
-            {groupedNotes[group].map(note => (
-              <NoteCard key={note.id} note={note} />
-            ))}
+      {sortedGroups.map(group => {
+        const isCollapsed = collapsedFolders.has(group);
+        return (
+          <div key={group}>
+            {groupBy === 'folder' ? (
+              <>
+                {/* Folder Group Header */}
+                <FolderGroupHeader
+                  folderName={group}
+                  isCollapsed={isCollapsed}
+                  onToggle={() => {
+                    setCollapsedFolders(prev => {
+                      const next = new Set(prev);
+                      if (next.has(group)) {
+                        next.delete(group);
+                      } else {
+                        next.add(group);
+                      }
+                      return next;
+                    });
+                  }}
+                />
+                {!isCollapsed && (
+                  <div className='flex flex-col gap-[14px]'>
+                    {groupedNotes[group].map(note => (
+                      <NoteCard key={note.id} note={note} />
+                    ))}
+                  </div>
+                )}
+              </>
+            ) : (
+              <>
+                {/* Time Group Header */}
+                <h3 className='text-sm font-medium text-gray-400 mb-3 px-1'>
+                  {group}
+                </h3>
+                <div className='flex flex-col gap-[14px]'>
+                  {groupedNotes[group].map(note => (
+                    <NoteCard key={note.id} note={note} />
+                  ))}
+                </div>
+              </>
+            )}
           </div>
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
 }

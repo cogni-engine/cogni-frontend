@@ -12,26 +12,15 @@ type NotesPageFooterProps = {
 };
 
 export function NotesPageFooter({ isInputActive }: NotesPageFooterProps) {
-  const { createNote, selectedFolder, searchQuery, handleSearch } =
-    useNotesContext();
+  const { createNote, searchQuery, handleSearch } = useNotesContext();
   const [isCreatingNote, setIsCreatingNote] = useState(false);
   const router = useRouter();
 
   const handleCreateNote = async () => {
     try {
       setIsCreatingNote(true);
-
-      // Create a new note with empty/default content and current selected folder
-      let currentFolderId: number | null = null;
-      if (selectedFolder === 'notes') {
-        currentFolderId = null; // Default folder
-      } else if (typeof selectedFolder === 'number') {
-        currentFolderId = selectedFolder;
-      }
-      // If 'all' or 'trash', create in default folder (null)
-
-      const newNote = await createNote('Untitled', '', currentFolderId);
-
+      // Always create in default folder (null)
+      const newNote = await createNote('Untitled', '', null);
       // Navigate to the new note page
       router.push(`/notes/${newNote.id}`);
     } catch (err) {
@@ -56,20 +45,18 @@ export function NotesPageFooter({ isInputActive }: NotesPageFooterProps) {
           }}
         />
 
-        {selectedFolder !== 'trash' && (
-          <GlassButton
-            onClick={handleCreateNote}
-            disabled={isCreatingNote}
-            size='icon'
-            className='size-11 disabled:cursor-not-allowed shrink-0'
-          >
-            {isCreatingNote ? (
-              <div className='animate-spin rounded-full h-5 w-5 border-b-2 border-gray-300'></div>
-            ) : (
-              <PenSquare className='w-5 h-5 text-white' />
-            )}
-          </GlassButton>
-        )}
+        <GlassButton
+          onClick={handleCreateNote}
+          disabled={isCreatingNote}
+          size='icon'
+          className='size-11 disabled:cursor-not-allowed shrink-0'
+        >
+          {isCreatingNote ? (
+            <div className='animate-spin rounded-full h-5 w-5 border-b-2 border-gray-300'></div>
+          ) : (
+            <PenSquare className='w-5 h-5 text-white' />
+          )}
+        </GlassButton>
       </div>
     </div>
   );

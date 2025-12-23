@@ -35,16 +35,11 @@ type NotesContextType = {
   formattedDeletedNotes: FormattedNote[];
   deletedNotes: NoteWithParsed[];
   unfolderedNotes: NoteWithParsed[];
-  folders: (NoteFolder & { note_count: number })[];
-  noteCounts: { all: number; notes: number; trash: number };
+  folders: NoteFolder[];
 
   // State
   loading: boolean;
   error: string | null;
-  selectedFolder: 'all' | 'notes' | 'trash' | number;
-  setSelectedFolder: (folder: 'all' | 'notes' | 'trash' | number) => void;
-  sortBy: 'time' | 'folder';
-  setSortBy: (sort: 'time' | 'folder') => void;
   searchQuery: string;
   handleSearch: (query: string) => void;
 
@@ -77,10 +72,6 @@ export const NotesProvider = ({
   children: ReactNode;
   workspaceId: number;
 }) => {
-  const [selectedFolder, setSelectedFolder] = useState<
-    'all' | 'notes' | 'trash' | number
-  >('all');
-  const [sortBy, setSortBy] = useState<'time' | 'folder'>('time');
   const [searchQuery, setSearchQuery] = useState('');
 
   const {
@@ -93,6 +84,17 @@ export const NotesProvider = ({
   } = useNoteFolders({
     workspaceId: workspaceId || 0,
   });
+
+  // Listen for folder updates from Header
+  React.useEffect(() => {
+    const handleFoldersUpdated = () => {
+      refetchFolders();
+    };
+    window.addEventListener('folders-updated', handleFoldersUpdated);
+    return () => {
+      window.removeEventListener('folders-updated', handleFoldersUpdated);
+    };
+  }, [refetchFolders]);
 
   const {
     notes,
@@ -129,41 +131,17 @@ export const NotesProvider = ({
     await refetchNotes();
   };
 
-  // Add note counts to folders
-  const folders = useMemo(() => {
-    return rawFolders.map(folder => ({
-      ...folder,
-      note_count: notes.filter(
-        n => !n.deleted_at && n.note_folder_id === folder.id
-      ).length,
-    }));
-  }, [rawFolders, notes]);
+  // Use folders directly without note counts
+  const folders = rawFolders;
 
-  // Filter notes based on selected folder
-  const filteredNotes = useMemo(() => {
-    if (selectedFolder === 'trash') {
-      // Show only deleted notes
-      return notes.filter(note => note.deleted_at);
-    } else if (selectedFolder === 'all') {
-      // Show all active notes (no folder filter)
-      return notes.filter(note => !note.deleted_at);
-    } else if (selectedFolder === 'notes') {
-      // Show notes with null folder_id (default Notes folder)
-      return notes.filter(note => !note.deleted_at && !note.note_folder_id);
-    } else {
-      // Show notes in specific folder (not deleted)
-      return notes.filter(
-        note => !note.deleted_at && note.note_folder_id === selectedFolder
-      );
-    }
-  }, [notes, selectedFolder]);
+  // Always show all active notes (no folder filtering)
+  const activeNotes = useMemo(() => {
+    return notes.filter(note => !note.deleted_at);
+  }, [notes]);
 
   // Separate active and deleted notes
   const formattedActiveNotes = useMemo(() => {
-    if (selectedFolder === 'trash') {
-      return [];
-    }
-    return filteredNotes.map(note => ({
+    return activeNotes.map(note => ({
       id: note.id.toString(),
       title: note.title,
       date: formatDate(note.updated_at),
@@ -175,12 +153,11 @@ export const NotesProvider = ({
       deleted_at: note.deleted_at,
       note_folder_id: note.note_folder_id,
     }));
-  }, [filteredNotes, selectedFolder, workspaceId]);
+  }, [activeNotes, workspaceId]);
 
-  const deletedNotes =
-    selectedFolder === 'trash'
-      ? filteredNotes
-      : notes.filter(note => note.deleted_at);
+  const deletedNotes = useMemo(() => {
+    return notes.filter(note => note.deleted_at);
+  }, [notes]);
 
   const unfolderedNotes = notes.filter(
     note => !note.deleted_at && !note.note_folder_id
@@ -200,16 +177,6 @@ export const NotesProvider = ({
     }));
   }, [deletedNotes, workspaceId]);
 
-  // Calculate note counts for dropdown
-  const noteCounts = useMemo(
-    () => ({
-      all: notes.filter(note => !note.deleted_at).length,
-      notes: unfolderedNotes.length,
-      trash: deletedNotes.length,
-    }),
-    [notes, unfolderedNotes, deletedNotes]
-  );
-
   return (
     <NotesContext.Provider
       value={{
@@ -220,15 +187,10 @@ export const NotesProvider = ({
         deletedNotes,
         unfolderedNotes,
         folders,
-        noteCounts,
 
         // State
         loading,
         error,
-        selectedFolder,
-        setSelectedFolder,
-        sortBy,
-        setSortBy,
         searchQuery,
         handleSearch,
 

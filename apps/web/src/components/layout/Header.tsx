@@ -12,10 +12,15 @@ import {
   HEADER_EVENTS,
   onHeaderEvent,
 } from '@/lib/headerEvents';
+import FolderActionButton from '@/components/FolderActionButton';
+import { useNoteFolders } from '@/features/notes/hooks/useNoteFolders';
+import { useNotes } from '@/features/notes/hooks/useNotes';
+import { getPersonalWorkspaceId } from '@/lib/cookies';
 
 export default function Header() {
   const pathname = usePathname();
   const isHomePage = pathname === '/home';
+  const isNotesPage = pathname === '/notes';
   const pageTitleMap: Record<string, string> = {
     '/notes': 'Note',
     '/workspace': 'Workspace',
@@ -28,6 +33,52 @@ export default function Header() {
   const [isMounted, setIsMounted] = useState(false);
   const [currentTime, setCurrentTime] = useState('');
   const [isMobile, setIsMobile] = useState(false);
+
+  // Get folders for notes page
+  const personalWorkspaceId = isNotesPage ? getPersonalWorkspaceId() : null;
+  const {
+    folders,
+    updateFolder,
+    deleteFolder,
+    createFolder: createFolderHook,
+    refetch: refetchFolders,
+  } = useNoteFolders({
+    workspaceId: personalWorkspaceId || 0,
+    autoFetch: isNotesPage && !!personalWorkspaceId,
+  });
+
+  // Get deleted notes count for trash folder
+  const { notes } = useNotes({
+    workspaceId: personalWorkspaceId || 0,
+    includeDeleted: true,
+    autoFetch: isNotesPage && !!personalWorkspaceId,
+  });
+  const trashCount = isNotesPage
+    ? notes.filter(note => note.deleted_at).length
+    : 0;
+
+  // Wrap createFolder to refetch after creation
+  const createFolder = async (title: string) => {
+    const newFolder = await createFolderHook(title);
+    await refetchFolders();
+    // Dispatch event to notify NotesProvider to refetch
+    window.dispatchEvent(new CustomEvent('folders-updated'));
+    return newFolder;
+  };
+
+  // Wrap updateFolder and deleteFolder similarly
+  const handleUpdateFolder = async (id: number, title: string) => {
+    const updated = await updateFolder(id, title);
+    await refetchFolders();
+    window.dispatchEvent(new CustomEvent('folders-updated'));
+    return updated;
+  };
+
+  const handleDeleteFolder = async (id: number) => {
+    await deleteFolder(id);
+    await refetchFolders();
+    window.dispatchEvent(new CustomEvent('folders-updated'));
+  };
 
   // Get notifications hook
   const userId = user?.id ?? null;
@@ -178,6 +229,18 @@ export default function Header() {
               )}
             </div>
           </button>
+        )}
+        {isNotesPage && isMounted && (
+          <FolderActionButton
+            folders={folders}
+            onUpdateFolder={handleUpdateFolder}
+            onDeleteFolder={handleDeleteFolder}
+            onCreateFolder={createFolder}
+            trashCount={trashCount}
+            onTrashClick={() => {
+              window.dispatchEvent(new CustomEvent('trash-folder-selected'));
+            }}
+          />
         )}
         {isMounted && <UserMenu user={user} />}
       </div>

@@ -10,13 +10,15 @@ import {
   DrawerBody,
   DrawerClose,
 } from '@/components/ui/drawer';
-import { useNotesContext } from '@/features/notes/NotesProvider';
+import type { NoteFolder } from '@/types/note';
 
 interface MoveFolderDrawerProps {
   isOpen: boolean;
   onClose: () => void;
   currentFolderId: number | null;
   onMove: (folderId: number | null) => void;
+  folders: NoteFolder[];
+  createFolder: (title: string) => Promise<NoteFolder>;
 }
 
 export default function MoveFolderDrawer({
@@ -24,8 +26,9 @@ export default function MoveFolderDrawer({
   onClose,
   currentFolderId,
   onMove,
+  folders,
+  createFolder,
 }: MoveFolderDrawerProps) {
-  const { folders, createFolder } = useNotesContext();
   const [isCreating, setIsCreating] = useState(false);
   const [newFolderName, setNewFolderName] = useState('');
   const [isCreatingFolder, setIsCreatingFolder] = useState(false);
@@ -197,10 +200,6 @@ export default function MoveFolderDrawer({
                     <div className='text-left'>
                       <div className='font-medium text-white'>
                         {folder.title}
-                      </div>
-                      <div className='text-xs text-gray-400'>
-                        {folder.note_count || 0} note
-                        {folder.note_count !== 1 ? 's' : ''}
                       </div>
                     </div>
                   </div>

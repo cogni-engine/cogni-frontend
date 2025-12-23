@@ -8,7 +8,6 @@ import {
   updateFolder,
   deleteFolder,
   moveNoteToFolder,
-  getFolderNoteCounts,
 } from '@/lib/api/foldersApi';
 
 interface UseNoteFoldersOptions {
@@ -44,17 +43,8 @@ export function useNoteFolders(
       setLoading(true);
       setError(null);
 
-      const [foldersData, noteCounts] = await Promise.all([
-        getFolders(workspaceId),
-        getFolderNoteCounts(workspaceId),
-      ]);
-
-      const foldersWithCounts = foldersData.map(folder => ({
-        ...folder,
-        note_count: noteCounts[folder.id] || 0,
-      }));
-
-      setFolders(foldersWithCounts);
+      const foldersData = await getFolders(workspaceId);
+      setFolders(foldersData);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to fetch folders');
       console.error('Error fetching folders:', err);
@@ -68,7 +58,7 @@ export function useNoteFolders(
       try {
         setError(null);
         const newFolder = await createFolder(workspaceId, title);
-        setFolders(prev => [{ ...newFolder, note_count: 0 }, ...prev]);
+        setFolders(prev => [newFolder, ...prev]);
         return newFolder;
       } catch (err) {
         setError(
@@ -87,11 +77,7 @@ export function useNoteFolders(
         setError(null);
         const updatedFolder = await updateFolder(id, title);
         setFolders(prev =>
-          prev.map(folder =>
-            folder.id === id
-              ? { ...updatedFolder, note_count: folder.note_count }
-              : folder
-          )
+          prev.map(folder => (folder.id === id ? updatedFolder : folder))
         );
         return updatedFolder;
       } catch (err) {
@@ -122,14 +108,24 @@ export function useNoteFolders(
       try {
         setError(null);
         await moveNoteToFolder(noteId, folderId);
-        await fetchFolders(); // Refetch to update counts
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to move note');
+        // エラーメッセージを適切に取得
+        const errorMessage =
+          err instanceof Error
+            ? err.message
+            : err && typeof err === 'object' && 'message' in err
+              ? String(err.message)
+              : 'Failed to move note';
+        setError(errorMessage);
         console.error('Error moving note:', err);
+        // エラーの詳細をログに出力
+        if (err && typeof err === 'object') {
+          console.error('Error details:', JSON.stringify(err, null, 2));
+        }
         throw err;
       }
     },
-    [fetchFolders]
+    []
   );
 
   useEffect(() => {

@@ -105,24 +105,41 @@ export function sortTimeGroupKeys(keys: string[]): string[] {
 
 /**
  * Groups notes by folder
+ * Always shows all folders, even if they have no notes
  */
 export function groupNotesByFolder(
   notes: FormattedNote[],
   folders: NoteFolder[]
 ): GroupedNotes {
   const folderMap = new Map(folders.map(f => [f.id, f.title]));
+  const grouped: GroupedNotes = {};
 
-  return notes.reduce<GroupedNotes>((groups, note) => {
-    const groupName = note.note_folder_id
-      ? folderMap.get(note.note_folder_id) || 'Notes'
-      : 'Notes';
+  // Sort folders alphabetically by title
+  const sortedFolders = [...folders].sort((a, b) =>
+    a.title.localeCompare(b.title, 'ja')
+  );
 
-    if (!groups[groupName]) {
-      groups[groupName] = [];
+  // Initialize groups for each folder (always show all folders)
+  sortedFolders.forEach(folder => {
+    grouped[folder.title] = [];
+  });
+
+  // Add "Notes" group for notes without folder
+  grouped['Notes'] = [];
+
+  // Group notes
+  notes.forEach(note => {
+    if (!note.note_folder_id) {
+      grouped['Notes'].push(note);
+    } else {
+      const folder = folders.find(f => f.id === note.note_folder_id);
+      if (folder && grouped[folder.title]) {
+        grouped[folder.title].push(note);
+      }
     }
-    groups[groupName].push(note);
-    return groups;
-  }, {});
+  });
+
+  return grouped;
 }
 
 /**

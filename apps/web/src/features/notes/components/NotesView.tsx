@@ -9,44 +9,52 @@ import type { FormattedNote } from '../NotesProvider';
 type NotesViewProps = {
   notes: FormattedNote[];
   folders: NoteFolder[];
-  sortBy: 'time' | 'folder';
   searchQuery: string;
-  selectedFolder: 'all' | 'notes' | 'trash' | number;
   onNoteClick: (id: string) => void;
   onContextMenu: (e: React.MouseEvent, id: string, isDeleted: boolean) => void;
   onCreateNote: () => void;
+  selectedFolder?: 'trash' | number | null;
+  onBackFromFolder?: () => void;
 };
 
 export function NotesView({
   notes,
   folders,
-  sortBy,
   searchQuery,
-  selectedFolder,
   onNoteClick,
   onContextMenu,
   onCreateNote,
+  selectedFolder = null,
+  onBackFromFolder,
 }: NotesViewProps) {
-  if (notes.length === 0) {
+  // Check if there are any notes at all (across all folders)
+  const hasAnyNotes = notes.length > 0 || folders.length > 0;
+
+  if (!hasAnyNotes && !searchQuery) {
+    return (
+      <div className='text-center py-12'>
+        <PenSquare className='w-12 h-12 text-gray-600 mx-auto mb-3' />
+        <h3 className='text-lg font-medium text-white mb-2'>No notes yet</h3>
+        <p className='text-gray-400 mb-6'>
+          Create your first note to get started
+        </p>
+        <GlassButton onClick={onCreateNote} className='px-6 py-2.5 rounded-xl'>
+          Create Note
+        </GlassButton>
+      </div>
+    );
+  }
+
+  if (notes.length === 0 && searchQuery) {
     return (
       <div className='text-center py-12'>
         <PenSquare className='w-12 h-12 text-gray-600 mx-auto mb-3' />
         <h3 className='text-lg font-medium text-white mb-2'>
-          {searchQuery ? 'No matching notes' : 'No notes yet'}
+          No matching notes
         </h3>
         <p className='text-gray-400 mb-6'>
-          {searchQuery
-            ? `No notes match "${searchQuery}"`
-            : 'Create your first note to get started'}
+          {`No notes match "${searchQuery}"`}
         </p>
-        {!searchQuery && selectedFolder !== 'all' && (
-          <GlassButton
-            onClick={onCreateNote}
-            className='px-6 py-2.5 rounded-xl'
-          >
-            Create Note
-          </GlassButton>
-        )}
       </div>
     );
   }
@@ -56,8 +64,10 @@ export function NotesView({
       notes={notes}
       onNoteClick={onNoteClick}
       onContextMenu={onContextMenu}
-      groupBy={sortBy}
+      groupBy='folder'
       folders={folders}
+      selectedFolder={selectedFolder}
+      onBackFromFolder={onBackFromFolder}
     />
   );
 }

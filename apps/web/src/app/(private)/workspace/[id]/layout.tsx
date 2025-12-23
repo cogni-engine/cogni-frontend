@@ -13,6 +13,9 @@ import {
 import GlassCard from '@/components/glass-design/GlassCard';
 import GlassButton from '@/components/glass-design/GlassButton';
 import { useWorkspace } from '@/hooks/useWorkspace';
+import FolderActionButton from '@/components/FolderActionButton';
+import { useNoteFolders } from '@/features/notes/hooks/useNoteFolders';
+import { useNotes } from '@/features/notes/hooks/useNotes';
 
 type ViewType = 'chat' | 'notes' | 'members' | 'menu';
 
@@ -27,6 +30,44 @@ export default function WorkspaceLayout({
   const workspaceId = parseInt(params.id as string);
 
   const { workspace } = useWorkspace(workspaceId);
+
+  const {
+    folders,
+    updateFolder,
+    deleteFolder,
+    createFolder: createFolderHook,
+    refetch: refetchFolders,
+  } = useNoteFolders({
+    workspaceId: workspaceId || 0,
+  });
+
+  // Get deleted notes count for trash folder
+  const { notes } = useNotes({
+    workspaceId: workspaceId || 0,
+    includeDeleted: true,
+  });
+  const trashCount = notes.filter(note => note.deleted_at).length;
+
+  // Wrap createFolder to refetch and notify
+  const createFolder = async (title: string) => {
+    const newFolder = await createFolderHook(title);
+    await refetchFolders();
+    window.dispatchEvent(new CustomEvent('folders-updated'));
+    return newFolder;
+  };
+
+  const handleUpdateFolder = async (id: number, title: string) => {
+    const updated = await updateFolder(id, title);
+    await refetchFolders();
+    window.dispatchEvent(new CustomEvent('folders-updated'));
+    return updated;
+  };
+
+  const handleDeleteFolder = async (id: number) => {
+    await deleteFolder(id);
+    await refetchFolders();
+    window.dispatchEvent(new CustomEvent('folders-updated'));
+  };
 
   const getCurrentView = (): ViewType => {
     if (pathname.includes('/members')) return 'members';
@@ -102,6 +143,18 @@ export default function WorkspaceLayout({
           <h1 className='flex-1 min-w-0 text-xl font-bold bg-linear-to-r from-white to-gray-300 bg-clip-text text-transparent truncate'>
             {workspace ? workspace.title : 'Workspace'}
           </h1>
+          {currentView === 'notes' && (
+            <FolderActionButton
+              folders={folders}
+              onUpdateFolder={handleUpdateFolder}
+              onDeleteFolder={handleDeleteFolder}
+              onCreateFolder={createFolder}
+              trashCount={trashCount}
+              onTrashClick={() => {
+                window.dispatchEvent(new CustomEvent('trash-folder-selected'));
+              }}
+            />
+          )}
           <div className='relative' ref={menuRef}>
             <GlassButton
               onClick={() => setIsMenuOpen(prev => !prev)}

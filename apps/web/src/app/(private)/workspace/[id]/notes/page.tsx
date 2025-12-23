@@ -10,10 +10,9 @@ import NoteContextMenu from '@/features/workspace/components/NoteContextMenu';
 import SearchBar from '@/components/SearchBar';
 import GlassButton from '@/components/glass-design/GlassButton';
 import GlassCard from '@/components/glass-design/GlassCard';
-import FolderDropdown from '@/components/FolderDropdown';
-import SortDropdown from '@/components/SortDropdown';
 import MoveFolderDrawer from '@/components/MoveFolderDrawer';
 import ScrollableView from '@/components/layout/ScrollableView';
+import { FolderGroupHeader } from '@/features/notes/components/FolderGroupHeader';
 import type { NoteFolder } from '@/types/note';
 
 // Helper functions for date grouping (same as in NoteList.tsx)
@@ -85,7 +84,7 @@ function groupNotesByFolder(
     a.title.localeCompare(b.title, 'ja')
   );
 
-  // Initialize groups for each folder
+  // Initialize groups for each folder (always show all folders)
   sortedFolders.forEach(folder => {
     grouped[folder.title] = [];
   });
@@ -105,12 +104,7 @@ function groupNotesByFolder(
     }
   });
 
-  // Remove empty groups (except "Notes")
-  Object.keys(grouped).forEach(key => {
-    if (key !== 'Notes' && grouped[key].length === 0) {
-      delete grouped[key];
-    }
-  });
+  // Don't remove empty groups - always show all folders
 
   return grouped;
 }
@@ -165,10 +159,7 @@ export default function WorkspaceNotesPage() {
   const router = useRouter();
   const workspaceId = parseInt(params.id as string);
 
-  const [selectedFolder, setSelectedFolder] = useState<
-    'all' | 'notes' | 'trash' | number
-  >('all');
-  const [sortBy, setSortBy] = useState<'time' | 'folder'>('time');
+  const sortBy: 'time' | 'folder' = 'folder';
   const [searchQuery, setSearchQuery] = useState('');
   const [contextMenu, setContextMenu] = useState<{
     x: number;
@@ -184,6 +175,12 @@ export default function WorkspaceNotesPage() {
   const [noteToMove, setNoteToMove] = useState<string | null>(null);
   const [isCreating, setIsCreating] = useState(false);
   const [isMoving, setIsMoving] = useState(false);
+  const [collapsedFolders, setCollapsedFolders] = useState<Set<string>>(
+    new Set()
+  );
+  const [selectedFolder, setSelectedFolder] = useState<'trash' | number | null>(
+    null
+  );
 
   const {
     notes,
@@ -208,63 +205,46 @@ export default function WorkspaceNotesPage() {
     createFolder,
     updateFolder,
     deleteFolder,
+    refetch: refetchFolders,
   } = useNoteFolders({
     workspaceId: workspaceId || 0,
   });
 
-  // Add note counts to folders
-  const folders = useMemo(() => {
-    return rawFolders.map(folder => ({
-      ...folder,
-      note_count: notes.filter(
-        n => !n.deleted_at && n.note_folder_id === folder.id
-      ).length,
-    }));
-  }, [rawFolders, notes]);
+  // Listen for folder updates from layout
+  useEffect(() => {
+    const handleFoldersUpdated = () => {
+      refetchFolders();
+    };
+    window.addEventListener('folders-updated', handleFoldersUpdated);
+    return () => {
+      window.removeEventListener('folders-updated', handleFoldersUpdated);
+    };
+  }, [refetchFolders]);
+
+  // Listen for trash click event from layout
+  useEffect(() => {
+    const handleTrashClick = () => {
+      setSelectedFolder('trash');
+    };
+    window.addEventListener('trash-folder-selected', handleTrashClick);
+    return () => {
+      window.removeEventListener('trash-folder-selected', handleTrashClick);
+    };
+  }, []);
+
+  // Use folders directly without note counts
+  const folders = rawFolders;
 
   const [isSearching, setIsSearching] = useState(false);
 
-  // Filter notes based on selected folder
-  const filteredNotes = useMemo(() => {
-    if (selectedFolder === 'all') {
-      return notes.filter(note => !note.deleted_at);
-    } else if (selectedFolder === 'notes') {
-      return notes.filter(note => !note.deleted_at && !note.note_folder_id);
-    } else if (selectedFolder === 'trash') {
-      return notes.filter(note => note.deleted_at);
-    } else {
-      return notes.filter(
-        note => !note.deleted_at && note.note_folder_id === selectedFolder
-      );
-    }
-  }, [notes, selectedFolder]);
+  // Always show all active notes (no folder filtering)
+  const activeNotes = useMemo(() => {
+    return notes.filter(note => !note.deleted_at);
+  }, [notes]);
 
-  // Separate active and deleted notes
-  const activeNotes = selectedFolder === 'trash' ? [] : filteredNotes;
-  const deletedNotes =
-    selectedFolder === 'trash'
-      ? filteredNotes
-      : notes.filter(note => note.deleted_at);
-  const unfolderedNotes = notes.filter(
-    note => !note.deleted_at && !note.note_folder_id
-  );
-
-  // Calculate note counts for dropdown
-  const noteCounts = useMemo(
-    () => ({
-      all: notes.filter(note => !note.deleted_at).length,
-      notes: unfolderedNotes.length,
-      trash: deletedNotes.length,
-    }),
-    [notes, unfolderedNotes, deletedNotes]
-  );
-
-  // Refetch when folder selection changes
-  useEffect(() => {
-    if (!isMoving) {
-      refetch();
-    }
-  }, [selectedFolder, refetch, isMoving]);
+  const deletedNotes = useMemo(() => {
+    return notes.filter(note => note.deleted_at);
+  }, [notes]);
 
   // Group active notes by date or folder
   const groupedNotes =
@@ -290,15 +270,8 @@ export default function WorkspaceNotesPage() {
   const handleCreateNote = async () => {
     try {
       setIsCreating(true);
-
-      // Determine folder ID based on current view
-      let currentFolderId: number | null = null;
-      if (typeof selectedFolder === 'number') {
-        currentFolderId = selectedFolder;
-      }
-      // If 'all' or 'trash', create in default folder (null)
-
-      const newNote = await createNote('Untitled', '', currentFolderId);
+      // Always create in default folder (null)
+      const newNote = await createNote('Untitled', '', null);
       router.push(`/notes/${newNote.id}`);
     } catch (err) {
       console.error('Failed to create note:', err);
@@ -316,19 +289,12 @@ export default function WorkspaceNotesPage() {
       // Move the note
       await moveNote(parseInt(noteToMove), folderId);
 
-      // Refetch to update the lists
+      // Refetch to update notes data (SWR cache)
       await refetch();
 
       // Close drawer
       setShowMoveDrawer(false);
       setNoteToMove(null);
-
-      // Update dropdown selection to show the destination folder
-      if (folderId === null) {
-        setSelectedFolder('notes');
-      } else {
-        setSelectedFolder(folderId);
-      }
     } catch (err) {
       console.error('Failed to move note:', err);
     } finally {
@@ -564,100 +530,108 @@ export default function WorkspaceNotesPage() {
 
   return (
     <div className='flex flex-col h-full text-gray-100 overflow-hidden'>
-      {/* Absolutely Positioned Folder Dropdown and Sort Dropdown */}
-      <div className='absolute top-29 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3'>
-        <FolderDropdown
-          folders={folders}
-          selectedFolder={selectedFolder}
-          onFolderSelect={setSelectedFolder}
-          onCreateFolder={createFolder}
-          onUpdateFolder={updateFolder}
-          onDeleteFolder={deleteFolder}
-          noteCounts={noteCounts}
-        />
-        {/* Sort Dropdown - Only show when "All Notes" is selected */}
-        {selectedFolder === 'all' && (
-          <SortDropdown sortBy={sortBy} onSortChange={setSortBy} />
-        )}
-      </div>
-
       {/* Scrollable Notes List */}
       <ScrollableView className='md:px-6 pt-32 pb-24'>
-        {activeNotes.length === 0 &&
-        (selectedFolder === 'trash' ? deletedNotes.length === 0 : true) ? (
+        {activeNotes.length === 0 && folders.length === 0 && !searchQuery ? (
           <div className='text-center py-12'>
-            {selectedFolder === 'trash' ? (
-              <>
-                <Trash2 className='w-12 h-12 text-gray-600 mx-auto mb-3' />
-                <h3 className='text-lg font-medium text-white mb-2'>
-                  Trash is empty
-                </h3>
-                <p className='text-gray-400'>Deleted notes will appear here</p>
-              </>
-            ) : (
-              <>
-                <FolderOpen className='w-12 h-12 text-gray-600 mx-auto mb-3' />
-                <h3 className='text-lg font-medium text-white mb-2'>
-                  {searchQuery
-                    ? 'No notes found'
-                    : selectedFolder === 'all'
-                      ? 'No notes yet'
-                      : selectedFolder === 'notes'
-                        ? 'No unfiled notes'
-                        : 'Folder is empty'}
-                </h3>
-                <p className='text-gray-400'>
-                  {searchQuery
-                    ? `No notes match "${searchQuery}"`
-                    : selectedFolder === 'all'
-                      ? 'Create your first note to get started'
-                      : selectedFolder === 'notes'
-                        ? 'Notes without a folder will appear here'
-                        : 'Create a note or move one here'}
-                </p>
-              </>
-            )}
+            <FolderOpen className='w-12 h-12 text-gray-600 mx-auto mb-3' />
+            <h3 className='text-lg font-medium text-white mb-2'>
+              No notes yet
+            </h3>
+            <p className='text-gray-400 mb-6'>
+              Create your first note to get started
+            </p>
+            <GlassButton
+              onClick={handleCreateNote}
+              disabled={isCreating}
+              className='px-6 py-2.5 rounded-xl'
+            >
+              {isCreating ? 'Creating...' : 'Create Note'}
+            </GlassButton>
+          </div>
+        ) : activeNotes.length === 0 && searchQuery ? (
+          <div className='text-center py-12'>
+            <FolderOpen className='w-12 h-12 text-gray-600 mx-auto mb-3' />
+            <h3 className='text-lg font-medium text-white mb-2'>
+              No notes found
+            </h3>
+            <p className='text-gray-400'>{`No notes match "${searchQuery}"`}</p>
+          </div>
+        ) : selectedFolder !== null ? (
+          // Show selected folder or trash
+          <div className='flex flex-col gap-6'>
+            <FolderGroupHeader
+              folderName={
+                selectedFolder === 'trash'
+                  ? 'Trash'
+                  : folders.find(f => f.id === selectedFolder)?.title || ''
+              }
+              isCollapsed={false}
+              onToggle={() => {}}
+              showBackButton={true}
+              onBack={() => setSelectedFolder(null)}
+            />
+            <div className='flex flex-col gap-[14px]'>
+              {(selectedFolder === 'trash'
+                ? deletedNotes
+                : typeof selectedFolder === 'number'
+                  ? activeNotes.filter(
+                      note => note.note_folder_id === selectedFolder
+                    )
+                  : []
+              ).map(note => (
+                <NoteCard key={note.id} note={note} />
+              ))}
+              {(selectedFolder === 'trash'
+                ? deletedNotes
+                : typeof selectedFolder === 'number'
+                  ? activeNotes.filter(
+                      note => note.note_folder_id === selectedFolder
+                    )
+                  : []
+              ).length === 0 && (
+                <div className='text-center py-12 text-gray-400'>
+                  {selectedFolder === 'trash'
+                    ? 'Trash is empty'
+                    : 'No notes in this folder'}
+                </div>
+              )}
+            </div>
           </div>
         ) : (
           <div className='flex flex-col gap-6'>
-            {/* Active Notes by Date Groups */}
-            {sortedGroups.map(group => (
-              <div key={group}>
-                {/* Group Header */}
-                <h3 className='text-sm font-medium text-gray-400 mb-3 px-1'>
-                  {group}
-                </h3>
-                {/* Notes in this group */}
-                <div className='flex flex-col gap-[14px]'>
-                  {groupedNotes[group].map(note => (
-                    <NoteCard key={note.id} note={note} />
-                  ))}
+            {/* Active Notes by Folder Groups */}
+            {sortedGroups.map(group => {
+              const isCollapsed = collapsedFolders.has(group);
+              return (
+                <div key={group}>
+                  {/* Folder Group Header */}
+                  <FolderGroupHeader
+                    folderName={group}
+                    isCollapsed={isCollapsed}
+                    onToggle={() => {
+                      setCollapsedFolders(prev => {
+                        const next = new Set(prev);
+                        if (next.has(group)) {
+                          next.delete(group);
+                        } else {
+                          next.add(group);
+                        }
+                        return next;
+                      });
+                    }}
+                  />
+                  {/* Notes in this group */}
+                  {!isCollapsed && (
+                    <div className='flex flex-col gap-[14px]'>
+                      {groupedNotes[group].map(note => (
+                        <NoteCard key={note.id} note={note} />
+                      ))}
+                    </div>
+                  )}
                 </div>
-              </div>
-            ))}
-
-            {/* Trash Section - only show when viewing all notes */}
-            {selectedFolder === 'trash' && deletedNotes.length > 0 && (
-              <div className='mt-6'>
-                <div className='flex items-center justify-between mb-3 px-1'>
-                  <h3 className='text-sm font-medium text-gray-400'>
-                    {deletedNotes.length} deleted note
-                    {deletedNotes.length !== 1 ? 's' : ''}
-                  </h3>
-                  <button
-                    onClick={() => setShowEmptyTrashConfirm(true)}
-                    className='text-xs text-red-400 hover:text-red-300 px-3 py-1.5 rounded-lg hover:bg-red-500/10 transition-all duration-200 font-medium'
-                  >
-                    Empty Trash
-                  </button>
-                </div>
-                <div className='flex flex-col gap-[14px]'>
-                  {deletedNotes.map(note => (
-                    <NoteCard key={note.id} note={note} isDeleted={true} />
-                  ))}
-                </div>
-              </div>
-            )}
+              );
+            })}
           </div>
         )}
       </ScrollableView>
@@ -675,20 +649,18 @@ export default function WorkspaceNotesPage() {
           />
 
           {/* Create Button */}
-          {selectedFolder !== 'trash' && (
-            <GlassButton
-              onClick={handleCreateNote}
-              disabled={isCreating}
-              size='icon'
-              className='disabled:cursor-not-allowed shrink-0 size-12'
-            >
-              {isCreating ? (
-                <div className='animate-spin rounded-full h-5 w-5 border-b-2 border-gray-300'></div>
-              ) : (
-                <PenSquare className='w-5 h-5 text-white' />
-              )}
-            </GlassButton>
-          )}
+          <GlassButton
+            onClick={handleCreateNote}
+            disabled={isCreating}
+            size='icon'
+            className='disabled:cursor-not-allowed shrink-0 size-12'
+          >
+            {isCreating ? (
+              <div className='animate-spin rounded-full h-5 w-5 border-b-2 border-gray-300'></div>
+            ) : (
+              <PenSquare className='w-5 h-5 text-white' />
+            )}
+          </GlassButton>
         </div>
       </div>
 
@@ -746,6 +718,8 @@ export default function WorkspaceNotesPage() {
                   ?.note_folder_id || null
               : null
           }
+          folders={folders}
+          createFolder={createFolder}
         />
       )}
 

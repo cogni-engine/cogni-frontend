@@ -1,5 +1,6 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { TrashView } from './TrashView';
 import { NotesView } from './NotesView';
 import { NotesListSkeleton } from './NotesListSkeleton';
@@ -15,17 +16,33 @@ export function NotesPageContent() {
     formattedDeletedNotes,
     createNote,
     folders,
-    selectedFolder,
-    sortBy,
     searchQuery,
   } = useNotesContext();
 
-  const { openContextMenu, openEmptyTrashConfirm } = useNoteActions();
+  const { openContextMenu } = useNoteActions();
   const router = useRouter();
+  const [selectedFolder, setSelectedFolder] = useState<'trash' | number | null>(
+    null
+  );
 
   const handleNoteClick = (id: string) => {
     router.push(`/notes/${id}`);
   };
+
+  const handleBackFromFolder = () => {
+    setSelectedFolder(null);
+  };
+
+  // Listen for trash click event from Header
+  useEffect(() => {
+    const handleTrashClick = () => {
+      setSelectedFolder('trash');
+    };
+    window.addEventListener('trash-folder-selected', handleTrashClick);
+    return () => {
+      window.removeEventListener('trash-folder-selected', handleTrashClick);
+    };
+  }, []);
 
   if (loading) {
     return <NotesListSkeleton />;
@@ -39,27 +56,28 @@ export function NotesPageContent() {
     );
   }
 
-  if (selectedFolder === 'trash') {
-    return (
-      <TrashView
-        deletedNotes={formattedDeletedNotes}
-        onNoteClick={handleNoteClick}
-        onContextMenu={openContextMenu}
-        onEmptyTrash={openEmptyTrashConfirm}
-      />
-    );
-  }
+  // Determine which notes to show based on selected folder
+  const notesToShow =
+    selectedFolder === 'trash'
+      ? formattedDeletedNotes
+      : selectedFolder !== null
+        ? formattedActiveNotes.filter(
+            note =>
+              typeof selectedFolder === 'number' &&
+              note.note_folder_id === selectedFolder
+          )
+        : formattedActiveNotes;
 
   return (
     <NotesView
-      notes={formattedActiveNotes}
+      notes={notesToShow}
       folders={folders}
-      sortBy={sortBy}
       searchQuery={searchQuery}
-      selectedFolder={selectedFolder}
       onNoteClick={handleNoteClick}
       onContextMenu={openContextMenu}
       onCreateNote={() => createNote('Untitled', '')}
+      selectedFolder={selectedFolder}
+      onBackFromFolder={handleBackFromFolder}
     />
   );
 }
