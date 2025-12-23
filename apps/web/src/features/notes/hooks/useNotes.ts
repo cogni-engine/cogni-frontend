@@ -76,14 +76,24 @@ export function useNotes(options: UseNotesOptions = {}): UseNotesReturn {
       let allNotes: Note[] = [];
 
       // Fetch workspace notes
-      if (workspaceId) {
+      if (
+        workspaceId !== undefined &&
+        workspaceId !== null &&
+        workspaceId !== 0
+      ) {
         const workspaceNotes = await getNotes(workspaceId, includeDeleted);
         allNotes = [...workspaceNotes];
+        console.log(
+          `[useNotes] Fetched ${workspaceNotes.length} notes for workspace ${workspaceId}`
+        );
       }
 
       // Fetch assigned notes from other workspaces
       if (includeAssignedNotes) {
         const assignedNotes = await getUserAssignedNotes();
+        console.log(
+          `[useNotes] Fetched ${assignedNotes.length} assigned notes`
+        );
 
         // Merge and deduplicate by note ID
         const notesMap = new Map<number, Note>();
@@ -94,10 +104,11 @@ export function useNotes(options: UseNotesOptions = {}): UseNotesReturn {
       }
 
       const parsedNotes = allNotes.map(parseNote);
+      console.log(`[useNotes] Total parsed notes: ${parsedNotes.length}`);
       setNotes(parsedNotes);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to fetch notes');
-      console.error('Error fetching notes:', err);
+      console.error('[useNotes] Error fetching notes:', err);
     } finally {
       setLoading(false);
     }

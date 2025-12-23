@@ -1,0 +1,91 @@
+
+> cogni-frontend@ lint /Users/kawakamishimpei/Desktop/cogno-development/cogni-frontend
+> turbo run lint "--filter" "@cogni/web"
+
+turbo 2.6.1
+
+• Packages in scope: @cogni/web
+• Running lint in 1 packages
+• Remote caching disabled
+@cogni/web:lint: cache miss, executing 4af164fa59002714
+@cogni/web:lint: 
+@cogni/web:lint: > @cogni/web@0.1.0 lint /Users/kawakamishimpei/Desktop/cogno-development/cogni-frontend/apps/web
+@cogni/web:lint: > eslint . --ext .ts,.tsx,.js,.jsx
+@cogni/web:lint: 
+@cogni/web:lint: 
+@cogni/web:lint: /Users/kawakamishimpei/Desktop/cogno-development/cogni-frontend/apps/web/src/app/(private)/notes/page.tsx
+@cogni/web:lint:   403:88  error  Insert `⏎··········`  prettier/prettier
+@cogni/web:lint:   404:1   error  Delete `··`           prettier/prettier
+@cogni/web:lint:   481:1   error  Insert `··`           prettier/prettier
+@cogni/web:lint: 
+@cogni/web:lint: /Users/kawakamishimpei/Desktop/cogno-development/cogni-frontend/apps/web/src/app/(private)/workspace/[id]/notes/page.tsx
+@cogni/web:lint:   419:36  error  Delete `·`                                                        prettier/prettier
+@cogni/web:lint:   455:94  error  Insert `⏎··········`                                              prettier/prettier
+@cogni/web:lint:   456:1   error  Delete `··`                                                       prettier/prettier
+@cogni/web:lint:   522:19  error  Delete `··`                                                       prettier/prettier
+@cogni/web:lint:   523:21  error  Delete `··`                                                       prettier/prettier
+@cogni/web:lint:   524:1   error  Delete `··`                                                       prettier/prettier
+@cogni/web:lint:   525:1   error  Replace `························` with `······················`  prettier/prettier
+@cogni/web:lint:   526:1   error  Delete `··`                                                       prettier/prettier
+@cogni/web:lint:   527:21  error  Delete `··`                                                       prettier/prettier
+@cogni/web:lint:   528:19  error  Delete `··`                                                       prettier/prettier
+@cogni/web:lint:   529:1   error  Delete `··`                                                       prettier/prettier
+@cogni/web:lint:   602:1   error  Delete `··`                                                       prettier/prettier
+@cogni/web:lint:   740:17  error  Insert `··`                                                       prettier/prettier
+@cogni/web:lint:   741:1   error  Insert `··`                                                       prettier/prettier
+@cogni/web:lint:   742:17  error  Insert `··`                                                       prettier/prettier
+@cogni/web:lint:   743:1   error  Insert `··`                                                       prettier/prettier
+@cogni/web:lint:   765:1   error  Insert `··`                                                       prettier/prettier
+@cogni/web:lint: 
+@cogni/web:lint: /Users/kawakamishimpei/Desktop/cogno-development/cogni-frontend/apps/web/src/app/api/ai-completion/route.ts
+@cogni/web:lint:   32:22  warning  'noteTitle' is assigned a value but never used  @typescript-eslint/no-unused-vars
+@cogni/web:lint: 
+@cogni/web:lint: /Users/kawakamishimpei/Desktop/cogno-development/cogni-frontend/apps/web/src/app/mobile-auth-required/page.tsx
+@cogni/web:lint:   8:53  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+@cogni/web:lint:   9:18  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+@cogni/web:lint: 
+@cogni/web:lint: /Users/kawakamishimpei/Desktop/cogno-development/cogni-frontend/apps/web/src/components/chat-input/TiptapChatInput.tsx
+@cogni/web:lint:   61:12  warning  'isFocused' is assigned a value but never used  @typescript-eslint/no-unused-vars
+@cogni/web:lint: 
+@cogni/web:lint: /Users/kawakamishimpei/Desktop/cogno-development/cogni-frontend/apps/web/src/components/tiptap/extensions/useTiptapExtensions.ts
+@cogni/web:lint:   36:32  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+@cogni/web:lint:   47:23  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+@cogni/web:lint: 
+@cogni/web:lint: /Users/kawakamishimpei/Desktop/cogno-development/cogni-frontend/apps/web/src/features/notes/hooks/useCollaborativeEditor.ts
+@cogni/web:lint:   21:36  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+@cogni/web:lint: 
+@cogni/web:lint: /Users/kawakamishimpei/Desktop/cogno-development/cogni-frontend/apps/web/src/features/notes/hooks/useNotes.ts
+@cogni/web:lint:   79:11  error  Replace `workspaceId·!==·undefined·&&·workspaceId·!==·null·&&·workspaceId·!==·0` with `⏎········workspaceId·!==·undefined·&&⏎········workspaceId·!==·null·&&⏎········workspaceId·!==·0⏎······`          prettier/prettier
+@cogni/web:lint:   82:21  error  Replace ``[useNotes]·Fetched·${workspaceNotes.length}·notes·for·workspace·${workspaceId}`` with `⏎··········`[useNotes]·Fetched·${workspaceNotes.length}·notes·for·workspace·${workspaceId}`⏎········`  prettier/prettier
+@cogni/web:lint:   88:21  error  Replace ``[useNotes]·Fetched·${assignedNotes.length}·assigned·notes`` with `⏎··········`[useNotes]·Fetched·${assignedNotes.length}·assigned·notes`⏎········`                                            prettier/prettier
+@cogni/web:lint: 
+@cogni/web:lint: /Users/kawakamishimpei/Desktop/cogno-development/cogni-frontend/apps/web/src/features/notes/lib/collaborativeExtensions.ts
+@cogni/web:lint:   27:36  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+@cogni/web:lint: 
+@cogni/web:lint: /Users/kawakamishimpei/Desktop/cogno-development/cogni-frontend/apps/web/src/features/workspace/components/MessageFiles.tsx
+@cogni/web:lint:     4:39  warning  'useCallback' is defined but never used                                                                                           @typescript-eslint/no-unused-vars
+@cogni/web:lint:    59:29  warning  'filename' is defined but never used                                                                                              @typescript-eslint/no-unused-vars
+@cogni/web:lint:   148:6   warning  React Hook useEffect has missing dependencies: 'fileUrls' and 'loadingFiles'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+@cogni/web:lint: 
+@cogni/web:lint: /Users/kawakamishimpei/Desktop/cogno-development/cogni-frontend/apps/web/src/lib/api/foldersApi.ts
+@cogni/web:lint:   114:36  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+@cogni/web:lint: 
+@cogni/web:lint: /Users/kawakamishimpei/Desktop/cogno-development/cogni-frontend/apps/web/src/lib/webview.ts
+@cogni/web:lint:   11:23  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+@cogni/web:lint:   17:73  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+@cogni/web:lint:   20:18  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+@cogni/web:lint: 
+@cogni/web:lint: ✖ 38 problems (23 errors, 15 warnings)
+@cogni/web:lint:   23 errors and 0 warnings potentially fixable with the `--fix` option.
+@cogni/web:lint: 
+@cogni/web:lint:  ELIFECYCLE  Command failed with exit code 1.
+@cogni/web:lint: ERROR: command finished with error: command (/Users/kawakamishimpei/Desktop/cogno-development/cogni-frontend/apps/web) /Users/kawakamishimpei/Library/pnpm/.tools/pnpm/9.15.0/bin/pnpm run lint exited (1)
+@cogni/web#lint: command (/Users/kawakamishimpei/Desktop/cogno-development/cogni-frontend/apps/web) /Users/kawakamishimpei/Library/pnpm/.tools/pnpm/9.15.0/bin/pnpm run lint exited (1)
+
+ Tasks:    0 successful, 1 total
+Cached:    0 cached, 1 total
+  Time:    3.476s 
+Failed:    @cogni/web#lint
+
+ ERROR  run failed: command  exited (1)
+ ELIFECYCLE  Command failed with exit code 1.

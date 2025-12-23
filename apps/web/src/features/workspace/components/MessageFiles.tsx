@@ -1,9 +1,10 @@
 'use client';
 
 import Image from 'next/image';
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { createPortal } from 'react-dom';
-import { X } from 'lucide-react';
+import { X, Play, Volume2 } from 'lucide-react';
+import { cn } from '@/lib/utils';
 import SquareImage from '@/components/sendable/SquareImage';
 import SendableDefaultFile from '@/components/sendable/SendableDefaultFile';
 import { createClient } from '@/lib/supabase/browserClient';
@@ -13,9 +14,9 @@ const supabase = createClient();
 const WORKSPACE_FILES_BUCKET = 'workspace-files';
 
 export interface MessageFile {
-  id: number; // bigint (database primary key from workspace_files)
+  id: number;
   original_filename: string;
-  file_path: string; // Contains UUID in path: {workspace_id}/uploads/{uuid}/{filename}
+  file_path: string;
   mime_type: string;
   file_size: number;
 }
@@ -26,9 +27,72 @@ type MessageFilesProps = {
   align?: 'left' | 'right';
 };
 
-const isImage = (mimeType: string): boolean => {
-  return mimeType.startsWith('image/');
-};
+// for special files
+const isImage = (mimeType: string): boolean => mimeType.startsWith('image/');
+const isAudio = (mimeType: string): boolean => mimeType.startsWith('audio/');
+const isVideo = (mimeType: string): boolean => mimeType.startsWith('video/');
+
+function AudioPlayer({ src, filename }: { src: string; filename: string }) {
+  return (
+    <div className='flex items-center gap-3 bg-zinc-900/90 backdrop-blur-xl border border-white/5 rounded-2xl px-4 py-3 min-w-[300px] md:min-w-[360px] max-w-full shadow-2xl ring-1 ring-white/10'>
+      <div className='w-10 h-10 rounded-full bg-blue-500/10 flex items-center justify-center flex-shrink-0 border border-blue-500/20'>
+        <Volume2 className='w-5 h-5 text-blue-400' />
+      </div>
+      <div className='flex-1 min-w-0'>
+        <p
+          className='text-[10px] font-medium text-white/40 truncate mb-1.5 px-1'
+          title={filename}
+        >
+          {filename}
+        </p>
+        <audio
+          controls
+          src={src}
+          className='w-full h-8 opacity-90 brightness-90 contrast-125'
+          controlsList='nodownload'
+        />
+      </div>
+    </div>
+  );
+}
+
+function VideoPlayer({ src, filename }: { src: string; filename: string }) {
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const [isPlaying, setIsPlaying] = useState(false);
+
+  const togglePlay = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!videoRef.current) return;
+    if (isPlaying) {
+      videoRef.current.pause();
+    } else {
+      videoRef.current.play();
+    }
+  };
+
+  return (
+    <div className='relative group rounded-xl overflow-hidden border border-white/10 bg-black/40 max-w-sm'>
+      <video
+        ref={videoRef}
+        src={src}
+        className='w-full aspect-video object-contain'
+        onPlay={() => setIsPlaying(true)}
+        onPause={() => setIsPlaying(false)}
+        controls
+      />
+      {!isPlaying && (
+        <div
+          className='absolute inset-0 flex items-center justify-center bg-black/30 backdrop-blur-[2px] cursor-pointer group-hover:bg-black/40 transition-all duration-300'
+          onClick={togglePlay}
+        >
+          <div className='w-14 h-14 rounded-full bg-white/10 border border-white/20 backdrop-blur-md flex items-center justify-center group-hover:scale-110 group-hover:bg-white/20 transition-all duration-300'>
+            <Play className='w-7 h-7 text-white ml-1' fill='currentColor' />
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default function MessageFiles({
   files,
@@ -37,52 +101,44 @@ export default function MessageFiles({
 }: MessageFilesProps) {
   const { openFileDrawer } = useGlobalUI();
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
-  const [imageUrls, setImageUrls] = useState<Map<number, string>>(new Map());
-  const [loadingImages, setLoadingImages] = useState<Set<number>>(new Set());
-  const loadedFilesRef = useRef<Set<number>>(new Set());
-  const loadingFilesRef = useRef<Set<number>>(new Set());
+  const [fileUrls, setFileUrls] = useState<Map<number, string>>(new Map());
+  const [loadingFiles, setLoadingFiles] = useState<Set<number>>(new Set());
   const [mounted, setMounted] = useState(false);
 
-  // Ensure component is mounted before using portal (SSR safety)
   useEffect(() => {
     setMounted(true);
   }, []);
 
-  // Pre-load image URLs when component mounts or files change
   useEffect(() => {
-    const loadImageUrls = async () => {
-      const imageFiles = files.filter(file => isImage(file.mime_type));
+    const loadFileUrls = async () => {
 
-      for (const file of imageFiles) {
-        // Skip if already loaded or loading
-        if (
-          loadedFilesRef.current.has(file.id) ||
-          loadingFilesRef.current.has(file.id)
-        ) {
-          continue;
-        }
+      // gets the special files
+      const mediaFiles = files.filter(
+        file =>
+          isImage(file.mime_type) ||
+          isAudio(file.mime_type) ||
+          isVideo(file.mime_type)
+      );
 
-        loadingFilesRef.current.add(file.id);
-        setLoadingImages(prev => new Set(prev).add(file.id));
+
+      // render the special files
+      for (const file of mediaFiles) {
+        if (fileUrls.has(file.id) || loadingFiles.has(file.id)) continue;
+
+        setLoadingFiles(prev => new Set(prev).add(file.id));
 
         try {
-          // Get signed URL for private bucket (valid for 1 hour)
-          const { data: signedUrlData, error: signedUrlError } =
-            await supabase.storage
-              .from(WORKSPACE_FILES_BUCKET)
-              .createSignedUrl(file.file_path, 3600);
+          const { data, error } = await supabase.storage
+            .from(WORKSPACE_FILES_BUCKET)
+            .createSignedUrl(file.file_path, 3600);
 
-          if (!signedUrlError && signedUrlData?.signedUrl) {
-            loadedFilesRef.current.add(file.id);
-            setImageUrls(prev =>
-              new Map(prev).set(file.id, signedUrlData.signedUrl)
-            );
+          if (!error && data?.signedUrl) {
+            setFileUrls(prev => new Map(prev).set(file.id, data.signedUrl));
           }
         } catch (error) {
-          console.error('Error loading image URL:', error);
+          console.error('Error loading file URL:', error);
         } finally {
-          loadingFilesRef.current.delete(file.id);
-          setLoadingImages(prev => {
+          setLoadingFiles(prev => {
             const next = new Set(prev);
             next.delete(file.id);
             return next;
@@ -91,10 +147,9 @@ export default function MessageFiles({
       }
     };
 
-    loadImageUrls();
+    loadFileUrls();
   }, [files]);
 
-  // Lock body scroll when image is open
   useEffect(() => {
     if (selectedImage) {
       document.body.style.overflow = 'hidden';
@@ -104,64 +159,20 @@ export default function MessageFiles({
     }
   }, [selectedImage]);
 
-  const handleFileClick = useCallback(
-    (file: MessageFile) => {
-      openFileDrawer({
-        id: file.id,
-        original_filename: file.original_filename,
-        file_path: file.file_path,
-        mime_type: file.mime_type,
-        file_size: file.file_size,
-        bucket,
-      });
-    },
-    [openFileDrawer, bucket]
-  );
-
-  const handleImageClick = async (file: MessageFile) => {
-    if (!imageUrls.has(file.id)) {
-      try {
-        const { data: signedUrlData, error: signedUrlError } =
-          await supabase.storage
-            .from(WORKSPACE_FILES_BUCKET)
-            .createSignedUrl(file.file_path, 3600);
-
-        if (signedUrlError) {
-          console.error('Error creating signed URL:', signedUrlError);
-          return;
-        }
-
-        if (signedUrlData?.signedUrl) {
-          setImageUrls(prev =>
-            new Map(prev).set(file.id, signedUrlData.signedUrl)
-          );
-          setSelectedImage(signedUrlData.signedUrl);
-        }
-      } catch (error) {
-        console.error('Error loading image:', error);
-      }
-    } else {
-      setSelectedImage(imageUrls.get(file.id) || null);
-    }
-  };
-
   const handleDownload = async (file: MessageFile) => {
     try {
-      // Get signed URL for private bucket (valid for 1 hour)
-      const { data: signedUrlData, error: signedUrlError } =
-        await supabase.storage
+      let url = fileUrls.get(file.id);
+      if (!url) {
+        const { data, error } = await supabase.storage
           .from(WORKSPACE_FILES_BUCKET)
           .createSignedUrl(file.file_path, 3600);
-
-      if (signedUrlError) {
-        console.error('Error creating signed URL:', signedUrlError);
-        alert('Failed to download file. Please try again.');
-        return;
+        if (error) throw error;
+        url = data.signedUrl;
       }
 
-      if (signedUrlData?.signedUrl) {
+      if (url) {
         const link = document.createElement('a');
-        link.href = signedUrlData.signedUrl;
+        link.href = url;
         link.download = file.original_filename;
         document.body.appendChild(link);
         link.click();
@@ -169,91 +180,172 @@ export default function MessageFiles({
       }
     } catch (error) {
       console.error('Error downloading file:', error);
-      alert('Failed to download file. Please try again.');
     }
   };
 
-  if (files.length === 0) return null;
+  const imageFiles = useMemo(
+    () => files.filter(file => isImage(file.mime_type)),
+    [files]
+  );
+  const audioFiles = useMemo(
+    () => files.filter(file => isAudio(file.mime_type)),
+    [files]
+  );
+  const videoFiles = useMemo(
+    () => files.filter(file => isVideo(file.mime_type)),
+    [files]
+  );
+  const otherFiles = useMemo(
+    () =>
+      files.filter(
+        file =>
+          !isImage(file.mime_type) &&
+          !isAudio(file.mime_type) &&
+          !isVideo(file.mime_type)
+      ),
+    [files]
+  );
 
-  // Separate files into images and non-images
-  const imageFiles = files.filter(file => isImage(file.mime_type));
-  const nonImageFiles = files.filter(file => !isImage(file.mime_type));
+  if (files.length === 0) return null;
 
   return (
     <>
-      <div className='space-y-2 inline-block'>
-        {/* Non-image files - vertical layout */}
-        {nonImageFiles.length > 0 && (
-          <div
-            className={`flex flex-col gap-2 ${align === 'right' ? 'items-end' : 'items-start'}`}
-          >
-            {nonImageFiles.map(file => (
-              <SendableDefaultFile
+      <div
+        className={cn(
+          'flex flex-col gap-3',
+          align === 'right' ? 'items-end' : 'items-start'
+        )}
+      >
+        {/* Videos */}
+        {videoFiles.map(file => {
+          const url = fileUrls.get(file.id);
+          if (!url) {
+            return (
+              <div
                 key={file.id}
-                filename={file.original_filename}
-                fileSize={file.file_size}
-                onClick={() => handleFileClick(file)}
-                onDownload={() => handleDownload(file)}
+                className='relative rounded-xl overflow-hidden border border-white/10 bg-black/40 w-full max-w-sm aspect-video flex items-center justify-center'
+              >
+                <div className='animate-pulse w-12 h-12 rounded-full bg-white/10' />
+              </div>
+            );
+          }
+          return (
+            <VideoPlayer
+              key={file.id}
+              src={url}
+              filename={file.original_filename}
+            />
+          );
+        })}
+
+        {/* Audios */}
+        {audioFiles.map(file => {
+          const url = fileUrls.get(file.id);
+          if (!url) {
+            return (
+              <div
+                key={file.id}
+                className='flex items-center gap-3 bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl px-4 py-3 min-w-[300px] md:min-w-[360px] max-w-full shadow-lg h-[86px]'
+              >
+                <div className='w-10 h-10 rounded-full bg-blue-500/10 animate-pulse flex-shrink-0' />
+                <div className='flex-1 space-y-2'>
+                  <div className='h-2 w-24 bg-white/5 rounded animate-pulse' />
+                  <div className='h-8 w-full bg-white/5 rounded-full animate-pulse' />
+                </div>
+              </div>
+            );
+          }
+          return (
+            <AudioPlayer
+              key={file.id}
+              src={url}
+              filename={file.original_filename}
+            />
+          );
+        })}
+
+        {/* Images with Grid Logic */}
+        {imageFiles.length > 0 && (
+          <div
+            className={cn(
+              'grid gap-1',
+              imageFiles.length === 1
+                ? 'grid-cols-1'
+                : imageFiles.length === 2
+                  ? 'grid-cols-2'
+                  : imageFiles.length === 3
+                    ? 'grid-cols-2'
+                    : 'grid-cols-2'
+            )}
+          >
+            {imageFiles.map((file, idx) => (
+              <SquareImage
+                key={file.id}
+                src={fileUrls.get(file.id)}
+                alt={file.original_filename}
+                size={imageFiles.length === 1 ? 240 : 120}
+                isLoading={loadingFiles.has(file.id)}
+                onClick={e => {
+                  e.stopPropagation();
+                  setSelectedImage(fileUrls.get(file.id) || null);
+                }}
+                aspectRatio={
+                  imageFiles.length === 3 && idx === 0 ? 'auto' : '1/1'
+                }
+                className={cn(
+                  'rounded-lg overflow-hidden',
+                  imageFiles.length === 3 && idx === 0 ? 'row-span-2' : ''
+                )}
               />
             ))}
           </div>
         )}
 
-        {/* Image files - horizontal wrapping layout */}
-        {imageFiles.length > 0 && (
-          <div
-            className={`flex flex-wrap gap-2 ${align === 'right' ? 'justify-end' : 'justify-start'}`}
-          >
-            {imageFiles.map(file => (
-              <SquareImage
+        {/* Other Files */}
+        {otherFiles.length > 0 && (
+          <div className='flex flex-col gap-2'>
+            {otherFiles.map(file => (
+              <SendableDefaultFile
                 key={file.id}
-                src={imageUrls.get(file.id)}
-                alt={file.original_filename}
-                size={128}
-                isLoading={loadingImages.has(file.id)}
-                onClick={() => handleImageClick(file)}
+                filename={file.original_filename}
+                fileSize={file.file_size}
+                mimeType={file.mime_type}
+                onClick={() => openFileDrawer({ ...file, bucket })}
+                onDownload={() => handleDownload(file)}
               />
             ))}
           </div>
         )}
       </div>
 
-      {/* Full Screen Image View - Rendered via Portal to document.body */}
+      {/* Improved Full Screen Portal */}
       {mounted &&
         selectedImage &&
         createPortal(
-          <div
-            className='fixed inset-0 z-[9999] bg-black'
-            style={{
-              position: 'fixed',
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              width: '100vw',
-              height: '100vh',
-            }}
-            onClick={() => setSelectedImage(null)}
-          >
+          <div className='fixed inset-0 z-[10000] flex items-center justify-center p-4 md:p-10'>
+            <div
+              className='absolute inset-0 bg-black/90 backdrop-blur-sm transition-opacity duration-300'
+              onClick={() => setSelectedImage(null)}
+            />
+
             <button
               onClick={() => setSelectedImage(null)}
-              className='absolute top-4 right-4 z-10 w-10 h-10 rounded-full bg-black/60 hover:bg-black/80 flex items-center justify-center transition-colors'
-              aria-label='Close image'
+              className='absolute top-6 right-6 z-10 p-2 rounded-full bg-white/10 hover:bg-white/20 text-white transition-all shadow-xl'
             >
-              <X className='w-5 h-5 text-white' />
+              <X className='w-6 h-6' />
             </button>
+
             <div
-              className='relative w-full h-full'
-              style={{ width: '100vw', height: '100vh' }}
+              className='relative w-full h-full max-w-5xl max-h-full flex items-center justify-center animate-in zoom-in-95 fade-in duration-300'
               onClick={e => e.stopPropagation()}
             >
               <Image
                 src={selectedImage}
                 alt='Preview'
                 fill
-                sizes='100vw'
-                className='object-contain'
+                className='object-contain select-none shadow-2xl'
                 priority
+                sizes='(max-width: 1280px) 100vw, 1280px'
               />
             </div>
           </div>,

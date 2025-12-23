@@ -488,28 +488,22 @@ export default function WorkspaceChatPage() {
           </div>
         )}
 
-        {isConnected || messages.length > 0 ? (
-          currentUserId ? (
-            <WorkspaceMessageList
-              messages={messages}
-              currentUserId={currentUserId}
-              onReply={handleReply}
-              onJumpToMessage={scrollToMessage}
-              highlightedMessageId={highlightedMessageId}
-              workspaceMembers={members}
-              workspaceNotes={workspaceNotes}
-            />
-          ) : (
-            <div className='flex-1 flex items-center justify-center'>
-              <div className='text-center'>
-                <p className='text-gray-400'>Loading...</p>
-              </div>
-            </div>
-          )
+        {(isConnected || messages.length > 0) && currentUserId ? (
+          <WorkspaceMessageList
+            messages={messages}
+            currentUserId={currentUserId}
+            onReply={handleReply}
+            onJumpToMessage={scrollToMessage}
+            highlightedMessageId={highlightedMessageId}
+            workspaceMembers={members}
+            workspaceNotes={workspaceNotes}
+          />
         ) : (
           <div className='flex-1 flex items-center justify-center'>
             <div className='text-center'>
-              <p className='text-gray-400'>Connecting to real-time chat...</p>
+              <p className='text-gray-400 font-medium animate-pulse'>
+                Connecting to real-time chat...
+              </p>
             </div>
           </div>
         )}

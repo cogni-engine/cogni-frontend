@@ -303,19 +303,27 @@ export default function NotesPage() {
 
       {/* スクロール可能エリア（ノートリストのみ） */}
       <ScrollableView className='pt-20 pb-36'>
-        {loading && (
-          <div className='flex justify-center items-center py-12'>
-            <div className='animate-spin rounded-full h-8 w-8 border-b-2 border-white'></div>
+        {loading && notes.length === 0 ? (
+          <div className='flex-1 flex items-center justify-center min-h-[400px]'>
+            <div className='text-center'>
+              <p className='text-gray-400 font-medium animate-pulse'>
+                Loading notes...
+              </p>
+            </div>
           </div>
-        )}
-
-        {error && (
-          <div className='bg-red-500/10 border border-red-500/20 rounded-lg p-4 text-red-300'>
-            {error}
+        ) : error ? (
+          <div className='flex-1 flex items-center justify-center min-h-[400px] px-4'>
+            <div className='bg-red-500/10 border border-red-500/20 rounded-2xl p-6 text-red-300 max-w-md w-full text-center'>
+              <p className='mb-4 font-medium'>{error}</p>
+              <button
+                onClick={() => refetch()}
+                className='px-4 py-2 bg-red-600/20 hover:bg-red-600/30 rounded-xl transition-all font-medium text-sm'
+              >
+                Retry
+              </button>
+            </div>
           </div>
-        )}
-
-        {!loading && !error && (
+        ) : (
           <>
             {selectedFolder === 'trash' ? (
               /* Trash View */
