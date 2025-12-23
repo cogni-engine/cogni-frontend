@@ -1,5 +1,5 @@
 import React, { useRef, useState, useEffect } from 'react';
-import { View, StyleSheet, ActivityIndicator, Platform, Text, TouchableOpacity, Animated } from 'react-native';
+import { View, StyleSheet, Platform, Text, TouchableOpacity, Animated, Easing } from 'react-native';
 import { WebView } from 'react-native-webview';
 import { ThemedView } from './themed-view';
 import { Session } from '@supabase/supabase-js';
@@ -23,6 +23,7 @@ export default function WebAppView({ url = 'https://app.cogno.studio', session }
   const insets = useSafeAreaInsets();
   const slideAnim = useRef(new Animated.Value(1000)).current; // Start off-screen (below)
   const loadingOpacity = useRef(new Animated.Value(1)).current; // Start fully visible
+  const iconOpacity = useRef(new Animated.Value(0.4)).current; // For icon fade animation
   const params = useLocalSearchParams();
   const pendingNavigationRef = useRef<NotificationData | null>(null);
   const lastProcessedParamsRef = useRef<string>('');
@@ -155,6 +156,20 @@ export default function WebAppView({ url = 'https://app.cogno.studio', session }
       setShowLoading(true);
     }
   }, [loading, error, loadingOpacity]);
+
+  // Fade in/out animation for loading icon
+  // Fade in animation for loading icon
+  useEffect(() => {
+    if (showLoading && !error) {
+      iconOpacity.setValue(0);
+      Animated.timing(iconOpacity, {
+        toValue: 1,
+        duration: 600,
+        easing: Easing.out(Easing.ease),
+        useNativeDriver: true,
+      }).start();
+    }
+  }, [showLoading, error, iconOpacity]);
 
   const handleError = (syntheticEvent: any) => {
     const { nativeEvent } = syntheticEvent;
@@ -311,16 +326,20 @@ export default function WebAppView({ url = 'https://app.cogno.studio', session }
         keyboardDisplayRequiresUserAction={false}
         hideKeyboardAccessoryView={true} // iOS only - hides the toolbar above keyboard
         autoManageStatusBarEnabled={false}
+        // Caching - improves performance on repeat visits
+        cacheEnabled={true}
+        cacheMode="LOAD_DEFAULT" // Use cache when available, fetch if stale
+        incognito={false} // Ensure cache is persisted
       />
 
         {/* Loading Screen - shown until page loads, fades out */}
         {showLoading && !error && (
           <Animated.View style={[styles.loadingContainer, { opacity: loadingOpacity }]}>
-            <ActivityIndicator 
-              size="large" 
-              color="#fff"
+            <Animated.Image
+              source={require('@/assets/images/cogno-icon.png')}
+              style={[styles.loadingIcon, { opacity: iconOpacity }]}
+              resizeMode="contain"
             />
-            <Text style={styles.loadingText}>Loading...</Text>
           </Animated.View>
         )}
         
@@ -357,11 +376,12 @@ const styles = StyleSheet.create({
     backgroundColor: '#000',
     zIndex: 1,
   },
-  loadingText: {
-    marginTop: 16,
-    fontSize: 14,
-    color: '#fff',
-    opacity: 0.7,
+  loadingIcon: {
+    width: 250,
+    height: 250,
+  },
+  loadingIndicatorContainer: {
+    marginTop: 24,
   },
   errorContainer: {
     ...StyleSheet.absoluteFillObject,

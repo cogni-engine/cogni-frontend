@@ -5,7 +5,6 @@ import { useEffect, useRef } from 'react';
 import 'react-native-reanimated';
 import * as Notifications from 'expo-notifications';
 
-import { SplashScreenController } from '@/components/splash-screen-controller';
 import { useAuthContext } from '@/hooks/use-auth-context';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { useNotificationBadge } from '@/hooks/use-notification-badge';
@@ -17,6 +16,7 @@ import {
   type NotificationData,
 } from '@/lib/notifications';
 import { handleNotificationResponse } from '@/lib/deep-linking';
+import { WebViewPreloader } from '@/components/WebViewPreloader';
 
 // Separate RootNavigator so we can access the AuthContext
 function RootNavigator() {
@@ -126,7 +126,7 @@ export default function RootLayout() {
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
       <AuthProvider>
-        <SplashScreenController />
+        <WebViewPreloader />
         <RootNavigator />
         <StatusBar style="auto" />
       </AuthProvider>

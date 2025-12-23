@@ -9,7 +9,7 @@ export default function HomeScreen() {
 
   useEffect(() => {
     if (!isLoading && !isLoggedIn) {
-      router.replace('/login' as any);
+      router.replace('/auth/login');
     }
   }, [isLoading, isLoggedIn]);
 
