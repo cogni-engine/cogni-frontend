@@ -270,7 +270,6 @@ function WorkspaceMessageItem({
 
   const profile = message.workspace_member?.user_profile ?? null;
 
-  console.log(message);
   const name = profile?.name ?? 'Unknown';
   const avatarUrl = profile?.avatar_url ?? '';
   const readCount = message.read_count ?? message.reads?.length ?? 0;

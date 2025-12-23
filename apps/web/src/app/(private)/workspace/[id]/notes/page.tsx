@@ -504,25 +504,35 @@ export default function WorkspaceNotesPage() {
 
   const NoteCard = memo(NoteCardComponent);
 
-  if (loading && !isSearching) {
+  if (loading && !isSearching && notes.length === 0) {
     return (
-      <div className='flex justify-center items-center py-12'>
-        <div className='animate-spin rounded-full h-8 w-8 border-b-2 border-white'></div>
+      <div className='flex flex-col h-full text-gray-100 overflow-hidden'>
+        <div className='flex-1 flex items-center justify-center'>
+          <div className='text-center'>
+            <p className='text-gray-400 font-medium animate-pulse'>
+              Loading notes...
+            </p>
+          </div>
+        </div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className='bg-red-500/10 border border-red-500/20 rounded-lg p-4 text-red-300'>
-        <div className='flex items-center justify-between'>
-          <span>{error}</span>
-          <button
-            onClick={refetch}
-            className='text-sm px-3 py-1 bg-red-600/20 hover:bg-red-600/30 rounded-md transition-colors'
-          >
-            Retry
-          </button>
+      <div className='flex flex-col h-full text-gray-100 overflow-hidden'>
+        <div className='flex-1 flex items-center justify-center p-4'>
+          <div className='bg-red-500/10 border border-red-500/20 rounded-lg p-4 text-red-300 max-w-md w-full'>
+            <div className='flex items-center justify-between'>
+              <span>{error}</span>
+              <button
+                onClick={refetch}
+                className='text-sm px-3 py-1 bg-red-600/20 hover:bg-red-600/30 rounded-md transition-colors'
+              >
+                Retry
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     );

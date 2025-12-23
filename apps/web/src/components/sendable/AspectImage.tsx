@@ -2,46 +2,38 @@
 
 import Image from 'next/image';
 import { Image as ImageIcon } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
-export type SquareImageProps = {
+export type AspectImageProps = {
   src?: string | null;
   alt: string;
   size?: number;
   isLoading?: boolean;
-  onClick?: () => void;
+  onClick?: (e: React.MouseEvent) => void;
   className?: string;
+  aspectRatio?: string;
 };
 
-export default function SquareImage({
+export default function AspectImage({
   src,
   alt,
   size = 128,
   isLoading = false,
   onClick,
   className = '',
-}: SquareImageProps) {
+  aspectRatio = '1/1',
+}: AspectImageProps) {
   return (
-    <div className={`relative group cursor-pointer ${className}`}>
+    <div
+      className={cn('relative group cursor-pointer overflow-hidden', className)}
+    >
       <div
         data-image-clickable
         onClick={onClick}
-        onTouchEnd={e => {
-          // Prevent parent touch handlers from interfering
-          e.stopPropagation();
-          onClick?.();
-        }}
-        onTouchStart={e => {
-          // Stop propagation to prevent parent swipe handlers
-          e.stopPropagation();
-        }}
-        onPointerDown={e => {
-          // Ensure pointer events work on mobile
-          e.stopPropagation();
-        }}
-        className='relative rounded-lg overflow-hidden border border-white/10 bg-white/5 hover:border-white/20 transition-all'
+        className='relative w-full h-full rounded-lg overflow-hidden border border-white/10 bg-white/5 hover:border-white/20 transition-all'
         style={{
-          width: size,
-          height: size,
+          aspectRatio,
+          minWidth: size ? `${size}px` : 'auto',
           touchAction: 'manipulation',
           WebkitTapHighlightColor: 'transparent',
         }}
@@ -51,7 +43,7 @@ export default function SquareImage({
             src={src}
             alt={alt}
             fill
-            sizes={`${size}px`}
+            sizes={size ? `${size}px` : '100vw'}
             className='object-cover pointer-events-none select-none'
             draggable={false}
             loading='lazy'
