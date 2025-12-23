@@ -4,7 +4,7 @@ import Image from 'next/image';
 import { Image as ImageIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-export type SquareImageProps = {
+export type AspectImageProps = {
   src?: string | null;
   alt: string;
   size?: number;
@@ -14,7 +14,7 @@ export type SquareImageProps = {
   aspectRatio?: string;
 };
 
-export default function SquareImage({
+export default function AspectImage({
   src,
   alt,
   size = 128,
@@ -22,7 +22,7 @@ export default function SquareImage({
   onClick,
   className = '',
   aspectRatio = '1/1',
-}: SquareImageProps) {
+}: AspectImageProps) {
   return (
     <div
       className={cn('relative group cursor-pointer overflow-hidden', className)}

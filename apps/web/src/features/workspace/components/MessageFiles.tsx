@@ -1,11 +1,11 @@
 'use client';
 
 import Image from 'next/image';
-import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { X, Play, Volume2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import SquareImage from '@/components/sendable/SquareImage';
+import AspectImage from '@/components/sendable/AspectImage';
 import SendableDefaultFile from '@/components/sendable/SendableDefaultFile';
 import { createClient } from '@/lib/supabase/browserClient';
 import { useGlobalUI } from '@/contexts/GlobalUIContext';
@@ -35,7 +35,7 @@ const isVideo = (mimeType: string): boolean => mimeType.startsWith('video/');
 function AudioPlayer({ src, filename }: { src: string; filename: string }) {
   return (
     <div className='flex items-center gap-3 bg-zinc-900/90 backdrop-blur-xl border border-white/5 rounded-2xl px-4 py-3 min-w-[300px] md:min-w-[360px] max-w-full shadow-2xl ring-1 ring-white/10'>
-      <div className='w-10 h-10 rounded-full bg-blue-500/10 flex items-center justify-center flex-shrink-0 border border-blue-500/20'>
+      <div className='w-10 h-10 rounded-full bg-blue-500/10 flex items-center justify-center shrink-0 border border-blue-500/20'>
         <Volume2 className='w-5 h-5 text-blue-400' />
       </div>
       <div className='flex-1 min-w-0'>
@@ -56,7 +56,7 @@ function AudioPlayer({ src, filename }: { src: string; filename: string }) {
   );
 }
 
-function VideoPlayer({ src, filename }: { src: string; filename: string }) {
+function VideoPlayer({ src }: { src: string }) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isPlaying, setIsPlaying] = useState(false);
 
@@ -111,7 +111,6 @@ export default function MessageFiles({
 
   useEffect(() => {
     const loadFileUrls = async () => {
-
       // gets the special files
       const mediaFiles = files.filter(
         file =>
@@ -119,7 +118,6 @@ export default function MessageFiles({
           isAudio(file.mime_type) ||
           isVideo(file.mime_type)
       );
-
 
       // render the special files
       for (const file of mediaFiles) {
@@ -148,7 +146,7 @@ export default function MessageFiles({
     };
 
     loadFileUrls();
-  }, [files]);
+  }, [files, fileUrls, loadingFiles]);
 
   useEffect(() => {
     if (selectedImage) {
@@ -229,13 +227,7 @@ export default function MessageFiles({
               </div>
             );
           }
-          return (
-            <VideoPlayer
-              key={file.id}
-              src={url}
-              filename={file.original_filename}
-            />
-          );
+          return <VideoPlayer key={file.id} src={url} />;
         })}
 
         {/* Audios */}
@@ -247,7 +239,7 @@ export default function MessageFiles({
                 key={file.id}
                 className='flex items-center gap-3 bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl px-4 py-3 min-w-[300px] md:min-w-[360px] max-w-full shadow-lg h-[86px]'
               >
-                <div className='w-10 h-10 rounded-full bg-blue-500/10 animate-pulse flex-shrink-0' />
+                <div className='w-10 h-10 rounded-full bg-blue-500/10 animate-pulse shrink-0' />
                 <div className='flex-1 space-y-2'>
                   <div className='h-2 w-24 bg-white/5 rounded animate-pulse' />
                   <div className='h-8 w-full bg-white/5 rounded-full animate-pulse' />
@@ -279,7 +271,7 @@ export default function MessageFiles({
             )}
           >
             {imageFiles.map((file, idx) => (
-              <SquareImage
+              <AspectImage
                 key={file.id}
                 src={fileUrls.get(file.id)}
                 alt={file.original_filename}
@@ -322,7 +314,7 @@ export default function MessageFiles({
       {mounted &&
         selectedImage &&
         createPortal(
-          <div className='fixed inset-0 z-[10000] flex items-center justify-center p-4 md:p-10'>
+          <div className='fixed inset-0 z-10000 flex items-center justify-center p-4 md:p-10'>
             <div
               className='absolute inset-0 bg-black/90 backdrop-blur-sm transition-opacity duration-300'
               onClick={() => setSelectedImage(null)}
