@@ -139,8 +139,8 @@ export default function WorkspaceSettingsClient({
         selectedImageSrc,
         croppedAreaPixels
       );
-      const file = new File([croppedBlob], 'workspace-icon.png', {
-        type: 'image/png',
+      const file = new File([croppedBlob], 'workspace-icon.jpg', {
+        type: 'image/jpeg',
       });
       await updateIcon(file);
       setIconDialogOpen(false);
