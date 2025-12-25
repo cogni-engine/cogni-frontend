@@ -1,5 +1,15 @@
 import type { NextConfig } from 'next';
 
+const withPWA = require('next-pwa')({
+  dest: 'public',
+  register: true,
+  skipWaiting: false, // ← 勝手に切り替えない
+  cleanupOutdatedCaches: true, // ← 古いキャッシュ削除
+  disable: process.env.NODE_ENV === 'development',
+  buildExcludes: [/app-build-manifest\.json$/],
+  publicExcludes: ['!noprecache/**/*'],
+});
+
 const nextConfig: NextConfig = {
   images: {
     remotePatterns: [
@@ -17,4 +27,4 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default nextConfig;
+export default withPWA(nextConfig);

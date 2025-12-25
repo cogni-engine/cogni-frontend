@@ -16,7 +16,11 @@
           "NSAllowsArbitraryLoads": true,
           "NSAllowsLocalNetworking": true
         },
-        "ITSAppUsesNonExemptEncryption": false
+        "ITSAppUsesNonExemptEncryption": false,
+        "WKAppBoundDomains": [
+          "app.cogno.studio",
+          "cogno.studio"
+        ]
       },
       "bundleIdentifier": "com.cogno.ai.mobile"
     },

@@ -111,7 +111,6 @@ export function groupNotesByFolder(
   notes: FormattedNote[],
   folders: NoteFolder[]
 ): GroupedNotes {
-  const folderMap = new Map(folders.map(f => [f.id, f.title]));
   const grouped: GroupedNotes = {};
 
   // Sort folders alphabetically by title

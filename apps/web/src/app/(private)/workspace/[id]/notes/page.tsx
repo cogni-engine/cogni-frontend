@@ -5,7 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { useState, useRef, memo, useMemo, useEffect } from 'react';
 import { useNotes, useNoteFolders, formatDate } from '@cogni/api';
 import type { NoteWithParsed } from '@cogni/types';
-import { PenSquare, Trash2, FolderOpen } from 'lucide-react';
+import { PenSquare, FolderOpen } from 'lucide-react';
 import NoteContextMenu from '@/features/workspace/components/NoteContextMenu';
 import SearchBar from '@/components/SearchBar';
 import GlassButton from '@/components/glass-design/GlassButton';
@@ -203,8 +203,6 @@ export default function WorkspaceNotesPage() {
     folders: rawFolders,
     moveNote,
     createFolder,
-    updateFolder,
-    deleteFolder,
     refetch: refetchFolders,
   } = useNoteFolders({
     workspaceId: workspaceId || 0,
