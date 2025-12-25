@@ -1,4 +1,5 @@
 import type { Area } from 'react-easy-crop';
+import { compressImageBlob } from '@/lib/imageCompression';
 
 export type StatusMessage = {
   type: 'success' | 'error';
@@ -64,7 +65,8 @@ export async function getCroppedImageBlob(imageSrc: string, crop: Area) {
     crop.height
   );
 
-  return new Promise<Blob>((resolve, reject) => {
+  // Get initial blob
+  const initialBlob = await new Promise<Blob>((resolve, reject) => {
     canvas.toBlob(blob => {
       if (blob) {
         resolve(blob);
@@ -73,4 +75,7 @@ export async function getCroppedImageBlob(imageSrc: string, crop: Area) {
       }
     }, 'image/png');
   });
+
+  // Compress the cropped image
+  return compressImageBlob(initialBlob);
 }
