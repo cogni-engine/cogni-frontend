@@ -23,7 +23,7 @@ export default function WorkspaceList({ workspaces }: WorkspaceListProps) {
   }
 
   return (
-    <div className='flex flex-col gap-[14px] py-20'>
+    <div className='flex flex-col py-20'>
       {workspaces.map(workspace => (
         <WorkspaceCard key={workspace.id} workspace={workspace} />
       ))}
@@ -40,6 +40,50 @@ function WorkspaceCard({ workspace }: WorkspaceCardProps) {
   const unreadCount = workspace.unread_count ?? 0;
   const hasUnread = unreadCount > 0;
   const displayCount = unreadCount > 99 ? '99+' : unreadCount;
+  const memberCount = workspace.member_count ?? 0;
+  const showMemberCount = memberCount >= 3;
+
+  const formatDate = (dateString: string | null | undefined): string => {
+    if (!dateString) return '';
+
+    const date = new Date(dateString);
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+    const dateOnly = new Date(
+      date.getFullYear(),
+      date.getMonth(),
+      date.getDate()
+    );
+    const diffTime = today.getTime() - dateOnly.getTime();
+    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+
+    if (diffDays === 0) {
+      return 'Today';
+    } else if (diffDays === 1) {
+      return 'Yesterday';
+    } else if (diffDays < 7) {
+      // Within a week - show day name
+      const days = [
+        'Sunday',
+        'Monday',
+        'Tuesday',
+        'Wednesday',
+        'Thursday',
+        'Friday',
+        'Saturday',
+      ];
+      return days[date.getDay()];
+    } else {
+      // Older than a week - show month/day
+      const month = date.getMonth() + 1;
+      const day = date.getDate();
+      return `${month}/${day}`;
+    }
+  };
+
+  const formattedDate = formatDate(workspace.workspace_messages_updated_at);
 
   const handleCardClick = () => {
     router.push(`/workspace/${workspace.id}/chat`);
@@ -48,11 +92,11 @@ function WorkspaceCard({ workspace }: WorkspaceCardProps) {
   return (
     <GlassCard
       onClick={handleCardClick}
-      className='cursor-pointer rounded-[20px] px-5 py-[8px] '
+      className='cursor-pointer -mx-5 px-5 py-[8px] border-0 shadow-none hover:shadow-none !bg-transparent backdrop-blur-none'
     >
       <div className='flex items-center justify-between gap-3 py-2'>
         <div className='flex items-center gap-3 flex-1 min-w-0'>
-          <Avatar className='h-10 w-10 border border-white/10 bg-white/5 uppercase text-sm tracking-wide'>
+          <Avatar className='h-11 w-11 uppercase text-sm tracking-wide'>
             {workspace.icon_url ? (
               <AvatarImage
                 src={workspace.icon_url}
@@ -65,36 +109,35 @@ function WorkspaceCard({ workspace }: WorkspaceCardProps) {
             )}
           </Avatar>
           <div className='flex-1 min-w-0'>
-            <h3 className='font-semibold text-white text-[17px] leading-[1.4] mb-1 truncate'>
-              {workspace.title || 'Untitled Workspace'}
-            </h3>
-            <div className='flex items-center gap-2'>
-              <span
-                className={`px-2 py-0.5 rounded-full text-[10px] font-medium ${
-                  workspace.type === 'personal'
-                    ? 'bg-blue-500/20 text-blue-300'
-                    : 'bg-purple-600/20 text-purple-300'
-                }`}
-              >
-                {workspace.type}
-              </span>
-              <span className='text-[11px] text-gray-400'>
-                {new Date(workspace.created_at).toLocaleDateString()}
-              </span>
+            <div className='flex flex-col gap-0.5'>
+              <div className='flex items-center gap-2'>
+                <h3 className='font-semibold text-white/90 text-[15px] leading-[1.4] truncate'>
+                  {workspace.title || 'Untitled Workspace'}
+                </h3>
+                {showMemberCount && (
+                  <span className='font-semibold text-[15px] text-white/80 shrink-0 leading-[1.4]'>
+                    ({memberCount})
+                  </span>
+                )}
+              </div>
+              {workspace.latest_message_text && (
+                <div className='text-[12px] text-gray-400 truncate'>
+                  {workspace.latest_message_text}
+                </div>
+              )}
             </div>
           </div>
         </div>
 
-        <div className='flex items-center gap-3 shrink-0'>
-          <span
-            className={`inline-flex min-w-9 items-center justify-center rounded-full px-3 py-1 text-xs font-semibold transition-colors ${
-              hasUnread
-                ? 'bg-purple-500/20 text-purple-100 shadow-[0_0_15px_rgba(192,132,252,0.35)]'
-                : 'bg-white/10 text-white/40'
-            }`}
-          >
-            {displayCount}
-          </span>
+        <div className='flex flex-col items-end shrink-0'>
+          <div className='text-[11px] text-gray-400 leading-[14px] h-[14px] flex items-center mb-1'>
+            {formattedDate}
+          </div>
+          {hasUnread && (
+            <span className='inline-flex items-center justify-center rounded-full bg-white text-black text-xs font-semibold min-w-[20px] h-5 px-2'>
+              {displayCount}
+            </span>
+          )}
         </div>
       </div>
     </GlassCard>

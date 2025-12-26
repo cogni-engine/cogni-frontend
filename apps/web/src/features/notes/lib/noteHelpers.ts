@@ -5,19 +5,18 @@ import type { Note, NoteWithParsed } from '@/types/note';
  * Now uses the dedicated title field when available, falling back to parsing from text
  */
 export function parseNote(note: Note): NoteWithParsed {
-  // Use the dedicated title field if available, otherwise parse from text
+  // Use the dedicated title field if available, otherwise use default
   let title: string;
   let content: string;
 
-  if (note.title) {
+  if (note.title && note.title.trim()) {
     // New implementation: title is a dedicated field
     title = note.title;
     content = note.text;
   } else {
-    // Fallback: parse title from first line of text (legacy support)
-    const lines = note.text.split('\n');
-    title = lines[0] || 'Untitled';
-    content = lines.slice(1).join('\n');
+    // If no title, use default and treat all text as content
+    title = 'Untitled';
+    content = note.text;
   }
 
   const preview = content.slice(0, 100) + (content.length > 100 ? '...' : '');
@@ -31,15 +30,12 @@ export function parseNote(note: Note): NoteWithParsed {
 }
 
 /**
- * Format date for display
+ * Format date for display as YYYY/MM/DD
  */
 export function formatDate(dateString: string): string {
   const date = new Date(dateString);
-  return date
-    .toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-    })
-    .replace(/\//g, '/');
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}/${month}/${day}`;
 }

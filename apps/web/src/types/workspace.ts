@@ -8,6 +8,8 @@ export interface Workspace {
   notes?: Note[];
   members?: WorkspaceMember[];
   unread_count?: number;
+  member_count?: number;
+  latest_message_text?: string | null;
 }
 
 export interface Note {

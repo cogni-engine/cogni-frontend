@@ -83,6 +83,7 @@ export async function getWorkspaces(): Promise<Workspace[]> {
         return {
           ...workspace,
           unread_count: 0,
+          member_count: 0,
         } as Workspace;
       }
 
@@ -108,15 +109,45 @@ export async function getWorkspaces(): Promise<Workspace[]> {
           countError
         );
 
-        return {
-          ...workspace,
-          unread_count: 0,
-        } as Workspace;
+        // Continue to fetch member count even if unread count fails
+      }
+
+      // Fetch member count
+      const { count: memberCount, error: memberCountError } = await supabase
+        .from('workspace_member')
+        .select('id', { count: 'exact', head: true })
+        .eq('workspace_id', workspace.id);
+
+      if (memberCountError) {
+        console.warn(
+          'Failed to fetch member count for workspace',
+          workspace.id,
+          memberCountError
+        );
+      }
+
+      // Fetch latest message text
+      const { data: latestMessage, error: latestMessageError } = await supabase
+        .from('workspace_messages')
+        .select('text')
+        .eq('workspace_id', workspace.id)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (latestMessageError) {
+        console.warn(
+          'Failed to fetch latest message for workspace',
+          workspace.id,
+          latestMessageError
+        );
       }
 
       return {
         ...workspace,
-        unread_count: count ?? 0,
+        unread_count: countError ? 0 : (count ?? 0),
+        member_count: memberCountError ? 0 : (memberCount ?? 0),
+        latest_message_text: latestMessage?.text ?? null,
       } as Workspace;
     })
   );

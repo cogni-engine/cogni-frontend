@@ -418,7 +418,7 @@ export default function WorkspaceNotesPage() {
     return (
       <GlassCard
         key={note.id}
-        className={`group relative rounded-[20px] px-5 py-[8px] cursor-pointer select-none ${
+        className={`group relative rounded-[20px] px-5 py-[8px] cursor-pointer select-none border-0 shadow-none hover:shadow-none !bg-transparent backdrop-blur-none ${
           isDeleted ? 'opacity-60' : ''
         }`}
         onClick={() => !isDeleted && handleNoteClick(note.id)}
@@ -428,76 +428,78 @@ export default function WorkspaceNotesPage() {
         onTouchEnd={handleTouchEnd}
         onTouchCancel={handleTouchEnd}
       >
-        <div className='flex justify-between items-start gap-3 mb-1'>
+        <div className='flex justify-between items-start gap-3'>
           <div className='flex-1 min-w-0'>
-            <h2 className='font-semibold text-white text-[17px] leading-[1.4] line-clamp-2'>
+            <h2 className='font-semibold text-white/90 text-[15px] leading-[1.4] line-clamp-2'>
               {note.title || 'Untitled'}
             </h2>
+            <div className='flex items-center gap-2 mt-0.5'>
+              <span className='text-[11px] text-gray-400 whitespace-nowrap'>
+                {formatDate(note.updated_at)}
+              </span>
+              <p className='text-[13px] text-gray-400 leading-[1.6] line-clamp-1 flex-1 min-w-0'>
+                {note.preview || 'No content'}
+              </p>
+            </div>
           </div>
-          <span className='text-[11px] text-gray-400 whitespace-nowrap mt-0.5'>
-            {formatDate(note.updated_at)}
-          </span>
-        </div>
-        <p className='text-[13px] text-gray-400 leading-[1.6] line-clamp-2 mb-1'>
-          {note.preview || 'No content'}
-        </p>
-        {/* Assigned Members */}
-        {note.workspace_member_note &&
-          note.workspace_member_note.length > 0 && (
-            <div className='flex items-center gap-1.5 mt-2 mb-1'>
-              <div className='flex -space-x-2'>
-                {note.workspace_member_note
-                  .filter(
-                    assignment =>
-                      assignment.workspace_member_note_role === 'assignee'
-                  )
-                  .slice(0, 3)
-                  .map((assignment, index) => (
-                    <div
-                      key={assignment.workspace_member?.id || `temp-${index}`}
-                      className='w-6 h-6 rounded-full bg-linear-to-br from-blue-500 to-purple-500 border-2 border-gray-900 flex items-center justify-center text-white text-xs font-medium'
-                      title={
-                        assignment.workspace_member?.user_profiles?.name ||
-                        'Unknown'
-                      }
-                    >
-                      {assignment.workspace_member?.user_profiles
-                        ?.avatar_url ? (
-                        <Image
-                          src={
-                            assignment.workspace_member.user_profiles.avatar_url
-                          }
-                          alt={
-                            assignment.workspace_member.user_profiles.name ||
-                            'User'
-                          }
-                          width={24}
-                          height={24}
-                          className='h-full w-full rounded-full object-cover'
-                        />
-                      ) : (
-                        assignment.workspace_member?.user_profiles?.name
-                          ?.charAt(0)
-                          .toUpperCase() || '?'
-                      )}
-                    </div>
-                  ))}
-                {note.workspace_member_note.filter(
-                  assignment =>
-                    assignment.workspace_member_note_role === 'assignee'
-                ).length > 3 && (
-                  <div className='w-6 h-6 rounded-full bg-gray-700 border-2 border-gray-900 flex items-center justify-center text-white text-xs font-medium'>
-                    +
-                    {note.workspace_member_note.filter(
+          {/* Assigned Members - Right side */}
+          {note.workspace_member_note &&
+            note.workspace_member_note.length > 0 && (
+              <div className='flex items-center gap-1 shrink-0'>
+                <div className='flex -space-x-2'>
+                  {note.workspace_member_note
+                    .filter(
                       assignment =>
                         assignment.workspace_member_note_role === 'assignee'
-                    ).length - 3}
-                  </div>
-                )}
+                    )
+                    .slice(0, 3)
+                    .map((assignment, index) => (
+                      <div
+                        key={assignment.workspace_member?.id || `temp-${index}`}
+                        className='w-6 h-6 rounded-full bg-linear-to-br from-blue-500 to-purple-500 border-2 border-gray-900 flex items-center justify-center text-white text-xs font-medium'
+                        title={
+                          assignment.workspace_member?.user_profiles?.name ||
+                          'Unknown'
+                        }
+                      >
+                        {assignment.workspace_member?.user_profiles
+                          ?.avatar_url ? (
+                          <Image
+                            src={
+                              assignment.workspace_member.user_profiles
+                                .avatar_url
+                            }
+                            alt={
+                              assignment.workspace_member.user_profiles.name ||
+                              'User'
+                            }
+                            width={24}
+                            height={24}
+                            className='h-full w-full rounded-full object-cover'
+                          />
+                        ) : (
+                          assignment.workspace_member?.user_profiles?.name
+                            ?.charAt(0)
+                            .toUpperCase() || '?'
+                        )}
+                      </div>
+                    ))}
+                  {note.workspace_member_note.filter(
+                    assignment =>
+                      assignment.workspace_member_note_role === 'assignee'
+                  ).length > 3 && (
+                    <div className='w-6 h-6 rounded-full bg-gray-700 border-2 border-gray-900 flex items-center justify-center text-white text-xs font-medium'>
+                      +
+                      {note.workspace_member_note.filter(
+                        assignment =>
+                          assignment.workspace_member_note_role === 'assignee'
+                      ).length - 3}
+                    </div>
+                  )}
+                </div>
               </div>
-              <span className='text-xs text-gray-500'>担当者</span>
-            </div>
-          )}
+            )}
+        </div>
       </GlassCard>
     );
   };
@@ -571,7 +573,7 @@ export default function WorkspaceNotesPage() {
               showBackButton={true}
               onBack={() => setSelectedFolder(null)}
             />
-            <div className='flex flex-col gap-[14px]'>
+            <div className='flex flex-col'>
               {(selectedFolder === 'trash'
                 ? deletedNotes
                 : typeof selectedFolder === 'number'
@@ -579,8 +581,13 @@ export default function WorkspaceNotesPage() {
                       note => note.note_folder_id === selectedFolder
                     )
                   : []
-              ).map(note => (
-                <NoteCard key={note.id} note={note} />
+              ).map((note, index, arr) => (
+                <div key={note.id}>
+                  <NoteCard note={note} />
+                  {index < arr.length - 1 && (
+                    <div className='border-b border-white/10' />
+                  )}
+                </div>
               ))}
               {(selectedFolder === 'trash'
                 ? deletedNotes
@@ -623,9 +630,14 @@ export default function WorkspaceNotesPage() {
                   />
                   {/* Notes in this group */}
                   {!isCollapsed && (
-                    <div className='flex flex-col gap-[14px]'>
-                      {groupedNotes[group].map(note => (
-                        <NoteCard key={note.id} note={note} />
+                    <div className='flex flex-col'>
+                      {groupedNotes[group].map((note, index, arr) => (
+                        <div key={note.id}>
+                          <NoteCard note={note} />
+                          {index < arr.length - 1 && (
+                            <div className='border-b border-white/10' />
+                          )}
+                        </div>
                       ))}
                     </div>
                   )}
