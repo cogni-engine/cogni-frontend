@@ -114,7 +114,9 @@ export default function UserSettingsClient() {
         selectedImageSrc,
         croppedAreaPixels
       );
-      const file = new File([croppedBlob], 'avatar.png', { type: 'image/png' });
+      const file = new File([croppedBlob], 'avatar.jpg', {
+        type: 'image/jpeg',
+      });
       await updateAvatar(file, profile.avatar_url ?? undefined);
       setAvatarDialogOpen(false);
       setSelectedImageSrc(null);

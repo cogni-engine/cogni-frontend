@@ -42,8 +42,20 @@ export function handleNotificationResponse(
       break;
 
     case 'ai_notification':
-      // Navigate to AI notifications/tasks
-      router.push('/(tabs)');
+      // Navigate to home page with notificationId to trigger notification action
+      if (data.notificationId) {
+        console.log('📍 Navigating to home with notificationId', data.notificationId);
+        router.push({
+          pathname: '/(tabs)',
+          params: {
+            notificationId: data.notificationId.toString(),
+            action: 'trigger_notification',
+          },
+        });
+      } else {
+        // Fallback: just navigate to home if no notificationId
+        router.push('/(tabs)');
+      }
       break;
 
     default:
@@ -87,6 +99,20 @@ export function generateNavigationScript(data: NotificationData): string {
             type: 'NAVIGATE_TO_MESSAGE',
             workspaceId: ${data.workspaceId},
             messageId: ${data.messageId}
+          }, '*');
+        })();
+        true; // Required for iOS
+      `;
+    }
+  }
+
+  if (data.type === 'ai_notification') {
+    if (data.notificationId) {
+      return `
+        (function() {
+          window.postMessage({
+            type: 'TRIGGER_NOTIFICATION',
+            notificationId: ${data.notificationId}
           }, '*');
         })();
         true; // Required for iOS

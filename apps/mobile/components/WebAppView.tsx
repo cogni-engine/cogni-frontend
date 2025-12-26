@@ -50,28 +50,28 @@ export default function WebAppView({ url = 'https://app.cogno.studio', session }
     if (params.action === 'navigate_to_message' && params.workspaceId && params.messageId) {
       // Create a unique key for these params to prevent duplicate processing
       const paramsKey = `${params.workspaceId}-${params.messageId}`;
-      
+
       // Skip if we've already processed these exact params
       if (lastProcessedParamsRef.current === paramsKey) {
         console.log('⏭️  Skipping duplicate navigation for:', paramsKey);
         return;
       }
-      
+
       console.log('🆕 New notification navigation params:', {
         workspaceId: params.workspaceId,
         messageId: params.messageId,
       });
-      
+
       const workspaceId = parseInt(params.workspaceId as string, 10);
       const messageId = parseInt(params.messageId as string, 10);
-      
+
       // Mark as processed immediately to prevent duplicates
       lastProcessedParamsRef.current = paramsKey;
-      
+
       // Only navigate if WebView is ready
       if (webViewReady && webViewRef.current) {
         console.log('🚀 WebView is ready, sending postMessage for workspace', workspaceId, 'message', messageId);
-        
+
         // Use postMessage to notify web app (no page reload!)
         const notificationData: NotificationData = {
           type: 'workspace_message',
@@ -79,7 +79,7 @@ export default function WebAppView({ url = 'https://app.cogno.studio', session }
           messageId: messageId,
         };
         const navigationScript = generateNavigationScript(notificationData);
-        
+
         if (navigationScript) {
           console.log('✅ Injecting postMessage script');
           webViewRef.current.injectJavaScript(navigationScript);
@@ -97,18 +97,66 @@ export default function WebAppView({ url = 'https://app.cogno.studio', session }
     }
   }, [params.action, params.workspaceId, params.messageId, webViewReady, url]);
 
+  // Check if we have ai_notification data in params and trigger notification
+  useEffect(() => {
+    if (params.action === 'trigger_notification' && params.notificationId) {
+      // Create a unique key for these params to prevent duplicate processing
+      const paramsKey = `notification-${params.notificationId}`;
+
+      // Skip if we've already processed these exact params
+      if (lastProcessedParamsRef.current === paramsKey) {
+        console.log('⏭️  Skipping duplicate notification trigger for:', paramsKey);
+        return;
+      }
+
+      console.log('🆕 New notification trigger params:', {
+        notificationId: params.notificationId,
+      });
+
+      const notificationId = parseInt(params.notificationId as string, 10);
+
+      // Mark as processed immediately to prevent duplicates
+      lastProcessedParamsRef.current = paramsKey;
+
+      // Only trigger if WebView is ready
+      if (webViewReady && webViewRef.current) {
+        console.log('🚀 WebView is ready, sending TRIGGER_NOTIFICATION postMessage for notificationId', notificationId);
+
+        // Use postMessage to notify web app (no page reload!)
+        const notificationData: NotificationData = {
+          type: 'ai_notification',
+          notificationId: notificationId,
+        };
+        const navigationScript = generateNavigationScript(notificationData);
+
+        if (navigationScript) {
+          console.log('✅ Injecting TRIGGER_NOTIFICATION postMessage script');
+          webViewRef.current.injectJavaScript(navigationScript);
+        }
+      } else {
+        // WebView not ready yet, store for later
+        console.log('⏰ WebView not ready, storing notification trigger for later');
+        const notificationData: NotificationData = {
+          type: 'ai_notification',
+          notificationId: notificationId,
+        };
+        pendingNavigationRef.current = notificationData;
+      }
+    }
+  }, [params.action, params.notificationId, webViewReady, url]);
+
   // Handle pending navigation after WebView loads (for initial app launch)
   useEffect(() => {
     if (webViewReady && pendingNavigationRef.current && webViewRef.current) {
       const data = pendingNavigationRef.current;
       console.log('🎬 WebView just became ready, processing pending navigation:', data);
-      
+
       if (data.workspaceId && data.messageId) {
         console.log('🚀 Sending postMessage for workspace', data.workspaceId, 'message', data.messageId);
-        
+
         // Use postMessage to notify web app (no page reload!)
         const navigationScript = generateNavigationScript(data);
-        
+
         if (navigationScript) {
           // Wait a bit for auth and page to be fully ready
           setTimeout(() => {
@@ -117,6 +165,23 @@ export default function WebAppView({ url = 'https://app.cogno.studio', session }
               webViewRef.current.injectJavaScript(navigationScript);
               pendingNavigationRef.current = null; // Clear after use
               console.log('🧹 Cleared pending navigation');
+            }
+          }, 1500);
+        }
+      } else if (data.type === 'ai_notification' && data.notificationId) {
+        console.log('🚀 Sending TRIGGER_NOTIFICATION postMessage for notificationId', data.notificationId);
+
+        // Use postMessage to notify web app (no page reload!)
+        const navigationScript = generateNavigationScript(data);
+
+        if (navigationScript) {
+          // Wait a bit for auth and page to be fully ready
+          setTimeout(() => {
+            if (webViewRef.current) {
+              console.log('✅ Injecting TRIGGER_NOTIFICATION postMessage script');
+              webViewRef.current.injectJavaScript(navigationScript);
+              pendingNavigationRef.current = null; // Clear after use
+              console.log('🧹 Cleared pending notification trigger');
             }
           }, 1500);
         }
@@ -188,20 +253,20 @@ export default function WebAppView({ url = 'https://app.cogno.studio', session }
   const handleMessage = async (event: any) => {
     try {
       const message = JSON.parse(event.nativeEvent.data);
-      
+
       console.log('Received message from WebView:', message);
-      
+
       switch (message.type) {
         case 'AUTH_REQUIRED':
           // Session expired or invalid - go back to native login
           console.log('Auth required, redirecting to login');
           router.replace('/auth/login');
           break;
-          
+
         case 'LOGOUT':
           // User logged out from web - clear native session and go to login
           console.log('User logged out from web');
-          
+
           // Clear native Supabase session
           try {
             await supabase.auth.signOut();
@@ -209,21 +274,21 @@ export default function WebAppView({ url = 'https://app.cogno.studio', session }
           } catch (error) {
             console.error('Error clearing native session:', error);
           }
-          
+
           // Clear WebView by reloading to base URL (no auth)
           // This clears cookies and forces fresh login
           webViewRef.current?.reload();
-          
+
           // Navigate to login
           router.replace('/auth/login');
           break;
-          
+
         case 'NAVIGATION':
           // Handle specific navigation requests from web
           console.log('Navigation request:', message.path);
           // Could handle special routes here if needed
           break;
-          
+
         default:
           console.log('Unknown message type:', message.type);
       }
@@ -236,20 +301,20 @@ export default function WebAppView({ url = 'https://app.cogno.studio', session }
   // Intercept navigation requests (iOS)
   const handleShouldStartLoadWithRequest = (request: any) => {
     const { url: requestUrl } = request;
-    
+
     console.log('Navigation request:', requestUrl);
-    
+
     // Block navigation to web login/register pages
-    if (requestUrl.includes('/login') || 
-        requestUrl.includes('/register') ||
-        requestUrl.includes('/mobile-auth-required')) {
+    if (requestUrl.includes('/login') ||
+      requestUrl.includes('/register') ||
+      requestUrl.includes('/mobile-auth-required')) {
       console.log('Blocking web auth page, redirecting to native login');
-      
+
       // Redirect to native login
       router.replace('/auth/login');
       return false; // Block the navigation
     }
-    
+
     // Allow all other navigation
     return true;
   };
@@ -258,10 +323,10 @@ export default function WebAppView({ url = 'https://app.cogno.studio', session }
   const handleNavigationStateChange = (navState: any) => {
     if (Platform.OS === 'android') {
       const { url: navUrl } = navState;
-      
-      if (navUrl && (navUrl.includes('/login') || 
-          navUrl.includes('/register') ||
-          navUrl.includes('/mobile-auth-required'))) {
+
+      if (navUrl && (navUrl.includes('/login') ||
+        navUrl.includes('/register') ||
+        navUrl.includes('/mobile-auth-required'))) {
         console.log('Android: Blocking web auth page, redirecting to native login');
         router.replace('/auth/login');
         webViewRef.current?.stopLoading();
@@ -270,14 +335,14 @@ export default function WebAppView({ url = 'https://app.cogno.studio', session }
   };
 
   return (
-      <ThemedView style={[styles.container, { 
-        paddingTop: Math.max(insets.top - 10, 0), // Reduce top inset by 10px
-        paddingBottom: Math.max(insets.bottom - 10, 0), // Reduce bottom inset by 10px
-      }]}>
-        {/* WebView - visually hidden until loaded */}
-        <WebView
+    <ThemedView style={[styles.container, {
+      paddingTop: Math.max(insets.top - 10, 0), // Reduce top inset by 10px
+      paddingBottom: Math.max(insets.bottom - 10, 0), // Reduce bottom inset by 10px
+    }]}>
+      {/* WebView - visually hidden until loaded */}
+      <WebView
         ref={webViewRef}
-        source={{ 
+        source={{
           uri: authUrl,
           // Add custom headers to identify mobile app
           headers: {
@@ -332,32 +397,32 @@ export default function WebAppView({ url = 'https://app.cogno.studio', session }
         incognito={false} // Ensure cache is persisted
       />
 
-        {/* Loading Screen - shown until page loads, fades out */}
-        {showLoading && !error && (
-          <Animated.View style={[styles.loadingContainer, { opacity: loadingOpacity }]}>
-            <Animated.Image
-              source={require('@/assets/images/cogno-icon.png')}
-              style={[styles.loadingIcon, { opacity: iconOpacity }]}
-              resizeMode="contain"
-            />
-          </Animated.View>
-        )}
-        
-        {/* Error Screen */}
-        {error && (
-          <View style={styles.errorContainer}>
-            <Text style={styles.errorTitle}>Connection Error</Text>
-            <Text style={styles.errorText}>{error}</Text>
-            <Text style={styles.errorDetails}>URL: {url}</Text>
-            <TouchableOpacity 
-              style={styles.retryButton}
-              onPress={handleRetry}
-            >
-              <Text style={styles.retryButtonText}>Retry</Text>
-            </TouchableOpacity>
-          </View>
-        )}
-      </ThemedView>
+      {/* Loading Screen - shown until page loads, fades out */}
+      {showLoading && !error && (
+        <Animated.View style={[styles.loadingContainer, { opacity: loadingOpacity }]}>
+          <Animated.Image
+            source={require('@/assets/images/cogno-icon.png')}
+            style={[styles.loadingIcon, { opacity: iconOpacity }]}
+            resizeMode="contain"
+          />
+        </Animated.View>
+      )}
+
+      {/* Error Screen */}
+      {error && (
+        <View style={styles.errorContainer}>
+          <Text style={styles.errorTitle}>Connection Error</Text>
+          <Text style={styles.errorText}>{error}</Text>
+          <Text style={styles.errorDetails}>URL: {url}</Text>
+          <TouchableOpacity
+            style={styles.retryButton}
+            onPress={handleRetry}
+          >
+            <Text style={styles.retryButtonText}>Retry</Text>
+          </TouchableOpacity>
+        </View>
+      )}
+    </ThemedView>
   );
 }
 

@@ -1,11 +1,22 @@
 'use client';
 
-import { File as FileIcon, Download } from 'lucide-react';
+import {
+  File as FileIcon,
+  Download,
+  Music,
+  Video,
+  FileText,
+  FileCode,
+  Archive,
+  Image as ImageIcon,
+} from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useMemo } from 'react';
 
 export type SendableDefaultFileProps = {
   filename: string;
   fileSize: number;
+  mimeType?: string;
   onClick?: () => void;
   onDownload?: () => void;
 };
@@ -18,12 +29,46 @@ const formatFileSize = (bytes: number): string => {
   return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + ' ' + sizes[i];
 };
 
+const getFileIcon = (mimeType?: string) => {
+  if (!mimeType) return FileIcon;
+
+  if (mimeType.startsWith('audio/')) return Music;
+  if (mimeType.startsWith('video/')) return Video;
+  if (mimeType.startsWith('image/')) return ImageIcon;
+  if (
+    mimeType.includes('pdf') ||
+    mimeType.includes('word') ||
+    mimeType.includes('document')
+  )
+    return FileText;
+  if (
+    mimeType.includes('javascript') ||
+    mimeType.includes('typescript') ||
+    mimeType.includes('html') ||
+    mimeType.includes('css') ||
+    mimeType.includes('json')
+  )
+    return FileCode;
+  if (
+    mimeType.includes('zip') ||
+    mimeType.includes('tar') ||
+    mimeType.includes('rar') ||
+    mimeType.includes('7z')
+  )
+    return Archive;
+
+  return FileIcon;
+};
+
 export default function SendableDefaultFile({
   filename,
   fileSize,
+  mimeType,
   onClick,
   onDownload,
 }: SendableDefaultFileProps) {
+  const Icon = useMemo(() => getFileIcon(mimeType), [mimeType]);
+
   return (
     <div
       className='relative group overflow-hidden cursor-pointer'
@@ -39,7 +84,7 @@ export default function SendableDefaultFile({
           'min-w-0 max-w-72 md:max-w-128'
         )}
       >
-        <FileIcon className='w-5 h-5 text-white/60 flex-shrink-0' />
+        <Icon className='w-5 h-5 text-white/60 flex-shrink-0' />
         <div className='flex-1 min-w-0 overflow-hidden'>
           <p className='text-sm text-white truncate' title={filename}>
             {filename}
