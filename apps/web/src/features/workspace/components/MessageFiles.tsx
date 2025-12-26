@@ -48,7 +48,7 @@ function AudioPlayer({ src, filename }: { src: string; filename: string }) {
         <audio
           controls
           src={src}
-          className='w-full h-8 opacity-90 brightness-90 contrast-125'
+          className='w-full h-8 opacity-80 brightness-95 contrast-110 saturate-0'
           controlsList='nodownload'
         />
       </div>
