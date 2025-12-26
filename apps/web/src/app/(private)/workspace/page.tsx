@@ -85,7 +85,7 @@ export default function WorkspacePage() {
   return (
     <div className='flex flex-col h-full relative overflow-hidden'>
       {/* スクロール可能エリア */}
-      <ScrollableView className='pb-32 md:pb-24'>
+      <ScrollableView className='pb-32 md:pb-24 overflow-x-hidden'>
         {isLoading && (
           <div className='flex items-center justify-center py-12'>
             <div className='animate-spin rounded-full h-8 w-8 border-b-2 border-white'></div>

@@ -645,7 +645,7 @@ export default function WorkspaceNotesPage() {
                         <div key={note.id}>
                           <NoteCard note={note} />
                           {index < arr.length - 1 && (
-                            <div className='border-b border-white/10' />
+                            <div className='border-b border-white/10 py-0.5' />
                           )}
                         </div>
                       ))}
