@@ -97,6 +97,54 @@ export default function WebAppView({ url = 'https://app.cogno.studio', session }
     }
   }, [params.action, params.workspaceId, params.messageId, webViewReady, url]);
 
+  // Check if we have ai_notification data in params and trigger notification
+  useEffect(() => {
+    if (params.action === 'trigger_notification' && params.notificationId) {
+      // Create a unique key for these params to prevent duplicate processing
+      const paramsKey = `notification-${params.notificationId}`;
+
+      // Skip if we've already processed these exact params
+      if (lastProcessedParamsRef.current === paramsKey) {
+        console.log('⏭️  Skipping duplicate notification trigger for:', paramsKey);
+        return;
+      }
+
+      console.log('🆕 New notification trigger params:', {
+        notificationId: params.notificationId,
+      });
+
+      const notificationId = parseInt(params.notificationId as string, 10);
+
+      // Mark as processed immediately to prevent duplicates
+      lastProcessedParamsRef.current = paramsKey;
+
+      // Only trigger if WebView is ready
+      if (webViewReady && webViewRef.current) {
+        console.log('🚀 WebView is ready, sending TRIGGER_NOTIFICATION postMessage for notificationId', notificationId);
+
+        // Use postMessage to notify web app (no page reload!)
+        const notificationData: NotificationData = {
+          type: 'ai_notification',
+          notificationId: notificationId,
+        };
+        const navigationScript = generateNavigationScript(notificationData);
+
+        if (navigationScript) {
+          console.log('✅ Injecting TRIGGER_NOTIFICATION postMessage script');
+          webViewRef.current.injectJavaScript(navigationScript);
+        }
+      } else {
+        // WebView not ready yet, store for later
+        console.log('⏰ WebView not ready, storing notification trigger for later');
+        const notificationData: NotificationData = {
+          type: 'ai_notification',
+          notificationId: notificationId,
+        };
+        pendingNavigationRef.current = notificationData;
+      }
+    }
+  }, [params.action, params.notificationId, webViewReady, url]);
+
   // Handle pending navigation after WebView loads (for initial app launch)
   useEffect(() => {
     if (webViewReady && pendingNavigationRef.current && webViewRef.current) {
@@ -117,6 +165,23 @@ export default function WebAppView({ url = 'https://app.cogno.studio', session }
               webViewRef.current.injectJavaScript(navigationScript);
               pendingNavigationRef.current = null; // Clear after use
               console.log('🧹 Cleared pending navigation');
+            }
+          }, 1500);
+        }
+      } else if (data.type === 'ai_notification' && data.notificationId) {
+        console.log('🚀 Sending TRIGGER_NOTIFICATION postMessage for notificationId', data.notificationId);
+
+        // Use postMessage to notify web app (no page reload!)
+        const navigationScript = generateNavigationScript(data);
+
+        if (navigationScript) {
+          // Wait a bit for auth and page to be fully ready
+          setTimeout(() => {
+            if (webViewRef.current) {
+              console.log('✅ Injecting TRIGGER_NOTIFICATION postMessage script');
+              webViewRef.current.injectJavaScript(navigationScript);
+              pendingNavigationRef.current = null; // Clear after use
+              console.log('🧹 Cleared pending notification trigger');
             }
           }, 1500);
         }
