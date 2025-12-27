@@ -371,9 +371,6 @@ export default function FolderDropdown({
                         <span className='text-sm font-medium text-white truncate'>
                           {folder.title}
                         </span>
-                        <span className='text-xs text-gray-400'>
-                          {folder.note_count || 0} notes
-                        </span>
                       </div>
                     </div>
                     {selectedFolder === folder.id && (

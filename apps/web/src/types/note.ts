@@ -35,7 +35,6 @@ export interface NoteFolder {
   created_at: string;
   title: string;
   workspace_id: number;
-  note_count?: number;
 }
 
 export interface NoteWithParsed extends Note {

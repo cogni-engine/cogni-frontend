@@ -23,7 +23,7 @@ export default function WorkspaceList({ workspaces }: WorkspaceListProps) {
   }
 
   return (
-    <div className='flex flex-col py-20'>
+    <div className='flex flex-col py-20 px-4'>
       {workspaces.map(workspace => (
         <WorkspaceCard key={workspace.id} workspace={workspace} />
       ))}
