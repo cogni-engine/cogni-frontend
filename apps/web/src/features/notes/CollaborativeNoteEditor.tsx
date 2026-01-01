@@ -6,7 +6,6 @@ import { useNotes } from './hooks/useNotes';
 import { EditorContent } from '@tiptap/react';
 import { getPersonalWorkspaceId } from '@/lib/cookies';
 import { useWorkspaceMembers } from '@/hooks/useWorkspace';
-import { Loader2 } from 'lucide-react';
 import { TaskListChain } from './types';
 import { NoteEditorHeader } from './components/NoteEditorHeader';
 import { NoteEditorToolbar } from './components/NoteEditorToolbar';

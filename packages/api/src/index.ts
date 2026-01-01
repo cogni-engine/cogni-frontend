@@ -6,6 +6,7 @@ export {
   signUp,
   signIn,
   signInWithGoogle,
+  signInWithApple,
   signOut,
   getCurrentUser,
   getSession,

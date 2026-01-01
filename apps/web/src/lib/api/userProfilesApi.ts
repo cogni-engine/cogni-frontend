@@ -129,3 +129,24 @@ export async function removeUserAvatar(
 
   return updateUserProfile(userId, { avatar_url: null });
 }
+
+/**
+ * Delete user account by calling the backend API
+ * This will ban the user and set deleted_at timestamp
+ */
+export async function deleteUserAccount(userId: string): Promise<void> {
+  const response = await fetch('/api/users/delete', {
+    method: 'DELETE',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    credentials: 'include',
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(
+      `Failed to delete account: ${response.status} - ${errorText}`
+    );
+  }
+}
