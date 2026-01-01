@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { TrashView } from './TrashView';
 import { NotesView } from './NotesView';
 import { NotesListSkeleton } from './NotesListSkeleton';
 import { useNotesContext } from '../NotesProvider';

@@ -1,12 +1,15 @@
 'use client';
 
 import { ChangeEvent, useCallback, useMemo, useRef, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import type { Area } from 'react-easy-crop';
+import { signOut } from '@cogni/api';
 
 import { ProfileInfoForm } from './components/ProfileInfoForm';
 import { AvatarCard } from './components/AvatarCard';
 import { AvatarCropDialog } from './components/AvatarCropDialog';
 import { AiSuggestionToggle } from './components/AiSuggestionToggle';
+import { DeleteAccountSection } from './components/DeleteAccountSection';
 import { useUserSettings } from './hooks/useUserSettings';
 import {
   getCroppedImageBlob,
@@ -15,6 +18,7 @@ import {
 } from './utils/avatar';
 
 export default function UserSettingsClient() {
+  const router = useRouter();
   const {
     userId,
     profile,
@@ -37,6 +41,8 @@ export default function UserSettingsClient() {
     enableAiSuggestion,
     savingAiSuggestion,
     toggleAiSuggestion,
+    isDeleting,
+    deleteAccount,
   } = useUserSettings();
 
   const [avatarDialogOpen, setAvatarDialogOpen] = useState(false);
@@ -176,6 +182,19 @@ export default function UserSettingsClient() {
     }
   }, [generateAvatar]);
 
+  const handleDeleteAccount = useCallback(async () => {
+    try {
+      await deleteAccount();
+      // Sign out and redirect to login after successful deletion
+      await signOut();
+      router.push('/login');
+    } catch (error) {
+      console.error('Failed to delete account', error);
+      // Error is already handled in DeleteAccountSection
+      throw error;
+    }
+  }, [deleteAccount, router]);
+
   return (
     <div className='flex h-full flex-col gap-6 overflow-auto p-6 py-20'>
       {isLoading ? (
@@ -221,6 +240,13 @@ export default function UserSettingsClient() {
             generatingAvatar={generatingAvatar}
           />
         </div>
+      )}
+
+      {userId && (
+        <DeleteAccountSection
+          onDelete={handleDeleteAccount}
+          isDeleting={isDeleting}
+        />
       )}
 
       <AvatarCropDialog

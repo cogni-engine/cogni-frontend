@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from 'react';
 
 import {
   createUserProfile,
+  deleteUserAccount,
   getUserProfile,
   removeUserAvatar,
   updateUserProfile,
@@ -37,6 +38,8 @@ type UseUserSettingsReturn = {
   enableAiSuggestion: boolean;
   savingAiSuggestion: boolean;
   toggleAiSuggestion: () => Promise<void>;
+  isDeleting: boolean;
+  deleteAccount: () => Promise<void>;
 };
 
 export function useUserSettings(): UseUserSettingsReturn {
@@ -57,6 +60,8 @@ export function useUserSettings(): UseUserSettingsReturn {
 
   const [enableAiSuggestion, setEnableAiSuggestion] = useState(false);
   const [savingAiSuggestion, setSavingAiSuggestion] = useState(false);
+
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     const loadInitialData = async () => {
@@ -239,6 +244,21 @@ export function useUserSettings(): UseUserSettingsReturn {
     }
   }, [enableAiSuggestion, profile, userId]);
 
+  const deleteAccount = useCallback(async () => {
+    if (!userId) return;
+
+    try {
+      setIsDeleting(true);
+      await deleteUserAccount(userId);
+    } catch (error) {
+      console.error('Failed to delete account', error);
+      setIsDeleting(false);
+      throw error;
+    }
+    // Note: We don't set isDeleting to false here because the user will be signed out
+    // and redirected, so the component will unmount
+  }, [userId]);
+
   return {
     userId,
     profile,
@@ -261,5 +281,7 @@ export function useUserSettings(): UseUserSettingsReturn {
     enableAiSuggestion,
     savingAiSuggestion,
     toggleAiSuggestion,
+    isDeleting,
+    deleteAccount,
   };
 }

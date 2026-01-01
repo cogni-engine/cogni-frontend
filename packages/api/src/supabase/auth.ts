@@ -69,6 +69,41 @@ export async function signInWithGoogle(emailRedirectTo?: string) {
 }
 
 /**
+ * Sign in with Apple OAuth
+ */
+export async function signInWithApple(emailRedirectTo?: string) {
+  const supabase = getClient();
+  
+  const redirectTo =
+    emailRedirectTo ||
+    (typeof window !== 'undefined'
+      ? `${window.location.origin}/auth/callback`
+      : undefined);
+
+  console.log('Apple OAuth - Redirect URL:', redirectTo);
+  console.log('Apple OAuth - Current origin:', typeof window !== 'undefined' ? window.location.origin : 'N/A');
+
+  const { data, error } = await supabase.auth.signInWithOAuth({
+    provider: 'apple',
+    options: {
+      redirectTo,
+      // Note: scopes parameter might not be needed or might cause issues
+      // Apple OAuth scopes are typically handled by Supabase
+    },
+  });
+  
+  if (error) {
+    console.error('Apple OAuth error:', error);
+    console.error('Error details:', JSON.stringify(error, null, 2));
+    throw error;
+  }
+  
+  console.log('Apple OAuth - Response:', data);
+  console.log('Apple OAuth - Response URL:', data?.url);
+  return data;
+}
+
+/**
  * Sign out the current user
  */
 export async function signOut() {
