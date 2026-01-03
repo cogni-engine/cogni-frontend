@@ -476,7 +476,7 @@ export default function WorkspaceChatPage() {
       {/* Using flex-direction: column-reverse makes the list naturally start at bottom */}
       <ScrollableView
         ref={scrollContainerRef}
-        className='relative flex flex-col-reverse pt-28 pb-20'
+        className='relative flex flex-col-reverse pt-30 pb-20'
       >
         {/* Loading indicator for older messages - appears at top when scrolling up */}
         {isLoadingMore && (

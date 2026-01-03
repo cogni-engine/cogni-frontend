@@ -22,41 +22,45 @@ export default function BottomNav() {
   const tabWidthPercent = 100 / tabs.length;
 
   return (
-    <GlassCard className='fixed bottom-0 left-0 right-0 z-50 rounded-full my-3 mx-6'>
-      <div className='relative flex items-center justify-around p-1'>
-        {/* Sliding background indicator - positioned via CSS calc */}
-        <div
-          className='absolute h-[calc(100%-8px)] rounded-full bg-white/10 backdrop-blur-sm transition-all duration-500 ease-out'
-          style={{
-            width: `calc(${tabWidthPercent}% - 8px)`,
-            left: `calc(${activeIndex * tabWidthPercent}% + 4px)`,
-            opacity: activeIndex === -1 ? 0 : 1,
-          }}
-        />
+    <div className='fixed bottom-0 left-0 right-0 z-50 px-4 md:px-6 py-3'>
+      <div className='max-w-7xl mx-auto'>
+        <GlassCard className='rounded-full'>
+          <div className='relative flex items-center justify-around p-1'>
+            {/* Sliding background indicator - positioned via CSS calc */}
+            <div
+              className='absolute h-[calc(100%-8px)] rounded-full bg-white/10 backdrop-blur-sm transition-all duration-500 ease-out'
+              style={{
+                width: `calc(${tabWidthPercent}% - 8px)`,
+                left: `calc(${activeIndex * tabWidthPercent}% + 4px)`,
+                opacity: activeIndex === -1 ? 0 : 1,
+              }}
+            />
 
-        {tabs.map(tab => {
-          const isActive = pathname.startsWith(tab.path);
+            {tabs.map(tab => {
+              const isActive = pathname.startsWith(tab.path);
 
-          return (
-            <Link
-              key={tab.path}
-              href={tab.path}
-              className='relative z-10 flex flex-col items-center gap-0.5 px-4 py-2 transition-all duration-300 group flex-1'
-            >
-              <div
-                className={`transition-colors duration-300 ${isActive ? 'text-white' : 'text-gray-400 group-hover:text-white'}`}
-              >
-                {tab.icon}
-              </div>
-              <span
-                className={`text-xs font-medium transition-colors duration-300 ${isActive ? 'text-white' : 'text-gray-400 group-hover:text-white'}`}
-              >
-                {tab.name}
-              </span>
-            </Link>
-          );
-        })}
+              return (
+                <Link
+                  key={tab.path}
+                  href={tab.path}
+                  className='relative z-10 flex flex-col items-center gap-0.5 px-4 py-2 transition-all duration-300 group flex-1'
+                >
+                  <div
+                    className={`transition-colors duration-300 ${isActive ? 'text-white' : 'text-gray-400 group-hover:text-white'}`}
+                  >
+                    {tab.icon}
+                  </div>
+                  <span
+                    className={`text-xs font-medium transition-colors duration-300 ${isActive ? 'text-white' : 'text-gray-400 group-hover:text-white'}`}
+                  >
+                    {tab.name}
+                  </span>
+                </Link>
+              );
+            })}
+          </div>
+        </GlassCard>
       </div>
-    </GlassCard>
+    </div>
   );
 }

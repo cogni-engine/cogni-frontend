@@ -32,11 +32,11 @@ export function NotesPageFooter({ isInputActive }: NotesPageFooterProps) {
 
   return (
     <div
-      className={`fixed left-0 right-0 z-100 px-4 py-4 transition-all duration-300 ${
+      className={`fixed left-0 right-0 z-100 px-4 md:px-6 py-4 transition-all duration-300 ${
         isInputActive ? 'bottom-0 md:bottom-[72px]' : 'bottom-[72px]'
       }`}
     >
-      <div className='relative flex items-center gap-3 max-w-7xl mx-auto'>
+      <div className='relative flex items-center gap-2 max-w-7xl mx-auto'>
         <SearchBar
           placeholder='Search notes...'
           value={searchQuery}
@@ -49,7 +49,7 @@ export function NotesPageFooter({ isInputActive }: NotesPageFooterProps) {
           onClick={handleCreateNote}
           disabled={isCreatingNote}
           size='icon'
-          className='size-11 disabled:cursor-not-allowed shrink-0'
+          className='size-12 disabled:cursor-not-allowed shrink-0'
         >
           {isCreatingNote ? (
             <div className='animate-spin rounded-full h-5 w-5 border-b-2 border-gray-300'></div>

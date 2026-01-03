@@ -108,7 +108,7 @@ export default function FolderActionButton({
         onClick={() => setIsOpen(!isOpen)}
         title='Folder actions'
         size='icon'
-        className='size-11'
+        className='size-12'
       >
         <FolderIcon className='w-5 h-5 text-white' />
       </GlassButton>
