@@ -197,9 +197,9 @@ const AiChatInput = forwardRef<AiChatInputRef, AiChatInputProps>(
         {/* Input UI */}
         <div className='px-4 md:px-6 py-2'>
           <div className='w-full md:max-w-7xl md:mx-auto'>
-            <div className='relative'>
+            <div className='flex gap-2 items-end'>
               {/* File Upload Menu - Plus button */}
-              <div className='absolute left-0 bottom-0 z-100'>
+              <div className='z-100'>
                 <FileUploadMenu
                   onFilesSelected={handleFilesSelected}
                   maxFiles={4}

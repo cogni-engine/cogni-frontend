@@ -94,7 +94,7 @@ export default function WorkspaceMembersPage() {
 
   return (
     <>
-      <div className='h-full overflow-y-auto space-y-6 pt-20 px-4'>
+      <div className='h-full overflow-y-auto space-y-6 py-20 px-4'>
         <div className='flex items-center justify-between'>
           <h2 className='text-xl font-semibold text-white'>Members</h2>
           <GlassButton

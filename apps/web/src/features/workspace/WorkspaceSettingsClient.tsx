@@ -251,7 +251,7 @@ export default function WorkspaceSettingsClient({
   }
 
   return (
-    <div className='flex h-full flex-col gap-6 overflow-auto pt-20 text-white'>
+    <div className='flex h-full flex-col gap-6 overflow-auto py-20 text-white'>
       <div>
         <h1 className='text-3xl font-semibold'>Workspace Settings</h1>
         <p className='text-white/60'>Manage workspace name and icon.</p>

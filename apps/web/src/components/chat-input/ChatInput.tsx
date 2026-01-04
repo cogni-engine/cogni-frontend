@@ -28,7 +28,7 @@ type ChatInputProps = {
   placeholder?: string;
   canStop?: boolean;
   replyingTo?: { id: number; text: string; authorName?: string } | null;
-  onCancelReply?: () => void;
+  onCancelReply: () => void;
   workspaceId?: number;
   workspaceMembers?: WorkspaceMember[];
   workspaceNotes?: Note[];
@@ -204,54 +204,53 @@ const ChatInput = forwardRef<ChatInputRef, ChatInputProps>(function ChatInput(
     [isLoading, hasUploadingFiles, onSend, uploadItems]
   );
 
-  return (
-    <div className='relative z-100 rounded-t-3xl'>
-      {/* Reply indicator - absolutely positioned above input */}
-      {replyingTo && (
-        <div className='absolute bottom-full left-0 right-0 px-4 md:px-8 pb-2 pointer-events-auto'>
+  const topContent = () => {
+    return (
+      <div>
+        {replyingTo && (
           <ReplyIndicator
             replyingTo={replyingTo}
             onCancelReply={onCancelReply}
           />
-        </div>
-      )}
+        )}
+        {workspaceId && uploadItems.length > 0 && (
+          <FileUploadPreview files={uploadItems} onRemove={handleRemoveFile} />
+        )}
+      </div>
+    );
+  };
+
+  return (
+    <div className='z-100 rounded-t-3xl'>
+      {/* Reply indicator - absolutely positioned above input */}
       {/* 入力UI */}
       <div className='px-2 md:px-6 py-2'>
-        <div className='w-full md:max-w-7xl md:mx-auto'>
-          <div className='relative'>
-            {/* File Upload Menu - Plus button */}
-            {workspaceId && (
-              <div className='absolute left-0 bottom-0 z-100'>
-                <FileUploadMenu
-                  onFilesSelected={handleFilesSelected}
-                  maxFiles={4}
-                  disabled={
-                    isLoading || hasUploadingFiles || uploadItems.length >= 4
-                  }
-                />
-              </div>
-            )}
-            <TiptapChatInput
-              ref={inputRef}
-              placeholder={placeholder}
-              onSend={handleSend}
-              onStop={onStop}
-              isLoading={isLoading}
-              canStop={canStop}
-              isUploading={hasUploadingFiles}
-              hasAttachments={hasAttachments}
-              workspaceMembers={workspaceMembers}
-              workspaceNotes={workspaceNotes}
-              topContent={
-                workspaceId && uploadItems.length > 0 ? (
-                  <FileUploadPreview
-                    files={uploadItems}
-                    onRemove={handleRemoveFile}
-                  />
-                ) : undefined
-              }
-            />
-          </div>
+        <div className='w-full md:max-w-7xl md:mx-auto flex gap-2 items-end'>
+          {/* File Upload Menu - Plus button */}
+          {workspaceId && (
+            <div className='z-100'>
+              <FileUploadMenu
+                onFilesSelected={handleFilesSelected}
+                maxFiles={4}
+                disabled={
+                  isLoading || hasUploadingFiles || uploadItems.length >= 4
+                }
+              />
+            </div>
+          )}
+          <TiptapChatInput
+            ref={inputRef}
+            placeholder={placeholder}
+            onSend={handleSend}
+            onStop={onStop}
+            isLoading={isLoading}
+            canStop={canStop}
+            isUploading={hasUploadingFiles}
+            hasAttachments={hasAttachments}
+            workspaceMembers={workspaceMembers}
+            workspaceNotes={workspaceNotes}
+            topContent={topContent()}
+          />
         </div>
       </div>
     </div>

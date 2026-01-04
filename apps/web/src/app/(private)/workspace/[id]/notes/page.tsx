@@ -3,7 +3,8 @@
 import Image from 'next/image';
 import { useParams, useRouter } from 'next/navigation';
 import { useState, useRef, memo, useMemo, useEffect } from 'react';
-import { useNotes, useNoteFolders, formatDate } from '@cogni/api';
+import { useNotes, useNoteFolders } from '@cogni/api';
+import { formatDate } from '@/features/notes/lib/noteHelpers';
 import type { NoteWithParsed } from '@cogni/types';
 import { PenSquare, FolderOpen } from 'lucide-react';
 import NoteContextMenu from '@/features/workspace/components/NoteContextMenu';
@@ -203,8 +204,6 @@ export default function WorkspaceNotesPage() {
     folders: rawFolders,
     moveNote,
     createFolder,
-    updateFolder,
-    deleteFolder,
     refetch: refetchFolders,
   } = useNoteFolders({
     workspaceId: workspaceId || 0,
