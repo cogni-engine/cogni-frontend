@@ -322,7 +322,7 @@ export default function CollaborativeNoteEditor({
 
       {/* Editor Content */}
       <div
-        className='flex flex-col flex-1 px-4 md:px-6 relative z-10 overflow-auto'
+        className='flex flex-col flex-1 px-4 md:px-8 md:pt-4 relative z-10 overflow-auto'
         style={{
           willChange: 'scroll-position',
           transform: 'translateZ(0)',

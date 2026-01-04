@@ -9,6 +9,14 @@ import {
   EllipsisVertical,
   Users,
   Settings,
+  Diff,
+  GitMerge,
+  GitCommit,
+  GitBranch,
+  HistoryIcon,
+  RefreshCcwIcon,
+  Layers,
+  Clock,
 } from 'lucide-react';
 import GlassCard from '@/components/glass-design/GlassCard';
 import GlassButton from '@/components/glass-design/GlassButton';
@@ -107,14 +115,22 @@ export default function WorkspaceLayout({
 
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);
   const menuRef = React.useRef<HTMLDivElement | null>(null);
+  const [isBranchMenuOpen, setIsBranchMenuOpen] = React.useState(false);
+  const branchMenuRef = React.useRef<HTMLDivElement | null>(null);
 
   React.useEffect(() => {
     const handleKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setIsMenuOpen(false);
+      if (e.key === 'Escape') {
+        setIsMenuOpen(false);
+        setIsBranchMenuOpen(false);
+      }
     };
     const handleClickOutside = (e: MouseEvent) => {
       if (!menuRef.current) return;
       if (!menuRef.current.contains(e.target as Node)) setIsMenuOpen(false);
+      if (!branchMenuRef.current) return;
+      if (!branchMenuRef.current.contains(e.target as Node))
+        setIsBranchMenuOpen(false);
     };
     document.addEventListener('keydown', handleKey);
     document.addEventListener('mousedown', handleClickOutside);
@@ -130,7 +146,7 @@ export default function WorkspaceLayout({
   return (
     <div className='flex flex-col h-full relative overflow-hidden'>
       {/* Header - Absolutely Positioned with Glass Effect */}
-      <div className='absolute top-0 left-0 right-0 z-100 px-4 md:px-6 pt-4 md:pt-6 pointer-events-none'>
+      <div className='absolute top-0 left-0 right-0 z-100 px-2 md:px-6 pt-4 pointer-events-none'>
         <div className='flex items-center gap-3 w-full pointer-events-auto'>
           <GlassButton
             onClick={handleBackNavigation}
@@ -140,7 +156,7 @@ export default function WorkspaceLayout({
           >
             <ArrowLeft className='w-5 h-5' />
           </GlassButton>
-          <h1 className='flex-1 min-w-0 text-xl font-bold bg-linear-to-r from-white to-gray-300 bg-clip-text text-transparent truncate'>
+          <h1 className='flex-1 min-w-0 text-md font-bold bg-linear-to-r from-white to-gray-300 bg-clip-text text-transparent truncate'>
             {workspace ? workspace.title : 'Workspace'}
           </h1>
           {currentView === 'notes' && (
@@ -155,6 +171,46 @@ export default function WorkspaceLayout({
               }}
             />
           )}
+          {currentView === 'chat' && (
+            <div className='relative' ref={branchMenuRef}>
+              <GlassButton
+                onClick={() => setIsBranchMenuOpen(prev => !prev)}
+                aria-haspopup='menu'
+                aria-expanded={isBranchMenuOpen}
+                aria-label='Open branch menu'
+                title='Branch'
+                className='size-12'
+              >
+                <GitBranch className='w-5 h-5 text-white' />
+              </GlassButton>
+              {isBranchMenuOpen && (
+                <div className='absolute right-0 mt-2 z-110'>
+                  <GlassCard role='menu' className='w-40 rounded-3xl p-1'>
+                    <button
+                      role='menuitem'
+                      onClick={() => {
+                        setIsBranchMenuOpen(false);
+                      }}
+                      className='w-full text-left px-3 py-2 text-sm text-gray-200 hover:bg-white/10 rounded-2xl flex items-center gap-2'
+                    >
+                      <Users className='w-4 h-4' />
+                      Members
+                    </button>
+                    <button
+                      role='menuitem'
+                      onClick={() => {
+                        setIsBranchMenuOpen(false);
+                      }}
+                      className='w-full text-left px-3 py-2 text-sm text-gray-200 hover:bg-white/10 rounded-2xl flex items-center gap-2'
+                    >
+                      <Clock className='w-4 h-4' />
+                      Time
+                    </button>
+                  </GlassCard>
+                </div>
+              )}
+            </div>
+          )}
           <div className='relative' ref={menuRef}>
             <GlassButton
               onClick={() => setIsMenuOpen(prev => !prev)}
@@ -168,14 +224,14 @@ export default function WorkspaceLayout({
             </GlassButton>
             {isMenuOpen && (
               <div className='absolute right-0 mt-2 z-110'>
-                <GlassCard role='menu' className='w-40 rounded-lg p-1'>
+                <GlassCard role='menu' className='w-40 rounded-3xl p-1'>
                   <button
                     role='menuitem'
                     onClick={() => {
                       setIsMenuOpen(false);
                       router.push(`${basePath}/members`);
                     }}
-                    className='w-full text-left px-3 py-2 text-sm text-gray-200 hover:bg-white/10 rounded-md flex items-center gap-2'
+                    className='w-full text-left px-3 py-2 text-sm text-gray-200 hover:bg-white/10 rounded-2xl flex items-center gap-2'
                   >
                     <Users className='w-4 h-4' />
                     Members
@@ -186,7 +242,7 @@ export default function WorkspaceLayout({
                       setIsMenuOpen(false);
                       router.push(`${basePath}/menu`);
                     }}
-                    className='w-full text-left px-3 py-2 text-sm text-gray-200 hover:bg-white/10 rounded-md flex items-center gap-2'
+                    className='w-full text-left px-3 py-2 text-sm text-gray-200 hover:bg-white/10 rounded-2xl flex items-center gap-2'
                   >
                     <Settings className='w-4 h-4' />
                     Settings
@@ -200,7 +256,7 @@ export default function WorkspaceLayout({
 
       {/* Navigation Tabs - Absolutely Positioned */}
       {(currentView === 'chat' || currentView === 'notes') && (
-        <div className='absolute w-full top-17 left-1/2 -translate-x-1/2 z-50 px-4 md:px-6 pointer-events-none'>
+        <div className='absolute w-full top-17 left-1/2 -translate-x-1/2 z-50 px-2 md:px-6 pointer-events-none'>
           <GlassCard className='flex w-full divide-x divide-white/10 overflow-hidden rounded-3xl border backdrop-blur-md shadow-[0_8px_32px_rgba(0,0,0,0.15)] pointer-events-auto'>
             <button
               onClick={() => handleViewChange('chat')}

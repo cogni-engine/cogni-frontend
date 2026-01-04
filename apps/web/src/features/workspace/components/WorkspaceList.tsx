@@ -23,7 +23,7 @@ export default function WorkspaceList({ workspaces }: WorkspaceListProps) {
   }
 
   return (
-    <div className='flex flex-col py-20 px-4'>
+    <div className='flex flex-col py-18 px-2'>
       {workspaces.map(workspace => (
         <WorkspaceCard key={workspace.id} workspace={workspace} />
       ))}
@@ -92,18 +92,18 @@ function WorkspaceCard({ workspace }: WorkspaceCardProps) {
   return (
     <GlassCard
       onClick={handleCardClick}
-      className='cursor-pointer -mx-5 px-5 py-[8px] border-0 shadow-none hover:shadow-none !bg-transparent backdrop-blur-none'
+      className='cursor-pointer -mx-5 px-5 py-1 border-0 shadow-none hover:shadow-none !bg-transparent backdrop-blur-none'
     >
       <div className='flex items-center justify-between gap-3 py-2'>
         <div className='flex items-center gap-3 flex-1 min-w-0'>
-          <Avatar className='h-11 w-11 uppercase text-sm tracking-wide'>
+          <Avatar className='h-12 w-12 uppercase text-sm tracking-wide border-0 bg-white/10'>
             {workspace.icon_url ? (
               <AvatarImage
                 src={workspace.icon_url}
                 alt={workspace.title ?? 'Workspace icon'}
               />
             ) : (
-              <AvatarFallback className='bg-white/5 text-white/70'>
+              <AvatarFallback className='bg-white/10 text-white/90'>
                 <Building2 className='w-4 h-4' />
               </AvatarFallback>
             )}
@@ -130,14 +130,16 @@ function WorkspaceCard({ workspace }: WorkspaceCardProps) {
         </div>
 
         <div className='flex flex-col items-end shrink-0'>
-          <div className='text-[11px] text-gray-400 leading-[14px] h-[14px] flex items-center mb-1'>
+          <div className='text-[11px] text-gray-400 leading-[14px] h-[16px] flex items-center mb-2 -mt-1'>
             {formattedDate}
           </div>
-          {hasUnread && (
-            <span className='inline-flex items-center justify-center rounded-full bg-white text-black text-xs font-semibold min-w-[20px] h-5 px-2'>
-              {displayCount}
-            </span>
-          )}
+          <div className='h-5 flex items-center'>
+            {hasUnread && (
+              <span className='inline-flex items-center justify-center rounded-full bg-white text-black text-xs font-semibold min-w-[20px] h-5 px-2'>
+                {displayCount}
+              </span>
+            )}
+          </div>
         </div>
       </div>
     </GlassCard>

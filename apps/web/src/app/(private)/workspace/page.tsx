@@ -110,11 +110,11 @@ export default function WorkspacePage() {
 
       {/* Bottom Search Bar and Create Button */}
       <div
-        className={`fixed left-0 right-0 z-100 px-4 py-4 transition-all duration-300 ${
+        className={`fixed left-0 right-0 z-100 px-4 md:px-6 py-4 transition-all duration-300 ${
           isInputActive ? 'bottom-0 md:bottom-[72px]' : 'bottom-[72px]'
         }`}
       >
-        <div className='relative flex items-center gap-3 max-w-7xl mx-auto'>
+        <div className='relative flex items-center gap-2 max-w-7xl mx-auto'>
           <SearchBar
             placeholder='Search workspaces...'
             value={searchQuery}

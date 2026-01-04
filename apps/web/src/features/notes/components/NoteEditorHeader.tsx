@@ -31,7 +31,7 @@ export function NoteEditorHeader({
   onToggleAssignee,
 }: NoteEditorHeaderProps) {
   return (
-    <header className='flex items-center gap-3 p-4 relative z-100'>
+    <header className='flex items-center gap-3 px-2 md:px-6 py-4 relative z-100'>
       {/* 戻るボタン - 丸く浮き出る */}
       <GlassButton onClick={onBack} className='size-12'>
         <ArrowLeft className='w-5 h-5' />
@@ -41,7 +41,7 @@ export function NoteEditorHeader({
         value={title}
         onChange={e => onTitleChange(e.target.value)}
         placeholder='タイトル'
-        className='flex-1 min-w-0 text-2xl font-bold bg-transparent focus:outline-none text-white placeholder-gray-500 truncate'
+        className='flex-1 min-w-0 text-md font-bold bg-transparent focus:outline-none text-white placeholder-gray-500 truncate'
       />
       {/* Assignment button for group notes */}
       {isGroupNote && (
