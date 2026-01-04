@@ -9,13 +9,7 @@ import {
   EllipsisVertical,
   Users,
   Settings,
-  Diff,
-  GitMerge,
-  GitCommit,
   GitBranch,
-  HistoryIcon,
-  RefreshCcwIcon,
-  Layers,
   Clock,
 } from 'lucide-react';
 import GlassCard from '@/components/glass-design/GlassCard';

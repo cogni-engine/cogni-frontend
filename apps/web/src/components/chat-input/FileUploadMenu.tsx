@@ -57,7 +57,7 @@ export default function FileUploadMenu({
 
   return (
     <>
-      <div className='relative flex flex-col items-center gap-3'>
+      <div className='flex flex-col items-center gap-3'>
         <button
           type='button'
           onClick={() => {

@@ -204,8 +204,6 @@ export default function WorkspaceNotesPage() {
     folders: rawFolders,
     moveNote,
     createFolder,
-    updateFolder,
-    deleteFolder,
     refetch: refetchFolders,
   } = useNoteFolders({
     workspaceId: workspaceId || 0,
