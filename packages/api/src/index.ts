@@ -67,5 +67,5 @@ export { useNoteFolders } from './hooks/useNoteFolders';
 export { useNoteEditor } from './hooks/useNoteEditor';
 
 // Export note helpers
-export { parseNote, formatDate } from './utils/noteHelpers';
+export { parseNote } from './utils/noteHelpers';
 

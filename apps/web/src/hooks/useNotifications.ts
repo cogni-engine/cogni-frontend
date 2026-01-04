@@ -20,20 +20,6 @@ function isPastDue(dueDate: string): boolean {
   return new Date(dueDate) < new Date();
 }
 
-/**
- * Format date for display
- */
-function formatDate(dateString: string): string {
-  const date = new Date(dateString);
-  return date.toLocaleDateString('ja-JP', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-  });
-}
-
 export function useNotifications(userId?: string) {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
@@ -240,7 +226,6 @@ export function useNotifications(userId?: string) {
     markAllScheduledAsSent,
     updateStatus,
     deleteNotif,
-    formatDate,
     isPastDue,
   };
 }

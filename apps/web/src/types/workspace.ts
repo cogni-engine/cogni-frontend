@@ -4,7 +4,7 @@ export interface Workspace {
   title: string | null;
   icon_url: string | null;
   type: 'group' | 'personal';
-  workspace_messages_updated_at?: string | null;
+  workspace_messages_updated_at: string | null;
   notes?: Note[];
   members?: WorkspaceMember[];
   unread_count?: number;
