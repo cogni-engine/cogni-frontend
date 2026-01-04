@@ -11,10 +11,7 @@ export const ReplyIndicator = ({
         <p className='text-xs text-white/60 mb-1'>
           Replying to {replyingTo.authorName || 'message'}
         </p>
-        <p className='text-xs text-white/40 truncate'>
-          {replyingTo.text.slice(0, 100)}
-          {replyingTo.text.length > 100 ? '...' : ''}
-        </p>
+        <p className='text-xs text-white/40 truncate'>{replyingTo.text}</p>
       </div>
       <button
         onClick={onCancelReply}

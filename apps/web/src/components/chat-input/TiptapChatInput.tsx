@@ -182,7 +182,7 @@ const TiptapChatInput = forwardRef<TiptapChatInputRef, TiptapChatInputProps>(
     }
 
     return (
-      <div className='flex-1 relative'>
+      <div className='flex-1 relative min-w-0'>
         <div
           ref={editorRef}
           className='w-full bg-white/2 backdrop-blur-sm rounded-4xl border border-black focus-within:shadow-[0_12px_40px_rgba(0,0,0,0.25),inset_0_1px_0_rgba(255,255,255,0.18)] transition-all duration-300 shadow-[0_8px_32px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.12)]'
