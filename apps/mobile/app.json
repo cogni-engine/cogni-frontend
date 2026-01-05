@@ -32,9 +32,10 @@
       "permissions": [
         "INTERNET",
         "ACCESS_NETWORK_STATE",
-        "INTERNET",
-        "ACCESS_NETWORK_STATE",
         "POST_NOTIFICATIONS"
+      ],
+      "blockedPermissions": [
+        "android.permission.CAMERA"
       ],
       "package": "com.cogno.ai.mobile",
       "googleServicesFile": "./google-services.json"
@@ -46,6 +47,7 @@
     "plugins": [
       "expo-router",
       "expo-secure-store",
+      "expo-apple-authentication",
       [
         "expo-notifications",
         {

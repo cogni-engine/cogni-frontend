@@ -249,6 +249,51 @@ export default function WebAppView({ url = 'https://app.cogno.studio', session }
     webViewRef.current?.reload();
   };
 
+  // JavaScript to disable camera access in file inputs
+  const disableCameraScript = `
+    (function() {
+      // Remove capture attribute from all file inputs to disable camera option
+      function removeCameraCapture() {
+        const fileInputs = document.querySelectorAll('input[type="file"]');
+        fileInputs.forEach(function(input) {
+          // Remove capture attribute if present (this removes camera option)
+          if (input.hasAttribute('capture')) {
+            input.removeAttribute('capture');
+          }
+          // Also intercept click events to prevent camera access
+          input.addEventListener('click', function(e) {
+            // If accept attribute includes image, ensure capture is not set
+            if (this.hasAttribute('accept') && this.getAttribute('accept').includes('image')) {
+              this.removeAttribute('capture');
+            }
+          }, true);
+        });
+      }
+      
+      // Run immediately
+      removeCameraCapture();
+      
+      // Run after DOM is loaded
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', removeCameraCapture);
+      }
+      
+      // Run after page load (for dynamically added inputs)
+      window.addEventListener('load', removeCameraCapture);
+      
+      // Use MutationObserver to catch dynamically added file inputs
+      const observer = new MutationObserver(function(mutations) {
+        removeCameraCapture();
+      });
+      
+      observer.observe(document.body, {
+        childList: true,
+        subtree: true
+      });
+    })();
+    true; // Required for injectedJavaScript
+  `;
+
   // Handle messages from the WebView
   const handleMessage = async (event: any) => {
     try {
@@ -395,6 +440,9 @@ export default function WebAppView({ url = 'https://app.cogno.studio', session }
         cacheEnabled={true}
         cacheMode="LOAD_DEFAULT" // Use cache when available, fetch if stale
         incognito={false} // Ensure cache is persisted
+        // Inject JavaScript to disable camera access in file inputs
+        injectedJavaScript={disableCameraScript}
+        injectedJavaScriptBeforeContentLoaded={disableCameraScript}
       />
 
       {/* Loading Screen - shown until page loads, fades out */}
