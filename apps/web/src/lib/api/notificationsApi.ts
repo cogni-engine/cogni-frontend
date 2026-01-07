@@ -1,5 +1,10 @@
 import { createClient } from '@/lib/supabase/browserClient';
-import type { Notification, NotificationStatus } from '@/types/notification';
+import type {
+  Notification,
+  NotificationStatus,
+  NotificationReactionStatus,
+  WorkspaceActivity,
+} from '@/types/notification';
 
 const supabase = createClient();
 
@@ -222,4 +227,102 @@ export async function deleteNotification(id: number): Promise<void> {
     .eq('id', id);
 
   if (error) throw error;
+}
+
+/**
+ * Update notification reaction (complete or postpone)
+ * Also marks the notification as resolved
+ */
+export async function updateNotificationReaction(
+  id: number,
+  reactionStatus: 'completed' | 'postponed',
+  reactionText: string | null = null
+): Promise<Notification> {
+  const { data, error } = await supabase
+    .from('ai_notifications')
+    .update({
+      reaction_status: reactionStatus as NotificationReactionStatus,
+      reaction_text: reactionText,
+      status: 'resolved' as NotificationStatus,
+      updated_at: new Date().toISOString(),
+    })
+    .eq('id', id)
+    .select()
+    .single();
+
+  if (error) throw error;
+  return data;
+}
+
+/**
+ * Get workspace activity notifications
+ * Fetches notification reactions from all workspace members using Supabase
+ */
+export async function getWorkspaceActivityNotifications(
+  workspaceId: number
+): Promise<WorkspaceActivity[]> {
+  // 1. Get workspace member IDs
+  const { data: members, error: memberError } = await supabase
+    .from('workspace_member')
+    .select('id')
+    .eq('workspace_id', workspaceId);
+
+  if (memberError) throw memberError;
+  if (!members || members.length === 0) return [];
+
+  const memberIds = members.map(m => m.id);
+
+  // 2. Get notifications with JOIN to workspace_member and user_profile
+  const { data, error } = await supabase
+    .from('ai_notifications')
+    .select(
+      `
+      *,
+      workspace_member:workspace_member_id(
+        id,
+        user_id,
+        user_profile:user_id(name, avatar_url)
+      )
+    `
+    )
+    .in('workspace_member_id', memberIds)
+    .neq('reaction_status', 'None')
+    .order('updated_at', { ascending: false });
+
+  if (error) throw error;
+
+  // 3. Transform to WorkspaceActivity type
+  type NotificationWithMember = {
+    id: number;
+    title: string;
+    body?: string;
+    ai_context: string;
+    reaction_status: string;
+    reaction_text: string | null;
+    updated_at: string;
+    due_date: string;
+    created_at: string;
+    workspace_member?: {
+      id: number;
+      user_id: string;
+      user_profile?: {
+        name: string;
+        avatar_url?: string;
+      };
+    };
+  };
+
+  return (data || []).map((item: NotificationWithMember) => ({
+    id: item.id,
+    title: item.title,
+    body: item.body,
+    ai_context: item.ai_context,
+    reaction_status: item.reaction_status as NotificationReactionStatus,
+    reaction_text: item.reaction_text,
+    member_name: item.workspace_member?.user_profile?.name || 'Unknown',
+    member_avatar_url: item.workspace_member?.user_profile?.avatar_url,
+    updated_at: item.updated_at,
+    due_date: item.due_date,
+    created_at: item.created_at,
+  }));
 }
