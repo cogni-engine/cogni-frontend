@@ -1,6 +1,7 @@
 import { Node, mergeAttributes } from '@tiptap/core';
 import { ReactNodeViewRenderer } from '@tiptap/react';
-import { Fragment } from '@tiptap/pm/model';
+import { Fragment, Node as PMNode } from '@tiptap/pm/model';
+import { Transaction } from '@tiptap/pm/state';
 import { DiffSuggestionBlockNodeView } from './DiffSuggestionNodeView';
 
 export interface DiffSuggestionBlockAttributes {
@@ -52,12 +53,12 @@ declare module '@tiptap/core' {
 
 // Helper function to process block diffs
 function processBlockDiffs(
-  doc: ReturnType<typeof Node.create>['state']['doc'],
+  doc: PMNode,
   nodeName: string,
   currentUserId: string | null,
   suggestionId: string | null,
   mode: 'accept' | 'reject',
-  tr: ReturnType<typeof Node.create>['state']['tr']
+  tr: Transaction
 ): boolean {
   let modified = false;
 

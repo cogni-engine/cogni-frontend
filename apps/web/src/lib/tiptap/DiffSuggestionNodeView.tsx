@@ -1,34 +1,20 @@
 'use client';
 
-import { NodeViewWrapper, NodeViewContent } from '@tiptap/react';
+import { NodeViewWrapper, NodeViewContent, NodeViewProps } from '@tiptap/react';
 import { Check, X } from 'lucide-react';
-import { Editor } from '@tiptap/core';
-
-interface DiffSuggestionNodeViewProps {
-  node: {
-    attrs: {
-      type: 'added' | 'deleted';
-      suggestionId: string;
-      userId: string;
-    };
-  };
-  extension: {
-    options: {
-      currentUserId: string | null;
-    };
-  };
-  editor: Editor;
-  deleteNode: () => void;
-}
+import type {
+  DiffSuggestionBlockOptions,
+  DiffSuggestionBlockAttributes,
+} from './DiffSuggestionBlockNode';
 
 export function DiffSuggestionBlockNodeView({
   node,
   extension,
   editor,
-  deleteNode,
-}: DiffSuggestionNodeViewProps) {
-  const { type, suggestionId, userId } = node.attrs;
-  const { currentUserId } = extension.options;
+}: NodeViewProps) {
+  const { type, suggestionId, userId } =
+    node.attrs as DiffSuggestionBlockAttributes;
+  const { currentUserId } = extension.options as DiffSuggestionBlockOptions;
   const isOwner = userId === currentUserId;
 
   const handleAccept = (e: React.MouseEvent) => {
