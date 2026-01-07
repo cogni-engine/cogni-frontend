@@ -302,8 +302,7 @@ export function EditorStyles() {
         position: relative;
         margin: 0.75em 0;
         border-radius: 8px;
-        padding: 12px 16px;
-        padding-right: 80px;
+        padding: 12px 16px 20px 32px;
       }
 
       /* Block added styles - Monochrome */
@@ -380,43 +379,48 @@ export function EditorStyles() {
         margin: 0;
       }
 
-      /* Block action buttons (Hanging Tab Style) */
+      /* Block action buttons (Bottom Right Style) */
       .diff-block-actions {
         position: absolute;
-        top: 0;
-        right: 12px;
-        transform: translateY(-100%);
+        bottom: 8px;
+        right: 8px;
         display: flex;
-        align-items: stretch;
-        border-radius: 6px 6px 0 0;
-        overflow: hidden;
-        box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.3);
+        align-items: center;
+        gap: 6px;
         z-index: 10;
       }
       .diff-action-btn {
         display: flex;
         align-items: center;
         justify-content: center;
-        padding: 6px 14px;
+        width: 32px;
+        height: 32px;
         border: none;
+        border-radius: 8px;
         cursor: pointer;
-        transition: all 0.12s ease;
-        font-size: 13px;
-        font-weight: 700;
+        transition: all 0.2s ease;
+        background: transparent;
       }
       .diff-action-accept {
-        background: rgba(255, 255, 255, 0.9);
-        color: rgba(0, 0, 0, 0.8);
+        color: rgba(34, 197, 94, 0.8);
+        background: rgba(34, 197, 94, 0.1);
+        border: 1px solid rgba(34, 197, 94, 0.25);
       }
       .diff-action-accept:hover {
-        background: rgb(255, 255, 255);
+        background: rgba(34, 197, 94, 0.25);
+        color: rgb(34, 197, 94);
+        border-color: rgba(34, 197, 94, 0.5);
+        transform: scale(1.05);
       }
       .diff-action-reject {
-        background: rgba(255, 255, 255, 0.3);
-        color: rgba(255, 255, 255, 0.9);
+        color: rgba(255, 255, 255, 0.6);
+        border: 1px solid rgba(255, 255, 255, 0.1);
       }
       .diff-action-reject:hover {
-        background: rgba(255, 255, 255, 0.5);
+        background: rgba(239, 68, 68, 0.2);
+        color: rgb(239, 68, 68);
+        border-color: rgba(239, 68, 68, 0.4);
+        transform: scale(1.05);
       }
 
       /* ========== Inline Diff Buttons ========== */

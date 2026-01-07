@@ -121,6 +121,8 @@ function processBlockDiffs(
   return modified;
 }
 
+// No helper function needed - we'll use the editor's markdown parser directly
+
 export const DiffSuggestionBlockNode = Node.create<DiffSuggestionBlockOptions>({
   name: 'diffSuggestionBlock',
 
@@ -219,7 +221,50 @@ export const DiffSuggestionBlockNode = Node.create<DiffSuggestionBlockOptions>({
     return {
       insertDiffBlock:
         ({ type, suggestionId, userId, content }) =>
-        ({ chain }) => {
+        ({ chain, editor }) => {
+          if (!content || !content.trim()) {
+            // Insert empty block
+            return chain()
+              .insertContent({
+                type: this.name,
+                attrs: { type, suggestionId, userId },
+                content: [{ type: 'paragraph' }],
+              })
+              .run();
+          }
+
+          // Use the editor's markdown parser to convert markdown to ProseMirror nodes
+          const markdownManager = editor.storage?.markdown?.manager;
+
+          if (markdownManager) {
+            try {
+              // Parse markdown to ProseMirror JSON
+              const parsed = markdownManager.parse(content);
+
+              if (parsed?.type === 'doc' && parsed.content) {
+                // Extract the content nodes (skip the doc wrapper)
+                const contentNodes = parsed.content;
+
+                return chain()
+                  .insertContent({
+                    type: this.name,
+                    attrs: { type, suggestionId, userId },
+                    content: contentNodes,
+                  })
+                  .run();
+              }
+            } catch (error) {
+              console.error(
+                'Error parsing markdown in insertDiffBlock:',
+                error
+              );
+            }
+          }
+
+          // Fallback: insert as plain text if markdown parsing fails
+          console.warn(
+            'Markdown parser not available, falling back to plain text'
+          );
           return chain()
             .insertContent({
               type: this.name,
@@ -227,9 +272,7 @@ export const DiffSuggestionBlockNode = Node.create<DiffSuggestionBlockOptions>({
               content: [
                 {
                   type: 'paragraph',
-                  content: content
-                    ? [{ type: 'text', text: content }]
-                    : undefined,
+                  content: [{ type: 'text', text: content }],
                 },
               ],
             })

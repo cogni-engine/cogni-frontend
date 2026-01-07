@@ -74,10 +74,7 @@ export function useDiffSuggestion({
       // Check for inline marks
       if (node.isText) {
         node.marks.forEach(mark => {
-          if (
-            mark.type.name === 'diffSuggestion' &&
-            mark.attrs.suggestionId
-          ) {
+          if (mark.type.name === 'diffSuggestion' && mark.attrs.suggestionId) {
             const id = mark.attrs.suggestionId;
             if (!suggestions.has(id)) {
               suggestions.set(id, {
@@ -93,10 +90,7 @@ export function useDiffSuggestion({
       }
 
       // Check for block nodes
-      if (
-        node.type.name === 'diffSuggestionBlock' &&
-        node.attrs.suggestionId
-      ) {
+      if (node.type.name === 'diffSuggestionBlock' && node.attrs.suggestionId) {
         const id = node.attrs.suggestionId;
         if (!suggestions.has(id)) {
           suggestions.set(id, {

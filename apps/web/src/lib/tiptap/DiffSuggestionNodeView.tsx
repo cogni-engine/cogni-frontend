@@ -56,6 +56,7 @@ export function DiffSuggestionBlockNodeView({
   return (
     <NodeViewWrapper
       className={`${baseClasses} ${typeClasses} ${ownerClasses}`}
+      style={{ position: 'relative' }}
       data-diff-block-type={type}
       data-suggestion-id={suggestionId}
       data-user-id={userId}
@@ -68,9 +69,7 @@ export function DiffSuggestionBlockNodeView({
           <span className='diff-block-indicator-deleted'>− Removed</span>
         )}
         {!isOwner && (
-          <span className='diff-block-other-user-label'>
-            (by another user)
-          </span>
+          <span className='diff-block-other-user-label'>(by another user)</span>
         )}
       </div>
 
@@ -81,22 +80,33 @@ export function DiffSuggestionBlockNodeView({
 
       {/* Accept/Reject buttons - only for owner */}
       {isOwner && (
-        <div className='diff-block-actions'>
-          <button
-            type='button'
-            onClick={handleAccept}
-            className='diff-action-btn diff-action-accept'
-            title='Accept this change'
-          >
-            <Check className='w-3.5 h-3.5' />
-          </button>
+        <div
+          className='diff-block-actions'
+          style={{
+            position: 'absolute',
+            bottom: '8px',
+            right: '8px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px',
+            zIndex: 10,
+          }}
+        >
           <button
             type='button'
             onClick={handleReject}
             className='diff-action-btn diff-action-reject'
             title='Reject this change'
           >
-            <X className='w-3.5 h-3.5' />
+            <X className='w-4 h-4' />
+          </button>
+          <button
+            type='button'
+            onClick={handleAccept}
+            className='diff-action-btn diff-action-accept'
+            title='Accept this change'
+          >
+            <Check className='w-4 h-4' />
           </button>
         </div>
       )}
@@ -146,4 +156,3 @@ export function InlineDiffButtons({
     </span>
   );
 }
-

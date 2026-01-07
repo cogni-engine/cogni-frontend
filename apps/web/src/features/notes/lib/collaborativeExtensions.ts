@@ -5,6 +5,8 @@ import TaskList from '@tiptap/extension-task-list';
 import TaskItem from '@tiptap/extension-task-item';
 import Collaboration from '@tiptap/extension-collaboration';
 import CollaborationCaret from '@tiptap/extension-collaboration-caret';
+import Heading from '@tiptap/extension-heading';
+import { Markdown } from '@tiptap/markdown';
 import { HocuspocusProvider } from '@hocuspocus/provider';
 import * as Y from 'yjs';
 import { CustomMention } from '@/lib/tiptap/MentionExtension';
@@ -13,7 +15,12 @@ import { NoteMention } from '@/lib/tiptap/NoteMentionExtension';
 import { createNoteMentionSuggestion } from '@/lib/tiptap/noteMentionSuggestion';
 import { DiffSuggestionMark } from '@/lib/tiptap/DiffSuggestionMark';
 import { DiffSuggestionBlockNode } from '@/lib/tiptap/DiffSuggestionBlockNode';
+import { BlockIdExtension } from '@/lib/tiptap/BlockIdExtension';
 import { WorkspaceMember } from '@/types/workspace';
+import type { NoteWithParsed } from '@/types/note';
+
+// Block ID attribute configuration - now handled globally by BlockIdExtension
+// No need for manual extensions - BlockIdExtension adds blockId to all block nodes automatically
 
 interface UserInfo {
   name: string;
@@ -26,7 +33,7 @@ interface CreateCollaborativeExtensionsProps {
   provider: HocuspocusProvider;
   isGroupNote: boolean;
   membersRef: React.MutableRefObject<WorkspaceMember[]>;
-  notesRef: React.MutableRefObject<any[]>;
+  notesRef: React.MutableRefObject<NoteWithParsed[]>;
   user: UserInfo;
 }
 
@@ -39,16 +46,20 @@ export function createCollaborativeExtensions({
   user,
 }: CreateCollaborativeExtensionsProps) {
   return [
-    // StarterKit provides basic formatting (bold, italic, lists, etc.)
-    // We disable history since Y.js handles undo/redo
+    // StarterKit provides basic formatting (bold, italic, etc.)
+    // We disable history (Y.js handles it) but keep all other nodes
     StarterKit.configure({
-      heading: {
-        levels: [1, 2, 3, 4, 5, 6],
-      },
-      code: false,
       // Disable history - Y.js handles this via Collaboration extension
       history: false,
     } as Parameters<typeof StarterKit.configure>[0]),
+
+    // Markdown extension - enables markdown parsing for AI suggestions
+    Markdown,
+
+    // Override heading to support more levels
+    Heading.configure({
+      levels: [1, 2, 3, 4, 5, 6],
+    }),
 
     // Placeholder text when editor is empty
     Placeholder.configure({
@@ -162,6 +173,10 @@ export function createCollaborativeExtensions({
     DiffSuggestionBlockNode.configure({
       currentUserId: user.id,
     }),
+
+    // BlockId extension - automatically assigns unique IDs to all blocks
+    // Must come AFTER other node extensions so it can process them
+    BlockIdExtension,
 
     // NOTE: Markdown extension is NOT included here
     // Collaborative editing uses TipTap's native JSON format

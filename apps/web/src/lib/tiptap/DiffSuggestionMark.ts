@@ -419,10 +419,7 @@ export const DiffSuggestionMark = Mark.create<DiffSuggestionMarkOptions>({
           const combinedHtml = deletedHtml + addedHtml;
 
           if (hasSelection) {
-            return chain()
-              .deleteSelection()
-              .insertContent(combinedHtml)
-              .run();
+            return chain().deleteSelection().insertContent(combinedHtml).run();
           }
 
           return chain().insertContent(combinedHtml).run();
