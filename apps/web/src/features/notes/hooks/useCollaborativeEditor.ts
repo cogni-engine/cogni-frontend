@@ -144,7 +144,7 @@ export function useCollaborativeEditor({
   const editor = useEditor(
     {
       immediatelyRender: false,
-      extensions,
+      extensions: extensions as any, // Type assertion needed due to pnpm hoisting creating duplicate @tiptap/core paths
       editorProps: {
         attributes: {
           class:
