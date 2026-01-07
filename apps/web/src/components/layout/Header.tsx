@@ -13,9 +13,11 @@ import {
   onHeaderEvent,
 } from '@/lib/headerEvents';
 import FolderActionButton from '@/components/FolderActionButton';
+import GlassButton from '@/components/glass-design/GlassButton';
 import { useNoteFolders } from '@/features/notes/hooks/useNoteFolders';
 import { useNotes } from '@/features/notes/hooks/useNotes';
 import { getPersonalWorkspaceId } from '@/lib/cookies';
+import NotificationProcessDrawer from '@/features/notifications/components/NotificationProcessDrawer';
 
 export default function Header() {
   const pathname = usePathname();
@@ -82,9 +84,16 @@ export default function Header() {
 
   // Get notifications hook
   const userId = user?.id ?? null;
-  const { unreadCount, fetchUnreadCount } = useNotifications(
-    userId || undefined
-  );
+  const {
+    notifications: pastDueNotifications,
+    unreadCount,
+    fetchPastDueNotifications,
+    fetchUnreadCount,
+  } = useNotifications(userId || undefined);
+
+  // Notification drawer state
+  const [isNotificationDrawerOpen, setIsNotificationDrawerOpen] =
+    useState(false);
 
   // Initialize on mount: set mounted flag and get userId
   useEffect(() => {
@@ -163,8 +172,19 @@ export default function Header() {
     dispatchHeaderEvent(HEADER_EVENTS.TOGGLE_THREAD_SIDEBAR);
   };
 
-  const handleToggleNotificationPanel = () => {
-    dispatchHeaderEvent(HEADER_EVENTS.TOGGLE_NOTIFICATION_PANEL);
+  const handleToggleNotificationPanel = async () => {
+    if (!userId) return;
+
+    // Fetch notifications and open drawer
+    await fetchPastDueNotifications();
+    setIsNotificationDrawerOpen(true);
+  };
+
+  const handleNotificationProcessed = async () => {
+    // Refresh notifications and unread count after processing
+    if (userId) {
+      await fetchUnreadCount();
+    }
   };
 
   return (
@@ -210,15 +230,14 @@ export default function Header() {
         </h1>
       </div>
 
-      <div className='flex items-center gap-3'>
+      <div className='flex items-center gap-2'>
         {isHomePage && isMounted && (
           <button
             onClick={handleToggleNotificationPanel}
             data-notification-trigger='true'
             className='flex items-center gap-2 text-white/60 hover:text-white transition-colors group relative'
           >
-            <span className='text-sm font-medium'>{currentTime}</span>
-            <BellIcon className='h-5 w-5' />
+            {/* <span className='text-sm font-medium'>{currentTime}</span> */}
             {/* Cogno Icon (Star/Comet) */}
             <div className='relative'>
               {/* <div className='w-2 h-2 bg-white rounded-full'></div>
@@ -242,8 +261,28 @@ export default function Header() {
             }}
           />
         )}
+        {isHomePage && isMounted && (
+          <GlassButton
+            onClick={handleToggleNotificationPanel}
+            title='Notifications'
+            size='icon'
+            className='size-12'
+          >
+            <BellIcon className='w-5 h-5 text-white' />
+          </GlassButton>
+        )}
         {isMounted && <UserMenu user={user} />}
       </div>
+
+      {/* Notification Process Drawer */}
+      {isHomePage && (
+        <NotificationProcessDrawer
+          open={isNotificationDrawerOpen}
+          onOpenChange={setIsNotificationDrawerOpen}
+          notifications={pastDueNotifications}
+          onNotificationProcessed={handleNotificationProcessed}
+        />
+      )}
     </header>
   );
 }

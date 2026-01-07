@@ -10,7 +10,6 @@ import {
   Users,
   Settings,
   GitBranch,
-  Clock,
 } from 'lucide-react';
 import GlassCard from '@/components/glass-design/GlassCard';
 import GlassButton from '@/components/glass-design/GlassButton';
@@ -18,6 +17,7 @@ import { useWorkspace } from '@/hooks/useWorkspace';
 import FolderActionButton from '@/components/FolderActionButton';
 import { useNoteFolders } from '@/features/notes/hooks/useNoteFolders';
 import { useNotes } from '@/features/notes/hooks/useNotes';
+import WorkspaceActivityDrawer from '@/features/workspace/components/activity/WorkspaceActivityDrawer';
 
 type ViewType = 'chat' | 'notes' | 'members' | 'menu';
 
@@ -109,22 +109,17 @@ export default function WorkspaceLayout({
 
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);
   const menuRef = React.useRef<HTMLDivElement | null>(null);
-  const [isBranchMenuOpen, setIsBranchMenuOpen] = React.useState(false);
-  const branchMenuRef = React.useRef<HTMLDivElement | null>(null);
+  const [isActivityDrawerOpen, setIsActivityDrawerOpen] = React.useState(false);
 
   React.useEffect(() => {
     const handleKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         setIsMenuOpen(false);
-        setIsBranchMenuOpen(false);
       }
     };
     const handleClickOutside = (e: MouseEvent) => {
       if (!menuRef.current) return;
       if (!menuRef.current.contains(e.target as Node)) setIsMenuOpen(false);
-      if (!branchMenuRef.current) return;
-      if (!branchMenuRef.current.contains(e.target as Node))
-        setIsBranchMenuOpen(false);
     };
     document.addEventListener('keydown', handleKey);
     document.addEventListener('mousedown', handleClickOutside);
@@ -166,44 +161,13 @@ export default function WorkspaceLayout({
             />
           )}
           {currentView === 'chat' && (
-            <div className='relative' ref={branchMenuRef}>
-              <GlassButton
-                onClick={() => setIsBranchMenuOpen(prev => !prev)}
-                aria-haspopup='menu'
-                aria-expanded={isBranchMenuOpen}
-                aria-label='Open branch menu'
-                title='Branch'
-                className='size-12'
-              >
-                <GitBranch className='w-5 h-5 text-white' />
-              </GlassButton>
-              {isBranchMenuOpen && (
-                <div className='absolute right-0 mt-2 z-110'>
-                  <GlassCard role='menu' className='w-40 rounded-3xl p-1'>
-                    <button
-                      role='menuitem'
-                      onClick={() => {
-                        setIsBranchMenuOpen(false);
-                      }}
-                      className='w-full text-left px-3 py-2 text-sm text-gray-200 hover:bg-white/10 rounded-2xl flex items-center gap-2'
-                    >
-                      <Users className='w-4 h-4' />
-                      Members
-                    </button>
-                    <button
-                      role='menuitem'
-                      onClick={() => {
-                        setIsBranchMenuOpen(false);
-                      }}
-                      className='w-full text-left px-3 py-2 text-sm text-gray-200 hover:bg-white/10 rounded-2xl flex items-center gap-2'
-                    >
-                      <Clock className='w-4 h-4' />
-                      Time
-                    </button>
-                  </GlassCard>
-                </div>
-              )}
-            </div>
+            <GlassButton
+              onClick={() => setIsActivityDrawerOpen(true)}
+              title='Activity'
+              className='size-12'
+            >
+              <GitBranch className='w-5 h-5 text-white' />
+            </GlassButton>
           )}
           <div className='relative' ref={menuRef}>
             <GlassButton
@@ -282,6 +246,13 @@ export default function WorkspaceLayout({
 
       {/* Scrollable Content */}
       <div className='relative flex-1 overflow-y-auto'>{children}</div>
+
+      {/* Workspace Activity Drawer */}
+      <WorkspaceActivityDrawer
+        open={isActivityDrawerOpen}
+        onOpenChange={setIsActivityDrawerOpen}
+        workspaceId={workspaceId}
+      />
     </div>
   );
 }

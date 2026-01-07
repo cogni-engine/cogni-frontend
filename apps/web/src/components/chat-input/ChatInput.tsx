@@ -221,14 +221,14 @@ const ChatInput = forwardRef<ChatInputRef, ChatInputProps>(function ChatInput(
   };
 
   return (
-    <div className='z-100 rounded-t-3xl'>
+    <div className='rounded-t-3xl'>
       {/* Reply indicator - absolutely positioned above input */}
       {/* 入力UI */}
       <div className='px-2 md:px-6 py-2'>
         <div className='w-full md:max-w-7xl md:mx-auto flex gap-2 items-end'>
           {/* File Upload Menu - Plus button */}
           {workspaceId && (
-            <div className='z-100'>
+            <div>
               <FileUploadMenu
                 onFilesSelected={handleFilesSelected}
                 maxFiles={4}

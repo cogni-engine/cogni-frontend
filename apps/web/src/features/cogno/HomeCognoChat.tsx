@@ -133,7 +133,7 @@ export default function HomeCognoChat({ isInitialMount }: HomeCognoChatProps) {
 
       {/* Absolutely positioned ChatInput */}
       <div
-        className={`fixed left-0 right-0 z-110 py-4 transition-all duration-300 ${
+        className={`fixed left-0 right-0 z-50 py-4 transition-all duration-300 ${
           isInputActive ? 'bottom-0 md:bottom-[60px]' : 'bottom-[60px]'
         }`}
       >
