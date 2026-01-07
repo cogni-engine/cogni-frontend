@@ -489,40 +489,11 @@ export async function getNoteAssignments(noteId: number): Promise<{
   return result;
 }
 
-/**
- * Get markdown representation of note from Y.Doc state
- * This fetches the markdown from the Hocuspocus HTTP API which converts
- * the Y.Doc state to properly formatted markdown
- * Note: HTTP API runs on port 1235 (WebSocket on 1234)
- */
-export async function getNoteMarkdown(noteId: number): Promise<string> {
-  const apiUrl =
-    process.env.NEXT_PUBLIC_HOCUSPOCUS_API_URL || 'http://localhost:1235';
-
-  try {
-    const response = await fetch(`${apiUrl}/api/notes/${noteId}/markdown`);
-
-    if (!response.ok) {
-      if (response.status === 404) {
-        return '(note not found)';
-      }
-      throw new Error(`Failed to fetch markdown: ${response.statusText}`);
-    }
-
-    const data = await response.json();
-    return data.markdown || '';
-  } catch (error) {
-    console.error('Failed to fetch note markdown:', error);
-    return '(error fetching markdown)';
-  }
-}
-
 // Types for AI suggestions
 export interface AISuggestion {
   block_id: string;
   action: 'replace' | 'insert_after' | 'delete';
-  original_text?: string;
-  suggested_text?: string;
+  suggested_text?: string[]; // list of text blocks (allows multiple inserts for same block)
 }
 
 export interface AISuggestResponse {
@@ -530,14 +501,14 @@ export interface AISuggestResponse {
 }
 
 /**
- * Get AI suggestions for editing a note using unified diff format
+ * Get AI suggestions for editing a note using anchor-based format
  *
- * Requires both versions of the markdown:
- * - noteContent: Plain markdown (sent to AI for cleaner diff generation)
- * - annotatedNoteContent: Markdown with block ID comments (for mapping line numbers to blocks)
+ * Requires:
+ * - annotatedNoteContent: Markdown with block ID comments (converted to simple IDs for AI)
+ * - userInstruction: User's instruction for how to edit the note
+ * - fileContents: Optional list of file contents to use as context
  */
 export async function getAISuggestions(
-  noteContent: string,
   annotatedNoteContent: string,
   userInstruction: string,
   fileContents?: string[]
@@ -551,7 +522,6 @@ export async function getAISuggestions(
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        note_content: noteContent,
         annotated_note_content: annotatedNoteContent,
         user_instruction: userInstruction,
         file_contents: fileContents,

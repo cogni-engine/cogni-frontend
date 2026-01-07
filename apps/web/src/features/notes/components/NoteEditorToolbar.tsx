@@ -13,7 +13,6 @@ import {
   Image as ImageIcon,
   Loader2,
   CheckSquare,
-  Sparkles,
 } from 'lucide-react';
 import { ToolbarButton } from './ToolbarButton';
 import { StrikeChain } from '../types';
@@ -25,9 +24,6 @@ interface NoteEditorToolbarProps {
   canUploadImage: boolean;
   onImageUpload: () => void;
   onToggleTaskList: () => void;
-  aiSuggestionsEnabled: boolean;
-  isSuggestionLoading: boolean;
-  onToggleAI: () => void;
 }
 
 export function NoteEditorToolbar({
@@ -36,9 +32,6 @@ export function NoteEditorToolbar({
   canUploadImage,
   onImageUpload,
   onToggleTaskList,
-  aiSuggestionsEnabled,
-  isSuggestionLoading,
-  onToggleAI,
 }: NoteEditorToolbarProps) {
   if (!editor) return null;
 
@@ -116,18 +109,6 @@ export function NoteEditorToolbar({
             disabled={!editor.can().redo()}
             icon={<Redo className='w-5 h-5' />}
             title='Redo'
-          />
-          <ToolbarButton
-            onClick={onToggleAI}
-            isActive={aiSuggestionsEnabled}
-            icon={
-              isSuggestionLoading ? (
-                <Loader2 className='w-5 h-5 animate-spin' />
-              ) : (
-                <Sparkles className='w-5 h-5' />
-              )
-            }
-            title={`AI Suggestions (${aiSuggestionsEnabled ? 'On' : 'Off'}) - Press Tab to accept`}
           />
         </div>
       </GlassCard>

@@ -12,16 +12,17 @@ export const BlockIdExtension = Extension.create({
     return [
       {
         // Apply to all block-level nodes
-        // NOTE: diffSuggestionBlock is excluded - it has its own ID system (suggestionId)
         types: [
           'paragraph',
           'heading',
           'bulletList',
           'orderedList',
           'listItem',
+          'taskList',
           'blockquote',
           'codeBlock',
           'horizontalRule',
+          'diffSuggestionBlock',
         ],
         attributes: {
           blockId: {
@@ -59,11 +60,6 @@ export const BlockIdExtension = Extension.create({
 
           // Check all nodes in the new document
           newState.doc.descendants((node, pos) => {
-            // Skip diffSuggestionBlock nodes - they use suggestionId instead
-            if (node.type.name === 'diffSuggestionBlock') {
-              return;
-            }
-
             // Only process nodes that support blockId
             if (
               node.isBlock &&

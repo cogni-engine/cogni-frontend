@@ -2,7 +2,14 @@
 
 import { useRouter } from 'next/navigation';
 import { useEffect, useState, useRef, useCallback } from 'react';
-import { useNotes } from './hooks/useNotes';
+import {
+  useNotes,
+  useNoteAssignments,
+  useEditorImageUpload,
+  useDiffSuggestion,
+  useCollaborativeEditor,
+  generateUserColor,
+} from './hooks';
 import { EditorContent } from '@tiptap/react';
 import { getPersonalWorkspaceId } from '@/lib/cookies';
 import { useWorkspaceMembers } from '@/hooks/useWorkspace';
@@ -10,19 +17,16 @@ import { TaskListChain } from './types';
 import { NoteEditorHeader } from './components/NoteEditorHeader';
 import { NoteEditorToolbar } from './components/NoteEditorToolbar';
 import { MobileFloatingToolbar } from './components/tool-bar/MobileFloatingToolbar';
+import { DesktopAIInput } from './components/DesktopAIInput';
 import { EditorStyles } from './lib/editorStyles';
 import { CollaborativeEditorStyles } from './lib/collaborativeEditorStyles';
-import {
-  useCollaborativeEditor,
-  generateUserColor,
-} from './hooks/useCollaborativeEditor';
-import { useNoteAssignments } from './hooks/useNoteAssignments';
-import { useEditorImageUpload } from './hooks/useEditorImageUpload';
-import { useDiffSuggestion } from './hooks/useDiffSuggestion';
-import { getNote, updateNoteTitle } from '@/lib/api/notesApi';
+import { getNote, updateNoteTitle, getAISuggestions } from '@/lib/api/notesApi';
+import { yDocToAnnotatedMarkdown } from '@/lib/ydoc/yDocToMarkdown';
 import { createClient } from '@/lib/supabase/browserClient';
 import type { Note } from '@/types/note';
 import { Check, X } from 'lucide-react';
+import GlassCard from '@/components/glass-design/GlassCard';
+import GlassButton from '@/components/glass-design/GlassButton';
 
 export default function CollaborativeNoteEditor({
   noteId,
@@ -52,6 +56,23 @@ export default function CollaborativeNoteEditor({
 
   // Assignment dropdown state
   const [showAssignmentDropdown, setShowAssignmentDropdown] = useState(false);
+
+  // AI suggestion state
+  const [aiInstruction, setAiInstruction] = useState('');
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiError, setAiError] = useState<string | null>(null);
+  const [ydocMarkdown, setYdocMarkdown] = useState('');
+
+  // Editor focus state for mobile toolbar switching
+  const [isEditorFocused, setIsEditorFocused] = useState(false);
+
+  // Debug drawer state
+  const [showDebugDrawer, setShowDebugDrawer] = useState(false);
+  const [debugJson, setDebugJson] = useState('');
+  const [debugMarkdown, setDebugMarkdown] = useState('');
+  const [copiedDebug, setCopiedDebug] = useState<'json' | 'markdown' | null>(
+    null
+  );
 
   // Fetch workspace members if this is a group note
   const { members } = useWorkspaceMembers(
@@ -181,7 +202,7 @@ export default function CollaborativeNoteEditor({
   }, []);
 
   // Initialize collaborative editor
-  const { editor, isSynced } = useCollaborativeEditor({
+  const { editor, isSynced, ydoc } = useCollaborativeEditor({
     noteId: isValidId ? id : null,
     isGroupNote,
     membersRef,
@@ -189,7 +210,43 @@ export default function CollaborativeNoteEditor({
     user: userInfo,
   });
 
-  console.log(JSON.stringify(editor?.getJSON(), null, 2));
+  // Track editor focus/blur for mobile toolbar switching
+  useEffect(() => {
+    if (!editor) return;
+
+    const handleFocus = () => {
+      setIsEditorFocused(true);
+    };
+
+    const handleBlur = () => {
+      setIsEditorFocused(false);
+    };
+
+    editor.on('focus', handleFocus);
+    editor.on('blur', handleBlur);
+
+    return () => {
+      editor.off('focus', handleFocus);
+      editor.off('blur', handleBlur);
+    };
+  }, [editor]);
+
+  // Update debug JSON when editor changes
+  useEffect(() => {
+    if (!editor) return;
+
+    const updateDebugJson = () => {
+      const json = editor.getJSON();
+      setDebugJson(JSON.stringify(json, null, 2));
+    };
+
+    updateDebugJson();
+    editor.on('update', updateDebugJson);
+
+    return () => {
+      editor.off('update', updateDebugJson);
+    };
+  }, [editor]);
 
   // Use image upload hook
   const {
@@ -213,6 +270,207 @@ export default function CollaborativeNoteEditor({
     rejectAllSuggestions,
   } = useDiffSuggestion({ editor, userId: userInfo?.id || null });
 
+  // Convert Y.Doc to annotated markdown locally (no API call needed)
+  const fetchYdocMarkdown = useCallback((): string => {
+    if (!ydoc) {
+      return '(no Y.Doc available)';
+    }
+
+    try {
+      const markdown = yDocToAnnotatedMarkdown(ydoc);
+      const result = markdown || '(empty document)';
+      setYdocMarkdown(result);
+      return result;
+    } catch (err) {
+      console.error('Failed to convert Y.Doc to markdown:', err);
+      const error = '(error converting Y.Doc to markdown)';
+      setYdocMarkdown(error);
+      return error;
+    }
+  }, [ydoc]);
+
+  // Fetch debug markdown when drawer opens
+  useEffect(() => {
+    if (showDebugDrawer && editor) {
+      const markdown = fetchYdocMarkdown();
+      setDebugMarkdown(markdown);
+    }
+  }, [showDebugDrawer, editor, fetchYdocMarkdown]);
+
+  // Helper: Find block position by blockId attribute
+  const findBlockPosition = useCallback(
+    (blockId: string): number | null => {
+      if (!editor) return null;
+
+      let foundPos: number | null = null;
+      editor.state.doc.descendants((node, pos) => {
+        if (node.attrs.blockId === blockId) {
+          foundPos = pos;
+          return false; // Stop searching
+        }
+      });
+
+      return foundPos;
+    },
+    [editor]
+  );
+
+  // Helper: Wrap an existing block in a delete suggestion
+  const wrapBlockInDeleteSuggestion = useCallback(
+    (blockPos: number, suggestionId: string) => {
+      if (!editor || !userInfo?.id) return false;
+
+      const node = editor.state.doc.nodeAt(blockPos);
+      if (!node) return false;
+
+      // Use a Y.Doc-aware transaction through the chain API
+      return editor
+        .chain()
+        .command(({ tr, state }) => {
+          // Get the node again in the transaction context
+          const currentNode = tr.doc.nodeAt(blockPos);
+          if (!currentNode) return false;
+
+          // Create a diffSuggestionBlock with type='deleted' wrapping the entire node
+          // This preserves the node's type (heading, paragraph, etc.) and all its styling
+          const diffBlock = state.schema.nodes.diffSuggestionBlock.create(
+            {
+              type: 'deleted',
+              suggestionId,
+              userId: userInfo.id,
+            },
+            [currentNode] // Wrap the entire node as a child, not just its content
+          );
+
+          // Replace the original node with the wrapped version
+          tr.replaceWith(blockPos, blockPos + currentNode.nodeSize, diffBlock);
+          return true;
+        })
+        .run();
+    },
+    [editor, userInfo]
+  );
+
+  // Handle AI suggestion request
+  const handleAISuggest = useCallback(async () => {
+    if (!aiInstruction.trim() || aiLoading || !editor) return;
+
+    setAiLoading(true);
+    setAiError(null);
+
+    try {
+      // Get fresh annotated markdown with block IDs from local Y.Doc
+      const annotatedMarkdown = fetchYdocMarkdown();
+
+      // Call AI with annotated markdown (AI will convert to simple IDs internally)
+      const suggestions = await getAISuggestions(
+        annotatedMarkdown,
+        aiInstruction
+      );
+
+      if (suggestions.length === 0) {
+        setAiError('No suggestions generated');
+        return;
+      }
+
+      // Sort suggestions: insert_after first, then replace, then delete
+      // This prevents position shifts from affecting later operations
+      const sortedSuggestions = [...suggestions].sort((a, b) => {
+        const order = { insert_after: 0, replace: 1, delete: 2 };
+        return order[a.action] - order[b.action];
+      });
+
+      // Apply each suggestion to the CORRECT block by targeting block_id
+      // Process suggestions sequentially with small delays to ensure Y.Doc sync
+      for (let i = 0; i < sortedSuggestions.length; i++) {
+        const suggestion = sortedSuggestions[i];
+
+        // Find the actual block position by its ID
+        const blockPos = findBlockPosition(suggestion.block_id);
+
+        if (blockPos === null) {
+          console.warn(`Block ${suggestion.block_id} not found in editor`);
+          continue;
+        }
+
+        // Generate a unique suggestion ID for this change
+        const suggestionId = `suggestion-${Date.now()}-${Math.random().toString(36).substr(2, 9)}-${i}`;
+
+        if (
+          suggestion.action === 'replace' &&
+          suggestion.suggested_text &&
+          suggestion.suggested_text.length > 0
+        ) {
+          // For replace: wrap existing block in delete suggestion, then insert added block(s) after
+          // Get the node size before wrapping to calculate the new position
+          const originalNode = editor.state.doc.nodeAt(blockPos);
+          if (!originalNode) continue;
+
+          const wrapped = wrapBlockInDeleteSuggestion(blockPos, suggestionId);
+
+          if (wrapped) {
+            // Small delay to let Y.Doc process the change
+            await new Promise(resolve => setTimeout(resolve, 10));
+
+            // The wrapped block is now at blockPos, find its size in the current state
+            const wrappedNode = editor.state.doc.nodeAt(blockPos);
+            if (wrappedNode) {
+              // Position cursor after the wrapped block to insert the added suggestion(s)
+              const afterPos = blockPos + wrappedNode.nodeSize;
+              editor.commands.setTextSelection(afterPos);
+
+              // Insert all suggested text blocks
+              for (const textBlock of suggestion.suggested_text) {
+                insertBlockSuggestion('added', textBlock);
+                await new Promise(resolve => setTimeout(resolve, 10));
+              }
+            }
+          }
+        } else if (
+          suggestion.action === 'insert_after' &&
+          suggestion.suggested_text &&
+          suggestion.suggested_text.length > 0
+        ) {
+          // For insert_after: insert new content after the target block
+          // Multiple inserts for the same block are grouped into a single suggestion
+          const node = editor.state.doc.nodeAt(blockPos);
+          if (node) {
+            const afterPos = blockPos + node.nodeSize;
+            editor.commands.setTextSelection(afterPos);
+
+            // Insert all suggested text blocks
+            for (const textBlock of suggestion.suggested_text) {
+              insertBlockSuggestion('added', textBlock);
+              await new Promise(resolve => setTimeout(resolve, 10));
+            }
+          }
+        } else if (suggestion.action === 'delete') {
+          // For delete: wrap the existing block in a delete suggestion (don't create new content)
+          wrapBlockInDeleteSuggestion(blockPos, suggestionId);
+          await new Promise(resolve => setTimeout(resolve, 10));
+        }
+      }
+
+      // Clear instruction after successful application
+      setAiInstruction('');
+    } catch (err) {
+      console.error('AI suggestion failed:', err);
+      setAiError(
+        err instanceof Error ? err.message : 'Failed to get AI suggestions'
+      );
+    } finally {
+      setAiLoading(false);
+    }
+  }, [
+    aiInstruction,
+    aiLoading,
+    editor,
+    fetchYdocMarkdown,
+    insertBlockSuggestion,
+    findBlockPosition,
+    wrapBlockInDeleteSuggestion,
+  ]);
+
   // Handle toggle task list
   const handleToggleTaskList = () => {
     if (!editor) return;
@@ -234,94 +492,6 @@ export default function CollaborativeNoteEditor({
       console.warn('Task list command not available');
     }
   };
-
-  // Handle AI suggestion - inserts test diff suggestions with per-user ownership
-  const handleTestAISuggestion = useCallback(() => {
-    if (!editor || !userInfo?.id) return;
-
-    const { from, to } = editor.state.selection;
-    const hasSelection = from !== to;
-
-    if (hasSelection) {
-      // If there's selected text, show a realistic AI rewrite (inline)
-      const selectedText = editor.state.doc.textBetween(from, to);
-
-      // Simulate different types of AI improvements based on text length
-      let improvedText: string;
-      if (selectedText.length < 20) {
-        improvedText = `${selectedText} — enhanced with additional context and clarity`;
-      } else if (selectedText.length < 100) {
-        improvedText = `[Professionally rewritten] ${selectedText.charAt(0).toUpperCase()}${selectedText.slice(1)}. This revision improves readability and impact.`;
-      } else {
-        improvedText = `[AI Summary] ${selectedText.substring(0, 50)}... Key points have been restructured for clarity and conciseness.`;
-      }
-
-      insertSuggestion(improvedText, selectedText);
-      console.log('Inserted inline replacement suggestion');
-    } else {
-      // No selection: showcase ALL diff features with a complex demo
-      const userId = userInfo.id;
-      const ts = Date.now();
-
-      // Create unique suggestion IDs for each change (allows individual accept/reject)
-      const ids = {
-        title: `title-${ts}`,
-        intro: `intro-${ts}`,
-        typo: `typo-${ts}`,
-        addition: `addition-${ts}`,
-        emphasis: `emphasis-${ts}`,
-        blockAdd: `block-add-${ts}`,
-        blockRemove: `block-remove-${ts}`,
-      };
-
-      // Complex demo HTML with multiple inline suggestions
-      const complexDemoHtml = `
-        <h2>
-          <span data-diff-suggestion data-diff-type="deleted" data-suggestion-id="${ids.title}" data-user-id="${userId}">Project Update</span><span data-diff-suggestion data-diff-type="added" data-suggestion-id="${ids.title}" data-user-id="${userId}">Q4 Project Status Report</span>
-        </h2>
-        <p>
-          <span data-diff-suggestion data-diff-type="deleted" data-suggestion-id="${ids.intro}" data-user-id="${userId}">Here is some info about the project.</span><span data-diff-suggestion data-diff-type="added" data-suggestion-id="${ids.intro}" data-user-id="${userId}">This document provides a comprehensive overview of our Q4 initiatives and progress.</span>
-        </p>
-        <p>
-          The team has made <span data-diff-suggestion data-diff-type="deleted" data-suggestion-id="${ids.typo}" data-user-id="${userId}">signifcant</span><span data-diff-suggestion data-diff-type="added" data-suggestion-id="${ids.typo}" data-user-id="${userId}">significant</span> progress on the main deliverables<span data-diff-suggestion data-diff-type="added" data-suggestion-id="${ids.addition}" data-user-id="${userId}">, exceeding initial expectations by 15%</span>.
-        </p>
-        <p>
-          Key highlights include improved performance, <span data-diff-suggestion data-diff-type="added" data-suggestion-id="${ids.emphasis}" data-user-id="${userId}"><strong>enhanced security measures</strong>, </span>and better user experience across all platforms.
-        </p>
-      `;
-
-      editor.chain().focus('end').insertContent(complexDemoHtml).run();
-
-      // Insert block-level addition (new section)
-      setTimeout(() => {
-        editor.chain().focus('end').run();
-        insertBlockSuggestion(
-          'added',
-          '📊 Recommended Addition: Consider adding a "Next Steps" section here to outline upcoming milestones and action items for Q1.'
-        );
-      }, 100);
-
-      // Insert block-level deletion (content marked for removal)
-      setTimeout(() => {
-        editor.chain().focus('end').run();
-        insertBlockSuggestion(
-          'deleted',
-          '🗑️ This legacy disclaimer is no longer required per the updated compliance guidelines from November 2024.'
-        );
-      }, 200);
-
-      // Insert another block addition for variety
-      setTimeout(() => {
-        editor.chain().focus('end').run();
-        insertBlockSuggestion(
-          'added',
-          '✅ Summary: The project is on track with all major milestones completed. Budget utilization stands at 87% with projected savings of $12,000.'
-        );
-      }, 300);
-
-      console.log('Inserted complex demo showcasing all diff features');
-    }
-  }, [editor, userInfo, insertSuggestion, insertBlockSuggestion]);
 
   // Validate that noteId is a valid number
   if (!isValidId) {
@@ -417,35 +587,25 @@ export default function CollaborativeNoteEditor({
           canUploadImage={!!note?.workspace_id}
           onImageUpload={triggerImageInput}
           onToggleTaskList={handleToggleTaskList}
-          aiSuggestionsEnabled={false}
-          isSuggestionLoading={false}
-          onToggleAI={handleTestAISuggestion}
         />
       </div>
 
-      {/* Diff Suggestions Accept/Reject Bar - shows when user has pending suggestions */}
+      {/* Floating Accept/Reject All Buttons */}
       {hasPendingSuggestions && (
-        <div className='mx-4 md:mx-6 mb-2 px-4 py-2 bg-linear-to-r from-blue-500/10 to-purple-500/10 border border-blue-500/20 rounded-lg flex items-center justify-between gap-4'>
-          <span className='text-sm text-blue-300'>
-            Your AI suggestions pending review
-          </span>
-          <div className='flex items-center gap-2'>
-            <button
-              onClick={acceptAllSuggestions}
-              className='flex items-center gap-1.5 px-3 py-1.5 text-sm bg-green-500/20 hover:bg-green-500/30 text-green-300 rounded-md transition-colors'
-            >
-              <Check className='w-4 h-4' />
-              Accept All
-            </button>
-            <button
-              onClick={rejectAllSuggestions}
-              className='flex items-center gap-1.5 px-3 py-1.5 text-sm bg-red-500/20 hover:bg-red-500/30 text-red-300 rounded-md transition-colors'
-            >
-              <X className='w-4 h-4' />
-              Reject All
-            </button>
-          </div>
-        </div>
+        <GlassCard className='absolute rounded-3xl bottom-24 md:bottom-20 left-1/2 transform -translate-x-1/2 z-50 flex gap-2 items-center px-3 py-2'>
+          <GlassButton
+            onClick={rejectAllSuggestions}
+            className='flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-medium transition-all hover:bg-red-500/20 hover:text-red-300 hover:border-red-500/30 hover:scale-105'
+          >
+            <X className='w-4 h-4' /> Reject
+          </GlassButton>
+          <GlassButton
+            onClick={acceptAllSuggestions}
+            className='flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-medium transition-all bg-green-500/15 text-green-300 border-green-500/20 hover:bg-green-500/25 hover:text-green-200 hover:border-green-500/40 hover:scale-105'
+          >
+            <Check className='w-4 h-4' /> Accept
+          </GlassButton>
+        </GlassCard>
       )}
 
       {/* Info bar for other users' suggestions */}
@@ -481,7 +641,7 @@ export default function CollaborativeNoteEditor({
         onChange={handleImageUpload}
       />
 
-      {/* Mobile Floating Toolbar */}
+      {/* Mobile: Unified toolbar with AI input / regular buttons */}
       <MobileFloatingToolbar
         editor={editor}
         uploadingImage={uploadingImage}
@@ -489,10 +649,112 @@ export default function CollaborativeNoteEditor({
         onImageUpload={triggerImageInput}
         onToggleTaskList={handleToggleTaskList}
         isGroupNote={isGroupNote}
+        isEditorFocused={isEditorFocused}
+        aiInstruction={aiInstruction}
+        aiLoading={aiLoading}
+        aiError={aiError}
+        onInstructionChange={setAiInstruction}
+        onSuggest={handleAISuggest}
       />
+
+      {/* Desktop AI Input - always visible on desktop */}
+      <div className='hidden md:block'>
+        <DesktopAIInput
+          aiInstruction={aiInstruction}
+          aiLoading={aiLoading}
+          aiError={aiError}
+          onInstructionChange={setAiInstruction}
+          onSuggest={handleAISuggest}
+        />
+      </div>
 
       <EditorStyles />
       <CollaborativeEditorStyles />
+
+      {/* Debug Button - Fixed top right */}
+      <button
+        onClick={() => setShowDebugDrawer(!showDebugDrawer)}
+        className='fixed top-20 right-4 z-50 px-3 py-2 bg-purple-500/20 hover:bg-purple-500/30 text-purple-300 rounded-lg text-xs font-medium transition-colors border border-purple-500/30'
+      >
+        {showDebugDrawer ? 'Hide' : 'Show'} Debug
+      </button>
+
+      {/* Debug Drawer */}
+      {showDebugDrawer && (
+        <div className='fixed inset-y-0 right-0 w-full md:w-1/2 lg:w-1/3 bg-black/95 backdrop-blur-sm border-l border-white/10 z-40 overflow-hidden flex flex-col'>
+          <div className='flex items-center justify-between px-4 py-3 border-b border-white/10'>
+            <h3 className='text-lg font-semibold text-white'>Debug Info</h3>
+            <button
+              onClick={() => setShowDebugDrawer(false)}
+              className='p-2 hover:bg-white/10 rounded-lg transition-colors'
+            >
+              <X className='w-5 h-5 text-white/70' />
+            </button>
+          </div>
+
+          <div className='flex-1 overflow-auto'>
+            {/* JSON Panel */}
+            <div className='border-b border-white/10'>
+              <div className='flex items-center justify-between px-4 py-2 bg-blue-500/10'>
+                <span className='text-sm font-medium text-blue-300'>
+                  ProseMirror JSON
+                </span>
+                <button
+                  onClick={() => {
+                    navigator.clipboard.writeText(debugJson);
+                    setCopiedDebug('json');
+                    setTimeout(() => setCopiedDebug(null), 2000);
+                  }}
+                  className='px-2 py-1 text-xs text-white/70 hover:text-white hover:bg-white/10 rounded transition-colors flex items-center gap-1'
+                >
+                  {copiedDebug === 'json' ? (
+                    <>
+                      <Check className='w-3 h-3' /> Copied
+                    </>
+                  ) : (
+                    'Copy'
+                  )}
+                </button>
+              </div>
+              <div className='p-4'>
+                <pre className='text-xs text-white/70 font-mono whitespace-pre-wrap break-all'>
+                  {debugJson || 'Loading...'}
+                </pre>
+              </div>
+            </div>
+
+            {/* Markdown Panel */}
+            <div>
+              <div className='flex items-center justify-between px-4 py-2 bg-amber-500/10'>
+                <span className='text-sm font-medium text-amber-300'>
+                  Annotated Markdown (with block IDs)
+                </span>
+                <button
+                  onClick={() => {
+                    navigator.clipboard.writeText(debugMarkdown);
+                    setCopiedDebug('markdown');
+                    setTimeout(() => setCopiedDebug(null), 2000);
+                  }}
+                  className='px-2 py-1 text-xs text-white/70 hover:text-white hover:bg-white/10 rounded transition-colors flex items-center gap-1'
+                >
+                  {copiedDebug === 'markdown' ? (
+                    <>
+                      <Check className='w-3 h-3' /> Copied
+                    </>
+                  ) : (
+                    'Copy'
+                  )}
+                </button>
+              </div>
+              <div className='p-4'>
+                <pre className='text-xs text-white/70 font-mono whitespace-pre-wrap break-all'>
+                  {debugMarkdown || 'Loading...'}
+                </pre>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

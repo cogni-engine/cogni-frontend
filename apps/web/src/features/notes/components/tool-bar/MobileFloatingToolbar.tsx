@@ -2,6 +2,7 @@
 
 import { useState, useMemo, createElement } from 'react';
 import { Editor } from '@tiptap/react';
+import { Sparkles, Loader2, ArrowUp, X } from 'lucide-react';
 import {
   ToolbarExternalActions,
   ExpandedGroupId,
@@ -10,6 +11,7 @@ import {
 import { useMobileToolbarPosition } from '../../hooks/useMobileToolbarPosition';
 import { useToolbarVisibility } from '../../hooks/useToolbarVisibility';
 import GlassCard from '@/components/glass-design/GlassCard';
+import GlassButton from '@/components/glass-design/GlassButton';
 import { ToolbarButton } from './ToolBarButton';
 import { ExpandableButtonGroup } from './ExpandableButtonGroup';
 import { mainToolbarItems } from './toolbarConfig';
@@ -21,6 +23,12 @@ interface MobileFloatingToolbarProps {
   onImageUpload: () => void;
   onToggleTaskList: () => void;
   isGroupNote: boolean;
+  isEditorFocused: boolean;
+  aiInstruction: string;
+  aiLoading: boolean;
+  aiError: string | null;
+  onInstructionChange: (value: string) => void;
+  onSuggest: () => void;
 }
 
 export function MobileFloatingToolbar({
@@ -30,6 +38,12 @@ export function MobileFloatingToolbar({
   onImageUpload,
   onToggleTaskList,
   isGroupNote,
+  isEditorFocused,
+  aiInstruction,
+  aiLoading,
+  aiError,
+  onInstructionChange,
+  onSuggest,
 }: MobileFloatingToolbarProps) {
   const [expandedGroup, setExpandedGroup] = useState<ExpandedGroupId>(null);
 
@@ -62,7 +76,19 @@ export function MobileFloatingToolbar({
     setExpandedGroup(id);
   };
 
-  if (!editor || !isVisible) return null;
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      onSuggest();
+    }
+  };
+
+  if (!editor) return null;
+
+  // Show at bottom when not focused (AI input mode)
+  // Show with dynamic positioning when focused (toolbar mode)
+  const shouldShowAtBottom = !isEditorFocused;
+  const shouldShow = shouldShowAtBottom || isVisible;
 
   // Filter items based on showWhen
   const visibleItems = mainToolbarItems.filter(item => {
@@ -71,6 +97,8 @@ export function MobileFloatingToolbar({
     }
     return true;
   });
+
+  if (!shouldShow) return null;
 
   return (
     <>
@@ -112,59 +140,108 @@ export function MobileFloatingToolbar({
 
       <div
         ref={toolbarRef}
-        className='fixed w-full md:hidden left-0 right-0 z-50 pointer-events-none'
+        className='fixed w-full md:hidden left-0 right-0 z-100 pointer-events-none'
         style={{
-          top: toolbarTop !== null ? `${toolbarTop}px` : 'auto',
-          bottom: toolbarTop === null ? '0px' : 'auto',
+          top: shouldShowAtBottom
+            ? 'auto'
+            : toolbarTop !== null
+              ? `${toolbarTop}px`
+              : 'auto',
+          bottom: shouldShowAtBottom
+            ? '0px'
+            : toolbarTop === null
+              ? '0px'
+              : 'auto',
         }}
       >
-        <GlassCard className='pointer-events-auto p-2 mx-[11px] rounded-2xl'>
-          <div className='flex gap-1 overflow-x-auto scrollbar-hide touch-pan-x w-full'>
-            {visibleItems.map(item => {
-              if (isExpandableButton(item)) {
-                const isThisExpanded = expandedGroup === item.id;
-
-                return (
-                  <ExpandableButtonGroup
-                    key={item.id}
-                    config={item}
-                    editor={editor}
-                    actions={actions}
-                    isExpanded={isThisExpanded}
-                    onToggle={handleToggleExpand}
-                  />
-                );
-              }
-
-              // Direct button
-              const isActive = item.isActive?.(editor) ?? false;
-              const isDisabled = item.isDisabled?.(editor, actions) ?? false;
-              const icon = createElement(item.icon, { className: 'w-5 h-5' });
-
-              // When a group is expanded, slide other items with animation
-              const shouldSlide = expandedGroup !== null;
-
-              return (
-                <div
-                  key={item.id}
-                  className={`shrink-0 transition-all duration-300 ${
-                    shouldSlide
-                      ? 'opacity-60 scale-90'
-                      : 'opacity-100 scale-100'
-                  }`}
+        <div className='mx-[11px] mb-[11px]'>
+          <GlassCard className='pointer-events-auto p-2 rounded-full'>
+            {!isEditorFocused ? (
+              // AI Input Mode
+              <div className='flex items-center gap-2 pl-2'>
+                <Sparkles className='w-4 h-4 text-purple-400 shrink-0' />
+                <input
+                  type='text'
+                  value={aiInstruction}
+                  onChange={e => onInstructionChange(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  placeholder='Ask AI to edit this note...'
+                  className='flex-1 bg-transparent text-white py-2 focus:outline-none placeholder-white/40 text-sm'
+                  disabled={aiLoading}
+                />
+                <GlassButton
+                  onClick={onSuggest}
+                  disabled={aiLoading || !aiInstruction.trim()}
+                  aria-label='Send AI instruction'
                 >
-                  <ToolbarButton
-                    onClick={() => item.command(editor, actions)}
-                    isActive={isActive}
-                    disabled={isDisabled}
-                    icon={icon}
-                    title={item.title}
-                  />
-                </div>
-              );
-            })}
-          </div>
-        </GlassCard>
+                  {aiLoading ? (
+                    <Loader2 className='w-4 h-4 animate-spin' />
+                  ) : (
+                    <ArrowUp className='w-4 h-4' />
+                  )}
+                </GlassButton>
+              </div>
+            ) : (
+              // Regular Toolbar Mode
+              <div className='flex gap-1 overflow-x-auto scrollbar-hide touch-pan-x w-full'>
+                {visibleItems.map(item => {
+                  if (isExpandableButton(item)) {
+                    const isThisExpanded = expandedGroup === item.id;
+
+                    return (
+                      <ExpandableButtonGroup
+                        key={item.id}
+                        config={item}
+                        editor={editor}
+                        actions={actions}
+                        isExpanded={isThisExpanded}
+                        onToggle={handleToggleExpand}
+                      />
+                    );
+                  }
+
+                  // Direct button
+                  const isActive = item.isActive?.(editor) ?? false;
+                  const isDisabled =
+                    item.isDisabled?.(editor, actions) ?? false;
+                  const icon = createElement(item.icon, {
+                    className: 'w-5 h-5',
+                  });
+
+                  // When a group is expanded, slide other items with animation
+                  const shouldSlide = expandedGroup !== null;
+
+                  return (
+                    <div
+                      key={item.id}
+                      className={`shrink-0 transition-all duration-300 ${
+                        shouldSlide
+                          ? 'opacity-60 scale-90'
+                          : 'opacity-100 scale-100'
+                      }`}
+                    >
+                      <ToolbarButton
+                        onClick={() => item.command(editor, actions)}
+                        isActive={isActive}
+                        disabled={isDisabled}
+                        icon={icon}
+                        title={item.title}
+                      />
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </GlassCard>
+
+          {/* Error message for AI */}
+          {aiError && !isEditorFocused && (
+            <div className='mt-2 px-4 text-xs text-red-400 flex items-center gap-2'>
+              <X className='w-3 h-3' />
+              {aiError}
+            </div>
+          )}
+        </div>
       </div>
     </>
   );
