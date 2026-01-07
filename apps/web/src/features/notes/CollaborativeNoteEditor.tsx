@@ -61,18 +61,9 @@ export default function CollaborativeNoteEditor({
   const [aiInstruction, setAiInstruction] = useState('');
   const [aiLoading, setAiLoading] = useState(false);
   const [aiError, setAiError] = useState<string | null>(null);
-  const [ydocMarkdown, setYdocMarkdown] = useState('');
 
   // Editor focus state for mobile toolbar switching
   const [isEditorFocused, setIsEditorFocused] = useState(false);
-
-  // Debug drawer state
-  const [showDebugDrawer, setShowDebugDrawer] = useState(false);
-  const [debugJson, setDebugJson] = useState('');
-  const [debugMarkdown, setDebugMarkdown] = useState('');
-  const [copiedDebug, setCopiedDebug] = useState<'json' | 'markdown' | null>(
-    null
-  );
 
   // Fetch workspace members if this is a group note
   const { members } = useWorkspaceMembers(
@@ -231,23 +222,6 @@ export default function CollaborativeNoteEditor({
     };
   }, [editor]);
 
-  // Update debug JSON when editor changes
-  useEffect(() => {
-    if (!editor) return;
-
-    const updateDebugJson = () => {
-      const json = editor.getJSON();
-      setDebugJson(JSON.stringify(json, null, 2));
-    };
-
-    updateDebugJson();
-    editor.on('update', updateDebugJson);
-
-    return () => {
-      editor.off('update', updateDebugJson);
-    };
-  }, [editor]);
-
   // Use image upload hook
   const {
     imageInputRef,
@@ -278,24 +252,12 @@ export default function CollaborativeNoteEditor({
 
     try {
       const markdown = yDocToAnnotatedMarkdown(ydoc);
-      const result = markdown || '(empty document)';
-      setYdocMarkdown(result);
-      return result;
+      return markdown || '(empty document)';
     } catch (err) {
       console.error('Failed to convert Y.Doc to markdown:', err);
-      const error = '(error converting Y.Doc to markdown)';
-      setYdocMarkdown(error);
-      return error;
+      return '(error converting Y.Doc to markdown)';
     }
   }, [ydoc]);
-
-  // Fetch debug markdown when drawer opens
-  useEffect(() => {
-    if (showDebugDrawer && editor) {
-      const markdown = fetchYdocMarkdown();
-      setDebugMarkdown(markdown);
-    }
-  }, [showDebugDrawer, editor, fetchYdocMarkdown]);
 
   // Helper: Find block position by blockId attribute
   const findBlockPosition = useCallback(
@@ -670,91 +632,6 @@ export default function CollaborativeNoteEditor({
 
       <EditorStyles />
       <CollaborativeEditorStyles />
-
-      {/* Debug Button - Fixed top right */}
-      <button
-        onClick={() => setShowDebugDrawer(!showDebugDrawer)}
-        className='fixed top-20 right-4 z-50 px-3 py-2 bg-purple-500/20 hover:bg-purple-500/30 text-purple-300 rounded-lg text-xs font-medium transition-colors border border-purple-500/30'
-      >
-        {showDebugDrawer ? 'Hide' : 'Show'} Debug
-      </button>
-
-      {/* Debug Drawer */}
-      {showDebugDrawer && (
-        <div className='fixed inset-y-0 right-0 w-full md:w-1/2 lg:w-1/3 bg-black/95 backdrop-blur-sm border-l border-white/10 z-40 overflow-hidden flex flex-col'>
-          <div className='flex items-center justify-between px-4 py-3 border-b border-white/10'>
-            <h3 className='text-lg font-semibold text-white'>Debug Info</h3>
-            <button
-              onClick={() => setShowDebugDrawer(false)}
-              className='p-2 hover:bg-white/10 rounded-lg transition-colors'
-            >
-              <X className='w-5 h-5 text-white/70' />
-            </button>
-          </div>
-
-          <div className='flex-1 overflow-auto'>
-            {/* JSON Panel */}
-            <div className='border-b border-white/10'>
-              <div className='flex items-center justify-between px-4 py-2 bg-blue-500/10'>
-                <span className='text-sm font-medium text-blue-300'>
-                  ProseMirror JSON
-                </span>
-                <button
-                  onClick={() => {
-                    navigator.clipboard.writeText(debugJson);
-                    setCopiedDebug('json');
-                    setTimeout(() => setCopiedDebug(null), 2000);
-                  }}
-                  className='px-2 py-1 text-xs text-white/70 hover:text-white hover:bg-white/10 rounded transition-colors flex items-center gap-1'
-                >
-                  {copiedDebug === 'json' ? (
-                    <>
-                      <Check className='w-3 h-3' /> Copied
-                    </>
-                  ) : (
-                    'Copy'
-                  )}
-                </button>
-              </div>
-              <div className='p-4'>
-                <pre className='text-xs text-white/70 font-mono whitespace-pre-wrap break-all'>
-                  {debugJson || 'Loading...'}
-                </pre>
-              </div>
-            </div>
-
-            {/* Markdown Panel */}
-            <div>
-              <div className='flex items-center justify-between px-4 py-2 bg-amber-500/10'>
-                <span className='text-sm font-medium text-amber-300'>
-                  Annotated Markdown (with block IDs)
-                </span>
-                <button
-                  onClick={() => {
-                    navigator.clipboard.writeText(debugMarkdown);
-                    setCopiedDebug('markdown');
-                    setTimeout(() => setCopiedDebug(null), 2000);
-                  }}
-                  className='px-2 py-1 text-xs text-white/70 hover:text-white hover:bg-white/10 rounded transition-colors flex items-center gap-1'
-                >
-                  {copiedDebug === 'markdown' ? (
-                    <>
-                      <Check className='w-3 h-3' /> Copied
-                    </>
-                  ) : (
-                    'Copy'
-                  )}
-                </button>
-              </div>
-              <div className='p-4'>
-                <pre className='text-xs text-white/70 font-mono whitespace-pre-wrap break-all'>
-                  {debugMarkdown || 'Loading...'}
-                </pre>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
