@@ -488,3 +488,58 @@ export async function getNoteAssignments(noteId: number): Promise<{
 
   return result;
 }
+
+// Types for AI suggestions
+export interface AISuggestion {
+  block_id: string;
+  action: 'replace' | 'insert_after' | 'delete';
+  suggested_text?: string[]; // list of text blocks (allows multiple inserts for same block)
+}
+
+export interface AISuggestResponse {
+  suggestions: AISuggestion[];
+}
+
+/**
+ * Get AI suggestions for editing a note using anchor-based format
+ *
+ * Requires:
+ * - annotatedNoteContent: Markdown with block ID comments (converted to simple IDs for AI)
+ * - userInstruction: User's instruction for how to edit the note
+ * - fileContents: Optional list of file contents to use as context
+ */
+export async function getAISuggestions(
+  annotatedNoteContent: string,
+  userInstruction: string,
+  fileContents?: string[]
+): Promise<AISuggestion[]> {
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+
+  try {
+    const response = await fetch(`${apiUrl}/api/note-ai-editor/suggest`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        annotated_note_content: annotatedNoteContent,
+        user_instruction: userInstruction,
+        file_contents: fileContents,
+      }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(
+        errorData.detail ||
+          `Failed to get AI suggestions: ${response.statusText}`
+      );
+    }
+
+    const data: AISuggestResponse = await response.json();
+    return data.suggestions || [];
+  } catch (error) {
+    console.error('Failed to get AI suggestions:', error);
+    throw error;
+  }
+}

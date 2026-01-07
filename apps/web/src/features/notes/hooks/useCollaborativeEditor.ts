@@ -144,12 +144,44 @@ export function useCollaborativeEditor({
   const editor = useEditor(
     {
       immediatelyRender: false,
-      extensions,
+      extensions: extensions as any, // Type assertion needed due to pnpm hoisting creating duplicate @tiptap/core paths
       editorProps: {
         attributes: {
           class:
             'prose prose-invert prose-sm sm:prose-base lg:prose-lg xl:prose-xl focus:outline-none max-w-none min-h-full text-gray-300',
         },
+      },
+      onCreate: ({ editor }) => {
+        // Fix duplicate block IDs on initial load (for existing documents)
+        const seenIds = new Set<string>();
+        const tr = editor.state.tr;
+        let modified = false;
+
+        editor.state.doc.descendants((node, pos) => {
+          // Check if node has blockId attribute
+          if (node.attrs && node.attrs.blockId) {
+            if (seenIds.has(node.attrs.blockId)) {
+              // Duplicate found! Assign new unique ID
+              const newId = `blk-${crypto.randomUUID().slice(0, 8)}`;
+              tr.setNodeMarkup(pos, undefined, {
+                ...node.attrs,
+                blockId: newId,
+              });
+              modified = true;
+              seenIds.add(newId);
+              console.warn(
+                `Fixed duplicate block ID: ${node.attrs.blockId} -> ${newId}`
+              );
+            } else {
+              seenIds.add(node.attrs.blockId);
+            }
+          }
+        });
+
+        if (modified) {
+          editor.view.dispatch(tr);
+          console.log('Fixed duplicate block IDs in document');
+        }
       },
     },
     [extensions]
