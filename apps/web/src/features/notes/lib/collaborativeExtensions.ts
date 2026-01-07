@@ -5,7 +5,6 @@ import TaskList from '@tiptap/extension-task-list';
 import TaskItem from '@tiptap/extension-task-item';
 import Collaboration from '@tiptap/extension-collaboration';
 import CollaborationCaret from '@tiptap/extension-collaboration-caret';
-import Heading from '@tiptap/extension-heading';
 import { Markdown } from '@tiptap/markdown';
 import { HocuspocusProvider } from '@hocuspocus/provider';
 import * as Y from 'yjs';
@@ -51,15 +50,14 @@ export function createCollaborativeExtensions({
     StarterKit.configure({
       // Disable history - Y.js handles this via Collaboration extension
       history: false,
+      // Configure heading to support all 6 levels
+      heading: {
+        levels: [1, 2, 3, 4, 5, 6],
+      },
     } as Parameters<typeof StarterKit.configure>[0]),
 
     // Markdown extension - enables markdown parsing for AI suggestions
     Markdown,
-
-    // Override heading to support more levels
-    Heading.configure({
-      levels: [1, 2, 3, 4, 5, 6],
-    }),
 
     // Placeholder text when editor is empty
     Placeholder.configure({
