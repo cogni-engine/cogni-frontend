@@ -238,7 +238,6 @@ export default function CollaborativeNoteEditor({
   const {
     hasPendingSuggestions,
     hasOtherUserSuggestions,
-    insertSuggestion,
     insertBlockSuggestion,
     acceptAllSuggestions,
     rejectAllSuggestions,
@@ -363,7 +362,7 @@ export default function CollaborativeNoteEditor({
           suggestion.suggested_text &&
           suggestion.suggested_text.length > 0
         ) {
-          // For replace: wrap existing block in delete suggestion, then insert added block(s) after
+          // For replace: wrap existing block in delete suggestion, then insert added blocks after
           // Get the node size before wrapping to calculate the new position
           const originalNode = editor.state.doc.nodeAt(blockPos);
           if (!originalNode) continue;
@@ -377,15 +376,17 @@ export default function CollaborativeNoteEditor({
             // The wrapped block is now at blockPos, find its size in the current state
             const wrappedNode = editor.state.doc.nodeAt(blockPos);
             if (wrappedNode) {
-              // Position cursor after the wrapped block to insert the added suggestion(s)
+              // Position cursor after the wrapped block to insert the added suggestion
               const afterPos = blockPos + wrappedNode.nodeSize;
               editor.commands.setTextSelection(afterPos);
 
-              // Insert all suggested text blocks
-              for (const textBlock of suggestion.suggested_text) {
-                insertBlockSuggestion('added', textBlock);
-                await new Promise(resolve => setTimeout(resolve, 10));
-              }
+              // Combine all text blocks into a single markdown string
+              // Each block is separated by double newlines to ensure proper parsing
+              const combinedMarkdown = suggestion.suggested_text.join('\n\n');
+
+              // Insert as a single suggestion containing all blocks
+              insertBlockSuggestion('added', combinedMarkdown);
+              await new Promise(resolve => setTimeout(resolve, 10));
             }
           }
         } else if (
@@ -394,17 +395,19 @@ export default function CollaborativeNoteEditor({
           suggestion.suggested_text.length > 0
         ) {
           // For insert_after: insert new content after the target block
-          // Multiple inserts for the same block are grouped into a single suggestion
+          // Multiple inserts for the same block are combined into a single suggestion
           const node = editor.state.doc.nodeAt(blockPos);
           if (node) {
             const afterPos = blockPos + node.nodeSize;
             editor.commands.setTextSelection(afterPos);
 
-            // Insert all suggested text blocks
-            for (const textBlock of suggestion.suggested_text) {
-              insertBlockSuggestion('added', textBlock);
-              await new Promise(resolve => setTimeout(resolve, 10));
-            }
+            // Combine all text blocks into a single markdown string
+            // Each block is separated by double newlines to ensure proper parsing
+            const combinedMarkdown = suggestion.suggested_text.join('\n\n');
+
+            // Insert as a single suggestion containing all blocks
+            insertBlockSuggestion('added', combinedMarkdown);
+            await new Promise(resolve => setTimeout(resolve, 10));
           }
         } else if (suggestion.action === 'delete') {
           // For delete: wrap the existing block in a delete suggestion (don't create new content)
@@ -549,6 +552,7 @@ export default function CollaborativeNoteEditor({
           canUploadImage={!!note?.workspace_id}
           onImageUpload={triggerImageInput}
           onToggleTaskList={handleToggleTaskList}
+          isGroupNote={isGroupNote}
         />
       </div>
 

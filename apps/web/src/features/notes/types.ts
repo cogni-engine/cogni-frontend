@@ -7,6 +7,7 @@ export interface ToolbarButtonProps {
   disabled?: boolean;
   icon: React.ReactNode;
   title: string;
+  variant?: 'default' | 'minimal';
 }
 
 export type ToggleCommand = {

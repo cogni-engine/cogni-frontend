@@ -6,6 +6,7 @@ import {
   ListOrdered,
   Quote,
   Undo,
+  Redo,
   CheckSquare,
   Heading1,
   Heading2,
@@ -16,6 +17,7 @@ import {
   ChevronDown,
   IndentIncrease,
   IndentDecrease,
+  Sparkles,
 } from 'lucide-react';
 import {
   ToolbarButtonConfig,
@@ -147,16 +149,40 @@ export const indentButton: DirectToolbarButton = {
   id: 'indent',
   icon: IndentIncrease,
   title: 'Indent (Tab)',
-  command: editor => editor.chain().focus().sinkListItem('listItem').run(),
-  isDisabled: editor => !editor.can().sinkListItem('listItem'),
+  command: editor => {
+    // Try to indent list item first
+    if (editor.can().sinkListItem('listItem')) {
+      editor.chain().focus().sinkListItem('listItem').run();
+    }
+    // Try task item if not in regular list
+    else if (editor.can().sinkListItem('taskItem')) {
+      editor.chain().focus().sinkListItem('taskItem').run();
+    }
+  },
+  // Only available when in a list that can be indented
+  isDisabled: editor =>
+    !editor.can().sinkListItem('listItem') &&
+    !editor.can().sinkListItem('taskItem'),
 };
 
 export const outdentButton: DirectToolbarButton = {
   id: 'outdent',
   icon: IndentDecrease,
   title: 'Outdent (Shift+Tab)',
-  command: editor => editor.chain().focus().liftListItem('listItem').run(),
-  isDisabled: editor => !editor.can().liftListItem('listItem'),
+  command: editor => {
+    // Try to outdent list item first
+    if (editor.can().liftListItem('listItem')) {
+      editor.chain().focus().liftListItem('listItem').run();
+    }
+    // Try task item if not in regular list
+    else if (editor.can().liftListItem('taskItem')) {
+      editor.chain().focus().liftListItem('taskItem').run();
+    }
+  },
+  // Only available when in an indented list (can be lifted)
+  isDisabled: editor =>
+    !editor.can().liftListItem('listItem') &&
+    !editor.can().liftListItem('taskItem'),
 };
 
 export const noteMentionButton: DirectToolbarButton = {
@@ -189,6 +215,23 @@ export const undoButton: DirectToolbarButton = {
   isDisabled: editor => !editor.can().undo(),
 };
 
+export const redoButton: DirectToolbarButton = {
+  id: 'redo',
+  icon: Redo,
+  title: 'Redo',
+  command: editor => editor.chain().focus().redo().run(),
+  isDisabled: editor => !editor.can().redo(),
+};
+
+export const aiButton: DirectToolbarButton = {
+  id: 'ai',
+  icon: Sparkles,
+  title: 'AI Assistant',
+  command: () => {
+    // Handled in component
+  },
+};
+
 export const closeKeyboardButton: DirectToolbarButton = {
   id: 'closeKeyboard',
   icon: ChevronDown,
@@ -199,7 +242,21 @@ export const closeKeyboardButton: DirectToolbarButton = {
   },
 };
 
-// Main toolbar items in order
+// Scrollable toolbar items (center section) in order:
+// T, lists, checkbox, Tab, Shift+Tab, @, #, Undo, Redo
+export const scrollableToolbarItems: MainToolbarItem[] = [
+  textExpandableButton,
+  listsExpandableButton,
+  checkboxButton,
+  indentButton,
+  outdentButton,
+  memberMentionButton,
+  noteMentionButton,
+  undoButton,
+  redoButton,
+];
+
+// Main toolbar items in order (for backward compatibility)
 export const mainToolbarItems: MainToolbarItem[] = [
   textExpandableButton,
   listsExpandableButton,
@@ -209,5 +266,6 @@ export const mainToolbarItems: MainToolbarItem[] = [
   noteMentionButton,
   memberMentionButton,
   undoButton,
+  redoButton,
   closeKeyboardButton,
 ];
