@@ -121,8 +121,6 @@
   min-width: 0;
 }
 
-
-
 .ProseMirror blockquote {
   border-left: 3px solid rgba(255, 255, 255, 0.2);
   padding-left: 1em;
