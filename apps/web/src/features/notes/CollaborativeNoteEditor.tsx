@@ -552,6 +552,7 @@ export default function CollaborativeNoteEditor({
           canUploadImage={!!note?.workspace_id}
           onImageUpload={triggerImageInput}
           onToggleTaskList={handleToggleTaskList}
+          isGroupNote={isGroupNote}
         />
       </div>
 
