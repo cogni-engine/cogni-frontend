@@ -5,6 +5,7 @@ export function EditorStyles() {
         outline: none;
         min-height: 100%;
         padding: 0;
+        color: rgba(255, 255, 255, 0.9);
       }
       .ProseMirror p {
         margin: 0.9em 0;
@@ -21,11 +22,11 @@ export function EditorStyles() {
       .ProseMirror h4,
       .ProseMirror h5,
       .ProseMirror h6 {
-        margin-top: 0.5em;
-        margin-bottom: 1.5em;
+        margin-top: 1.5em;
+        margin-bottom: 0.5em;
         font-weight: 700;
         line-height: 1.3;
-        color: rgba(255, 255, 255, 0.95);
+        color: rgba(255, 255, 255, 0.9);
       }
       .ProseMirror h1 {
         font-size: 2.25em;
@@ -50,11 +51,15 @@ export function EditorStyles() {
         font-size: 1em;
         color: rgba(255, 255, 255, 0.8);
       }
+      .ProseMirror hr {
+        margin: 1.5em 0;
+        color: rgba(255, 255, 255, 0.5);
+      }
       .ProseMirror ul,
       .ProseMirror ol {
-        margin: 0.75em 0;
         padding-left: 1.5em !important;
         list-style-position: outside !important;
+        margin: 0;
       }
       .ProseMirror ul {
         list-style-type: disc !important;
@@ -71,21 +76,22 @@ export function EditorStyles() {
         list-style-type: decimal !important;
       }
       .ProseMirror li {
-        margin: 0.25em 0;
+        margin: 0.75em 0;
       }
       .ProseMirror ul.task-list,
       .ProseMirror ul[data-type='taskList'] {
         list-style: none !important;
         padding-left: 0 !important;
-        margin: 0.75em 0;
+        margin: 0;
       }
       .ProseMirror ul.task-list > li,
       .ProseMirror ul[data-type='taskList'] > li {
         list-style: none !important;
         display: flex !important;
-        align-items: flex-start;
+        align-items: center;
         gap: 0.6em;
-        margin: 0.3em 0;
+        margin: 0 !important;
+        margin-top: 0.75em !important;
       }
       .ProseMirror ul.task-list > li::marker,
       .ProseMirror ul[data-type='taskList'] > li::marker {
@@ -94,8 +100,9 @@ export function EditorStyles() {
       .ProseMirror li.task-item,
       .ProseMirror li[data-type='taskItem'] {
         display: flex;
-        align-items: flex-start;
-        gap: 0.6em;
+        align-items: center;
+        gap: 1em;
+        margin: 0;
       }
       .ProseMirror li.task-item > label,
       .ProseMirror li[data-type='taskItem'] > label {
@@ -105,16 +112,68 @@ export function EditorStyles() {
         flex-shrink: 0;
         cursor: pointer;
         user-select: none;
+        align-self: flex-start;
+        margin: 0;
       }
       .ProseMirror li.task-item > label input[type='checkbox'],
       .ProseMirror li[data-type='taskItem'] > label input[type='checkbox'] {
+        appearance: none;
+        -webkit-appearance: none;
+        -moz-appearance: none;
         width: 1.5em;
         height: 1.5em;
         cursor: pointer;
-        accent-color: rgba(59, 130, 246, 0.8);
-        border-radius: 0.25em;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        background-color: transparent;
+        border-radius: 50%;
         margin: 0;
-        border-radius: 100%;
+        position: relative;
+        transition: all 0.2s ease;
+      }
+      .ProseMirror li.task-item > label input[type='checkbox']:hover,
+      .ProseMirror
+        li[data-type='taskItem']
+        > label
+        input[type='checkbox']:hover {
+        border-color: rgba(255, 255, 255, 0.6);
+        transform: scale(1.1);
+        box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.1);
+      }
+      .ProseMirror li.task-item > label input[type='checkbox']:checked,
+      .ProseMirror
+        li[data-type='taskItem']
+        > label
+        input[type='checkbox']:checked {
+        background-color: rgba(59, 130, 246, 0.8);
+        border-color: rgba(59, 130, 246, 0.8);
+      }
+      .ProseMirror li.task-item > label input[type='checkbox']:checked::after,
+      .ProseMirror
+        li[data-type='taskItem']
+        > label
+        input[type='checkbox']:checked::after {
+        content: '✓';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -45%) scale(1);
+        color: white;
+        font-size: 1em;
+        font-weight: bold;
+        animation: checkmarkPop 0.3s ease;
+      }
+      @keyframes checkmarkPop {
+        0% {
+          transform: translate(-50%, -45%) scale(0);
+          opacity: 0;
+        }
+        50% {
+          transform: translate(-50%, -45%) scale(1.2);
+        }
+        100% {
+          transform: translate(-50%, -45%) scale(1);
+          opacity: 1;
+        }
       }
       .ProseMirror li.task-item > div,
       .ProseMirror li[data-type='taskItem'] > div {
@@ -123,9 +182,6 @@ export function EditorStyles() {
       }
       .ProseMirror li.task-item[data-checked='true'] > div,
       .ProseMirror li[data-type='taskItem'][data-checked='true'] > div {
-        text-decoration: line-through;
-        opacity: 0.7;
-        color: rgba(255, 255, 255, 0.5);
       }
       .ProseMirror blockquote {
         border-left: 3px solid rgba(255, 255, 255, 0.2);

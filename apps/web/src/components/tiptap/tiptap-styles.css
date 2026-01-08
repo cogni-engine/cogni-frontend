@@ -121,12 +121,7 @@
   min-width: 0;
 }
 
-.ProseMirror li.task-item[data-checked='true'] > div,
-.ProseMirror li[data-type='taskItem'][data-checked='true'] > div {
-  text-decoration: line-through;
-  opacity: 0.7;
-  color: rgba(255, 255, 255, 0.5);
-}
+
 
 .ProseMirror blockquote {
   border-left: 3px solid rgba(255, 255, 255, 0.2);
