@@ -37,7 +37,7 @@ export function DesktopAIInput({
                 onChange={e => onInstructionChange(e.target.value)}
                 onKeyDown={handleKeyDown}
                 placeholder='Ask AI to edit this note...'
-                className='flex-1 bg-transparent text-white py-3.5 pr-[60px] focus:outline-none placeholder-white/40'
+                className='flex-1 bg-transparent text-white text-base py-3.5 pr-[60px] focus:outline-none placeholder-white/40'
                 disabled={aiLoading}
               />
             </div>

@@ -166,7 +166,7 @@ export function MobileFloatingToolbar({
                   onChange={e => onInstructionChange(e.target.value)}
                   onKeyDown={handleKeyDown}
                   placeholder='Ask AI to edit this note...'
-                  className='flex-1 bg-transparent text-white py-2 focus:outline-none placeholder-white/40 text-sm'
+                  className='flex-1 bg-transparent text-white py-2 focus:outline-none placeholder-white/40 text-base'
                   disabled={aiLoading}
                 />
                 <GlassButton
