@@ -4,7 +4,10 @@ import { useMemo, useState } from 'react';
 import { useWorkspaces, useWorkspaceMutations } from '@/hooks/useWorkspace';
 import WorkspaceList from '@/features/workspace/components/WorkspaceList';
 import WorkspaceForm from '@/features/workspace/components/WorkspaceForm';
-import { uploadWorkspaceIcon } from '@/lib/api/workspaceApi';
+import {
+  uploadWorkspaceIcon,
+  addWorkspaceMembers,
+} from '@/lib/api/workspaceApi';
 import type { Workspace } from '@/types/workspace';
 import SearchBar from '@/components/SearchBar';
 import { useGlobalUI } from '@/contexts/GlobalUIContext';
@@ -40,12 +43,15 @@ export default function WorkspacePage() {
     id,
     title,
     iconFile,
+    selectedUserIds,
   }: {
     id: number | null;
     title: string;
     iconFile: File | null;
+    selectedUserIds?: string[];
   }) => {
     if (id) {
+      // Edit mode - no member addition
       const updates: Partial<Pick<Workspace, 'title' | 'icon_url'>> = {
         title,
       };
@@ -59,11 +65,27 @@ export default function WorkspacePage() {
       return;
     }
 
+    // Create mode
     const workspace = await create(title);
 
-    if (iconFile && workspace?.id) {
+    if (!workspace?.id) {
+      throw new Error('Failed to create workspace');
+    }
+
+    // Upload icon if provided
+    if (iconFile) {
       const { iconUrl } = await uploadWorkspaceIcon(workspace.id, iconFile);
       await update(workspace.id, { icon_url: iconUrl });
+    }
+
+    // Add members if provided (using Supabase RPC function)
+    if (selectedUserIds && selectedUserIds.length > 0) {
+      try {
+        await addWorkspaceMembers(workspace.id, selectedUserIds);
+      } catch (error) {
+        console.error('Failed to add members to workspace:', error);
+        // Don't throw - workspace is already created, just log the error
+      }
     }
   };
 

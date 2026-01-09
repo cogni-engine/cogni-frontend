@@ -29,6 +29,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { WorkspaceIconCropDialog } from './WorkspaceIconCropDialog';
+import MemberSelectionStep from './MemberSelectionStep';
 import {
   getCroppedImageBlob,
   getInitials,
@@ -42,6 +43,7 @@ interface WorkspaceFormProps {
     id: number | null;
     title: string;
     iconFile: File | null;
+    selectedUserIds?: string[];
   }) => Promise<void>;
   onEditComplete?: () => void;
   isLoading?: boolean;
@@ -53,11 +55,14 @@ export default function WorkspaceForm({
   onEditComplete,
   isLoading,
 }: WorkspaceFormProps) {
+  const isEditMode = !!workspace;
   const [open, setOpen] = useState(false);
+  const [step, setStep] = useState<1 | 2>(1);
   const [title, setTitle] = useState(() => workspace?.title ?? '');
   const [error, setError] = useState<string | null>(null);
   const [iconError, setIconError] = useState<string | null>(null);
   const [iconFile, setIconFile] = useState<File | null>(null);
+  const [selectedUserIds, setSelectedUserIds] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [generatingIcon, setGeneratingIcon] = useState(false);
   const [generationCounter, setGenerationCounter] = useState(0);
@@ -99,6 +104,8 @@ export default function WorkspaceForm({
     setError(null);
     setIconError(null);
     setIconFile(null);
+    setSelectedUserIds([]);
+    setStep(1);
     updateIconPreview(workspace?.icon_url ?? null);
     setSelectedImageSrc(null);
     setCrop({ x: 0, y: 0 });
@@ -258,7 +265,7 @@ export default function WorkspaceForm({
     [title, workspace?.title]
   );
 
-  const handleSubmit = useCallback(
+  const handleStep1Next = useCallback(
     async (event: FormEvent<HTMLFormElement>) => {
       event.preventDefault();
       setError(null);
@@ -269,25 +276,65 @@ export default function WorkspaceForm({
         return;
       }
 
-      setIsSubmitting(true);
-      try {
-        await onSubmit({
-          id: workspace?.id ?? null,
-          title: trimmedTitle,
-          iconFile,
-        });
-        handleDialogOpenChange(false);
-      } catch (err) {
-        console.error('Failed to save workspace', err);
-        setError(
-          err instanceof Error ? err.message : 'Failed to save workspace'
-        );
-      } finally {
-        setIsSubmitting(false);
+      // If editing, submit directly. If creating, go to step 2
+      if (isEditMode) {
+        setIsSubmitting(true);
+        try {
+          await onSubmit({
+            id: workspace?.id ?? null,
+            title: trimmedTitle,
+            iconFile,
+          });
+          handleDialogOpenChange(false);
+        } catch (err) {
+          console.error('Failed to save workspace', err);
+          setError(
+            err instanceof Error ? err.message : 'Failed to save workspace'
+          );
+        } finally {
+          setIsSubmitting(false);
+        }
+      } else {
+        setStep(2);
       }
     },
-    [handleDialogOpenChange, iconFile, onSubmit, title, workspace?.id]
+    [
+      handleDialogOpenChange,
+      iconFile,
+      isEditMode,
+      onSubmit,
+      title,
+      workspace?.id,
+    ]
   );
+
+  const handleStep2Submit = useCallback(async () => {
+    setError(null);
+
+    const trimmedTitle = title.trim();
+    if (!trimmedTitle) {
+      setError('Workspace name is required');
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      await onSubmit({
+        id: null,
+        title: trimmedTitle,
+        iconFile,
+        selectedUserIds,
+      });
+      handleDialogOpenChange(false);
+    } catch (err) {
+      console.error('Failed to create workspace', err);
+      setError(
+        err instanceof Error ? err.message : 'Failed to create workspace'
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
+  }, [handleDialogOpenChange, iconFile, onSubmit, selectedUserIds, title]);
 
   return (
     <>
@@ -302,105 +349,152 @@ export default function WorkspaceForm({
             <Plus className='size-6' />
           </GlassButton>
         </DialogTrigger>
-        <DialogContent>
+        <DialogContent className='max-w-2xl max-h-[90vh] flex flex-col'>
           <DialogHeader>
             <DialogTitle>
-              {workspace ? 'Edit workspace' : 'Create new workspace'}
+              {workspace
+                ? 'Edit workspace'
+                : step === 1
+                  ? 'Create new workspace'
+                  : 'Add members'}
             </DialogTitle>
             <DialogDescription>
-              Give your workspace a name and optional icon.
+              {workspace
+                ? 'Update your workspace name and icon.'
+                : step === 1
+                  ? 'Give your workspace a name and optional icon.'
+                  : 'Select members to add to your workspace.'}
             </DialogDescription>
           </DialogHeader>
-          <form onSubmit={handleSubmit} className='space-y-6'>
-            <div className='space-y-2'>
-              <Label htmlFor='workspace-title'>Workspace name</Label>
-              <Input
-                id='workspace-title'
-                placeholder='Enter workspace name'
-                value={title}
-                onChange={event => handleTitleChange(event.target.value)}
-                disabled={isSubmitting}
-                autoComplete='organization'
-                autoFocus
-              />
-            </div>
-            <div className='space-y-3'>
-              <Label>Workspace icon</Label>
-              <div className='flex items-center gap-4'>
-                <Avatar className='h-16 w-16 border border-white/10 text-xl'>
-                  {iconPreviewUrl ? (
-                    <AvatarImage
-                      src={iconPreviewUrl}
-                      alt='Workspace icon preview'
-                    />
-                  ) : (
-                    <AvatarFallback>{initials}</AvatarFallback>
-                  )}
-                </Avatar>
-                <div className='text-sm text-white/60'>
-                  <p>Recommended: square image, at least 256×256px.</p>
-                  <p>Supported formats: PNG or JPG.</p>
-                </div>
+
+          {step === 1 ? (
+            <form
+              onSubmit={handleStep1Next}
+              className='space-y-6 flex-1 overflow-y-auto'
+            >
+              <div className='space-y-2'>
+                <Label htmlFor='workspace-title'>Workspace name</Label>
+                <Input
+                  id='workspace-title'
+                  placeholder='Enter workspace name'
+                  value={title}
+                  onChange={event => handleTitleChange(event.target.value)}
+                  disabled={isSubmitting}
+                  autoComplete='organization'
+                  autoFocus
+                />
               </div>
-              <div className='flex flex-wrap items-center gap-2'>
-                <Button
-                  type='button'
-                  variant='secondary'
-                  onClick={handleUploadClick}
-                  disabled={isSubmitting || generatingIcon}
-                >
-                  {iconPreviewUrl ? 'Change icon' : 'Upload icon'}
-                </Button>
-                <Button
-                  type='button'
-                  variant='secondary'
-                  onClick={handleGenerateIcon}
-                  disabled={isSubmitting || generatingIcon}
-                  className='gap-2'
-                >
-                  <Sparkles className='w-4 h-4' />
-                  {generatingIcon ? 'Generating…' : 'Generate icon'}
-                </Button>
-                {iconPreviewUrl && iconFile && (
+              <div className='space-y-3'>
+                <Label>Workspace icon</Label>
+                <div className='flex items-center gap-4'>
+                  <Avatar className='h-16 w-16 border border-white/10 text-xl'>
+                    {iconPreviewUrl ? (
+                      <AvatarImage
+                        src={iconPreviewUrl}
+                        alt='Workspace icon preview'
+                      />
+                    ) : (
+                      <AvatarFallback>{initials}</AvatarFallback>
+                    )}
+                  </Avatar>
+                  <div className='text-sm text-white/60'>
+                    <p>Recommended: square image, at least 256×256px.</p>
+                    <p>Supported formats: PNG or JPG.</p>
+                  </div>
+                </div>
+                <div className='flex flex-wrap items-center gap-2'>
                   <Button
                     type='button'
-                    variant='ghost'
-                    onClick={handleClearSelectedIcon}
+                    variant='secondary'
+                    onClick={handleUploadClick}
                     disabled={isSubmitting || generatingIcon}
                   >
-                    Reset selection
+                    {iconPreviewUrl ? 'Change icon' : 'Upload icon'}
                   </Button>
+                  <Button
+                    type='button'
+                    variant='secondary'
+                    onClick={handleGenerateIcon}
+                    disabled={isSubmitting || generatingIcon}
+                    className='gap-2'
+                  >
+                    <Sparkles className='w-4 h-4' />
+                    {generatingIcon ? 'Generating…' : 'Generate icon'}
+                  </Button>
+                  {iconPreviewUrl && iconFile && (
+                    <Button
+                      type='button'
+                      variant='ghost'
+                      onClick={handleClearSelectedIcon}
+                      disabled={isSubmitting || generatingIcon}
+                    >
+                      Reset selection
+                    </Button>
+                  )}
+                </div>
+                <input
+                  ref={fileInputRef}
+                  type='file'
+                  accept='image/*'
+                  className='hidden'
+                  onChange={handleFileChange}
+                />
+                {iconError && (
+                  <p className='text-sm text-red-300'>{iconError}</p>
                 )}
               </div>
-              <input
-                ref={fileInputRef}
-                type='file'
-                accept='image/*'
-                className='hidden'
-                onChange={handleFileChange}
-              />
-              {iconError && <p className='text-sm text-red-300'>{iconError}</p>}
-            </div>
-            {error && (
-              <div className='rounded-md border border-red-500/40 bg-red-500/10 p-3 text-sm text-red-200'>
-                {error}
-              </div>
-            )}
-            <DialogFooter>
-              <DialogClose asChild>
-                <Button type='button' variant='ghost' disabled={isSubmitting}>
-                  Cancel
+              {error && (
+                <div className='rounded-md border border-red-500/40 bg-red-500/10 p-3 text-sm text-red-200'>
+                  {error}
+                </div>
+              )}
+              <DialogFooter>
+                <DialogClose asChild>
+                  <Button type='button' variant='ghost' disabled={isSubmitting}>
+                    Cancel
+                  </Button>
+                </DialogClose>
+                <Button type='submit' disabled={isSubmitting}>
+                  {isSubmitting
+                    ? 'Saving…'
+                    : workspace
+                      ? 'Save changes'
+                      : 'Next'}
                 </Button>
-              </DialogClose>
-              <Button type='submit' disabled={isSubmitting}>
-                {isSubmitting
-                  ? 'Saving…'
-                  : workspace
-                    ? 'Save changes'
-                    : 'Create workspace'}
-              </Button>
-            </DialogFooter>
-          </form>
+              </DialogFooter>
+            </form>
+          ) : (
+            <div className='flex flex-col flex-1 min-h-0'>
+              <div className='flex-1 min-h-0'>
+                <MemberSelectionStep
+                  selectedUserIds={selectedUserIds}
+                  onSelectionChange={setSelectedUserIds}
+                />
+              </div>
+              <DialogFooter className='mt-4'>
+                <Button
+                  type='button'
+                  variant='ghost'
+                  onClick={() => setStep(1)}
+                  disabled={isSubmitting}
+                >
+                  Back
+                </Button>
+                <DialogClose asChild>
+                  <Button type='button' variant='ghost' disabled={isSubmitting}>
+                    Cancel
+                  </Button>
+                </DialogClose>
+                <Button
+                  type='button'
+                  onClick={handleStep2Submit}
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? 'Creating…' : 'Create workspace'}
+                </Button>
+              </DialogFooter>
+            </div>
+          )}
         </DialogContent>
       </Dialog>
 
