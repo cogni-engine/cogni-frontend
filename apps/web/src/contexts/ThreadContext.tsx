@@ -12,6 +12,7 @@ import React, {
 import useSWR from 'swr';
 import {
   getThreads,
+  createThread as apiCreateThread,
   updateThread as apiUpdateThread,
   deleteThread as apiDeleteThread,
 } from '@/lib/api/threadsApi';
@@ -91,12 +92,58 @@ export function ThreadProvider({ children }: { children: ReactNode }) {
   }, []);
 
   // Auto-select most recent thread only if no cached selection
+  // If error or no threads, automatically create a new thread
   useEffect(() => {
-    if (!hasAutoSelected.current && threads.length > 0 && !isLoading) {
+    if (!hasAutoSelected.current && !isLoading) {
       hasAutoSelected.current = true;
-      setSelectedThreadId(threads[0].id);
+
+      // If there's an error or threads is empty, create a new thread
+      if (error || threads.length === 0) {
+        // Only create thread if workspaceId is available
+        if (workspaceId) {
+          console.log(
+            '[ThreadContext] Auto-creating new thread. Error:',
+            error,
+            'Threads count:',
+            threads.length
+          );
+
+          // Create a new thread automatically
+          apiCreateThread(workspaceId, 'New Thread')
+            .then(newThread => {
+              console.log(
+                '[ThreadContext] Auto-created new thread:',
+                newThread.id
+              );
+              setSelectedThreadId(newThread.id);
+              // Refresh threads list to include the new thread
+              mutate();
+            })
+            .catch(err => {
+              console.error(
+                '[ThreadContext] Failed to auto-create thread:',
+                err
+              );
+              // Fallback to 'new' mode if creation fails
+              setSelectedThreadId('new');
+            });
+        } else {
+          // Fallback to 'new' mode if workspaceId is not available
+          console.log(
+            '[ThreadContext] WorkspaceId not available, setting to new thread mode'
+          );
+          setSelectedThreadId('new');
+        }
+      } else if (threads.length > 0) {
+        // Otherwise, select the most recent thread
+        console.log(
+          '[ThreadContext] Auto-selecting most recent thread:',
+          threads[0].id
+        );
+        setSelectedThreadId(threads[0].id);
+      }
     }
-  }, [threads, isLoading, setSelectedThreadId]);
+  }, [threads, isLoading, error, workspaceId, setSelectedThreadId, mutate]);
 
   const updateExistingThread = useCallback(
     async (id: number, title: string) => {
