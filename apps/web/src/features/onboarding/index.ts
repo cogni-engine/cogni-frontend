@@ -1,0 +1,10 @@
+export { AboutCognoApp } from './AboutCogno';
+export { OnboardingName } from './OnboardingName';
+export { OnboardingIcon } from './OnboardingIcon';
+export { OnboardingWelcome } from './OnboardingWelcome';
+export { OnboardingReady } from './OnboardingReady';
+export { OnboardingPersonalizing } from './OnboardingPersonalizing';
+export { QuestionCard } from './QuestionCard';
+export { onboardingMachine } from './onboardingMachine';
+export { questionConfigs, getQuestionConfig } from './questionConfigs';
+export * from './types';

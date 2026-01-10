@@ -1,6 +1,7 @@
 // src/middleware.ts
 import { type NextRequest, NextResponse } from 'next/server';
 import { updateSession } from '@/lib/supabase/middleware';
+import { createServerClient } from '@supabase/ssr';
 
 // Helper to detect if request is from mobile app webview
 function isFromMobileApp(request: NextRequest): boolean {
@@ -24,6 +25,7 @@ export async function middleware(request: NextRequest) {
   const privateRoutes = ['/home', '/notes', '/workspace', '/personal', '/user'];
   const publicRoutes = ['/invite', '/mobile-auth', '/mobile-auth-required']; // Allow mobile auth routes
   const authRoutes = ['/login', '/register'];
+  const onboardingRoutes = ['/onboarding'];
 
   const isPrivateRoute = privateRoutes.some(route =>
     request.nextUrl.pathname.startsWith(route)
@@ -34,6 +36,10 @@ export async function middleware(request: NextRequest) {
   );
 
   const isAuthRoute = authRoutes.some(route =>
+    request.nextUrl.pathname.startsWith(route)
+  );
+
+  const isOnboardingRoute = onboardingRoutes.some(route =>
     request.nextUrl.pathname.startsWith(route)
   );
 
@@ -56,6 +62,11 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL('/login', request.url));
   }
 
+  // Redirect to login if accessing onboarding without authentication
+  if (!user && isOnboardingRoute) {
+    return NextResponse.redirect(new URL('/login', request.url));
+  }
+
   // Block mobile app from accessing web auth pages
   if (fromMobileApp && isAuthRoute) {
     return NextResponse.redirect(new URL('/mobile-auth-required', request.url));
@@ -71,6 +82,53 @@ export async function middleware(request: NextRequest) {
       );
     }
     return NextResponse.redirect(new URL('/home', request.url));
+  }
+
+  // Onboarding routing logic for authenticated users
+  if (user) {
+    // Get Supabase client from updateSession response
+    const supabase = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        cookies: {
+          getAll: () =>
+            request.cookies
+              .getAll()
+              .map(c => ({ name: c.name, value: c.value })),
+          setAll: cookiesToSet => {
+            cookiesToSet.forEach(({ name, value, options }) => {
+              response.cookies.set({ name, value, ...options });
+            });
+          },
+        },
+      }
+    );
+
+    // Fetch user profile to check onboarding status
+    const { data: profile, error } = await supabase
+      .from('user_profiles')
+      .select('onboarding_status')
+      .eq('id', user.id)
+      .single();
+
+    // If column doesn't exist yet (migration not applied), skip onboarding check
+    if (error && error.code === 'PGRST116') {
+      console.log('Onboarding column not found, skipping check');
+      return response;
+    }
+
+    const status = profile?.onboarding_status || 'not_started';
+
+    // If not completed and not on onboarding route, redirect to onboarding
+    if (status !== 'completed' && !isOnboardingRoute && !isPublicRoute) {
+      return NextResponse.redirect(new URL('/onboarding', request.url));
+    }
+
+    // If completed and trying to access onboarding, redirect to home
+    if (status === 'completed' && isOnboardingRoute) {
+      return NextResponse.redirect(new URL('/home', request.url));
+    }
   }
 
   return response;
