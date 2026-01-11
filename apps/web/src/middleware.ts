@@ -21,7 +21,13 @@ export async function middleware(request: NextRequest) {
   const { response, user } = await updateSession(request);
 
   // Define route types
-  const privateRoutes = ['/cogno', '/notes', '/workspace', '/personal', '/user'];
+  const privateRoutes = [
+    '/cogno',
+    '/notes',
+    '/workspace',
+    '/personal',
+    '/user',
+  ];
   const publicRoutes = ['/invite', '/mobile-auth', '/mobile-auth-required']; // Allow mobile auth routes
   const authRoutes = ['/login', '/register'];
 

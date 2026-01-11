@@ -11,7 +11,10 @@ import {
 } from '@/components/ui/drawer';
 import GlassButton from '@/components/glass-design/GlassButton';
 import type { Notification } from '@/types/notification';
-import { updateNotificationReaction, getTaskResult } from '@/lib/api/notificationsApi';
+import {
+  updateNotificationReaction,
+  getTaskResult,
+} from '@/lib/api/notificationsApi';
 import TextInputDrawer from './TextInputDrawer';
 
 interface NotificationProcessDrawerProps {
@@ -30,7 +33,10 @@ export default function NotificationProcessDrawer({
   const [currentIndex, setCurrentIndex] = useState(0);
   const [showTextInputDrawer, setShowTextInputDrawer] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [taskResult, setTaskResult] = useState<{ result_title: string; result_text: string } | null>(null);
+  const [taskResult, setTaskResult] = useState<{
+    result_title: string;
+    result_text: string;
+  } | null>(null);
   const [loadingTaskResult, setLoadingTaskResult] = useState(false);
 
   const currentNotification = notifications[currentIndex];
@@ -169,10 +175,10 @@ export default function NotificationProcessDrawer({
               <div className='px-4 py-6 space-y-4'>
                 {/* Title */}
                 <h2 className='font-semibold text-lg text-white'>
-                  {loadingTaskResult 
-                    ? '読み込み中...' 
-                    : taskResult 
-                      ? taskResult.result_title 
+                  {loadingTaskResult
+                    ? '読み込み中...'
+                    : taskResult
+                      ? taskResult.result_title
                       : currentNotification.title}
                 </h2>
 
