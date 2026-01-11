@@ -21,7 +21,13 @@ export async function middleware(request: NextRequest) {
   const { response, user } = await updateSession(request);
 
   // Define route types
-  const privateRoutes = ['/home', '/notes', '/workspace', '/personal', '/user'];
+  const privateRoutes = [
+    '/cogno',
+    '/notes',
+    '/workspace',
+    '/personal',
+    '/user',
+  ];
   const publicRoutes = ['/invite', '/mobile-auth', '/mobile-auth-required']; // Allow mobile auth routes
   const authRoutes = ['/login', '/register'];
 
@@ -61,7 +67,7 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL('/mobile-auth-required', request.url));
   }
 
-  // Redirect to home if authenticated user tries to access auth pages
+  // Redirect to workspace if authenticated user tries to access auth pages
   // But check for pending invite first
   if (user && isAuthRoute) {
     const inviteToken = request.cookies.get('pending_invite_token')?.value;
@@ -70,7 +76,7 @@ export async function middleware(request: NextRequest) {
         new URL(`/invite/${inviteToken}`, request.url)
       );
     }
-    return NextResponse.redirect(new URL('/home', request.url));
+    return NextResponse.redirect(new URL('/workspace', request.url));
   }
 
   return response;

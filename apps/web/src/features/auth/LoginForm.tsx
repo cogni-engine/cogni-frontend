@@ -31,7 +31,7 @@ export default function LoginForm() {
     if (inviteToken) {
       router.push(`/invite/${inviteToken}`);
     } else {
-      router.push('/home');
+      router.push('/workspace');
     }
   };
 

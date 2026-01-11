@@ -21,7 +21,7 @@ import NotificationProcessDrawer from '@/features/notifications/components/Notif
 
 export default function Header() {
   const pathname = usePathname();
-  const isHomePage = pathname === '/home';
+  const isHomePage = pathname === '/home' || pathname === '/cogno';
   const isNotesPage = pathname === '/notes';
   const pageTitleMap: Record<string, string> = {
     '/notes': 'Note',

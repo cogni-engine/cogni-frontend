@@ -112,7 +112,7 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
   }, [router]);
 
   const showTopLevelChrome =
-    pathname === '/home' ||
+    pathname === '/cogno' ||
     pathname === '/notes' ||
     pathname === '/workspace' ||
     pathname === '/personal' ||

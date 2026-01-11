@@ -66,7 +66,7 @@ export async function GET(request: NextRequest) {
   }
 
   // After successful verification, determine where to redirect
-  let redirectTo = '/home'; // Default redirect
+  let redirectTo = '/workspace'; // Default redirect
 
   // Priority 1: Invite token from URL (from email verification link)
   if (inviteToken) {
