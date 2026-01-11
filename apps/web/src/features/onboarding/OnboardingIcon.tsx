@@ -13,6 +13,8 @@ import {
 import { generateAvatarBlob } from '@/features/users/utils/avatarGenerator';
 import { uploadUserAvatar } from '@/lib/api/userProfilesApi';
 import GlassButton from '@/components/glass-design/GlassButton';
+import { NextStepButton } from './components/NextStepButton';
+import { SubText } from './components/SubText';
 
 interface OnboardingIconProps {
   error: string | null;
@@ -158,10 +160,10 @@ export function OnboardingIcon({
               <h1 className='text-4xl md:text-5xl font-bold text-white leading-tight'>
                 Add a profile picture
               </h1>
-              <p className='text-lg md:text-xl text-gray-300 max-w-md mx-auto'>
+              <SubText>
                 Upload a photo or generate one automatically. You can change
                 this later.
-              </p>
+              </SubText>
             </div>
 
             {/* Avatar Preview */}
@@ -234,15 +236,13 @@ export function OnboardingIcon({
           </div>
 
           {/* Continue Button */}
-          <div className='mt-8 pt-6'>
-            <button
+          <div className=''>
+            <NextStepButton
               type='button'
               onClick={handleContinue}
-              disabled={uploading || generating || loading}
-              className='w-full px-8 py-4 bg-purple-600 hover:bg-purple-700 text-white font-semibold text-lg rounded-full shadow-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-purple-600'
-            >
-              {loading ? 'Saving...' : 'Continue'}
-            </button>
+              disabled={uploading || generating}
+              loading={loading}
+            />
           </div>
         </div>
       </div>

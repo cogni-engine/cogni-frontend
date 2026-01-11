@@ -1,3 +1,5 @@
+import { NextStepButton } from './components/NextStepButton';
+
 interface OnboardingWelcomeProps {
   error: string | null;
   loading: boolean;
@@ -60,13 +62,12 @@ export function OnboardingWelcome({
 
         {/* Continue Button */}
         <div className='mt-8 pt-6'>
-          <button
+          <NextStepButton
+            type='button'
             onClick={handleContinue}
-            disabled={loading}
-            className='w-full px-8 py-4 bg-purple-600 hover:bg-purple-700 text-white font-semibold text-lg rounded-full shadow-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-purple-600'
-          >
-            {loading ? 'Loading...' : 'Continue'}
-          </button>
+            loading={loading}
+            loadingText='Loading...'
+          />
         </div>
       </div>
     </div>

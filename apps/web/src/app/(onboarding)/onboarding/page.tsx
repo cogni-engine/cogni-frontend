@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { createBrowserClient } from '@supabase/ssr';
 import { useMachine } from '@xstate/react';
@@ -11,7 +11,7 @@ import {
   OnboardingIcon,
   OnboardingWelcome,
   OnboardingReady,
-  OnboardingPersonalizing,
+  OnboardingLoading,
   QuestionCard,
   onboardingMachine,
   questionConfigs,
@@ -23,7 +23,6 @@ import { updateUserProfile } from '@/lib/api/userProfilesApi';
 export default function OnboardingPage() {
   const router = useRouter();
   const [state, send] = useMachine(onboardingMachine);
-  const [isPersonalizing, setIsPersonalizing] = useState(false);
 
   const supabase = createBrowserClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -68,9 +67,6 @@ export default function OnboardingPage() {
           const userId = state.context.profile.userId;
           if (!userId) return;
 
-          // Show personalizing screen
-          setIsPersonalizing(true);
-
           const onboardingService = new OnboardingService(supabase);
 
           // Save all answers
@@ -80,17 +76,11 @@ export default function OnboardingPage() {
           const result = await onboardingService.completeOnboarding(userId);
 
           if (result.success) {
-            // Add a small delay to show the personalizing screen
-            await new Promise(resolve => setTimeout(resolve, 2000));
-
             router.push('/home');
             router.refresh();
-          } else {
-            setIsPersonalizing(false);
           }
         } catch (err) {
           console.error('Failed to complete onboarding:', err);
-          setIsPersonalizing(false);
         }
       };
 
@@ -113,17 +103,13 @@ export default function OnboardingPage() {
     if (state.matches({ context: { team: 'role' } })) return 80;
     if (state.matches({ context: { team: 'teamPain' } })) return 85;
     if (state.matches({ context: 'riskSignal' })) return 90;
+    if (state.matches('loading')) return 95;
     if (state.matches('ready')) return 100;
     return 0;
   };
 
   // Render the appropriate step based on state
   const renderStep = () => {
-    // Show personalizing screen when completing
-    if (isPersonalizing) {
-      return <OnboardingPersonalizing userName={state.context.profile.name} />;
-    }
-
     // App intro
     if (state.matches('appIntro')) {
       return (
@@ -161,7 +147,6 @@ export default function OnboardingPage() {
               console.error('Failed to save name:', err);
             }
           }}
-          handleBack={() => send({ type: 'BACK' })}
         />
       );
     }
@@ -305,7 +290,17 @@ export default function OnboardingPage() {
       );
     }
 
-    // Ready
+    // Loading (shows after questions)
+    if (state.matches('loading')) {
+      return (
+        <OnboardingLoading
+          userName={state.context.profile.name}
+          onComplete={() => send({ type: 'COMPLETE' })}
+        />
+      );
+    }
+
+    // Ready (final screen with "Enter App" button)
     if (state.matches('ready')) {
       return (
         <OnboardingReady
@@ -320,7 +315,10 @@ export default function OnboardingPage() {
     return null;
   };
 
-  const showBackButton = !state.matches('appIntro') && !isPersonalizing;
+  const showBackButton =
+    !state.matches('appIntro') &&
+    !state.matches('loading') &&
+    !state.matches('ready');
 
   return (
     <div className='w-full h-screen flex flex-col items-center overflow-hidden'>

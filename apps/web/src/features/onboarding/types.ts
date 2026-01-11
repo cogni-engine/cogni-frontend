@@ -57,12 +57,12 @@ export type OnboardingEvent =
 
 // State value types for type-safe state matching
 export type OnboardingStateValue =
-  | { appIntro: {} }
+  | { appIntro: object }
   | { profile: 'name' | 'icon' }
-  | { welcome: {} }
+  | { welcome: object }
   | { context: ContextStateValue }
-  | { ready: {} }
-  | { completed: {} };
+  | { ready: object }
+  | { completed: object };
 
 export type ContextStateValue =
   | 'lifeIntent'
@@ -78,6 +78,3 @@ export type TeamStateValue = 'role' | 'teamPain';
 
 // Answer keys for each question
 export type AnswerKey = keyof OnboardingContext['answers'];
-
-// Helper type for state machine
-export interface OnboardingMachineContext extends OnboardingContext {}

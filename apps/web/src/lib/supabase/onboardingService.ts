@@ -61,7 +61,7 @@ export class OnboardingService {
    */
   async getOrCreateSession(userId: string): Promise<OnboardingSession | null> {
     // Check if session already exists
-    const { data: existingSession, error: fetchError } = await this.supabase
+    const { data: existingSession } = await this.supabase
       .from('onboarding_sessions')
       .select('*')
       .eq('user_id', userId)

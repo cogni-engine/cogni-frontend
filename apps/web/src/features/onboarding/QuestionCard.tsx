@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import type { QuestionConfig } from './types';
+import { NextStepButton } from './components/NextStepButton';
 
 interface QuestionCardProps {
   config: QuestionConfig;
@@ -209,13 +210,12 @@ export function QuestionCard({
 
         {/* Continue Button */}
         <div className='mt-8 pt-6'>
-          <button
+          <NextStepButton
+            type='button'
             onClick={handleContinue}
-            disabled={!isValid() || loading}
-            className='w-full px-8 py-4 bg-purple-600 hover:bg-purple-700 text-white font-semibold text-lg rounded-full shadow-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-purple-600'
-          >
-            {loading ? 'Saving...' : 'Continue'}
-          </button>
+            isFormValid={isValid()}
+            loading={loading}
+          />
         </div>
       </div>
     </div>

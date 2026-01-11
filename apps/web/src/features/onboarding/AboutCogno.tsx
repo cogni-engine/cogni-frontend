@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import Image from 'next/image';
+import { NextStepButton } from './components/NextStepButton';
 
 interface AboutCognoAppProps {
   error: string | null;
@@ -335,13 +336,14 @@ export function AboutCognoApp({
 
       {/* Continue Button */}
       <div className='w-full max-w-md mx-auto px-4 mt-6'>
-        <button
+        <NextStepButton
+          type='button'
           onClick={handleContinue}
-          disabled={loading}
-          className='w-full px-8 py-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-lg rounded-full shadow-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed'
-        >
-          {loading ? 'Loading...' : isLastSlide ? 'Get Started' : 'Continue'}
-        </button>
+          loading={loading}
+          variant='secondary'
+          text={isLastSlide ? 'Get Started' : 'Continue'}
+          loadingText='Loading...'
+        />
       </div>
     </div>
   );

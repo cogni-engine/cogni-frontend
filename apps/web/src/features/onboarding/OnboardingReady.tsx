@@ -1,3 +1,5 @@
+import { NextStepButton } from './components/NextStepButton';
+
 interface OnboardingReadyProps {
   error: string | null;
   loading: boolean;
@@ -69,13 +71,14 @@ export function OnboardingReady({
       )}
 
       <div className='pt-4 flex justify-center'>
-        <button
+        <NextStepButton
+          type='button'
           onClick={handleEnterApp}
-          disabled={loading}
-          className='px-8 py-3 bg-white/10 backdrop-blur-sm border border-white/20 text-white font-semibold rounded-full hover:bg-white/15 hover:border-white/30 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg'
-        >
-          {loading ? 'Setting up your workspace...' : 'Enter Cogni →'}
-        </button>
+          loading={loading}
+          variant='glass'
+          text='Enter Cogni →'
+          loadingText='Setting up your workspace...'
+        />
       </div>
     </div>
   );
