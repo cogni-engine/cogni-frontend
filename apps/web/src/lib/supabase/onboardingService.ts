@@ -204,6 +204,50 @@ export class OnboardingService {
         return { success: false };
       }
 
+      // Create or get the "boss" agent profile
+      let bossAgentId: string;
+      const { data: existingBoss } = await this.supabase
+        .from('agent_profiles')
+        .select('id')
+        .eq('name', 'boss')
+        .single();
+
+      if (existingBoss) {
+        bossAgentId = existingBoss.id;
+      } else {
+        // Create new boss agent
+        const { data: newBoss, error: bossError } = await this.supabase
+          .from('agent_profiles')
+          .insert({
+            name: 'boss',
+            avatar_url: 'https://example.com/cogno-icon.png', // Mock URL for now
+          })
+          .select('id')
+          .single();
+
+        if (bossError || !newBoss) {
+          console.error('Error creating boss agent:', bossError);
+          return { success: false };
+        }
+
+        bossAgentId = newBoss.id;
+      }
+
+      // Add boss agent as a member of the tutorial workspace
+      const { error: memberError } = await this.supabase
+        .from('workspace_member')
+        .insert({
+          workspace_id: workspaceId,
+          agent_id: bossAgentId,
+          user_id: null,
+          role: 'member',
+        });
+
+      if (memberError) {
+        console.error('Error adding boss agent to workspace:', memberError);
+        return { success: false };
+      }
+
       // Mark session as completed
       await this.supabase
         .from('onboarding_sessions')

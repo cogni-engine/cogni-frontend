@@ -75,7 +75,12 @@ export default function OnboardingPage() {
           // Complete onboarding and create workspace
           const result = await onboardingService.completeOnboarding(userId);
 
-          if (result.success) {
+          if (result.success && result.workspaceId) {
+            // Redirect to the tutorial workspace
+            router.push(`/workspace/${result.workspaceId}`);
+            router.refresh();
+          } else if (result.success) {
+            // Fallback to home if workspaceId is not available
             router.push('/home');
             router.refresh();
           }

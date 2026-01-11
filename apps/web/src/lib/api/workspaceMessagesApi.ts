@@ -1,7 +1,9 @@
 import { createClient } from '@/lib/supabase/browserClient';
 import {
   normalizeWorkspaceProfile,
+  normalizeAgentProfile,
   type SupabaseProfile,
+  type SupabaseAgentProfile,
 } from '@/lib/api/profileUtils';
 import type { WorkspaceMessage } from '@/types/workspace';
 import { linkFilesToMessage } from './workspaceFilesApi';
@@ -14,9 +16,10 @@ const supabase = createClient();
 
 type RawWorkspaceMember = Omit<
   NonNullable<WorkspaceMessage['workspace_member']>,
-  'user_profile'
+  'user_profile' | 'agent_profile'
 > & {
   user_profile?: SupabaseProfile;
+  agent_profile?: SupabaseAgentProfile;
 };
 
 type RawWorkspaceMessageRead = {
@@ -66,6 +69,8 @@ function transformMessageRow(
         ...workspace_member,
         user_profile:
           normalizeWorkspaceProfile(workspace_member.user_profile) ?? null,
+        agent_profile:
+          normalizeAgentProfile(workspace_member.agent_profile) ?? null,
       }
     : undefined;
 
@@ -79,6 +84,8 @@ function transformMessageRow(
           user_profile:
             normalizeWorkspaceProfile(read.workspace_member.user_profile) ??
             null,
+          agent_profile:
+            normalizeAgentProfile(read.workspace_member.agent_profile) ?? null,
         }
       : undefined,
   }));
@@ -130,7 +137,9 @@ export async function getWorkspaceMessages(
       workspace_member:workspace_member_id(
         id,
         user_id,
-        user_profile:user_profiles!user_id(id, name, avatar_url)
+        agent_id,
+        user_profile:user_profiles!user_id(id, name, avatar_url),
+        agent_profile:agent_profiles!agent_id(id, name, avatar_url)
       ),
       workspace_message_reads(
         workspace_message_id,
@@ -139,7 +148,9 @@ export async function getWorkspaceMessages(
         workspace_member:workspace_member_id(
           id,
           user_id,
-          user_profile:user_profiles!user_id(id, name, avatar_url)
+          agent_id,
+          user_profile:user_profiles!user_id(id, name, avatar_url),
+          agent_profile:agent_profiles!agent_id(id, name, avatar_url)
         )
       ),
       replied_message:reply_to_id(
@@ -150,7 +161,9 @@ export async function getWorkspaceMessages(
         workspace_member:workspace_member_id(
           id,
           user_id,
-          user_profile:user_id(id, name, avatar_url)
+          agent_id,
+          user_profile:user_id(id, name, avatar_url),
+          agent_profile:agent_id(id, name, avatar_url)
         )
       ),
       workspace_message_files(
@@ -206,7 +219,9 @@ export async function sendWorkspaceMessage(
       workspace_member:workspace_member_id(
         id,
         user_id,
-        user_profile:user_id(id, name, avatar_url)
+        agent_id,
+        user_profile:user_id(id, name, avatar_url),
+        agent_profile:agent_id(id, name, avatar_url)
       ),
       workspace_message_reads(
         workspace_message_id,
@@ -215,7 +230,9 @@ export async function sendWorkspaceMessage(
         workspace_member:workspace_member_id(
           id,
           user_id,
-          user_profile:user_id(id, name, avatar_url)
+          agent_id,
+          user_profile:user_id(id, name, avatar_url),
+          agent_profile:agent_id(id, name, avatar_url)
         )
       ),
       replied_message:reply_to_id(
@@ -226,7 +243,9 @@ export async function sendWorkspaceMessage(
         workspace_member:workspace_member_id(
           id,
           user_id,
-          user_profile:user_id(id, name, avatar_url)
+          agent_id,
+          user_profile:user_id(id, name, avatar_url),
+          agent_profile:agent_id(id, name, avatar_url)
         )
       )
     `
@@ -293,7 +312,9 @@ export async function updateWorkspaceMessage(
       workspace_member:workspace_member_id(
         id,
         user_id,
-        user_profile:user_profiles!user_id(id, name, avatar_url)
+        agent_id,
+        user_profile:user_profiles!user_id(id, name, avatar_url),
+        agent_profile:agent_profiles!agent_id(id, name, avatar_url)
       ),
       workspace_message_reads(
         workspace_message_id,
@@ -302,7 +323,9 @@ export async function updateWorkspaceMessage(
         workspace_member:workspace_member_id(
           id,
           user_id,
-          user_profile:user_profiles!user_id(id, name, avatar_url)
+          agent_id,
+          user_profile:user_profiles!user_id(id, name, avatar_url),
+          agent_profile:agent_profiles!agent_id(id, name, avatar_url)
         )
       ),
       replied_message:reply_to_id(
@@ -313,7 +336,9 @@ export async function updateWorkspaceMessage(
         workspace_member:workspace_member_id(
           id,
           user_id,
-          user_profile:user_profiles!user_id(id, name, avatar_url)
+          agent_id,
+          user_profile:user_profiles!user_id(id, name, avatar_url),
+          agent_profile:agent_profiles!agent_id(id, name, avatar_url)
         )
       )
     `
