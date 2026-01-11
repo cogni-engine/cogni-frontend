@@ -146,6 +146,6 @@ export async function GET(request: NextRequest) {
     sameSite: 'lax',
   });
 
-  // Success - redirect to home
-  return NextResponse.redirect(new URL('/home', request.url));
+  // Success - redirect to workspace
+  return NextResponse.redirect(new URL('/workspace', request.url));
 }

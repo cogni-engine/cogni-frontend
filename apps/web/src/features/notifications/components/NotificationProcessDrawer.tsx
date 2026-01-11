@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { ChevronsRight, Check } from 'lucide-react';
 import {
   Drawer,
@@ -11,7 +11,7 @@ import {
 } from '@/components/ui/drawer';
 import GlassButton from '@/components/glass-design/GlassButton';
 import type { Notification } from '@/types/notification';
-import { updateNotificationReaction } from '@/lib/api/notificationsApi';
+import { updateNotificationReaction, getTaskResult } from '@/lib/api/notificationsApi';
 import TextInputDrawer from './TextInputDrawer';
 
 interface NotificationProcessDrawerProps {
@@ -30,8 +30,40 @@ export default function NotificationProcessDrawer({
   const [currentIndex, setCurrentIndex] = useState(0);
   const [showTextInputDrawer, setShowTextInputDrawer] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [taskResult, setTaskResult] = useState<{ result_title: string; result_text: string } | null>(null);
+  const [loadingTaskResult, setLoadingTaskResult] = useState(false);
 
   const currentNotification = notifications[currentIndex];
+
+  // task_result_idがある場合、task_resultを取得
+  useEffect(() => {
+    if (currentNotification?.task_result_id) {
+      setLoadingTaskResult(true);
+      getTaskResult(currentNotification.task_result_id)
+        .then(result => {
+          setTaskResult(result);
+        })
+        .catch(error => {
+          console.error('Failed to fetch task result:', error);
+          setTaskResult(null);
+        })
+        .finally(() => {
+          setLoadingTaskResult(false);
+        });
+    } else {
+      setTaskResult(null);
+    }
+  }, [currentNotification?.task_result_id]);
+
+  // 配列が更新された時のみインデックスを調整（最小限）
+  useEffect(() => {
+    if (notifications.length === 0) {
+      setCurrentIndex(0);
+      onOpenChange(false);
+    } else if (currentIndex >= notifications.length) {
+      setCurrentIndex(notifications.length - 1);
+    }
+  }, [notifications.length, currentIndex, onOpenChange]);
 
   const handleComplete = useCallback(async () => {
     if (!currentNotification || isProcessing) return;
@@ -44,16 +76,14 @@ export default function NotificationProcessDrawer({
         null
       );
 
-      // Move to next notification
-      if (currentIndex < notifications.length - 1) {
-        setCurrentIndex(prev => prev + 1);
-      } else {
-        // All done, close drawer
-        setCurrentIndex(0);
+      // 通知を再取得（配列が更新される）
+      onNotificationProcessed?.();
+
+      // インデックスは進めない（配列が更新されたら自動的に次の通知が表示される）
+      // 最後の通知の場合は閉じる
+      if (notifications.length === 1) {
         onOpenChange(false);
       }
-
-      onNotificationProcessed?.();
     } catch (error) {
       console.error('Failed to complete notification:', error);
     } finally {
@@ -61,7 +91,6 @@ export default function NotificationProcessDrawer({
     }
   }, [
     currentNotification,
-    currentIndex,
     notifications.length,
     isProcessing,
     onOpenChange,
@@ -84,19 +113,16 @@ export default function NotificationProcessDrawer({
           text || null
         );
 
-        // Close text input drawer
         setShowTextInputDrawer(false);
 
-        // Move to next notification
-        if (currentIndex < notifications.length - 1) {
-          setCurrentIndex(prev => prev + 1);
-        } else {
-          // All done, close drawer
-          setCurrentIndex(0);
+        // 通知を再取得（配列が更新される）
+        onNotificationProcessed?.();
+
+        // インデックスは進めない（配列が更新されたら自動的に次の通知が表示される）
+        // 最後の通知の場合は閉じる
+        if (notifications.length === 1) {
           onOpenChange(false);
         }
-
-        onNotificationProcessed?.();
       } catch (error) {
         console.error('Failed to postpone notification:', error);
       } finally {
@@ -105,7 +131,6 @@ export default function NotificationProcessDrawer({
     },
     [
       currentNotification,
-      currentIndex,
       notifications.length,
       isProcessing,
       onOpenChange,
@@ -144,26 +169,33 @@ export default function NotificationProcessDrawer({
               <div className='px-4 py-6 space-y-4'>
                 {/* Title */}
                 <h2 className='font-semibold text-lg text-white'>
-                  {currentNotification.title}
+                  {loadingTaskResult 
+                    ? '読み込み中...' 
+                    : taskResult 
+                      ? taskResult.result_title 
+                      : currentNotification.title}
                 </h2>
 
-                {/* Body */}
-                {currentNotification.body && (
-                  <p className='text-base text-white/80'>
-                    {currentNotification.body}
+                {/* Body / Result Text */}
+                {loadingTaskResult ? (
+                  <p className='text-base text-white/60'>読み込み中...</p>
+                ) : taskResult ? (
+                  <p className='text-base text-white/80 whitespace-pre-wrap'>
+                    {taskResult.result_text}
                   </p>
-                )}
-
-                {/* AI Context */}
-                {currentNotification.ai_context && (
-                  <p className='text-sm text-white/60'>
-                    {currentNotification.ai_context}
-                  </p>
+                ) : (
+                  currentNotification.body && (
+                    <p className='text-base text-white/80'>
+                      {currentNotification.body}
+                    </p>
+                  )
                 )}
 
                 {/* Progress indicator */}
                 <div className='pt-4 text-xs text-white/40 text-center'>
-                  {currentIndex + 1} / {notifications.length}
+                  {notifications.length - currentIndex - 1 > 0
+                    ? `${notifications.length - currentIndex - 1} Left`
+                    : 'Last one'}
                 </div>
               </div>
             ) : null}

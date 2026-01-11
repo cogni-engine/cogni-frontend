@@ -59,24 +59,10 @@ export async function getPastDueNotifications(
     .eq('user_id', userId)
     .in('status', ['scheduled', 'sent'])
     .lt('due_date', now)
-    .order('due_date', { ascending: false });
+    .order('due_date', { ascending: true });
 
   if (error) throw error;
-  if (!data) return [];
-
-  const latestByTask = data.reduce<Map<number, Notification>>(
-    (acc, notification) => {
-      if (!acc.has(notification.task_id)) {
-        acc.set(notification.task_id, notification);
-      }
-      return acc;
-    },
-    new Map()
-  );
-
-  return Array.from(latestByTask.values()).sort(
-    (a, b) => new Date(a.due_date).getTime() - new Date(b.due_date).getTime()
-  );
+  return data || [];
 }
 
 /**
@@ -190,31 +176,13 @@ export async function getUnreadNotificationCount(
 
   const { data, error } = await supabase
     .from('ai_notifications')
-    .select('task_id, status, due_date')
+    .select('id')
     .eq('user_id', userId)
-    .in('status', ['scheduled', 'sent'])
-    .lt('due_date', now)
-    .order('due_date', { ascending: false });
+    .eq('status', 'scheduled')
+    .lt('due_date', now);
 
   if (error) throw error;
-  if (!data) return 0;
-
-  const latestByTask = data.reduce<Map<number, NotificationStatus>>(
-    (acc, notification) => {
-      if (!acc.has(notification.task_id)) {
-        acc.set(
-          notification.task_id,
-          notification.status as NotificationStatus
-        );
-      }
-      return acc;
-    },
-    new Map()
-  );
-
-  return Array.from(latestByTask.values()).filter(
-    status => status === 'scheduled'
-  ).length;
+  return data?.length || 0;
 }
 
 /**
@@ -325,4 +293,26 @@ export async function getWorkspaceActivityNotifications(
     due_date: item.due_date,
     created_at: item.created_at,
   }));
+}
+
+/**
+ * Get task result by ID
+ */
+export async function getTaskResult(
+  taskResultId: number
+): Promise<{ result_title: string; result_text: string } | null> {
+  const { data, error } = await supabase
+    .from('task_results')
+    .select('result_title, result_text')
+    .eq('id', taskResultId)
+    .single();
+
+  if (error) {
+    if (error.code === 'PGRST116') {
+      return null; // Not found
+    }
+    throw error;
+  }
+
+  return data;
 }
