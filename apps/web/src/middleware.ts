@@ -108,20 +108,34 @@ export async function middleware(request: NextRequest) {
     // Fetch user profile to check onboarding status
     const { data: profile, error } = await supabase
       .from('user_profiles')
-      .select('onboarding_status')
+      .select(
+        `
+        onboarding_status,
+        onboarding_sessions (
+          state
+        )
+      `
+      )
       .eq('id', user.id)
       .single();
 
     // If column doesn't exist yet (migration not applied), skip onboarding check
-    if (error && error.code === 'PGRST116') {
+    if (error) {
       console.log('Onboarding column not found, skipping check');
       return response;
     }
 
     const status = profile?.onboarding_status || 'not_started';
+    const onboardingState = profile?.onboarding_sessions?.[0]?.state;
 
     // If not completed and not on onboarding route, redirect to onboarding
-    if (status !== 'completed' && !isOnboardingRoute && !isPublicRoute) {
+    // UNLESS the onboarding state is 'tier2'
+    if (
+      status !== 'completed' &&
+      !isOnboardingRoute &&
+      !isPublicRoute &&
+      onboardingState !== 'tier2'
+    ) {
       return NextResponse.redirect(new URL('/onboarding', request.url));
     }
 

@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import type { Area } from 'react-easy-crop';
 import { signOut } from '@cogni/api';
 import { createBrowserClient } from '@supabase/ssr';
-import { OnboardingService } from '@/lib/supabase/onboardingService';
+import { OnboardingService } from '@/features/onboarding/services/onboardingService';
 
 import { ProfileInfoForm } from './components/ProfileInfoForm';
 import { AvatarCard } from './components/AvatarCard';

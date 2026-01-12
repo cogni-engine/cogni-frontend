@@ -4,7 +4,7 @@ import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { createBrowserClient } from '@supabase/ssr';
 import { useMachine } from '@xstate/react';
-import { OnboardingService } from '@/lib/supabase/onboardingService';
+import { OnboardingService } from '@/features/onboarding/services/onboardingService';
 import {
   AboutCognoApp,
   OnboardingName,
@@ -73,11 +73,31 @@ export default function OnboardingPage() {
           await onboardingService.saveAllAnswers(userId, state.context.answers);
 
           // Complete onboarding and create workspace
-          const result = await onboardingService.completeOnboarding(userId);
+          const result =
+            await onboardingService.completeTier1Onboarding(userId);
 
           if (result.success && result.workspaceId) {
+            // Set flags for tier 2 onboarding to start
+            sessionStorage.setItem('startTier2Onboarding', 'true');
+            sessionStorage.setItem(
+              'tier2WorkspaceId',
+              result.workspaceId.toString()
+            );
+
+            // Store boss IDs if available
+            if (result.bossWorkspaceMemberId && result.bossAgentProfileId) {
+              sessionStorage.setItem(
+                'bossWorkspaceMemberId',
+                result.bossWorkspaceMemberId.toString()
+              );
+              sessionStorage.setItem(
+                'bossAgentProfileId',
+                result.bossAgentProfileId
+              );
+            }
+
             // Redirect to the tutorial workspace
-            router.push(`/workspace/${result.workspaceId}`);
+            router.push(`/workspace/${result.workspaceId}/chat`);
             router.refresh();
           } else if (result.success) {
             // Fallback to home if workspaceId is not available
