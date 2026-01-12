@@ -44,6 +44,7 @@ export default function BottomNav() {
                   key={tab.path}
                   href={tab.path}
                   className='relative z-10 flex flex-col items-center gap-0.5 px-4 py-2 transition-all duration-300 group flex-1'
+                  data-nav-link={tab.path}
                 >
                   <div
                     className={`transition-colors duration-300 ${isActive ? 'text-white' : 'text-gray-400 group-hover:text-white'}`}

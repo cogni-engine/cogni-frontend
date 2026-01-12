@@ -18,6 +18,11 @@ import { getPersonalWorkspace } from '@/lib/api/workspaceApi';
 import NoteDrawer from '@/components/NoteDrawer';
 import FilePreviewDrawer from '@/components/FilePreviewDrawer';
 import ChatMessageDrawer from '@/components/ChatMessageDrawer';
+import { ShepherdProvider } from '@/features/onboarding/tier2/shepherd/ShepherdProvider';
+import { exampleTours } from '@/features/onboarding/tier2/shepherd/tours';
+import { ShepherdControlPanel } from '@/components/dev/ShepherdControlPanel';
+import { TutorialProvider } from '@/features/onboarding/tier2/TutorialProvider';
+import { TutorialStepManager } from '@/features/onboarding/tier2/components/TutorialStepManager';
 
 function LayoutContent({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -176,6 +181,9 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
 
       {/* Global Chat Message Drawer */}
       <ChatMessageDrawer />
+
+      {/* Shepherd Control Panel (Development Only) */}
+      <ShepherdControlPanel />
     </div>
   );
 }
@@ -188,7 +196,12 @@ export default function DashboardLayout({
   return (
     <GlobalUIProvider>
       <CopilotKit runtimeUrl='/api/copilotkit'>
-        <LayoutContent>{children}</LayoutContent>
+        <TutorialProvider>
+          <ShepherdProvider tours={exampleTours}>
+            <TutorialStepManager />
+            <LayoutContent>{children}</LayoutContent>
+          </ShepherdProvider>
+        </TutorialProvider>
       </CopilotKit>
     </GlobalUIProvider>
   );

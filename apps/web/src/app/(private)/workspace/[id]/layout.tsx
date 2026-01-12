@@ -142,6 +142,7 @@ export default function WorkspaceLayout({
             title='Go back'
             size='icon'
             className='size-12'
+            data-shepherd-target='workspace-back-button'
           >
             <ArrowLeft className='w-5 h-5' />
           </GlassButton>
@@ -224,6 +225,7 @@ export default function WorkspaceLayout({
                   : 'text-gray-400 hover:text-white bg-black/10'
               }`}
               aria-current={currentView === 'chat' ? 'page' : undefined}
+              data-shepherd-target='workspace-chat-button'
             >
               <MessageSquare className='w-4 h-4' />
               Chat
@@ -236,6 +238,7 @@ export default function WorkspaceLayout({
                   : 'text-gray-400 hover:text-white bg-black/10'
               }`}
               aria-current={currentView === 'notes' ? 'page' : undefined}
+              data-shepherd-target='workspace-notes-button'
             >
               <FileText className='w-4 h-4' />
               Notes
