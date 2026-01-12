@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import type { QuestionConfig } from './types';
-import { NextStepButton } from './components/NextStepButton';
+import type { QuestionConfig } from '../types';
+import { NextStepButton } from '../components/NextStepButton';
 
 interface QuestionCardProps {
   config: QuestionConfig;

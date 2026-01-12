@@ -1,5 +1,5 @@
 import { setup, assign } from 'xstate';
-import type { OnboardingContext, OnboardingEvent } from './types';
+import type { OnboardingContext, OnboardingEvent } from '../types';
 
 /**
  * XState Machine for Onboarding Flow

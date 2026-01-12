@@ -1,4 +1,4 @@
-import { NextStepButton } from './components/NextStepButton';
+import { NextStepButton } from '../components/NextStepButton';
 
 interface OnboardingWelcomeProps {
   error: string | null;

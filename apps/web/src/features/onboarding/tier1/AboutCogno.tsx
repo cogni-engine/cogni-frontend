@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import Image from 'next/image';
-import { NextStepButton } from './components/NextStepButton';
+import { NextStepButton } from '../components/NextStepButton';
 
 interface AboutCognoAppProps {
   error: string | null;

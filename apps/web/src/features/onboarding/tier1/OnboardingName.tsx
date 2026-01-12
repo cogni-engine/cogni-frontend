@@ -1,5 +1,5 @@
-import { NextStepButton } from './components/NextStepButton';
-import { SubText } from './components/SubText';
+import { NextStepButton } from '../components/NextStepButton';
+import { SubText } from '../components/SubText';
 
 interface OnboardingNameProps {
   error: string | null;

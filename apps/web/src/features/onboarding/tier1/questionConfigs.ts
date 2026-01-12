@@ -1,4 +1,4 @@
-import { QuestionConfig } from './types';
+import { QuestionConfig } from '../types';
 
 /**
  * Question configurations for the onboarding flow

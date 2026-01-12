@@ -13,8 +13,8 @@ import {
 import { generateAvatarBlob } from '@/features/users/utils/avatarGenerator';
 import { uploadUserAvatar } from '@/lib/api/userProfilesApi';
 import GlassButton from '@/components/glass-design/GlassButton';
-import { NextStepButton } from './components/NextStepButton';
-import { SubText } from './components/SubText';
+import { NextStepButton } from '../components/NextStepButton';
+import { SubText } from '../components/SubText';
 
 interface OnboardingIconProps {
   error: string | null;
