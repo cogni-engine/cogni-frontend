@@ -423,7 +423,7 @@ export default function WorkspaceNotesPage() {
         data-shepherd-target={
           tutorialNoteId === note.id ? 'tutorial-note' : undefined
         }
-        className={`group relative rounded-[20px] px-5 py-[8px] cursor-pointer select-none border-0 shadow-none hover:shadow-none !bg-transparent backdrop-blur-none ${
+        className={`group relative rounded-[20px] px-5 py-[8px] cursor-pointer select-none border-0 shadow-none hover:shadow-none bg-transparent! backdrop-blur-none ${
           isDeleted ? 'opacity-60' : ''
         }`}
         onClick={() => !isDeleted && handleNoteClick(note.id)}
