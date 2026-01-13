@@ -8,6 +8,7 @@ import type { NoteFolder } from '@/types/note';
 import type { FormattedNote } from '../NotesProvider';
 import { groupAndSortNotes } from '../lib/noteListHelpers';
 import { FolderGroupHeader } from './FolderGroupHeader';
+import { FlatList, FlatListItem } from '@/components/FlatList';
 
 type NoteListProps = {
   notes: FormattedNote[];
@@ -18,7 +19,6 @@ type NoteListProps = {
   selectedFolder?: 'trash' | number | null;
   onBackFromFolder?: () => void;
 };
-
 function NoteCardComponent({
   note,
   onNoteClick,
@@ -85,10 +85,8 @@ function NoteCardComponent({
   };
 
   return (
-    <GlassCard
-      className={`group relative rounded-[20px] px-5 py-[8px] cursor-pointer select-none border-0 shadow-none hover:shadow-none !bg-transparent backdrop-blur-none ${
-        isDeleted ? 'opacity-60' : ''
-      }`}
+    <FlatListItem
+      className={isDeleted ? 'opacity-60' : ''}
       onClick={handleClick}
       onContextMenu={handleContextMenuEvent}
       onTouchStart={handleTouchStart}
@@ -131,7 +129,7 @@ function NoteCardComponent({
           </div>
         )}
       </div>
-    </GlassCard>
+    </FlatListItem>
   );
 }
 
@@ -175,18 +173,14 @@ export default function NoteList({
           showBackButton={true}
           onBack={onBackFromFolder}
         />
-        <div className='flex flex-col'>
+        <FlatList>
           {folderNotes.map((note, index) => (
-            <div key={note.id}>
-              <NoteCard
-                note={note}
-                onNoteClick={onNoteClick}
-                onContextMenu={onContextMenu}
-              />
-              {index < folderNotes.length - 1 && (
-                <div className='border-b border-white/10' />
-              )}
-            </div>
+            <NoteCard
+              key={note.id}
+              note={note}
+              onNoteClick={onNoteClick}
+              onContextMenu={onContextMenu}
+            />
           ))}
           {folderNotes.length === 0 && (
             <div className='text-center py-12 text-gray-400'>
@@ -195,7 +189,7 @@ export default function NoteList({
                 : 'No notes in this folder'}
             </div>
           )}
-        </div>
+        </FlatList>
       </div>
     );
   }
@@ -224,20 +218,16 @@ export default function NoteList({
                   }}
                 />
                 {!isCollapsed && (
-                  <div className='flex flex-col'>
+                  <FlatList>
                     {groups[group].map((note, index) => (
-                      <div key={note.id}>
-                        <NoteCard
-                          note={note}
-                          onNoteClick={onNoteClick}
-                          onContextMenu={onContextMenu}
-                        />
-                        {index < groups[group].length - 1 && (
-                          <div className='border-b border-white/10 py-0.5' />
-                        )}
-                      </div>
+                      <NoteCard
+                        key={note.id}
+                        note={note}
+                        onNoteClick={onNoteClick}
+                        onContextMenu={onContextMenu}
+                      />
                     ))}
-                  </div>
+                  </FlatList>
                 )}
               </>
             ) : (
@@ -245,20 +235,16 @@ export default function NoteList({
                 <h3 className='text-sm font-medium text-gray-400 mb-3 px-1'>
                   {group}
                 </h3>
-                <div className='flex flex-col'>
+                <FlatList>
                   {groups[group].map((note, index) => (
-                    <div key={note.id}>
-                      <NoteCard
-                        note={note}
-                        onNoteClick={onNoteClick}
-                        onContextMenu={onContextMenu}
-                      />
-                      {index < groups[group].length - 1 && (
-                        <div className='border-b border-white/10' />
-                      )}
-                    </div>
+                    <NoteCard
+                      key={note.id}
+                      note={note}
+                      onNoteClick={onNoteClick}
+                      onContextMenu={onContextMenu}
+                    />
                   ))}
-                </div>
+                </FlatList>
               </>
             )}
           </div>

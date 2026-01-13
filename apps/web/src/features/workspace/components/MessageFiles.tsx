@@ -3,7 +3,17 @@
 import Image from 'next/image';
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { createPortal } from 'react-dom';
-import { X, Play, Volume2, VolumeX, Pause, Disc, Download, RotateCcw, RotateCw } from 'lucide-react';
+import {
+  X,
+  Play,
+  Volume2,
+  VolumeX,
+  Pause,
+  Disc,
+  Download,
+  RotateCcw,
+  RotateCw,
+} from 'lucide-react';
 import { cn } from '@/lib/utils';
 import AspectImage from '@/components/sendable/AspectImage';
 import SendableDefaultFile from '@/components/sendable/SendableDefaultFile';
@@ -32,13 +42,7 @@ const isImage = (mimeType: string): boolean => mimeType.startsWith('image/');
 const isAudio = (mimeType: string): boolean => mimeType.startsWith('audio/');
 const isVideo = (mimeType: string): boolean => mimeType.startsWith('video/');
 
-const AudioPlayer = ({
-  src,
-  filename,
-}: {
-  src: string;
-  filename?: string;
-}) => {
+const AudioPlayer = ({ src, filename }: { src: string; filename?: string }) => {
   const audioRef = useRef<HTMLAudioElement>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
@@ -139,7 +143,10 @@ const AudioPlayer = ({
           break;
         case 'ArrowRight':
           e.preventDefault();
-          audio.currentTime = Math.min(audio.duration || 0, audio.currentTime + 15);
+          audio.currentTime = Math.min(
+            audio.duration || 0,
+            audio.currentTime + 15
+          );
           break;
       }
     };
@@ -217,7 +224,7 @@ const AudioPlayer = ({
   };
 
   const formatTime = (time: number) => {
-    if (isNaN(time) || !isFinite(time)) return "0:00";
+    if (isNaN(time) || !isFinite(time)) return '0:00';
     const minutes = Math.floor(time / 60);
     const seconds = Math.floor(time % 60);
     return `${minutes}:${seconds.toString().padStart(2, '0')}`;
@@ -227,151 +234,166 @@ const AudioPlayer = ({
 
   return (
     <div
-      className="relative w-full max-w-md mx-auto group font-sans"
+      className='relative w-full max-w-md mx-auto group font-sans'
       onMouseEnter={() => (isHoveringRef.current = true)}
       onMouseLeave={() => (isHoveringRef.current = false)}
     >
-      <div className="relative overflow-hidden rounded-2xl bg-white/5 backdrop-blur-md border border-white/10 shadow-sm">
-
-        <div className="relative p-6 flex flex-col gap-5 z-10">
-
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3 min-w-0 flex-1">
-              <div className={`w-11 h-11 rounded-full bg-blue-500/90 flex items-center justify-center shadow-md flex-shrink-0 transition-transform duration-700 ${isPlaying ? 'animate-spin-slow' : ''}`}>
-                <Disc size={22} className="text-white" />
+      <div className='relative overflow-hidden rounded-2xl bg-white/5 backdrop-blur-md border border-white/10 shadow-sm'>
+        <div className='relative p-6 flex flex-col gap-5 z-10'>
+          <div className='flex items-center justify-between'>
+            <div className='flex items-center gap-3 min-w-0 flex-1'>
+              <div
+                className={`w-11 h-11 rounded-full bg-blue-500/90 flex items-center justify-center shadow-md flex-shrink-0 transition-transform duration-700 ${isPlaying ? 'animate-spin-slow' : ''}`}
+              >
+                <Disc size={22} className='text-white' />
               </div>
-              <div className="flex flex-col min-w-0">
-                <h3 className="text-white font-semibold tracking-tight text-sm leading-tight truncate">{filename || "Audio Track"}</h3>
-                <p className="text-neutral-500 text-[11px] tracking-wide font-medium mt-0.5">
+              <div className='flex flex-col min-w-0'>
+                <h3 className='text-white font-semibold tracking-tight text-sm leading-tight truncate'>
+                  {filename || 'Audio Track'}
+                </h3>
+                <p className='text-neutral-500 text-[11px] tracking-wide font-medium mt-0.5'>
                   {isLoading ? 'Loading...' : `${formatTime(duration)}`}
                 </p>
               </div>
             </div>
 
-            <div className="flex items-center gap-[3px] h-8 flex-shrink-0 ml-3">
-              {[12, 18, 24, 30, 20, 16, 28, 22, 26, 18, 14, 25].map((height, i) => (
-                <div
-                  key={i}
-                  className="w-[3px] rounded-full transition-all duration-150"
-                  style={{
-                    background: 'linear-gradient(to top, rgb(59,130,246), rgb(96,165,250))',
-                    height: isPlaying ? `${height}px` : '6px',
-                    animation: isPlaying ? `wave-${i} ${0.5 + (i % 3) * 0.2}s ease-in-out infinite alternate` : 'none',
-                    opacity: isPlaying ? (0.6 + (i % 4) * 0.1) : 0.25
-                  }}
-                />
-              ))}
+            <div className='flex items-center gap-[3px] h-8 flex-shrink-0 ml-3'>
+              {[12, 18, 24, 30, 20, 16, 28, 22, 26, 18, 14, 25].map(
+                (height, i) => (
+                  <div
+                    key={i}
+                    className='w-[3px] rounded-full transition-all duration-150'
+                    style={{
+                      background:
+                        'linear-gradient(to top, rgb(59,130,246), rgb(96,165,250))',
+                      height: isPlaying ? `${height}px` : '6px',
+                      animation: isPlaying
+                        ? `wave-${i} ${0.5 + (i % 3) * 0.2}s ease-in-out infinite alternate`
+                        : 'none',
+                      opacity: isPlaying ? 0.6 + (i % 4) * 0.1 : 0.25,
+                    }}
+                  />
+                )
+              )}
             </div>
           </div>
 
-          <div className="flex flex-col gap-2.5">
+          <div className='flex flex-col gap-2.5'>
             <div
-              className="relative w-full py-2 -mx-1 px-1 cursor-pointer group/progress"
+              className='relative w-full py-2 -mx-1 px-1 cursor-pointer group/progress'
               onMouseEnter={() => setIsProgressHovering(true)}
               onMouseLeave={() => setIsProgressHovering(false)}
             >
-              <div className="relative w-full h-1 rounded-full bg-white/[0.08] overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-r from-white/5 to-transparent" />
+              <div className='relative w-full h-1 rounded-full bg-white/[0.08] overflow-hidden'>
+                <div className='absolute inset-0 bg-gradient-to-r from-white/5 to-transparent' />
 
                 <div
-                  className="absolute inset-y-0 left-0 rounded-full bg-gradient-to-r from-blue-500 to-blue-400"
+                  className='absolute inset-y-0 left-0 rounded-full bg-gradient-to-r from-blue-500 to-blue-400'
                   style={{
                     width: `${progressPercent}%`,
-                    transition: 'none'
+                    transition: 'none',
                   }}
                 />
               </div>
 
               <input
-                type="range"
-                min="0"
+                type='range'
+                min='0'
                 max={duration || 0}
-                step="any"
+                step='any'
                 value={currentTime}
                 onChange={handleSeek}
-                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                className='absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10'
                 disabled={isLoading}
-                onPointerDown={(e) => e.stopPropagation()}
-                onClick={(e) => e.stopPropagation()}
+                onPointerDown={e => e.stopPropagation()}
+                onClick={e => e.stopPropagation()}
               />
 
               <div
-                className="absolute top-1/2 w-3.5 h-3.5 bg-white rounded-full shadow-lg pointer-events-none"
+                className='absolute top-1/2 w-3.5 h-3.5 bg-white rounded-full shadow-lg pointer-events-none'
                 style={{
                   left: `${progressPercent}%`,
                   transform: `translate(-50%, -50%) scale(${isProgressHovering ? 1 : 0})`,
                   opacity: isProgressHovering ? 1 : 0,
-                  transition: 'transform 0.15s ease-out, opacity 0.15s ease-out'
+                  transition:
+                    'transform 0.15s ease-out, opacity 0.15s ease-out',
                 }}
               >
-                <div className="absolute inset-0 rounded-full bg-blue-400/20 blur-sm" />
+                <div className='absolute inset-0 rounded-full bg-blue-400/20 blur-sm' />
               </div>
             </div>
 
-            <div className="flex justify-between text-[11px] font-medium text-neutral-500 font-mono px-0.5">
-              <span className="text-white/60 tabular-nums">{formatTime(currentTime)}</span>
-              <span className="tabular-nums">{formatTime(duration)}</span>
+            <div className='flex justify-between text-[11px] font-medium text-neutral-500 font-mono px-0.5'>
+              <span className='text-white/60 tabular-nums'>
+                {formatTime(currentTime)}
+              </span>
+              <span className='tabular-nums'>{formatTime(duration)}</span>
             </div>
           </div>
 
-          <div className="flex items-center justify-between pt-1">
-
+          <div className='flex items-center justify-between pt-1'>
             <div
-              className="flex items-center gap-2.5 w-[140px]"
+              className='flex items-center gap-2.5 w-[140px]'
               onMouseEnter={() => setIsVolumeHovering(true)}
               onMouseLeave={() => setIsVolumeHovering(false)}
             >
               <button
                 onClick={toggleMute}
-                className="text-neutral-400 hover:text-white transition-colors p-1.5 hover:bg-white/5 rounded-lg flex-shrink-0"
+                className='text-neutral-400 hover:text-white transition-colors p-1.5 hover:bg-white/5 rounded-lg flex-shrink-0'
               >
-                {isMuted || volume === 0 ? <VolumeX size={18} /> : <Volume2 size={18} />}
+                {isMuted || volume === 0 ? (
+                  <VolumeX size={18} />
+                ) : (
+                  <Volume2 size={18} />
+                )}
               </button>
 
-              <div className="relative w-20 h-8 flex items-center cursor-pointer">
-                <div className="absolute w-full h-1 bg-white/[0.08] rounded-full overflow-hidden">
+              <div className='relative w-20 h-8 flex items-center cursor-pointer'>
+                <div className='absolute w-full h-1 bg-white/[0.08] rounded-full overflow-hidden'>
                   <div
-                    className="h-full bg-gradient-to-r from-neutral-400 to-neutral-300 rounded-full"
+                    className='h-full bg-gradient-to-r from-neutral-400 to-neutral-300 rounded-full'
                     style={{
                       width: `${isMuted ? 0 : volume * 100}%`,
-                      background: isVolumeHovering ? 'linear-gradient(to right, rgb(255,255,255), rgb(226,232,240))' : undefined,
-                      transition: 'none'
+                      background: isVolumeHovering
+                        ? 'linear-gradient(to right, rgb(255,255,255), rgb(226,232,240))'
+                        : undefined,
+                      transition: 'none',
                     }}
                   />
                 </div>
 
                 <div
-                  className="absolute w-3 h-3 bg-white rounded-full shadow-md pointer-events-none"
+                  className='absolute w-3 h-3 bg-white rounded-full shadow-md pointer-events-none'
                   style={{
                     left: `calc(${isMuted ? 0 : volume * 100}% - 6px)`,
                     opacity: isVolumeHovering ? 1 : 0,
                     transform: isVolumeHovering ? 'scale(1)' : 'scale(0.7)',
-                    transition: 'opacity 0.15s, transform 0.15s'
+                    transition: 'opacity 0.15s, transform 0.15s',
                   }}
                 />
 
                 <input
-                  type="range"
-                  min="0"
-                  max="1"
-                  step="0.01"
+                  type='range'
+                  min='0'
+                  max='1'
+                  step='0.01'
                   value={isMuted ? 0 : volume}
                   onChange={handleVolumeChange}
-                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
-                  onPointerDown={(e) => e.stopPropagation()}
-                  onClick={(e) => e.stopPropagation()}
+                  className='absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10'
+                  onPointerDown={e => e.stopPropagation()}
+                  onClick={e => e.stopPropagation()}
                 />
               </div>
             </div>
 
-            <div className="flex items-center justify-center gap-2 w-[180px]">
+            <div className='flex items-center justify-center gap-2 w-[180px]'>
               <button
                 onClick={() => skip(-15)}
-                className="relative flex items-center justify-center w-10 h-10 rounded-full text-neutral-400 hover:text-white hover:bg-white/5 transition-all duration-200 active:scale-90 flex-shrink-0"
-                title="Back 15s"
+                className='relative flex items-center justify-center w-10 h-10 rounded-full text-neutral-400 hover:text-white hover:bg-white/5 transition-all duration-200 active:scale-90 flex-shrink-0'
+                title='Back 15s'
               >
-                <RotateCcw size={25} className="relative z-10" />
-                <span className="absolute text-[9px] font-bold top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 mt-[1px] pointer-events-none">
+                <RotateCcw size={25} className='relative z-10' />
+                <span className='absolute text-[9px] font-bold top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 mt-[1px] pointer-events-none'>
                   15
                 </span>
               </button>
@@ -379,45 +401,44 @@ const AudioPlayer = ({
               <button
                 onClick={togglePlay}
                 disabled={isLoading}
-                className="relative flex items-center justify-center w-14 h-14 rounded-full bg-white hover:bg-white/95 text-black transition-all duration-200 shadow-lg shadow-white/10 hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
+                className='relative flex items-center justify-center w-14 h-14 rounded-full bg-white hover:bg-white/95 text-black transition-all duration-200 shadow-lg shadow-white/10 hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0'
               >
                 {isPlaying ? (
-                  <Pause size={22} className="fill-black" />
+                  <Pause size={22} className='fill-black' />
                 ) : (
-                  <Play size={22} className="fill-black ml-1" />
+                  <Play size={22} className='fill-black ml-1' />
                 )}
               </button>
 
               <button
                 onClick={() => skip(15)}
-                className="relative flex items-center justify-center w-10 h-10 rounded-full text-neutral-400 hover:text-white hover:bg-white/5 transition-all duration-200 active:scale-90 flex-shrink-0"
-                title="Forward 15s"
+                className='relative flex items-center justify-center w-10 h-10 rounded-full text-neutral-400 hover:text-white hover:bg-white/5 transition-all duration-200 active:scale-90 flex-shrink-0'
+                title='Forward 15s'
               >
-                <RotateCw size={25} className="relative z-10" />
-                <span className="absolute text-[9px] font-bold top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 mt-[1px] pointer-events-none">
+                <RotateCw size={25} className='relative z-10' />
+                <span className='absolute text-[9px] font-bold top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 mt-[1px] pointer-events-none'>
                   15
                 </span>
               </button>
             </div>
 
             {/* Right Controls - FIXED WIDTH */}
-            <div className="flex items-center justify-end gap-2 w-[140px]">
+            <div className='flex items-center justify-end gap-2 w-[140px]'>
               <button
                 onClick={togglePlaybackRate}
-                className="px-3 py-1.5 rounded-lg text-[11px] font-semibold text-neutral-400 hover:text-white hover:bg-white/5 transition-all duration-200 active:scale-95 tabular-nums min-w-[44px] text-center"
+                className='px-3 py-1.5 rounded-lg text-[11px] font-semibold text-neutral-400 hover:text-white hover:bg-white/5 transition-all duration-200 active:scale-95 tabular-nums min-w-[44px] text-center'
               >
                 {playbackRate}×
               </button>
 
               <button
                 onClick={handleDownload}
-                className="p-2 rounded-lg text-neutral-400 hover:text-white hover:bg-white/5 transition-all duration-200 active:scale-95 flex-shrink-0"
-                title="Download"
+                className='p-2 rounded-lg text-neutral-400 hover:text-white hover:bg-white/5 transition-all duration-200 active:scale-95 flex-shrink-0'
+                title='Download'
               >
                 <Download size={16} />
               </button>
             </div>
-
           </div>
         </div>
       </div>

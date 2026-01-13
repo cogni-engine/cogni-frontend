@@ -6,6 +6,8 @@ import { Building2 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import GlassCard from '@/components/glass-design/GlassCard';
 
+import { FlatList, FlatListItem } from '@/components/FlatList';
+
 interface WorkspaceListProps {
   workspaces: Workspace[];
 }
@@ -23,11 +25,11 @@ export default function WorkspaceList({ workspaces }: WorkspaceListProps) {
   }
 
   return (
-    <div className='flex flex-col py-18 px-2'>
+    <FlatList className='py-18 px-2'>
       {workspaces.map(workspace => (
         <WorkspaceCard key={workspace.id} workspace={workspace} />
       ))}
-    </div>
+    </FlatList>
   );
 }
 
@@ -90,10 +92,7 @@ function WorkspaceCard({ workspace }: WorkspaceCardProps) {
   };
 
   return (
-    <GlassCard
-      onClick={handleCardClick}
-      className='cursor-pointer -mx-5 px-5 py-1 border-0 shadow-none hover:shadow-none !bg-transparent backdrop-blur-none'
-    >
+    <FlatListItem onClick={handleCardClick} className='-mx-5 px-5'>
       <div className='flex items-center justify-between gap-3 py-2'>
         <div className='flex items-center gap-3 flex-1 min-w-0'>
           <Avatar className='h-12 w-12 uppercase text-sm tracking-wide border-0 bg-white/10'>
@@ -142,6 +141,6 @@ function WorkspaceCard({ workspace }: WorkspaceCardProps) {
           </div>
         </div>
       </div>
-    </GlassCard>
+    </FlatListItem>
   );
 }
