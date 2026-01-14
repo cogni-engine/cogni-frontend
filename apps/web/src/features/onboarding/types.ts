@@ -19,22 +19,10 @@ export interface QuestionConfig {
 // Onboarding context (state machine context)
 export interface OnboardingContext {
   answers: {
-    // Core questions (Q0-Q4)
-    lifeIntent?: string;
-    aiRelationship?: string;
-    workTiming?: string;
-    usageContext?: 'personal' | 'team';
-
-    // Personal flow (Q5-P, Q6-P)
-    bottleneck?: string;
-    immediateWin?: string;
-
-    // Team flow (Q5-T, Q6-T)
-    role?: string;
-    teamPain?: string;
-
-    // Exit question (Q7)
-    riskSignal?: string;
+    // Core questions
+    primaryRole?: string | string[];
+    aiRelationship?: string | string[];
+    useCase?: string | string[];
   };
   profile: {
     name: string;
@@ -76,16 +64,9 @@ export type OnboardingStateValue =
   | { completed: object };
 
 export type ContextStateValue =
-  | 'lifeIntent'
+  | 'primaryRole'
   | 'aiRelationship'
-  | 'workTiming'
-  | 'usageContext'
-  | { personal: PersonalStateValue }
-  | { team: TeamStateValue }
-  | 'riskSignal';
-
-export type PersonalStateValue = 'bottleneck' | 'immediateWin';
-export type TeamStateValue = 'role' | 'teamPain';
+  | 'useCase';
 
 // Answer keys for each question
 export type AnswerKey = keyof OnboardingContext['answers'];

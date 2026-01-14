@@ -15,15 +15,10 @@ export interface OnboardingContext {
   goal?: string;
   industry?: string;
   // XState onboarding answers
+  primaryRole?: string | string[];
   lifeIntent?: string;
-  aiRelationship?: string;
-  workTiming?: string;
-  usageContext?: 'personal' | 'team';
-  bottleneck?: string;
-  immediateWin?: string;
-  teamRole?: string;
-  teamPain?: string;
-  riskSignal?: string;
+  aiRelationship?: string | string[];
+  useCase?: string | string[];
 }
 
 export interface OnboardingSession {

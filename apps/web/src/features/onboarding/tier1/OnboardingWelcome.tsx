@@ -22,7 +22,7 @@ export function OnboardingWelcome({
           <div className='text-center space-y-6 flex-1 flex flex-col justify-center'>
             <div className='space-y-4'>
               <h1 className='text-5xl md:text-6xl font-bold text-white leading-tight'>
-                Welcome to Cogni
+                Welcome to Cogno
               </h1>
               <h2 className='text-3xl md:text-4xl font-semibold text-gray-200'>
                 {userName}!

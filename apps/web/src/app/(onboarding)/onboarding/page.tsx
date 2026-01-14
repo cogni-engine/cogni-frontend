@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { createBrowserClient } from '@supabase/ssr';
 import { useMachine } from '@xstate/react';
@@ -19,6 +19,7 @@ import {
 import GlassButton from '@/components/glass-design/GlassButton';
 import { ChevronLeft } from 'lucide-react';
 import { updateUserProfile } from '@/lib/api/userProfilesApi';
+import { getRecommendedUseCases } from '@/features/onboarding/tier1/useCaseMapping';
 
 export default function OnboardingPage() {
   const router = useRouter();
@@ -108,17 +109,11 @@ export default function OnboardingPage() {
     if (state.matches({ profile: 'name' })) return 10;
     if (state.matches({ profile: 'icon' })) return 20;
     if (state.matches('welcome')) return 30;
-    if (state.matches({ context: 'lifeIntent' })) return 40;
+    if (state.matches({ context: 'primaryRole' })) return 40;
     if (state.matches({ context: 'aiRelationship' })) return 50;
-    if (state.matches({ context: 'workTiming' })) return 60;
-    if (state.matches({ context: 'usageContext' })) return 70;
-    if (state.matches({ context: { personal: 'bottleneck' } })) return 80;
-    if (state.matches({ context: { personal: 'immediateWin' } })) return 85;
-    if (state.matches({ context: { team: 'role' } })) return 80;
-    if (state.matches({ context: { team: 'teamPain' } })) return 85;
-    if (state.matches({ context: 'riskSignal' })) return 90;
-    if (state.matches('loadingReady')) return 95;
-    if (state.matches('payment')) return 98;
+    if (state.matches({ context: 'useCase' })) return 60;
+    if (state.matches('loadingReady')) return 80;
+    if (state.matches('payment')) return 90;
     if (state.matches('completed')) return 100;
     return 0;
   };
@@ -193,12 +188,14 @@ export default function OnboardingPage() {
     }
 
     // Context questions
-    if (state.matches({ context: 'lifeIntent' })) {
+    if (state.matches({ context: 'primaryRole' })) {
       return (
         <QuestionCard
-          config={questionConfigs.lifeIntent}
-          value={state.context.answers.lifeIntent}
-          onAnswer={value => send({ type: 'ANSWER', key: 'lifeIntent', value })}
+          config={questionConfigs.primaryRole}
+          value={state.context.answers.primaryRole}
+          onAnswer={value =>
+            send({ type: 'ANSWER', key: 'primaryRole', value })
+          }
           onNext={() => send({ type: 'NEXT' })}
         />
       );
@@ -217,93 +214,28 @@ export default function OnboardingPage() {
       );
     }
 
-    if (state.matches({ context: 'workTiming' })) {
+    if (state.matches({ context: 'useCase' })) {
+      // Get dynamic use case options based on selected roles
+      const selectedRoles = state.context.answers.primaryRole;
+      const roles = Array.isArray(selectedRoles) ? selectedRoles : [];
+      const { recommended } = getRecommendedUseCases(roles);
+
+      // Create dynamic config with recommended use cases
+      const useCaseConfig = {
+        ...questionConfigs.useCase,
+        options: recommended,
+      };
+
       return (
         <QuestionCard
-          config={questionConfigs.workTiming}
-          value={state.context.answers.workTiming}
-          onAnswer={value => send({ type: 'ANSWER', key: 'workTiming', value })}
+          config={useCaseConfig}
+          value={state.context.answers.useCase}
+          onAnswer={value => send({ type: 'ANSWER', key: 'useCase', value })}
           onNext={() => send({ type: 'NEXT' })}
         />
       );
     }
 
-    if (state.matches({ context: 'usageContext' })) {
-      return (
-        <QuestionCard
-          config={questionConfigs.usageContext}
-          value={state.context.answers.usageContext}
-          onAnswer={value =>
-            send({
-              type: 'ANSWER',
-              key: 'usageContext',
-              value: value === 'For my personal work' ? 'personal' : 'team',
-            })
-          }
-          onNext={() => send({ type: 'NEXT' })}
-        />
-      );
-    }
-
-    // Personal flow
-    if (state.matches({ context: { personal: 'bottleneck' } })) {
-      return (
-        <QuestionCard
-          config={questionConfigs.bottleneck}
-          value={state.context.answers.bottleneck}
-          onAnswer={value => send({ type: 'ANSWER', key: 'bottleneck', value })}
-          onNext={() => send({ type: 'NEXT' })}
-        />
-      );
-    }
-
-    if (state.matches({ context: { personal: 'immediateWin' } })) {
-      return (
-        <QuestionCard
-          config={questionConfigs.immediateWin}
-          value={state.context.answers.immediateWin}
-          onAnswer={value =>
-            send({ type: 'ANSWER', key: 'immediateWin', value })
-          }
-          onNext={() => send({ type: 'NEXT' })}
-        />
-      );
-    }
-
-    // Team flow
-    if (state.matches({ context: { team: 'role' } })) {
-      return (
-        <QuestionCard
-          config={questionConfigs.role}
-          value={state.context.answers.role}
-          onAnswer={value => send({ type: 'ANSWER', key: 'role', value })}
-          onNext={() => send({ type: 'NEXT' })}
-        />
-      );
-    }
-
-    if (state.matches({ context: { team: 'teamPain' } })) {
-      return (
-        <QuestionCard
-          config={questionConfigs.teamPain}
-          value={state.context.answers.teamPain}
-          onAnswer={value => send({ type: 'ANSWER', key: 'teamPain', value })}
-          onNext={() => send({ type: 'NEXT' })}
-        />
-      );
-    }
-
-    // Risk signal (common to both flows)
-    if (state.matches({ context: 'riskSignal' })) {
-      return (
-        <QuestionCard
-          config={questionConfigs.riskSignal}
-          value={state.context.answers.riskSignal}
-          onAnswer={value => send({ type: 'ANSWER', key: 'riskSignal', value })}
-          onNext={() => send({ type: 'NEXT' })}
-        />
-      );
-    }
 
     // LoadingReady (combined loading animation and ready screen)
     if (state.matches('loadingReady')) {
@@ -385,31 +317,23 @@ export default function OnboardingPage() {
       setTimeout(() => send({ type: 'NEXT' }), 200);
     } else if (targetState === 'loadingReady') {
       // Fast-forward to loadingReady with mock data
-      send({ type: 'ANSWER', key: 'lifeIntent', value: 'Think clearly' });
-      send({ type: 'ANSWER', key: 'aiRelationship', value: 'Think with me' });
-      send({ type: 'ANSWER', key: 'workTiming', value: 'Morning' });
-      send({ type: 'ANSWER', key: 'usageContext', value: 'personal' });
-      send({ type: 'ANSWER', key: 'bottleneck', value: 'Getting started' });
-      send({ type: 'ANSWER', key: 'immediateWin', value: 'Planning' });
-      send({ type: 'ANSWER', key: 'riskSignal', value: 'Too complex' });
+      send({ type: 'ANSWER', key: 'primaryRole', value: ['Manager'] });
+      send({ type: 'ANSWER', key: 'aiRelationship', value: ['Engineering'] });
+      send({ type: 'ANSWER', key: 'useCase', value: ['Project management'] });
       // Navigate to loadingReady
       setTimeout(() => {
         // Simulate clicking through to loadingReady state
-        for (let i = 0; i < 10; i++) {
+        for (let i = 0; i < 4; i++) {
           setTimeout(() => send({ type: 'NEXT' }), i * 50);
         }
       }, 100);
     } else if (targetState === 'payment') {
       // Skip to payment
-      send({ type: 'ANSWER', key: 'lifeIntent', value: 'Think clearly' });
-      send({ type: 'ANSWER', key: 'aiRelationship', value: 'Think with me' });
-      send({ type: 'ANSWER', key: 'workTiming', value: 'Morning' });
-      send({ type: 'ANSWER', key: 'usageContext', value: 'personal' });
-      send({ type: 'ANSWER', key: 'bottleneck', value: 'Getting started' });
-      send({ type: 'ANSWER', key: 'immediateWin', value: 'Planning' });
-      send({ type: 'ANSWER', key: 'riskSignal', value: 'Too complex' });
+      send({ type: 'ANSWER', key: 'primaryRole', value: ['Manager'] });
+      send({ type: 'ANSWER', key: 'aiRelationship', value: ['Engineering'] });
+      send({ type: 'ANSWER', key: 'useCase', value: ['Project management'] });
       setTimeout(() => {
-        for (let i = 0; i < 13; i++) {
+        for (let i = 0; i < 5; i++) {
           setTimeout(() => send({ type: 'NEXT' }), i * 50);
         }
       }, 100);

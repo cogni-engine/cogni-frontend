@@ -5,7 +5,28 @@ import { QuestionConfig } from '../types';
  */
 
 export const questionConfigs: Record<string, QuestionConfig> = {
-  // Q0: Life Intent (Core - most important)
+  // Q0: Primary Role
+  primaryRole: {
+    id: 'primaryRole',
+    title: "What's your primary role?",
+    subtitle:
+      'Used to personalize your Cogno experience. You may receive product suggestions.',
+    type: 'multi-select',
+    options: [
+      'Team member / Individual contributor',
+      'Manager',
+      'Director',
+      'Executive (e.g. VP or C-suite)',
+      'Business owner',
+      'Freelancer',
+      'Teacher',
+      'Student',
+      'Other',
+    ],
+    required: true,
+  },
+
+  // Q0: Life Intent (Core - most important) - kept for backward compatibility
   lifeIntent: {
     id: 'lifeIntent',
     title: 'How do you want Cogni to transform your life?',
@@ -19,112 +40,50 @@ export const questionConfigs: Record<string, QuestionConfig> = {
     required: true,
   },
 
-  // Q1: AI Relationship (Intervention level)
+  // Q1: Work Function
   aiRelationship: {
     id: 'aiRelationship',
-    title: 'How do you want Cogni to work with you?',
-    type: 'single-select',
+    title: 'What function best describes your work?',
+    subtitle:
+      'Used to personalize your Cogno experience. You may receive product suggestions.',
+    type: 'multi-select',
     options: [
-      'Think with me',
-      'Suggest ideas when useful',
-      'Guide me step by step',
-      'Stay in the background',
+      'Administrative Assistant',
+      'Communications',
+      'Customer Experience',
+      'Data or Analytics',
+      'Design',
+      'Education Professional',
+      'Engineering',
+      'Finance or Accounting',
+      'Fundraising',
+      'Healthcare Professional',
+      'Human Resources',
+      'Information Technology (IT)',
+      'Legal',
+      'Marketing',
+      'Operations',
+      'Product Management',
+      'Project or Program Management',
+      'Research and Development',
+      'Sales',
+      'Student',
+      'Other',
     ],
     required: true,
   },
 
-  // Q2: Work Timing (Constraint - notification timing)
-  workTiming: {
-    id: 'workTiming',
-    title: 'When do you usually work on important things?',
-    type: 'single-select',
-    options: ['Morning', 'Afternoon', 'Night'],
+  // Q2: Use Case (Dynamic based on role selection)
+  useCase: {
+    id: 'useCase',
+    title: 'What do you want to use Cogno for?',
+    subtitle:
+      'Used to personalize your Cogno experience. You may receive product suggestions.',
+    type: 'multi-select',
+    options: [], // Will be dynamically generated based on selected roles
     required: true,
   },
 
-  // Q4: Usage Context (Branching point)
-  usageContext: {
-    id: 'usageContext',
-    title: 'How will you mainly use Cogni?',
-    type: 'single-select',
-    options: ['For my personal work', 'With my team'],
-    required: true,
-  },
-
-  // === PERSONAL FLOW ===
-
-  // Q5-P: Bottleneck (Core issue)
-  bottleneck: {
-    id: 'bottleneck',
-    title: 'What slows you down the most?',
-    type: 'single-select',
-    options: [
-      'Getting started',
-      'Organizing thoughts',
-      'Too many options',
-      'Making decisions',
-      'Following through',
-    ],
-    required: true,
-  },
-
-  // Q6-P: Immediate Win (First experience scenario)
-  immediateWin: {
-    id: 'immediateWin',
-    title: 'What do you want to improve first?',
-    type: 'single-select',
-    options: [
-      'Planning',
-      'Thinking',
-      'Writing',
-      'Decision-making',
-      'Execution',
-    ],
-    required: true,
-  },
-
-  // === TEAM FLOW ===
-
-  // Q5-T: Your Role (Perspective and suggestion granularity)
-  role: {
-    id: 'role',
-    title: 'What is your role on the team?',
-    type: 'single-select',
-    options: [
-      'Individual contributor',
-      'Lead',
-      'Manager',
-      'Founder / Executive',
-    ],
-    required: true,
-  },
-
-  // Q6-T: Team Pain (Team-specific AI mode)
-  teamPain: {
-    id: 'teamPain',
-    title: 'What is your team struggling with most?',
-    type: 'single-select',
-    options: [
-      'Alignment',
-      'Speed',
-      'Decision quality',
-      'Knowledge sharing',
-      'Execution',
-    ],
-    required: true,
-  },
-
-  // === EXIT / RISK ===
-
-  // Q7: Risk Signal (UX risk detection and churn prediction)
-  riskSignal: {
-    id: 'riskSignal',
-    title: 'What would make you stop using Cogni?',
-    subtitle: 'Be honest - this helps us improve',
-    type: 'text',
-    placeholder: 'Type your thoughts here...',
-    required: false,
-  },
 };
 
 // Helper function to get config by key
@@ -133,21 +92,6 @@ export const getQuestionConfig = (key: string): QuestionConfig | undefined => {
 };
 
 // Helper to get all question keys in order
-export const getQuestionOrder = (
-  usageContext?: 'personal' | 'team'
-): string[] => {
-  const baseQuestions = [
-    'lifeIntent',
-    'aiRelationship',
-    'workTiming',
-    'usageContext',
-  ];
-
-  if (usageContext === 'personal') {
-    return [...baseQuestions, 'bottleneck', 'immediateWin', 'riskSignal'];
-  } else if (usageContext === 'team') {
-    return [...baseQuestions, 'role', 'teamPain', 'riskSignal'];
-  }
-
-  return baseQuestions;
+export const getQuestionOrder = (): string[] => {
+  return ['primaryRole', 'aiRelationship', 'useCase'];
 };
