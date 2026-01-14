@@ -45,6 +45,6 @@ export async function createNoteFromMessage(
 
   return {
     id: note.id,
-    title: note.title,
+    title: note.title ?? title,
   };
 }

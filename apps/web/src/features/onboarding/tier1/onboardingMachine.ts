@@ -137,7 +137,7 @@ export const onboardingMachine = setup({
             ANSWER: {
               actions: 'storeAnswer',
             },
-  
+
             NEXT: '#onboarding.loadingReady',
             BACK: 'aiRelationship',
           },

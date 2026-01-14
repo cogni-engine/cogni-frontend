@@ -83,7 +83,6 @@ export const questionConfigs: Record<string, QuestionConfig> = {
     options: [], // Will be dynamically generated based on selected roles
     required: true,
   },
-
 };
 
 // Helper function to get config by key

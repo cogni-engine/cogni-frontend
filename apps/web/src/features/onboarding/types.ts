@@ -63,10 +63,7 @@ export type OnboardingStateValue =
   | { payment: object }
   | { completed: object };
 
-export type ContextStateValue =
-  | 'primaryRole'
-  | 'aiRelationship'
-  | 'useCase';
+export type ContextStateValue = 'primaryRole' | 'aiRelationship' | 'useCase';
 
 // Answer keys for each question
 export type AnswerKey = keyof OnboardingContext['answers'];

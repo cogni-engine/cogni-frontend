@@ -236,7 +236,6 @@ export default function OnboardingPage() {
       );
     }
 
-
     // LoadingReady (combined loading animation and ready screen)
     if (state.matches('loadingReady')) {
       return (

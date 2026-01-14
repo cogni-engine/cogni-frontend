@@ -33,14 +33,14 @@ export type UseCaseCategory =
 // Layer 1 → Layer 2: Role to Cluster mapping
 const roleToCluster: Record<string, RoleCluster[]> = {
   'Team member / Individual contributor': ['individual'],
-  'Manager': ['managerial'],
-  'Director': ['managerial', 'leadership'],
+  Manager: ['managerial'],
+  Director: ['managerial', 'leadership'],
   'Executive (e.g. VP or C-suite)': ['leadership'],
   'Business owner': ['leadership'],
-  'Freelancer': ['individual'],
-  'Teacher': ['education'],
-  'Student': ['individual', 'education'],
-  'Other': ['universal'],
+  Freelancer: ['individual'],
+  Teacher: ['education'],
+  Student: ['individual', 'education'],
+  Other: ['universal'],
 };
 
 // Layer 2 → Layer 3: Cluster to Category mapping
@@ -197,9 +197,10 @@ export function getAllUseCases(): string[] {
  * Returns both recommended (role-based) and all available use cases
  * Categories are sorted by priority (role-specific categories first)
  */
-export function getRecommendedUseCases(
-  roles: string[]
-): { recommended: string[]; all: string[] } {
+export function getRecommendedUseCases(roles: string[]): {
+  recommended: string[];
+  all: string[];
+} {
   // If no roles selected, return all use cases as recommended
   if (!roles || roles.length === 0) {
     const all = getAllUseCases();

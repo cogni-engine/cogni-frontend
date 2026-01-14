@@ -128,9 +128,7 @@ export function QuestionCard({
                         )}
                       </div>
                       <span
-                        className={
-                          isSelected ? 'text-white' : 'text-gray-300'
-                        }
+                        className={isSelected ? 'text-white' : 'text-gray-300'}
                       >
                         {option}
                       </span>
@@ -171,9 +169,7 @@ export function QuestionCard({
                         )}
                       </div>
                       <span
-                        className={
-                          isSelected ? 'text-white' : 'text-gray-300'
-                        }
+                        className={isSelected ? 'text-white' : 'text-gray-300'}
                       >
                         {option}
                       </span>
