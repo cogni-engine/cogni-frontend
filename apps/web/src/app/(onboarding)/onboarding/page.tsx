@@ -10,8 +10,8 @@ import {
   OnboardingName,
   OnboardingIcon,
   OnboardingWelcome,
-  OnboardingReady,
-  OnboardingLoading,
+  OnboardingPayment,
+  OnboardingLoadingReady,
   QuestionCard,
   onboardingMachine,
   questionConfigs,
@@ -59,10 +59,10 @@ export default function OnboardingPage() {
     initSession();
   }, [supabase, send]);
 
-  // Handle completion - save all answers and redirect
+  // Create workspace during loadingReady state (while showing loading screen)
   useEffect(() => {
-    if (state.matches('completed')) {
-      const completeOnboarding = async () => {
+    if (state.matches('loadingReady') && !state.context.tutorialWorkspaceId) {
+      const createWorkspace = async () => {
         try {
           const userId = state.context.profile.userId;
           if (!userId) return;
@@ -72,46 +72,35 @@ export default function OnboardingPage() {
           // Save all answers
           await onboardingService.saveAllAnswers(userId, state.context.answers);
 
-          // Complete onboarding and create workspace
+          // Complete tier 1 onboarding and create workspace
           const result =
             await onboardingService.completeTier1Onboarding(userId);
 
           if (result.success && result.workspaceId) {
-            // Set flags for tier 2 onboarding to start
-            sessionStorage.setItem('startTier2Onboarding', 'true');
-            sessionStorage.setItem(
-              'tier2WorkspaceId',
-              result.workspaceId.toString()
-            );
-
-            // Store boss IDs if available
-            if (result.bossWorkspaceMemberId && result.bossAgentProfileId) {
-              sessionStorage.setItem(
-                'bossWorkspaceMemberId',
-                result.bossWorkspaceMemberId.toString()
-              );
-              sessionStorage.setItem(
-                'bossAgentProfileId',
-                result.bossAgentProfileId
-              );
-            }
-
-            // Redirect to the tutorial workspace
-            router.push(`/workspace/${result.workspaceId}/chat`);
-            router.refresh();
-          } else if (result.success) {
-            // Fallback to home if workspaceId is not available
-            router.push('/home');
-            router.refresh();
+            // Store workspace data in state machine context
+            send({
+              type: 'STORE_WORKSPACE',
+              workspaceId: result.workspaceId,
+              bossWorkspaceMemberId: result.bossWorkspaceMemberId,
+              bossAgentProfileId: result.bossAgentProfileId,
+            });
           }
         } catch (err) {
-          console.error('Failed to complete onboarding:', err);
+          console.error('Failed to create tutorial workspace:', err);
         }
       };
 
-      completeOnboarding();
+      createWorkspace();
     }
-  }, [state, supabase, router]);
+  }, [state, supabase, send]);
+
+  // Handle completion - redirect to workspace
+  useEffect(() => {
+    if (state.matches('completed') && state.context.tutorialWorkspaceId) {
+      // Redirect to the tutorial workspace
+      router.push(`/workspace/${state.context.tutorialWorkspaceId}/chat`);
+    }
+  }, [state, router]);
 
   // Calculate progress based on current state
   const getProgress = (): number => {
@@ -128,8 +117,9 @@ export default function OnboardingPage() {
     if (state.matches({ context: { team: 'role' } })) return 80;
     if (state.matches({ context: { team: 'teamPain' } })) return 85;
     if (state.matches({ context: 'riskSignal' })) return 90;
-    if (state.matches('loading')) return 95;
-    if (state.matches('ready')) return 100;
+    if (state.matches('loadingReady')) return 95;
+    if (state.matches('payment')) return 98;
+    if (state.matches('completed')) return 100;
     return 0;
   };
 
@@ -315,25 +305,42 @@ export default function OnboardingPage() {
       );
     }
 
-    // Loading (shows after questions)
-    if (state.matches('loading')) {
+    // LoadingReady (combined loading animation and ready screen)
+    if (state.matches('loadingReady')) {
       return (
-        <OnboardingLoading
+        <OnboardingLoadingReady
           userName={state.context.profile.name}
-          onComplete={() => send({ type: 'COMPLETE' })}
+          workspaceReady={!!state.context.tutorialWorkspaceId}
+          error={null}
+          handleContinue={() => send({ type: 'NEXT' })}
         />
       );
     }
 
-    // Ready (final screen with "Enter App" button)
-    if (state.matches('ready')) {
+    // Payment (plan selection)
+    if (state.matches('payment')) {
       return (
-        <OnboardingReady
+        <OnboardingPayment
           error={null}
           loading={false}
-          handleEnterApp={() => send({ type: 'COMPLETE' })}
+          handleContinue={() => send({ type: 'COMPLETE' })}
           handleBack={() => send({ type: 'BACK' })}
         />
+      );
+    }
+
+    // Completed (transitioning to workspace)
+    if (state.matches('completed')) {
+      return (
+        <div className='flex flex-col items-center justify-center h-full space-y-6 animate-in fade-in duration-300'>
+          <div className='w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin' />
+          <div className='text-center space-y-2'>
+            <h2 className='text-2xl font-bold text-white'>
+              Entering your workspace...
+            </h2>
+            <p className='text-gray-400'>Get ready for your tutorial!</p>
+          </div>
+        </div>
       );
     }
 
@@ -342,8 +349,72 @@ export default function OnboardingPage() {
 
   const showBackButton =
     !state.matches('appIntro') &&
-    !state.matches('loading') &&
-    !state.matches('ready');
+    !state.matches('loadingReady') &&
+    !state.matches('payment') &&
+    !state.matches('completed');
+
+  // Dev tool: Get current state as string
+  const getCurrentStateString = (): string => {
+    const stateValue = state.value;
+    if (typeof stateValue === 'string') return stateValue;
+    if (typeof stateValue === 'object') {
+      return JSON.stringify(stateValue)
+        .replace(/[{}"]/g, '')
+        .replace(/:/g, '.');
+    }
+    return 'unknown';
+  };
+
+  // Dev tool: Navigate to a specific state
+  const handleDevStateChange = (targetState: string) => {
+    console.log('🔧 Dev: Navigating to state:', targetState);
+
+    // Navigate through the state machine by sending appropriate events
+    // This is a simplified approach - we'll send multiple NEXT events to reach the target
+    if (targetState === 'appIntro') {
+      // Reload page to reset
+      window.location.reload();
+    } else if (targetState === 'profile.name') {
+      send({ type: 'NEXT' }); // From appIntro
+    } else if (targetState === 'profile.icon') {
+      send({ type: 'NEXT' });
+      setTimeout(() => send({ type: 'NEXT' }), 100);
+    } else if (targetState === 'welcome') {
+      send({ type: 'NEXT' });
+      setTimeout(() => send({ type: 'NEXT' }), 100);
+      setTimeout(() => send({ type: 'NEXT' }), 200);
+    } else if (targetState === 'loadingReady') {
+      // Fast-forward to loadingReady with mock data
+      send({ type: 'ANSWER', key: 'lifeIntent', value: 'Think clearly' });
+      send({ type: 'ANSWER', key: 'aiRelationship', value: 'Think with me' });
+      send({ type: 'ANSWER', key: 'workTiming', value: 'Morning' });
+      send({ type: 'ANSWER', key: 'usageContext', value: 'personal' });
+      send({ type: 'ANSWER', key: 'bottleneck', value: 'Getting started' });
+      send({ type: 'ANSWER', key: 'immediateWin', value: 'Planning' });
+      send({ type: 'ANSWER', key: 'riskSignal', value: 'Too complex' });
+      // Navigate to loadingReady
+      setTimeout(() => {
+        // Simulate clicking through to loadingReady state
+        for (let i = 0; i < 10; i++) {
+          setTimeout(() => send({ type: 'NEXT' }), i * 50);
+        }
+      }, 100);
+    } else if (targetState === 'payment') {
+      // Skip to payment
+      send({ type: 'ANSWER', key: 'lifeIntent', value: 'Think clearly' });
+      send({ type: 'ANSWER', key: 'aiRelationship', value: 'Think with me' });
+      send({ type: 'ANSWER', key: 'workTiming', value: 'Morning' });
+      send({ type: 'ANSWER', key: 'usageContext', value: 'personal' });
+      send({ type: 'ANSWER', key: 'bottleneck', value: 'Getting started' });
+      send({ type: 'ANSWER', key: 'immediateWin', value: 'Planning' });
+      send({ type: 'ANSWER', key: 'riskSignal', value: 'Too complex' });
+      setTimeout(() => {
+        for (let i = 0; i < 13; i++) {
+          setTimeout(() => send({ type: 'NEXT' }), i * 50);
+        }
+      }, 100);
+    }
+  };
 
   return (
     <div className='w-full h-screen flex flex-col items-center overflow-hidden'>

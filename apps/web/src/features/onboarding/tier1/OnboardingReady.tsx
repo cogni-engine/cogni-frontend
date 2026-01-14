@@ -1,28 +1,52 @@
 import { NextStepButton } from '../components/NextStepButton';
+import { Loader2 } from 'lucide-react';
 
 interface OnboardingReadyProps {
   error: string | null;
-  loading: boolean;
+  workspaceReady: boolean;
   handleEnterApp: () => void;
   handleBack: () => void;
 }
 
 export function OnboardingReady({
   error,
-  loading,
+  workspaceReady,
   handleEnterApp,
 }: OnboardingReadyProps) {
   return (
     <div className='text-center space-y-6 animate-in fade-in duration-500'>
       <div className='flex justify-center'>
-        <div className='w-24 h-24 bg-linear-to-br from-green-400 to-emerald-600 rounded-full flex items-center justify-center animate-pulse shadow-lg'>
-          <span className='text-5xl'>✓</span>
-        </div>
+        {workspaceReady ? (
+          <div className='w-24 h-24 bg-linear-to-br from-green-400 to-emerald-600 rounded-full flex items-center justify-center animate-pulse shadow-lg'>
+            <span className='text-5xl'>✓</span>
+          </div>
+        ) : (
+          <div className='w-24 h-24 bg-linear-to-br from-blue-400 to-indigo-600 rounded-full flex items-center justify-center shadow-lg'>
+            <Loader2 className='w-12 h-12 text-white animate-spin' />
+          </div>
+        )}
       </div>
 
       <div className='space-y-3'>
-        <h1 className='text-4xl font-bold text-white'>You&apos;re all set!</h1>
-        <p className='text-xl text-gray-300'>Your workspace is ready to go</p>
+        {workspaceReady ? (
+          <>
+            <h1 className='text-4xl font-bold text-white'>
+              You&apos;re all set!
+            </h1>
+            <p className='text-xl text-gray-300'>
+              Your tutorial workspace is ready to go
+            </p>
+          </>
+        ) : (
+          <>
+            <h1 className='text-4xl font-bold text-white'>
+              Setting up your workspace...
+            </h1>
+            <p className='text-xl text-gray-300'>
+              We&apos;re creating your personalized tutorial workspace
+            </p>
+          </>
+        )}
       </div>
 
       <div className='bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6 space-y-4'>
@@ -34,9 +58,9 @@ export function OnboardingReady({
             </div>
             <div className='flex-1'>
               <p className='text-gray-300'>
-                We&apos;ll create your{' '}
-                <strong className='text-white'>personal workspace</strong> to
-                get you started
+                You&apos;ll enter your{' '}
+                <strong className='text-white'>tutorial workspace</strong> with
+                a guided walkthrough
               </p>
             </div>
           </div>
@@ -46,7 +70,8 @@ export function OnboardingReady({
             </div>
             <div className='flex-1'>
               <p className='text-gray-300'>
-                Try creating notes, tasks, and chatting with the AI assistant
+                Learn the basics: creating notes, tasks, and chatting with your
+                AI assistant
               </p>
             </div>
           </div>
@@ -71,14 +96,21 @@ export function OnboardingReady({
       )}
 
       <div className='pt-4 flex justify-center'>
-        <NextStepButton
-          type='button'
-          onClick={handleEnterApp}
-          loading={loading}
-          variant='glass'
-          text='Enter Cogni →'
-          loadingText='Setting up your workspace...'
-        />
+        {workspaceReady ? (
+          <NextStepButton
+            type='button'
+            onClick={handleEnterApp}
+            loading={false}
+            variant='glass'
+            text='Start Tutorial →'
+            loadingText='Loading...'
+          />
+        ) : (
+          <div className='flex items-center gap-2 text-gray-400'>
+            <Loader2 className='w-4 h-4 animate-spin' />
+            <span className='text-sm'>Preparing your workspace...</span>
+          </div>
+        )}
       </div>
     </div>
   );

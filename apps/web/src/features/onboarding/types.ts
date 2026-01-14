@@ -41,6 +41,10 @@ export interface OnboardingContext {
     userId: string;
     userEmail: string;
   };
+  // Tutorial workspace data
+  tutorialWorkspaceId?: number;
+  bossWorkspaceMemberId?: number;
+  bossAgentProfileId?: string;
 }
 
 // Onboarding events
@@ -53,6 +57,12 @@ export type OnboardingEvent =
       value: string | string[];
     }
   | { type: 'UPDATE_PROFILE'; profile: Partial<OnboardingContext['profile']> }
+  | {
+      type: 'STORE_WORKSPACE';
+      workspaceId: number;
+      bossWorkspaceMemberId?: number;
+      bossAgentProfileId?: string;
+    }
   | { type: 'COMPLETE' };
 
 // State value types for type-safe state matching
@@ -61,7 +71,8 @@ export type OnboardingStateValue =
   | { profile: 'name' | 'icon' }
   | { welcome: object }
   | { context: ContextStateValue }
-  | { ready: object }
+  | { loadingReady: object }
+  | { payment: object }
   | { completed: object };
 
 export type ContextStateValue =

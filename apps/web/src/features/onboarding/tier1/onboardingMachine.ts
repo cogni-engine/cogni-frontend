@@ -32,6 +32,21 @@ export const onboardingMachine = setup({
         };
       },
     }),
+    // Action to store tutorial workspace data
+    storeWorkspace: assign({
+      tutorialWorkspaceId: ({ event }) => {
+        if (event.type !== 'STORE_WORKSPACE') return undefined;
+        return event.workspaceId;
+      },
+      bossWorkspaceMemberId: ({ event }) => {
+        if (event.type !== 'STORE_WORKSPACE') return undefined;
+        return event.bossWorkspaceMemberId;
+      },
+      bossAgentProfileId: ({ event }) => {
+        if (event.type !== 'STORE_WORKSPACE') return undefined;
+        return event.bossAgentProfileId;
+      },
+    }),
   },
   guards: {
     // Guard: check if usage context is personal
@@ -55,6 +70,10 @@ export const onboardingMachine = setup({
     // Global UPDATE_PROFILE handler - can be called from any state
     UPDATE_PROFILE: {
       actions: 'updateProfile',
+    },
+    // Global STORE_WORKSPACE handler - can be called from any state
+    STORE_WORKSPACE: {
+      actions: 'storeWorkspace',
     },
   },
   states: {
@@ -210,7 +229,7 @@ export const onboardingMachine = setup({
             ANSWER: {
               actions: 'storeAnswer',
             },
-            NEXT: '#onboarding.loading',
+            NEXT: '#onboarding.loadingReady',
             BACK: [
               {
                 target: 'personal.immediateWin',
@@ -226,18 +245,19 @@ export const onboardingMachine = setup({
       },
     },
 
-    // Loading state (shows circular progress bar)
-    loading: {
+    // Loading and Ready (combined state - shows loading then ready screen)
+    loadingReady: {
       on: {
-        COMPLETE: 'ready',
+        NEXT: 'payment',
+        BACK: 'context.riskSignal',
       },
     },
 
-    // Ready to complete
-    ready: {
+    // Payment selection
+    payment: {
       on: {
         COMPLETE: 'completed',
-        BACK: 'loading',
+        BACK: 'loadingReady',
       },
     },
 
