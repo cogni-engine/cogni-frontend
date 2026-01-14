@@ -592,7 +592,7 @@ export default function CollaborativeNoteEditor({
           WebkitOverflowScrolling: 'touch',
         }}
       >
-        <div className='flex-1 min-h-full'>
+        <div className='flex-1 min-h-full' data-shepherd-target='note-editor'>
           <EditorContent editor={editor} />
           <div className='h-1/2'></div>
         </div>

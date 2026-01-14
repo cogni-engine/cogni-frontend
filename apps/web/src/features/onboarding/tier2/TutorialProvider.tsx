@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, ReactNode, useEffect } from 'react';
 import { useMachine } from '@xstate/react';
+import { usePathname } from 'next/navigation';
 import { useTutorialStatus } from '../hooks/useTutorialStatus';
 import { tutorialMachine } from './tutorialService';
 import { createClient } from '@/lib/supabase/browserClient';
@@ -10,6 +11,7 @@ import {
   getWorkspaceMessages,
   sendWorkspaceMessage,
 } from '@/lib/api/workspaceMessagesApi';
+import { createNote } from '@/lib/api/notesApi';
 
 interface TutorialContextType {
   isActive: boolean;
@@ -26,6 +28,7 @@ const TutorialContext = createContext<TutorialContextType | undefined>(
 export function TutorialProvider({ children }: { children: ReactNode }) {
   const { isActive, isLoading } = useTutorialStatus();
   const [state, send] = useMachine(tutorialMachine);
+  const pathname = usePathname();
 
   // Load onboarding session context on mount
   useEffect(() => {
@@ -159,7 +162,78 @@ Feel free to ask me anything or explore the features. I'll be guiding you throug
     };
 
     sendBossGreeting();
-  }, [state]);
+  }, [state, isActive, isLoading]);
+
+  // Create tutorial note when entering redirectToNotes state
+  useEffect(() => {
+    const createTutorialNote = async () => {
+      if (
+        !state.matches('redirectToNotes') ||
+        !state.context.tutorialWorkspaceId ||
+        state.context.tutorialNoteId || // Already created
+        !isActive ||
+        isLoading
+      ) {
+        return;
+      }
+
+      try {
+        const supabase = createClient();
+        const workspaceId = state.context.tutorialWorkspaceId;
+
+        // Create the tutorial note
+        const note = await createNote(
+          workspaceId,
+          'My First Note',
+          'This is your first note! You can write anything here - ideas, tasks, thoughts, or plans. Try editing this text.',
+          null // No folder
+        );
+
+        console.log('Created tutorial note:', note.id);
+
+        // Store note ID in tutorial context
+        send({ type: 'TUTORIAL_NOTE_CREATED', noteId: note.id });
+
+        // Update onboarding session context with note ID
+        if (state.context.onboardingSessionId) {
+          await supabase
+            .from('onboarding_sessions')
+            .update({
+              context: {
+                ...state.context.onboardingContext,
+                tutorialNoteId: note.id,
+              },
+            })
+            .eq('id', state.context.onboardingSessionId);
+        }
+      } catch (error) {
+        console.error('Failed to create tutorial note:', error);
+      }
+    };
+
+    createTutorialNote();
+  }, [state, isActive, isLoading, send]);
+
+  // Detect when user clicks on the tutorial note
+  useEffect(() => {
+    if (
+      !state.matches('redirectToNotes') ||
+      !state.context.tutorialNoteId ||
+      !isActive
+    ) {
+      return;
+    }
+
+    // Check if URL includes the tutorial note ID (user opened it)
+    const noteIdInUrl = pathname?.includes(
+      `/notes/${state.context.tutorialNoteId}`
+    );
+
+    if (noteIdInUrl) {
+      console.log('User opened tutorial note, moving to noteTour state');
+      send({ type: 'NEXT' });
+    }
+  }, [state, pathname, isActive, send]);
 
   return (
     <TutorialContext.Provider

@@ -75,7 +75,7 @@ export function NoteEditorToolbar({
   if (!editor) return null;
 
   return (
-    <div className='sticky top-0 z-18 mx-6'>
+    <div className='sticky top-0 z-18 mx-6' data-shepherd-target='note-toolbar'>
       <GlassCard className='px-6 py-1 rounded-3xl'>
         <div className='flex gap-1 flex-wrap'>
           {visibleItems.map(item => {

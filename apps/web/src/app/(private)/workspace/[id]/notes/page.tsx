@@ -15,6 +15,7 @@ import MoveFolderDrawer from '@/components/MoveFolderDrawer';
 import ScrollableView from '@/components/layout/ScrollableView';
 import { FolderGroupHeader } from '@/features/notes/components/FolderGroupHeader';
 import type { NoteFolder } from '@/types/note';
+import { useTutorial } from '@/features/onboarding';
 
 // Helper functions for date grouping (same as in NoteList.tsx)
 function getTimeGroup(dateString: string): string {
@@ -159,6 +160,8 @@ export default function WorkspaceNotesPage() {
   const params = useParams();
   const router = useRouter();
   const workspaceId = parseInt(params.id as string);
+  const { state: tutorialState } = useTutorial();
+  const tutorialNoteId = tutorialState.context.tutorialNoteId;
 
   const sortBy: 'time' | 'folder' = 'folder';
   const [searchQuery, setSearchQuery] = useState('');
@@ -417,6 +420,9 @@ export default function WorkspaceNotesPage() {
     return (
       <GlassCard
         key={note.id}
+        data-shepherd-target={
+          tutorialNoteId === note.id ? 'tutorial-note' : undefined
+        }
         className={`group relative rounded-[20px] px-5 py-[8px] cursor-pointer select-none border-0 shadow-none hover:shadow-none !bg-transparent backdrop-blur-none ${
           isDeleted ? 'opacity-60' : ''
         }`}

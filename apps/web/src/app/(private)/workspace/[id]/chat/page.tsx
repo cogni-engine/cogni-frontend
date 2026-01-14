@@ -11,6 +11,7 @@ import { ChevronDown } from 'lucide-react';
 import { useWorkspaceMembers } from '@/hooks/useWorkspace';
 import { useNotes } from '@cogni/api';
 import ScrollableView from '@/components/layout/ScrollableView';
+import { useTutorial } from '@/features/onboarding';
 
 export default function WorkspaceChatPage() {
   const params = useParams();
@@ -46,6 +47,9 @@ export default function WorkspaceChatPage() {
     loadMoreMessages,
     hasMoreMessages,
   } = useWorkspaceChat(workspaceId);
+
+  // Tutorial state for detecting when user responds to boss greeting
+  const { state: tutorialState, send: sendTutorialEvent } = useTutorial();
 
   // Fetch workspace members for mentions
   const { members } = useWorkspaceMembers(workspaceId);
@@ -102,6 +106,18 @@ export default function WorkspaceChatPage() {
           mentionedMemberIds,
           mentionedNoteIds
         );
+
+        // Check if this is the tutorial workspace and user is responding to boss greeting
+        if (
+          tutorialState.matches('bossGreeting') &&
+          tutorialState.context.tutorialWorkspaceId === workspaceId
+        ) {
+          console.log(
+            'User sent message in tutorial workspace, triggering USER_RESPONDED'
+          );
+          sendTutorialEvent({ type: 'USER_RESPONDED' });
+        }
+
         // Clear reply state after sending
         setReplyingTo(null);
         // Scroll to bottom after sending message
@@ -117,7 +133,13 @@ export default function WorkspaceChatPage() {
         throw error;
       }
     },
-    [originalSendMessage, replyingTo]
+    [
+      originalSendMessage,
+      replyingTo,
+      tutorialState,
+      workspaceId,
+      sendTutorialEvent,
+    ]
   );
 
   // Handle reply action

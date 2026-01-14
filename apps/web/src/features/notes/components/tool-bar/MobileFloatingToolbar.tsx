@@ -167,7 +167,10 @@ export function MobileFloatingToolbar({
         <div className='mx-[8px] mb-[11px]'>
           {/* AI Input Overlay - When AI button is clicked */}
           {showAIInput && isEditorFocused && (
-            <GlassCard className='pointer-events-auto p-2 rounded-3xl mb-2'>
+            <GlassCard
+              className='pointer-events-auto p-2 rounded-3xl mb-2'
+              data-shepherd-target='note-ai-input'
+            >
               <div className='flex items-center gap-2 pl-2'>
                 <Sparkles className='w-4 h-4 text-purple-400 shrink-0' />
                 <input
@@ -201,7 +204,12 @@ export function MobileFloatingToolbar({
             </GlassCard>
           )}
 
-          <GlassCard className='pointer-events-auto p-2 rounded-full'>
+          <GlassCard
+            className='pointer-events-auto p-2 rounded-full'
+            data-shepherd-target={
+              !isEditorFocused ? 'note-ai-input' : 'note-toolbar'
+            }
+          >
             {!isEditorFocused ? (
               // AI Input Mode (when keyboard is not shown)
               <div className='flex items-center gap-2 pl-2'>

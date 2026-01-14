@@ -11,6 +11,8 @@ export interface TutorialContext {
   tutorialWorkspaceId?: number;
   // Onboarding session context (loaded from database)
   onboardingContext?: OnboardingContext;
+  // Tutorial note ID (created for the user to interact with)
+  tutorialNoteId?: number;
   // Tutorial flow state
   currentStep: number;
   completedSteps: number[];
@@ -28,6 +30,7 @@ export type TutorialEvent =
     }
   | { type: 'START' }
   | { type: 'USER_RESPONDED' }
+  | { type: 'TUTORIAL_NOTE_CREATED'; noteId: number }
   | { type: 'NEXT' }
   | { type: 'BACK' }
   | { type: 'COMPLETE' }
@@ -62,6 +65,14 @@ export const tutorialMachine = setup({
         return undefined;
       },
     }),
+    storeTutorialNoteId: assign({
+      tutorialNoteId: ({ event }) => {
+        if (event.type === 'TUTORIAL_NOTE_CREATED' && 'noteId' in event) {
+          return event.noteId;
+        }
+        return undefined;
+      },
+    }),
     incrementStep: assign({
       currentStep: ({ context }) => context.currentStep + 1,
       completedSteps: ({ context }) => [
@@ -85,6 +96,7 @@ export const tutorialMachine = setup({
     onboardingSessionId: undefined,
     tutorialWorkspaceId: undefined,
     onboardingContext: undefined,
+    tutorialNoteId: undefined,
     currentStep: 0,
     completedSteps: [],
   },
@@ -100,7 +112,30 @@ export const tutorialMachine = setup({
     },
     redirectToNotes: {
       on: {
-        NEXT: 'active',
+        TUTORIAL_NOTE_CREATED: {
+          actions: 'storeTutorialNoteId',
+        },
+        NEXT: 'noteTour',
+        SKIP: 'completed',
+      },
+    },
+    noteTour: {
+      entry: 'resetStep',
+      on: {
+        NEXT: [
+          {
+            target: 'noteTour',
+            actions: 'incrementStep',
+            guard: ({ context }) => context.currentStep < 2,
+          },
+          {
+            target: 'active',
+            actions: 'resetStep',
+          },
+        ],
+        BACK: {
+          actions: 'decrementStep',
+        },
         SKIP: 'completed',
       },
     },
