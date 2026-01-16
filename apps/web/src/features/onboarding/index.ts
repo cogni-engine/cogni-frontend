@@ -16,5 +16,4 @@ export type {
   TutorialEvent,
   TutorialInput,
 } from './tier2/tutorialService';
-export { useTutorialStatus } from './hooks/useTutorialStatus';
 export * from './types';

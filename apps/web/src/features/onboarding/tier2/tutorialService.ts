@@ -1,10 +1,8 @@
 import { setup, assign, fromPromise } from 'xstate';
 import { OnboardingContext } from '../services/onboardingService';
-import {
-  getWorkspaceMessages,
-  sendWorkspaceMessage,
-} from '@/lib/api/workspaceMessagesApi';
-import { createClient } from '@/lib/supabase/browserClient';
+import { initializeTutorial } from './services/tutorialInitializationService';
+import { sendBossGreeting } from './services/bossGreetingService';
+import { createTutorialNote } from './services/tutorialNoteService';
 
 /**
  * Tutorial Input - data passed when creating the machine
@@ -38,7 +36,6 @@ export interface TutorialContext {
 export type TutorialEvent =
   | { type: 'START' }
   | { type: 'USER_RESPONDED' }
-  | { type: 'TUTORIAL_NOTE_CREATED'; noteId: number }
   | { type: 'NEXT' }
   | { type: 'BACK' }
   | { type: 'COMPLETE' }
@@ -51,60 +48,16 @@ export type TutorialEvent =
         onboardingContext?: OnboardingContext;
         isTier2Active?: boolean;
       } | null;
+    }
+  | {
+      type: 'xstate.done.actor.createTutorialNote';
+      output: { noteId: number };
     };
 
 /**
  * Actor to initialize tutorial by fetching onboarding session
  */
-const initializeTutorialActor = fromPromise(async () => {
-  try {
-    const supabase = createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-
-    if (!user) {
-      console.log('No user found, skipping tutorial initialization');
-      return null;
-    }
-
-    // Fetch the active session (tier1 or tier2)
-    const { data: session } = await supabase
-      .from('onboarding_sessions')
-      .select('id, context, state')
-      .eq('user_id', user.id)
-      .in('state', ['tier1', 'tier2'])
-      .maybeSingle();
-
-    if (!session) {
-      console.log('No active onboarding session found');
-      return null;
-    }
-
-    // Find the tutorial workspace linked to this session
-    const { data: workspace } = await supabase
-      .from('workspace')
-      .select('id')
-      .eq('onboarding_session_id', session.id)
-      .maybeSingle();
-
-    const result = {
-      onboardingSessionId: session.id,
-      tutorialWorkspaceId: workspace?.id,
-      onboardingContext: session.context || {},
-      isTier2Active: session.state === 'tier2',
-    };
-
-    console.log('Tutorial initialization result:', result);
-    console.log('  Session context:', session.context);
-    console.log('  Workspace ID:', workspace?.id);
-
-    return result;
-  } catch (error) {
-    console.error('Failed to initialize tutorial:', error);
-    return null;
-  }
-});
+const initializeTutorialActor = fromPromise(initializeTutorial);
 
 /**
  * Actor to send boss greeting message
@@ -115,38 +68,24 @@ const sendBossGreetingActor = fromPromise(
   }: {
     input: { workspaceId: number; bossWorkspaceMemberId: number };
   }) => {
-    const { workspaceId, bossWorkspaceMemberId } = input;
+    return sendBossGreeting(input);
+  }
+);
 
-    // Validate inputs - skip if not initialized yet
-    if (!bossWorkspaceMemberId || !workspaceId) {
-      console.log('Skipping boss greeting - context not initialized yet');
-      return;
-    }
-
-    // Check if boss has already sent any messages
-    const existingMessages = await getWorkspaceMessages(workspaceId, 50);
-    const bossMessages = existingMessages.filter(
-      msg => msg.workspace_member_id === bossWorkspaceMemberId
-    );
-
-    // If boss hasn't sent any messages yet, send greeting
-    if (bossMessages.length === 0) {
-      const greetingText = `Welcome to your tutorial workspace! 👋
-
-I'm your AI assistant, and I'm here to help you get started with Cogno. This is a special workspace created just for you to learn the ropes.
-
-Feel free to ask me anything or explore the features. I'll be guiding you through the basics!`;
-
-      await sendWorkspaceMessage(
-        workspaceId,
-        bossWorkspaceMemberId,
-        greetingText
-      );
-
-      console.log('Boss greeting sent successfully');
-    } else {
-      console.log('Boss greeting already sent, skipping');
-    }
+/**
+ * Actor to create tutorial note
+ */
+const createTutorialNoteActor = fromPromise(
+  async ({
+    input,
+  }: {
+    input: {
+      workspaceId: number;
+      sessionId: string;
+      onboardingContext: Record<string, unknown>;
+    };
+  }) => {
+    return createTutorialNote(input);
   }
 );
 
@@ -162,6 +101,7 @@ export const tutorialMachine = setup({
   actors: {
     initializeTutorial: initializeTutorialActor,
     sendBossGreeting: sendBossGreetingActor,
+    createTutorialNote: createTutorialNoteActor,
   },
   actions: {
     loadSessionData: assign(({ event }) => {
@@ -181,13 +121,16 @@ export const tutorialMachine = setup({
         onboardingContext: output.onboardingContext,
       };
     }),
-    storeTutorialNoteId: assign({
-      tutorialNoteId: ({ event }) => {
-        if (event.type === 'TUTORIAL_NOTE_CREATED' && 'noteId' in event) {
-          return event.noteId;
-        }
-        return undefined;
-      },
+    storeTutorialNoteId: assign(({ event }) => {
+      // Handle actor output
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const output = (event as any).output;
+      if (output && 'noteId' in output) {
+        return {
+          tutorialNoteId: output.noteId,
+        };
+      }
+      return {};
     }),
     incrementStep: assign({
       currentStep: ({ context }) => context.currentStep + 1,
@@ -240,12 +183,9 @@ export const tutorialMachine = setup({
       always: [
         {
           target: 'bossGreeting',
-          guard: ({ context }) => {
-            const result =
-              !!context.tutorialWorkspaceId &&
-              !!context.onboardingContext?.bossWorkspaceMemberId;
-            return result;
-          },
+          guard: ({ context }) =>
+            !!context.tutorialWorkspaceId &&
+            !!context.onboardingContext?.bossWorkspaceMemberId,
         },
         {
           target: 'idle',
@@ -272,10 +212,26 @@ export const tutorialMachine = setup({
       },
     },
     redirectToNotes: {
-      on: {
-        TUTORIAL_NOTE_CREATED: {
+      invoke: {
+        src: 'createTutorialNote',
+        input: ({ context }) => ({
+          workspaceId: context.tutorialWorkspaceId!,
+          sessionId: context.onboardingSessionId!,
+          onboardingContext: (context.onboardingContext || {}) as Record<
+            string,
+            unknown
+          >,
+        }),
+        onDone: {
           actions: 'storeTutorialNoteId',
         },
+        onError: {
+          actions: ({ event }) => {
+            console.error('Failed to create tutorial note:', event.error);
+          },
+        },
+      },
+      on: {
         NEXT: 'noteTour',
         SKIP: 'completed',
       },
