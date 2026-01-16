@@ -1,8 +1,15 @@
 'use client';
 
-import React, { createContext, useContext, ReactNode, useMemo } from 'react';
+import React, {
+  createContext,
+  useContext,
+  ReactNode,
+  useMemo,
+  useEffect,
+} from 'react';
 import { useMachine } from '@xstate/react';
 import { tutorialMachine } from './tutorialService';
+import { getAppEventBus, type AppEvent } from '@/lib/events/appEventBus';
 
 interface TutorialContextType {
   isActive: boolean;
@@ -34,6 +41,41 @@ export function TutorialProvider({ children }: { children: ReactNode }) {
     const stateValue = state.value as string;
     return stateValue === 'initialize' || stateValue === 'checkState';
   }, [state]);
+
+  // Listen to global app events and react accordingly
+  useEffect(() => {
+    const bus = getAppEventBus();
+    const unsubscribe = bus.subscribe((event: AppEvent) => {
+      const stateValue = state.value as string;
+      const context = state.context;
+
+      switch (event.type) {
+        case 'WORKSPACE_MESSAGE_SENT':
+          if (
+            stateValue === 'bossGreeting' &&
+            context.tutorialWorkspaceId === event.workspaceId
+          ) {
+            send({ type: 'USER_RESPONDED' });
+          }
+          break;
+
+        case 'NOTE_OPENED':
+          if (
+            stateValue === 'noteTour' &&
+            context.tutorialNoteId === event.noteId
+          ) {
+            // User opened tutorial note - tour will start automatically
+            console.log('Tutorial note opened');
+          }
+          break;
+
+        default:
+          break;
+      }
+    });
+
+    return unsubscribe;
+  }, [state, send]);
 
   return (
     <TutorialContext.Provider
