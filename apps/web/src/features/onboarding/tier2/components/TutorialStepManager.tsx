@@ -42,7 +42,7 @@ export function TutorialStepManager() {
       selector: '[data-shepherd-target="workspace-notes-button"]',
       position: 'bottom' as const,
       ripplePosition: 'center' as const,
-      showWhenState: 'redirectToNotes',
+      showWhenState: 'noteTour',
       pathnamePattern: '/chat',
       workspaceId,
       requireTutorialWorkspace: true,
@@ -54,7 +54,7 @@ export function TutorialStepManager() {
       selector: '[data-shepherd-target="tutorial-note"]',
       position: 'bottom' as const,
       ripplePosition: 'center' as const,
-      showWhenState: 'redirectToNotes',
+      showWhenState: 'noteTour',
       pathnamePattern: '/notes',
       workspaceId,
       requireTutorialWorkspace: true,
@@ -147,23 +147,24 @@ export function TutorialStepManager() {
       ? null
       : tutorialState.matches('bossGreeting')
         ? stepConfigs.bossGreeting
-        : tutorialState.matches('redirectToNotes')
-          ? pathname?.includes('/chat')
-            ? stepConfigs.redirectToNotesChat
-            : pathname?.includes('/notes')
-              ? stepConfigs.redirectToNotesNotes
-              : null
-          : tutorialState.matches('noteTour')
-            ? tutorialState.context.currentStep === 0
+        : tutorialState.matches('noteTour')
+          ? // Check if user is viewing the tutorial note
+            pathname?.includes(`/notes/${tutorialState.context.tutorialNoteId}`)
+            ? // User is in the note - show tour steps
+              tutorialState.context.currentStep === 0
               ? stepConfigs.noteTourAIInput
               : tutorialState.context.currentStep === 1
                 ? stepConfigs.noteTourToolbar
                 : tutorialState.context.currentStep === 2
                   ? stepConfigs.noteTourEditor
                   : null
-            : null;
-
-  console.log('currentStep', currentStep);
+            : // User is not in the note - redirect them
+              pathname?.includes('/chat')
+              ? stepConfigs.redirectToNotesChat
+              : pathname?.includes('/notes')
+                ? stepConfigs.redirectToNotesNotes
+                : null
+          : null;
 
   const currentStepId = currentStep?.id || 'none';
 

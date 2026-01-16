@@ -41,7 +41,11 @@ I'm your AI assistant, and I'm here to help you get started with Cogno. This is 
 
 Feel free to ask me anything or explore the features. I'll be guiding you through the basics!`;
 
-    await sendWorkspaceMessage(workspaceId, bossWorkspaceMemberId, greetingText);
+    await sendWorkspaceMessage(
+      workspaceId,
+      bossWorkspaceMemberId,
+      greetingText
+    );
 
     console.log('Boss greeting sent successfully');
   } else {

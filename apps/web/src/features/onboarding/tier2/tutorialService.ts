@@ -207,11 +207,12 @@ export const tutorialMachine = setup({
         },
       },
       on: {
-        USER_RESPONDED: 'redirectToNotes',
+        USER_RESPONDED: 'noteTour',
         START: 'active',
       },
     },
-    redirectToNotes: {
+    noteTour: {
+      entry: 'resetStep',
       invoke: {
         src: 'createTutorialNote',
         input: ({ context }) => ({
@@ -231,13 +232,6 @@ export const tutorialMachine = setup({
           },
         },
       },
-      on: {
-        NEXT: 'noteTour',
-        SKIP: 'completed',
-      },
-    },
-    noteTour: {
-      entry: 'resetStep',
       on: {
         NEXT: [
           {
