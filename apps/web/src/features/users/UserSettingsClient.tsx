@@ -209,16 +209,8 @@ export default function UserSettingsClient() {
     setRestartError(null);
 
     try {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-
-      if (!user) {
-        throw new Error('Not authenticated');
-      }
-
       const onboardingService = new OnboardingService(supabase);
-      const success = await onboardingService.restartOnboarding(user.id);
+      const success = await onboardingService.startOnboarding();
 
       if (!success) {
         throw new Error('Failed to restart onboarding');

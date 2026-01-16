@@ -3,6 +3,7 @@
  * Direct database access - no backend API needed
  */
 
+import { useOnboardingStore } from '@/store/onboardingStore';
 import { SupabaseClient } from '@supabase/supabase-js';
 
 export type OnboardingStatus =
@@ -34,147 +35,37 @@ export class OnboardingService {
   constructor(private supabase: SupabaseClient) {}
 
   /**
-   * Get user's onboarding status
-   */
-  async getUserStatus(userId: string): Promise<OnboardingStatus> {
-    const { data, error } = await this.supabase
-      .from('user_profiles')
-      .select('onboarding_status')
-      .eq('id', userId)
-      .single();
-
-    if (error) {
-      console.error('Error getting onboarding status:', error);
-      return 'not_started';
-    }
-
-    return (data?.onboarding_status as OnboardingStatus) || 'not_started';
-  }
-
-  /**
    * Get or create onboarding session
    */
-  async getOrCreateSession(userId: string): Promise<OnboardingSession | null> {
+  async getActiveSession(userId: string): Promise<OnboardingSession | null> {
     // Check if session already exists
-    const { data: existingSession } = await this.supabase
+    const { data: activeSession } = await this.supabase
       .from('onboarding_sessions')
       .select('*')
       .eq('user_id', userId)
-      .single();
+      .in('state', ['tier1', 'tier2'])
+      .maybeSingle();
 
-    if (existingSession) {
-      return existingSession;
-    }
-
-    // Create new session
-    const { data: newSession, error: createError } = await this.supabase
-      .from('onboarding_sessions')
-      .insert({
-        user_id: userId,
-        version: 1,
-      })
-      .select()
-      .single();
-
-    if (createError) {
-      console.error('Error creating onboarding session:', createError);
-      return null;
-    }
-
-    // Update user profile status
-    await this.supabase
-      .from('user_profiles')
-      .update({ onboarding_status: 'tier1_in_progress' })
-      .eq('id', userId);
-
-    return newSession;
+    return activeSession || null;
   }
-
   /**
-   * Update session context
+   * Complete tier 1 onboarding - saves all answers and starts tier 2 onboarding
    */
-  async updateContext(
+  async completeTier1Onboarding(
     userId: string,
-    context: OnboardingContext
-  ): Promise<boolean> {
-    const { error } = await this.supabase
-      .from('onboarding_sessions')
-      .update({ context })
-      .eq('user_id', userId);
-
-    if (error) {
-      console.error('Error updating context:', error);
-      return false;
-    }
-
-    return true;
-  }
-
-  /**
-   * Save all onboarding answers at once
-   * Used by XState onboarding flow
-   */
-  async saveAllAnswers(
-    userId: string,
+    onboardingSessionId: string,
     answers: Partial<OnboardingContext>
-  ): Promise<boolean> {
-    try {
-      // Get or create session
-      const session = await this.getOrCreateSession(userId);
-      if (!session) {
-        throw new Error('Failed to get or create session');
-      }
-
-      // Merge new answers with existing context
-      const { data: existingSession } = await this.supabase
-        .from('onboarding_sessions')
-        .select('context')
-        .eq('user_id', userId)
-        .single();
-
-      const mergedContext = {
-        ...(existingSession?.context || {}),
-        ...answers,
-      };
-
-      // Update session with all answers
-      const { error } = await this.supabase
-        .from('onboarding_sessions')
-        .update({ context: mergedContext })
-        .eq('user_id', userId);
-
-      if (error) {
-        console.error('Error saving all answers:', error);
-        return false;
-      }
-
-      return true;
-    } catch (error) {
-      console.error('Error in saveAllAnswers:', error);
-      return false;
-    }
-  }
-
-  /**
-   * Complete onboarding - creates tutorial workspace and marks completed
-   */
-  async completeTier1Onboarding(userId: string): Promise<{
+  ): Promise<{
     success: boolean;
     workspaceId?: number;
     bossWorkspaceMemberId?: number;
     bossAgentProfileId?: string;
   }> {
     try {
-      // Get session
-      const { data: session } = await this.supabase
-        .from('onboarding_sessions')
-        .select('id')
-        .eq('user_id', userId)
-        .single();
-
-      if (!session) {
-        return { success: false };
-      }
+      // Merge answers with existing context
+      const mergedContext = {
+        ...answers,
+      };
 
       // Create tutorial workspace using RPC (includes member creation and icon generation)
       const { data: rpcData, error: rpcError } = await this.supabase.rpc(
@@ -194,7 +85,7 @@ export class OnboardingService {
       // Update workspace with onboarding_session_id ** this can be moved to the rpc if the rpc is updated
       const { error: updateError } = await this.supabase
         .from('workspace')
-        .update({ onboarding_session_id: session.id })
+        .update({ onboarding_session_id: onboardingSessionId })
         .eq('id', workspaceId);
 
       if (updateError) {
@@ -239,33 +130,36 @@ export class OnboardingService {
 
       const bossWorkspaceMemberId = bossMember.id;
 
-      // Get existing context to merge with boss IDs
-      const { data: existingSession } = await this.supabase
-        .from('onboarding_sessions')
-        .select('context')
-        .eq('id', session.id)
-        .single();
-
-      const updatedContext = {
-        ...(existingSession?.context || {}),
+      // Add boss IDs to the merged context
+      const finalContext = {
+        ...mergedContext,
         bossWorkspaceMemberId,
         bossAgentProfileId: bossAgentId,
+        tutorialWorkspaceId: workspaceId,
       };
 
-      // Store boss IDs in onboarding_sessions.context and mark session as tier2
+      // Store all answers and boss IDs in onboarding_sessions.context and mark session as tier2
       const { error: contextError } = await this.supabase
         .from('onboarding_sessions')
         .update({
           state: 'tier2',
-          context: updatedContext,
+          context: finalContext,
         })
-        .eq('id', session.id);
+        .eq('id', onboardingSessionId);
+
+      const { error: profileError } = await this.supabase
+        .from('user_profiles')
+        .update({ onboarding_status: 'tier2_in_progress' })
+        .eq('id', userId);
 
       if (contextError) {
         console.error(
           'Error updating onboarding session context:',
           contextError
         );
+        return { success: false };
+      } else if (profileError) {
+        console.error('Error updating user profile:', profileError);
         return { success: false };
       }
 
@@ -332,20 +226,56 @@ export class OnboardingService {
 
   /**
    * Restart onboarding (for testing)
+   * Cancels all existing sessions and creates a new one
    */
-  async restartOnboarding(userId: string): Promise<boolean> {
+  async startOnboarding(): Promise<boolean> {
     try {
-      // Delete existing session
+      // Get session from local storage (no API call)
+      const {
+        data: { session },
+      } = await this.supabase.auth.getSession();
+
+      if (!session?.user) {
+        console.error('No authenticated user found');
+        return false;
+      }
+
+      const userId = session.user.id;
+
+      // Cancel all existing onboarding sessions
       await this.supabase
         .from('onboarding_sessions')
-        .delete()
-        .eq('user_id', userId);
+        .update({ state: 'canceled' })
+        .eq('user_id', userId)
+        .neq('state', 'canceled'); // Only update non-canceled sessions
 
-      // Reset user profile status
+      // Create new onboarding session with tier1 state
+      const { data: newSession, error: createError } = await this.supabase
+        .from('onboarding_sessions')
+        .insert({
+          user_id: userId,
+          version: 1,
+          state: 'tier1',
+        })
+        .select('id')
+        .single();
+
+      if (createError) {
+        console.error('Error creating new onboarding session:', createError);
+        return false;
+      }
+
+      // Reset user profile status to tier1_in_progress
       await this.supabase
         .from('user_profiles')
-        .update({ onboarding_status: 'not_started' })
+        .update({ onboarding_status: 'tier1_in_progress' }) // This is a typo, it should be 'tier1_in_progress'
         .eq('id', userId);
+
+      // save to zustand store
+      useOnboardingStore.setState({
+        userId,
+        onboardingSessionId: newSession.id,
+      });
 
       return true;
     } catch (error) {

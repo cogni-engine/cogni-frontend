@@ -29,6 +29,8 @@ export interface OnboardingContext {
     userId: string;
     userEmail: string;
   };
+  // Onboarding session
+  onboardingSessionId: string;
   // Tutorial workspace data
   tutorialWorkspaceId?: number;
   bossWorkspaceMemberId?: number;

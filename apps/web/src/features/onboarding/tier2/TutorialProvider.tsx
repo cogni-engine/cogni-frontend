@@ -1,6 +1,12 @@
 'use client';
 
-import React, { createContext, useContext, ReactNode, useEffect } from 'react';
+import React, {
+  createContext,
+  useContext,
+  ReactNode,
+  useEffect,
+  use,
+} from 'react';
 import { useMachine } from '@xstate/react';
 import { usePathname } from 'next/navigation';
 import { useTutorialStatus } from '../hooks/useTutorialStatus';
@@ -25,47 +31,65 @@ const TutorialContext = createContext<TutorialContextType | undefined>(
   undefined
 );
 
+// Function that loads onboarding context and returns a promise
+async function loadOnboardingContext() {
+  try {
+    const supabase = createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) return null;
+
+    const onboardingService = new OnboardingService(supabase);
+    const session = await onboardingService.getActiveSession(user.id);
+
+    if (session) {
+      // Find the tutorial workspace linked to this session
+      const { data: workspace } = await supabase
+        .from('workspace')
+        .select('id')
+        .eq('onboarding_session_id', session.id)
+        .maybeSingle();
+
+      return {
+        onboardingSessionId: session.id,
+        tutorialWorkspaceId: workspace?.id,
+        onboardingContext: session.context || {},
+      };
+    }
+    return null;
+  } catch (error) {
+    console.error('Failed to load onboarding context:', error);
+    return null;
+  }
+}
+
+// Singleton - only load once per app lifecycle (client-side only)
+type ContextResult = Awaited<ReturnType<typeof loadOnboardingContext>>;
+let contextPromise: Promise<ContextResult> | null = null;
+
+function getContextPromise() {
+  if (typeof window === 'undefined') {
+    // On server, return a resolved promise with null
+    return Promise.resolve(null);
+  }
+
+  if (!contextPromise) {
+    contextPromise = loadOnboardingContext();
+  }
+  return contextPromise;
+}
+
 export function TutorialProvider({ children }: { children: ReactNode }) {
+  // Use singleton promise to ensure it's only created once
+  const initialInput = use(getContextPromise());
+
   const { isActive, isLoading } = useTutorialStatus();
-  const [state, send] = useMachine(tutorialMachine);
+  const [state, send] = useMachine(tutorialMachine, {
+    input: initialInput || undefined,
+  });
   const pathname = usePathname();
-
-  // Load onboarding session context on mount
-  useEffect(() => {
-    const loadOnboardingContext = async () => {
-      try {
-        const supabase = createClient();
-        const {
-          data: { user },
-        } = await supabase.auth.getUser();
-
-        if (!user) return;
-
-        const onboardingService = new OnboardingService(supabase);
-        const session = await onboardingService.getOrCreateSession(user.id);
-
-        if (session) {
-          // Find the tutorial workspace linked to this session
-          const { data: workspace } = await supabase
-            .from('workspace')
-            .select('id')
-            .eq('onboarding_session_id', session.id)
-            .maybeSingle();
-
-          send({
-            type: 'LOAD_CONTEXT',
-            sessionId: session.id,
-            workspaceId: workspace?.id,
-            context: session.context || {},
-          });
-        }
-      } catch (error) {
-        console.error('Failed to load onboarding context:', error);
-      }
-    };
-
-    loadOnboardingContext();
-  }, [send]);
 
   // Send boss greeting message when entering bossGreeting state
   useEffect(() => {

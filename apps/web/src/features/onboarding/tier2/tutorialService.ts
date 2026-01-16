@@ -2,6 +2,15 @@ import { setup, assign } from 'xstate';
 import { OnboardingContext } from '../services/onboardingService';
 
 /**
+ * Tutorial Input - data passed when creating the machine
+ */
+export interface TutorialInput {
+  onboardingSessionId?: string;
+  tutorialWorkspaceId?: number;
+  onboardingContext?: OnboardingContext;
+}
+
+/**
  * Tutorial Context - includes onboarding session context and tutorial flow state
  */
 export interface TutorialContext {
@@ -22,12 +31,6 @@ export interface TutorialContext {
  * Tutorial Events
  */
 export type TutorialEvent =
-  | {
-      type: 'LOAD_CONTEXT';
-      sessionId: string;
-      workspaceId?: number;
-      context: OnboardingContext;
-    }
   | { type: 'START' }
   | { type: 'USER_RESPONDED' }
   | { type: 'TUTORIAL_NOTE_CREATED'; noteId: number }
@@ -43,28 +46,9 @@ export const tutorialMachine = setup({
   types: {
     context: {} as TutorialContext,
     events: {} as TutorialEvent,
+    input: {} as TutorialInput,
   },
   actions: {
-    loadOnboardingContext: assign({
-      onboardingSessionId: ({ event }) => {
-        if (event.type === 'LOAD_CONTEXT' && 'sessionId' in event) {
-          return event.sessionId;
-        }
-        return undefined;
-      },
-      tutorialWorkspaceId: ({ event }) => {
-        if (event.type === 'LOAD_CONTEXT' && 'workspaceId' in event) {
-          return event.workspaceId;
-        }
-        return undefined;
-      },
-      onboardingContext: ({ event }) => {
-        if (event.type === 'LOAD_CONTEXT' && 'context' in event) {
-          return event.context;
-        }
-        return undefined;
-      },
-    }),
     storeTutorialNoteId: assign({
       tutorialNoteId: ({ event }) => {
         if (event.type === 'TUTORIAL_NOTE_CREATED' && 'noteId' in event) {
@@ -92,20 +76,17 @@ export const tutorialMachine = setup({
   /** @xstate-layout N4IgpgJg5mDOIC5QBcCuyD2AnAlgQwBsA6HCAsAYgGUAVAQQCUaBtABgF1FQAHDWHZDgwA7LiAAeiAIwAmAKxEALAE5VygGzLFMqXIDscxQBoQAT0Qy9UournqAzK12G9rBwF93JtJlyEieADGggBulAByAKIAGiwcYrz8giJikggy9opEcvay2qxujrn2JuYIUnp6RMo5um5STjLKrPae3ujY+MRBoZQAQnQAwgDSbJxIIIkCQqITaRkyRPYyABxSUiuKKznKK+oypYhr2QWncjK2rHqabSA+nf49OGEUgwDyALIACgAykTSRMYJPjTFJzRD2DTVTb2dSKPSZWw6dSHdLbJYyJrqOGqRTqKS3e5+brBZ6UKjDACSXyBEymyVmoDSkPU0MUsPhiPOUhRZgsmSIK0xyis2LkUg0yhkni8IGEGAgcDERK6wKSM1SiAAtLyyjrCR1iSQyGA1aDGRJENpUZZFroHE45C43IoDb4ugFSWEzQzNelbNkhawMgU8c0Vja9MolIUCpp7AZWK7ZSr-IEMABbbjkZCQH0a8EIQyLByrVhO1Z6RTByOs5r7ZSyNzqSorGXuIA */
   id: 'tutorial',
   initial: 'bossGreeting',
-  context: {
-    onboardingSessionId: undefined,
-    tutorialWorkspaceId: undefined,
-    onboardingContext: undefined,
+  context: ({ input }) => ({
+    onboardingSessionId: input.onboardingSessionId,
+    tutorialWorkspaceId: input.tutorialWorkspaceId,
+    onboardingContext: input.onboardingContext,
     tutorialNoteId: undefined,
     currentStep: 0,
     completedSteps: [],
-  },
+  }),
   states: {
     bossGreeting: {
       on: {
-        LOAD_CONTEXT: {
-          actions: 'loadOnboardingContext',
-        },
         USER_RESPONDED: 'redirectToNotes',
         START: 'active',
       },
