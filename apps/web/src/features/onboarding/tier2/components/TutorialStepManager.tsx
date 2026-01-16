@@ -75,7 +75,7 @@ export function TutorialStepManager() {
         {
           text: 'Next',
           action: () => {
-            sendTutorialEvent({ type: 'NEXT' });
+            sendTutorialEvent?.({ type: 'NEXT' });
             return 'cancel' as const;
           },
         },
@@ -96,14 +96,14 @@ export function TutorialStepManager() {
         {
           text: 'Back',
           action: () => {
-            sendTutorialEvent({ type: 'BACK' });
+            sendTutorialEvent?.({ type: 'BACK' });
             return 'cancel' as const;
           },
         },
         {
           text: 'Next',
           action: () => {
-            sendTutorialEvent({ type: 'NEXT' });
+            sendTutorialEvent?.({ type: 'NEXT' });
             return 'cancel' as const;
           },
         },
@@ -124,14 +124,14 @@ export function TutorialStepManager() {
         {
           text: 'Back',
           action: () => {
-            sendTutorialEvent({ type: 'BACK' });
+            sendTutorialEvent?.({ type: 'BACK' });
             return 'cancel' as const;
           },
         },
         {
           text: 'Finish',
           action: () => {
-            sendTutorialEvent({ type: 'NEXT' });
+            sendTutorialEvent?.({ type: 'NEXT' });
             return 'cancel' as const;
           },
         },
@@ -140,23 +140,30 @@ export function TutorialStepManager() {
   };
 
   // Get current step config based on state and pathname
-  const currentStep = tutorialState.matches('bossGreeting')
-    ? stepConfigs.bossGreeting
-    : tutorialState.matches('redirectToNotes')
-      ? pathname?.includes('/chat')
-        ? stepConfigs.redirectToNotesChat
-        : pathname?.includes('/notes')
-          ? stepConfigs.redirectToNotesNotes
-          : null
-      : tutorialState.matches('noteTour')
-        ? tutorialState.context.currentStep === 0
-          ? stepConfigs.noteTourAIInput
-          : tutorialState.context.currentStep === 1
-            ? stepConfigs.noteTourToolbar
-            : tutorialState.context.currentStep === 2
-              ? stepConfigs.noteTourEditor
+  const currentStep =
+    tutorialState.matches('idle') ||
+    tutorialState.matches('initialize') ||
+    tutorialState.matches('checkState')
+      ? null
+      : tutorialState.matches('bossGreeting')
+        ? stepConfigs.bossGreeting
+        : tutorialState.matches('redirectToNotes')
+          ? pathname?.includes('/chat')
+            ? stepConfigs.redirectToNotesChat
+            : pathname?.includes('/notes')
+              ? stepConfigs.redirectToNotesNotes
               : null
-        : null;
+          : tutorialState.matches('noteTour')
+            ? tutorialState.context.currentStep === 0
+              ? stepConfigs.noteTourAIInput
+              : tutorialState.context.currentStep === 1
+                ? stepConfigs.noteTourToolbar
+                : tutorialState.context.currentStep === 2
+                  ? stepConfigs.noteTourEditor
+                  : null
+            : null;
+
+  console.log('currentStep', currentStep);
 
   const currentStepId = currentStep?.id || 'none';
 

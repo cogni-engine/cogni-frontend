@@ -177,94 +177,106 @@ export function ShepherdControlPanel() {
               <Activity className='w-4 h-4' />
               Tutorial XState Monitor
             </p>
-            <GlassCard className='p-3 bg-blue-500/10 border-blue-500/30 rounded-xl mb-3'>
-              <div className='space-y-2 text-xs'>
-                <div>
-                  <span className='text-gray-400'>State:</span>{' '}
-                  <span className='text-blue-300 font-mono font-semibold'>
-                    {String(tutorialState.value)}
-                  </span>
+            {!tutorialState ? (
+              <GlassCard className='p-3 bg-gray-500/10 border-gray-500/30 rounded-xl mb-3'>
+                <div className='text-xs text-gray-400'>
+                  No active tutorial session
                 </div>
-                <div>
-                  <span className='text-gray-400'>Session ID:</span>{' '}
-                  <span className='text-white font-mono'>
-                    {tutorialState.context.onboardingSessionId || 'none'}
-                  </span>
+              </GlassCard>
+            ) : (
+              <>
+                <GlassCard className='p-3 bg-blue-500/10 border-blue-500/30 rounded-xl mb-3'>
+                  <div className='space-y-2 text-xs'>
+                    <div>
+                      <span className='text-gray-400'>State:</span>{' '}
+                      <span className='text-blue-300 font-mono font-semibold'>
+                        {String(tutorialState.value)}
+                      </span>
+                    </div>
+                    <div>
+                      <span className='text-gray-400'>Session ID:</span>{' '}
+                      <span className='text-white font-mono'>
+                        {tutorialState.context.onboardingSessionId || 'none'}
+                      </span>
+                    </div>
+                    <div>
+                      <span className='text-gray-400'>
+                        Tutorial Workspace ID:
+                      </span>{' '}
+                      <span className='text-white font-mono'>
+                        {tutorialState.context.tutorialWorkspaceId || 'none'}
+                      </span>
+                    </div>
+                    <div>
+                      <span className='text-gray-400'>Current Step:</span>{' '}
+                      <span className='text-white'>
+                        {tutorialState.context.currentStep}
+                      </span>
+                    </div>
+                    <div>
+                      <span className='text-gray-400'>Completed Steps:</span>{' '}
+                      <span className='text-white'>
+                        {`[${tutorialState.context.completedSteps.join(', ') || 'none'}]`}
+                      </span>
+                    </div>
+                    <div>
+                      <span className='text-gray-400'>Onboarding Context:</span>{' '}
+                      <span className='text-white font-mono text-[10px] break-all'>
+                        {tutorialState.context.onboardingContext
+                          ? JSON.stringify(
+                              tutorialState.context.onboardingContext,
+                              null,
+                              2
+                            )
+                          : 'none'}
+                      </span>
+                    </div>
+                  </div>
+                </GlassCard>
+                <div className='flex flex-wrap gap-2'>
+                  {tutorialState.can({ type: 'START' }) && (
+                    <GlassButton
+                      onClick={() => tutorialSend?.({ type: 'START' })}
+                      className='px-3 py-1.5 text-xs'
+                    >
+                      START
+                    </GlassButton>
+                  )}
+                  {tutorialState.can({ type: 'NEXT' }) && (
+                    <GlassButton
+                      onClick={() => tutorialSend?.({ type: 'NEXT' })}
+                      className='px-3 py-1.5 text-xs'
+                    >
+                      NEXT
+                    </GlassButton>
+                  )}
+                  {tutorialState.can({ type: 'BACK' }) && (
+                    <GlassButton
+                      onClick={() => tutorialSend?.({ type: 'BACK' })}
+                      className='px-3 py-1.5 text-xs'
+                    >
+                      BACK
+                    </GlassButton>
+                  )}
+                  {tutorialState.can({ type: 'COMPLETE' }) && (
+                    <GlassButton
+                      onClick={() => tutorialSend?.({ type: 'COMPLETE' })}
+                      className='px-3 py-1.5 text-xs'
+                    >
+                      COMPLETE
+                    </GlassButton>
+                  )}
+                  {tutorialState.can({ type: 'SKIP' }) && (
+                    <GlassButton
+                      onClick={() => tutorialSend?.({ type: 'SKIP' })}
+                      className='px-3 py-1.5 text-xs'
+                    >
+                      SKIP
+                    </GlassButton>
+                  )}
                 </div>
-                <div>
-                  <span className='text-gray-400'>Tutorial Workspace ID:</span>{' '}
-                  <span className='text-white font-mono'>
-                    {tutorialState.context.tutorialWorkspaceId || 'none'}
-                  </span>
-                </div>
-                <div>
-                  <span className='text-gray-400'>Current Step:</span>{' '}
-                  <span className='text-white'>
-                    {tutorialState.context.currentStep}
-                  </span>
-                </div>
-                <div>
-                  <span className='text-gray-400'>Completed Steps:</span>{' '}
-                  <span className='text-white'>
-                    {`[${tutorialState.context.completedSteps.join(', ') || 'none'}]`}
-                  </span>
-                </div>
-                <div>
-                  <span className='text-gray-400'>Onboarding Context:</span>{' '}
-                  <span className='text-white font-mono text-[10px] break-all'>
-                    {tutorialState.context.onboardingContext
-                      ? JSON.stringify(
-                          tutorialState.context.onboardingContext,
-                          null,
-                          2
-                        )
-                      : 'none'}
-                  </span>
-                </div>
-              </div>
-            </GlassCard>
-            <div className='flex flex-wrap gap-2'>
-              {tutorialState.can({ type: 'START' }) && (
-                <GlassButton
-                  onClick={() => tutorialSend({ type: 'START' })}
-                  className='px-3 py-1.5 text-xs'
-                >
-                  START
-                </GlassButton>
-              )}
-              {tutorialState.can({ type: 'NEXT' }) && (
-                <GlassButton
-                  onClick={() => tutorialSend({ type: 'NEXT' })}
-                  className='px-3 py-1.5 text-xs'
-                >
-                  NEXT
-                </GlassButton>
-              )}
-              {tutorialState.can({ type: 'BACK' }) && (
-                <GlassButton
-                  onClick={() => tutorialSend({ type: 'BACK' })}
-                  className='px-3 py-1.5 text-xs'
-                >
-                  BACK
-                </GlassButton>
-              )}
-              {tutorialState.can({ type: 'COMPLETE' }) && (
-                <GlassButton
-                  onClick={() => tutorialSend({ type: 'COMPLETE' })}
-                  className='px-3 py-1.5 text-xs'
-                >
-                  COMPLETE
-                </GlassButton>
-              )}
-              {tutorialState.can({ type: 'SKIP' }) && (
-                <GlassButton
-                  onClick={() => tutorialSend({ type: 'SKIP' })}
-                  className='px-3 py-1.5 text-xs'
-                >
-                  SKIP
-                </GlassButton>
-              )}
-            </div>
+              </>
+            )}
           </div>
 
           <div className='mt-4 pt-4 border-t border-white/10'>

@@ -44,9 +44,6 @@ export function useTutorialStep(config: TutorialStepConfig) {
   const pathname = usePathname();
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Note: Focus behavior is now handled purely by CSS in globals.css
-  // This prevents flickering from JavaScript/CSS conflicts
-
   useEffect(() => {
     // Clear any pending timers
     if (timerRef.current) {

@@ -161,7 +161,7 @@ export default function WorkspaceNotesPage() {
   const router = useRouter();
   const workspaceId = parseInt(params.id as string);
   const { state: tutorialState } = useTutorial();
-  const tutorialNoteId = tutorialState.context.tutorialNoteId;
+  const tutorialNoteId = tutorialState?.context.tutorialNoteId;
 
   const sortBy: 'time' | 'folder' = 'folder';
   const [searchQuery, setSearchQuery] = useState('');

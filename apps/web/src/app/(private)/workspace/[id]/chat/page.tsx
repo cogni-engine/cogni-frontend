@@ -109,13 +109,14 @@ export default function WorkspaceChatPage() {
 
         // Check if this is the tutorial workspace and user is responding to boss greeting
         if (
+          tutorialState &&
           tutorialState.matches('bossGreeting') &&
           tutorialState.context.tutorialWorkspaceId === workspaceId
         ) {
           console.log(
             'User sent message in tutorial workspace, triggering USER_RESPONDED'
           );
-          sendTutorialEvent({ type: 'USER_RESPONDED' });
+          sendTutorialEvent?.({ type: 'USER_RESPONDED' });
         }
 
         // Clear reply state after sending

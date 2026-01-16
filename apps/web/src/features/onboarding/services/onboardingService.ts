@@ -20,6 +20,11 @@ export interface OnboardingContext {
   lifeIntent?: string;
   aiRelationship?: string | string[];
   useCase?: string | string[];
+  // Tutorial workspace IDs (added during tier1 completion)
+  bossWorkspaceMemberId?: number;
+  bossAgentProfileId?: string;
+  tutorialWorkspaceId?: number;
+  tutorialNoteId?: number;
 }
 
 export interface OnboardingSession {
