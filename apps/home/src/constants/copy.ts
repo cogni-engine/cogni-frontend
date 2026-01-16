@@ -92,6 +92,7 @@ export type LocalizedCopy = {
   footer: {
     privacy: string;
     terms: string;
+    commercialTransaction: string;
   };
   pricing: {
     title: string;
@@ -130,6 +131,16 @@ export type LocalizedCopy = {
       number: number;
       title: string;
       content: string[];
+    }>;
+  };
+  commercialTransaction: {
+    title: string;
+    sections: Array<{
+      title?: string;
+      items: Array<{
+        label: string;
+        value: string | string[];
+      }>;
     }>;
   };
 };
@@ -300,6 +311,7 @@ export const LOCALIZED_COPY: Record<Language, LocalizedCopy> = {
     footer: {
       privacy: 'Privacy',
       terms: 'Terms',
+      commercialTransaction: 'Commercial Transaction Law',
     },
     pricing: {
       title: 'Choose a plan built for your needs',
@@ -333,7 +345,7 @@ export const LOCALIZED_COPY: Record<Language, LocalizedCopy> = {
           name: 'Pro',
           description:
             'Unlock the full power of AI for your personal productivity',
-          price: '$120',
+          price: '$40',
           priceNote: '/month',
           ctaLabel: 'Get started with Cogno',
           ctaHref: '/contact',
@@ -357,7 +369,7 @@ export const LOCALIZED_COPY: Record<Language, LocalizedCopy> = {
           name: 'Business',
           description:
             'Collaborate with your team and manage organizational projects efficiently',
-          price: '$150',
+          price: '$45',
           priceNote: '/ user / month',
           ctaLabel: 'Get started with Cogno',
           ctaHref: '/contact',
@@ -530,6 +542,103 @@ export const LOCALIZED_COPY: Record<Language, LocalizedCopy> = {
         },
       ],
     },
+    commercialTransaction: {
+      title: 'Commerce Disclosure (Specified Commercial Transaction Act)',
+      sections: [
+        {
+          items: [
+            {
+              label: 'Seller',
+              value:
+                'Yusei Moriwaki\n(Trade name: Genaxis / Service name: Cogno)',
+            },
+            {
+              label: 'Responsible Operator',
+              value: 'Yusei Moriwaki',
+            },
+            {
+              label: 'Business Address',
+              value:
+                'MIEUX Shibuya Building 8F\n5-3 Maruyamacho, Shibuya-ku\nTokyo 150-0044, Japan',
+            },
+            {
+              label: 'Phone Number',
+              value: '+81-90-7907-3634',
+            },
+            {
+              label: 'Email Address',
+              value: 'support@genaxis.jp',
+            },
+            {
+              label: 'Website URL',
+              value: 'https://cogno.studio',
+            },
+          ],
+        },
+        {
+          items: [
+            {
+              label: 'Sales Price',
+              value:
+                'Prices are listed on each product and service page.\n(All prices include Japanese consumption tax.)',
+            },
+            {
+              label: 'Additional Fees',
+              value:
+                'Internet connection fees, data communication fees, and any related charges are the responsibility of the customer.',
+            },
+            {
+              label: 'Payment Methods',
+              value:
+                'Credit card payment (via Stripe)\nAdditional payment methods may be added in the future.',
+            },
+            {
+              label: 'Payment Timing',
+              value:
+                'For credit card payments, charges are processed immediately at the time of purchase.\nFor subscription services, payments will be automatically charged on each renewal date.',
+            },
+            {
+              label: 'Service Delivery',
+              value:
+                'The service becomes available immediately after payment is completed.',
+            },
+          ],
+        },
+        {
+          items: [
+            {
+              label: 'Returns and Cancellations',
+              value:
+                'Due to the nature of digital services, we do not accept returns or refunds once the service has been provided.',
+            },
+            {
+              label: 'Cancellation Policy',
+              value:
+                'No refunds are available for cancellations during the contract period.\nYou may cancel your subscription up to one day before the next renewal date to prevent future charges.',
+            },
+          ],
+        },
+        {
+          items: [
+            {
+              label: 'System Requirements',
+              value:
+                'The service supports the latest versions of major browsers, including Google Chrome, Safari, and Microsoft Edge.',
+            },
+            {
+              label: 'Network Environment',
+              value:
+                'Some features may be limited depending on your internet connection or browser settings.',
+            },
+            {
+              label: 'Additional Notes',
+              value:
+                'Service content, pricing, and terms may be changed without prior notice.\nFor corporate contracts or invoice-based payments, the terms stated in the relevant contract or invoice will take precedence.',
+            },
+          ],
+        },
+      ],
+    },
   },
   ja: {
     hero: {
@@ -689,6 +798,7 @@ export const LOCALIZED_COPY: Record<Language, LocalizedCopy> = {
     footer: {
       privacy: 'プライバシー',
       terms: '利用規約',
+      commercialTransaction: '特定商取引法に基づく表記',
     },
     pricing: {
       title: 'ビジネス向けに構築されている有料プランを選びましょう',
@@ -721,7 +831,7 @@ export const LOCALIZED_COPY: Record<Language, LocalizedCopy> = {
           id: 'pro',
           name: 'Pro',
           description: '個人で本格的にCognoを使い、AIの力を最大限に活用',
-          price: '$120',
+          price: '$40',
           priceNote: '/ 月',
           ctaLabel: 'Cognoを始める',
           ctaHref: '/contact',
@@ -744,7 +854,7 @@ export const LOCALIZED_COPY: Record<Language, LocalizedCopy> = {
           name: 'Business',
           description:
             'AIを活用して、組織のプロジェクトを効率的に管理・スケーリング',
-          price: '$150',
+          price: '$45',
           priceNote: '/ ユーザー / 月',
           ctaLabel: 'Cognoを始める',
           ctaHref: '/contact',
@@ -953,6 +1063,100 @@ export const LOCALIZED_COPY: Record<Language, LocalizedCopy> = {
           title: 'お問い合わせ',
           content: [
             '個人情報の取扱いに関するお問い合わせは、当サービス内の問い合わせ窓口よりご連絡ください。',
+          ],
+        },
+      ],
+    },
+    commercialTransaction: {
+      title: '特定商取引法に基づく表記',
+      sections: [
+        {
+          items: [
+            {
+              label: '販売事業者名',
+              value: '森脇 勇成（屋号：Genaxis／サービス名：Cogno）',
+            },
+            {
+              label: '運営統括責任者',
+              value: '森脇 勇成',
+            },
+            {
+              label: '所在地',
+              value: '〒150-0044\n東京都渋谷区円山町5-3 MIEUX渋谷ビル8階',
+            },
+            {
+              label: '電話番号',
+              value: '090-7907-3634',
+            },
+            {
+              label: 'メールアドレス',
+              value: 'support@genaxis.jp',
+            },
+            {
+              label: 'サイトURL',
+              value: 'https://cogno.studio',
+            },
+          ],
+        },
+        {
+          items: [
+            {
+              label: '販売価格',
+              value:
+                '各プラン・サービスページに記載しております（表示価格は税込）。',
+            },
+            {
+              label: '商品代金以外の必要料金',
+              value:
+                'インターネット接続料金、通信料金等はお客様のご負担となります。',
+            },
+            {
+              label: 'お支払い方法',
+              value:
+                'クレジットカード決済（Stripe）\n※今後、その他の決済方法を追加する場合があります。',
+            },
+            {
+              label: 'お支払い時期',
+              value:
+                'クレジットカード決済：お申し込み時に即時決済されます。\n（サブスクリプションの場合、以降は契約更新日に自動課金されます）',
+            },
+            {
+              label: 'サービスの提供時期',
+              value: '決済完了後、直ちにご利用いただけます。',
+            },
+          ],
+        },
+        {
+          items: [
+            {
+              label: '返品・キャンセルについて',
+              value:
+                'デジタルサービスの性質上、サービス提供開始後の返金・キャンセルは原則としてお受けできません。',
+            },
+            {
+              label: '解約について',
+              value:
+                'いずれのプランにおいても、契約期間中の中途解約による返金は承っておりません。\n次回更新日の前日までに解約手続きを行うことで、次回以降の課金は停止されます。',
+            },
+          ],
+        },
+        {
+          items: [
+            {
+              label: '動作環境',
+              value:
+                '最新版の Google Chrome、Safari、Microsoft Edge など主要ブラウザに対応しています。',
+            },
+            {
+              label: '通信環境',
+              value:
+                'ご利用の通信環境やブラウザ設定により、一部機能が制限される場合があります。',
+            },
+            {
+              label: '特記事項',
+              value:
+                'サービス内容、料金、提供条件は予告なく変更される場合があります。\n法人契約や請求書払いの場合は、個別に締結する契約書・請求書に記載の条件が優先される場合があります。',
+            },
           ],
         },
       ],
