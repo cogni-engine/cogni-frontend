@@ -1,3 +1,5 @@
+import type { Note } from '@cogni/types';
+
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
 export interface GenerateFirstNoteRequest {
@@ -10,14 +12,9 @@ export interface GenerateFirstNoteRequest {
   locale: string;
 }
 
-export interface GenerateFirstNoteResponse {
-  title: string;
-  content: string;
-}
-
 export async function generateFirstNote(
   request: GenerateFirstNoteRequest
-): Promise<GenerateFirstNoteResponse> {
+): Promise<Note> {
   const response = await fetch(
     `${API_BASE_URL}/api/onboarding/generate-first-note`,
     {

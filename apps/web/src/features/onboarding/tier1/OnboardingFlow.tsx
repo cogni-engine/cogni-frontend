@@ -86,7 +86,7 @@ export function OnboardingFlow({
   // Calculate progress based on current state
   const getProgress = (): number => {
     if (state.matches('appIntro')) return 0;
-    if (state.matches({ profile: 'name' })) return 10;
+    if (state.matches({ profile: 'name' })) return 0;
     if (state.matches({ profile: 'icon' })) return 20;
     if (state.matches('welcome')) return 30;
     if (state.matches({ context: 'primaryRole' })) return 40;
@@ -229,6 +229,7 @@ export function OnboardingFlow({
           loading={false}
           handleContinue={() => send({ type: 'COMPLETE' })}
           handleBack={() => send({ type: 'BACK' })}
+          userName={state.context.profile.name}
         />
       );
     }
@@ -270,9 +271,9 @@ export function OnboardingFlow({
             >
               <ChevronLeft className='size-6' />
             </GlassButton>
-            <div className='flex-1 h-2 bg-white/10 rounded-full overflow-hidden backdrop-blur-sm'>
+            <div className='flex-1 h-1 bg-white/10 rounded-full overflow-hidden backdrop-blur-sm'>
               <div
-                className='h-full bg-linear-to-r from-blue-500 to-indigo-600 transition-all duration-500 ease-out'
+                className='h-full bg-white transition-all duration-500 ease-out'
                 style={{ width: `${getProgress()}%` }}
               />
             </div>
@@ -282,9 +283,7 @@ export function OnboardingFlow({
 
       {/* Main Content Card */}
       <div className='w-full max-w-2xl flex-1 overflow-y-auto px-4 pb-4'>
-        <div className='h-full md:bg-white/4 md:backdrop-blur-sm md:rounded-2xl md:border md:border-white/10 md:shadow-[0_8px_32px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.12)] md:p-6'>
-          {renderStep()}
-        </div>
+        <div className='h-full'>{renderStep()}</div>
       </div>
     </div>
   );

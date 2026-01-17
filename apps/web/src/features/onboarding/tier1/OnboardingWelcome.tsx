@@ -21,7 +21,7 @@ export function OnboardingWelcome({
           {/* Welcome Message */}
           <div className='text-center space-y-6 flex-1 flex flex-col justify-center'>
             <div className='space-y-4'>
-              <h1 className='text-5xl md:text-6xl font-bold text-white leading-tight'>
+              <h1 className='text-3xl md:text-4xl font-bold text-white leading-tight'>
                 Welcome to Cogno
               </h1>
               <h2 className='text-3xl md:text-4xl font-semibold text-gray-200'>
@@ -40,13 +40,13 @@ export function OnboardingWelcome({
 
             {/* Decorative elements */}
             <div className='flex justify-center space-x-2 mt-8'>
-              <div className='w-3 h-3 rounded-full bg-blue-500 animate-pulse'></div>
+              <div className='w-3 h-3 rounded-full bg-white/80 animate-pulse'></div>
               <div
-                className='w-3 h-3 rounded-full bg-purple-500 animate-pulse'
+                className='w-3 h-3 rounded-full bg-white/50 animate-pulse'
                 style={{ animationDelay: '0.2s' }}
               ></div>
               <div
-                className='w-3 h-3 rounded-full bg-indigo-500 animate-pulse'
+                className='w-3 h-3 rounded-full bg-white/30 animate-pulse'
                 style={{ animationDelay: '0.4s' }}
               ></div>
             </div>

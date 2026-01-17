@@ -87,6 +87,16 @@ body {
   }
 }
 
+/* Override browser autofill styles for dark theme */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 30px #0a0a0a inset !important;
+  -webkit-text-fill-color: #ffffff !important;
+  caret-color: #ffffff !important;
+}
+
 /* Shepherd.js Custom Theme - Glassmorphism Design */
 .shepherd-element {
   background: rgba(255, 255, 255, 0.04) !important;
@@ -245,7 +255,6 @@ body {
 .shepherd-target:focus::before,
 .shepherd-target:focus-within::before {
   animation-play-state: paused !important;
-
 }
 
 /* Hide shepherd tooltip when target has focus */
@@ -258,4 +267,14 @@ body {
 /* Smooth transition for tooltip visibility */
 .shepherd-element {
   transition: opacity 0.2s ease-out !important;
+}
+
+/* Hide scrollbar for question card scroll area */
+.question-card-scroll {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+}
+
+.question-card-scroll::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
 }

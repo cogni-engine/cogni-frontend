@@ -36,8 +36,10 @@ export function OnboardingName({
           <div className='space-y-6 flex-1'>
             {/* Title */}
             <div className='text-center space-y-3'>
-              <h1 className='text-4xl md:text-5xl font-bold text-white leading-tight'>
-                What&apos;s your preferred name?
+              <h1 className='text-3xl md:text-4xl font-bold text-white leading-tight'>
+                What&apos;s your
+                <br />
+                preferred name?
               </h1>
               <SubText>
                 We are really glad that you&apos;re here! What should we call
@@ -47,24 +49,24 @@ export function OnboardingName({
 
             {/* Input Field */}
             <div className='space-y-2 mt-12'>
-              <div className='relative'>
-                <div className='flex items-center gap-4 border-b border-white/20 pb-2 focus-within:border-blue-500 transition-colors'>
+              <div className='relative pb-6'>
+                <div className='flex items-center gap-4 border-b border-white pb-2 focus-within:border-white transition-colors'>
                   <input
                     id='name'
                     type='text'
                     value={name}
                     onChange={handleNameChange}
-                    placeholder='Enter your name'
-                    className='flex-1 bg-transparent text-white text-lg placeholder-gray-500 outline-none border-none'
+                    className='flex-1 bg-transparent text-white text-lg outline-none border-none autofill:bg-transparent autofill:text-white text-center'
                     required
                     minLength={2}
                     maxLength={MAX_NAME_LENGTH}
                     autoFocus
+                    autoComplete='off'
                   />
-                  <span className='text-sm text-gray-400 shrink-0'>
-                    {characterCount}/{MAX_NAME_LENGTH}
-                  </span>
                 </div>
+                <span className='absolute bottom-0 right-0 text-sm text-gray-400'>
+                  {characterCount}/{MAX_NAME_LENGTH}
+                </span>
               </div>
             </div>
 

@@ -3,16 +3,14 @@
 import { useCallback, useRef, useState, ChangeEvent } from 'react';
 import Image from 'next/image';
 import type { Area } from 'react-easy-crop';
-import { Upload, Sparkles } from 'lucide-react';
+import { Upload, User } from 'lucide-react';
 import { AvatarCropDialog } from '@/features/users/components/AvatarCropDialog';
 import {
   getCroppedImageBlob,
   readFileAsDataUrl,
-  getInitials,
 } from '@/features/users/utils/avatar';
 import { generateAvatarBlob } from '@/features/users/utils/avatarGenerator';
 import { uploadUserAvatar } from '@/lib/api/userProfilesApi';
-import GlassButton from '@/components/glass-design/GlassButton';
 import { NextStepButton } from '../components/NextStepButton';
 import { SubText } from '../components/SubText';
 
@@ -35,17 +33,50 @@ export function OnboardingIcon({
 }: OnboardingIconProps) {
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
-  const [generating, setGenerating] = useState(false);
   const [avatarDialogOpen, setAvatarDialogOpen] = useState(false);
   const [selectedImageSrc, setSelectedImageSrc] = useState<string | null>(null);
   const [croppedAreaPixels, setCroppedAreaPixels] = useState<Area | null>(null);
   const [crop, setCrop] = useState({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
   const [localError, setLocalError] = useState<string | null>(null);
+  const [generating, setGenerating] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
-  const initials = getInitials(userName, userEmail);
+  // Generate avatar if user hasn't uploaded one when continuing
+  const handleContinueClick = useCallback(async () => {
+    // If user already uploaded an avatar, just continue
+    if (avatarUrl) {
+      handleContinue();
+      return;
+    }
+
+    // Generate avatar before continuing
+    setGenerating(true);
+    setLocalError(null);
+
+    try {
+      // Use userName as seed for initials, fallback to userEmail or userId
+      const seed = userName || userEmail || userId;
+      const avatarBlob = await generateAvatarBlob(seed, {
+        style: 'cosmic',
+        includeInitials: true,
+      });
+      const file = new File([avatarBlob], 'avatar.png', { type: 'image/png' });
+
+      await uploadUserAvatar(userId, file);
+
+      const previewUrl = URL.createObjectURL(avatarBlob);
+      setAvatarUrl(previewUrl);
+
+      // Continue after avatar is generated
+      handleContinue();
+    } catch (err) {
+      console.error('Failed to generate avatar', err);
+      setLocalError('Failed to generate avatar. Please try again.');
+      setGenerating(false);
+    }
+  }, [avatarUrl, userId, userEmail, userName, handleContinue]);
 
   const handleFileChange = useCallback(
     async (event: ChangeEvent<HTMLInputElement>) => {
@@ -108,28 +139,6 @@ export function OnboardingIcon({
     }
   }, [selectedImageSrc, croppedAreaPixels, userId]);
 
-  const handleGenerateAvatar = useCallback(async () => {
-    setGenerating(true);
-    setLocalError(null);
-
-    try {
-      const seed = userEmail || userId;
-      const avatarBlob = await generateAvatarBlob(seed);
-      const file = new File([avatarBlob], 'avatar.png', { type: 'image/png' });
-
-      await uploadUserAvatar(userId, file);
-
-      // Create preview URL
-      const previewUrl = URL.createObjectURL(avatarBlob);
-      setAvatarUrl(previewUrl);
-    } catch (err) {
-      console.error('Failed to generate avatar', err);
-      setLocalError('Failed to generate avatar. Please try again.');
-    } finally {
-      setGenerating(false);
-    }
-  }, [userId, userEmail]);
-
   const handleDialogOpenChange = useCallback((open: boolean) => {
     if (!open) {
       setAvatarDialogOpen(false);
@@ -157,18 +166,18 @@ export function OnboardingIcon({
           <div className='flex-1 flex flex-col'>
             {/* Title */}
             <div className='text-center space-y-3 mb-8'>
-              <h1 className='text-4xl md:text-5xl font-bold text-white leading-tight'>
+              <h1 className='text-3xl md:text-4xl font-bold text-white leading-tight'>
                 Add a profile picture
               </h1>
               <SubText>
-                Upload a photo or generate one automatically. You can change
-                this later.
+                You can upload a photo if you&apos;d like. You can change this
+                later.
               </SubText>
             </div>
 
             {/* Avatar Preview */}
             <div className='flex justify-center mb-8'>
-              <div className='relative w-32 h-32 md:w-40 md:h-40 rounded-full overflow-hidden bg-linear-to-br from-blue-500 to-purple-600 flex items-center justify-center'>
+              <div className='relative w-32 h-32 md:w-40 md:h-40 rounded-full overflow-hidden'>
                 {avatarUrl ? (
                   <Image
                     src={avatarUrl}
@@ -177,15 +186,19 @@ export function OnboardingIcon({
                     className='object-cover'
                   />
                 ) : (
-                  <span className='text-4xl md:text-5xl font-bold text-white'>
-                    {initials}
-                  </span>
+                  <div className='w-full h-full bg-white/5 flex items-center justify-center'>
+                    {generating ? (
+                      <div className='w-8 h-8 border-2 border-white/20 border-t-white rounded-full animate-spin' />
+                    ) : (
+                      <User className='size-16 md:size-20 text-white/40' />
+                    )}
+                  </div>
                 )}
               </div>
             </div>
 
             {/* Action Buttons */}
-            <div className='space-y-3 max-w-md mx-auto w-full'>
+            <div className='max-w-md mx-auto w-full'>
               <input
                 ref={fileInputRef}
                 type='file'
@@ -194,25 +207,15 @@ export function OnboardingIcon({
                 className='hidden'
               />
 
-              <GlassButton
+              <button
                 type='button'
                 onClick={() => fileInputRef.current?.click()}
-                disabled={uploading || generating || loading}
-                className='w-full py-4 h-12'
+                disabled={uploading || loading || generating}
+                className='w-full py-2 px-1 backdrop-blur-xl text-white rounded-3xl hover:border-white/15 transition-all duration-300 shadow-[0_8px_32px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.12)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.25),inset_0_1px_0_rgba(255,255,255,0.18)] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center justify-center gap-2 font-medium'
               >
-                <Upload className='size-5' />
+                <Upload className='size-4' />
                 {uploading ? 'Uploading...' : 'Upload Photo'}
-              </GlassButton>
-
-              <GlassButton
-                type='button'
-                onClick={handleGenerateAvatar}
-                disabled={uploading || generating || loading}
-                className='w-full py-4 h-12'
-              >
-                <Sparkles className='size-5' />
-                {generating ? 'Generating...' : 'Generate Avatar'}
-              </GlassButton>
+              </button>
             </div>
 
             {/* Error Messages */}
@@ -221,27 +224,16 @@ export function OnboardingIcon({
                 <p className='text-red-300 text-sm'>{error || localError}</p>
               </div>
             )}
-
-            {/* Skip Option */}
-            <div className='text-center mt-6'>
-              <button
-                type='button'
-                onClick={handleContinue}
-                disabled={uploading || generating || loading}
-                className='text-gray-400 hover:text-gray-200 text-sm transition-colors disabled:opacity-50'
-              >
-                Skip for now
-              </button>
-            </div>
           </div>
 
           {/* Continue Button */}
-          <div className=''>
+          <div className='w-full max-w-md mx-auto px-4 mt-6'>
             <NextStepButton
               type='button'
-              onClick={handleContinue}
+              onClick={handleContinueClick}
               disabled={uploading || generating}
-              loading={loading}
+              loading={loading || generating}
+              loadingText={generating ? 'Generating avatar...' : undefined}
             />
           </div>
         </div>

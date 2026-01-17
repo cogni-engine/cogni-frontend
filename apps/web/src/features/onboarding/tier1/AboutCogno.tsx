@@ -315,15 +315,20 @@ export function AboutCognoApp({
         </div>
 
         {/* Pagination Dots */}
-        <div className='flex items-center justify-center gap-2 pt-4'>
-          {onboardingSlides.map((_, index) => (
-            <div
-              key={index}
-              className={`w-2 h-2 rounded-full transition-all duration-300 ${
-                index === currentSlide ? 'bg-blue-500' : 'bg-white/30'
-              }`}
-            />
-          ))}
+        <div className='flex items-center justify-center pt-4'>
+          <div className='flex items-center gap-2 px-3 py-1.5 bg-white/10 backdrop-blur-sm rounded-full'>
+            {onboardingSlides.map((_, index) => (
+              <button
+                key={index}
+                type='button'
+                onClick={() => goToSlide(index)}
+                className={`w-2.5 h-2.5 rounded-full transition-all duration-300 focus:outline-none ${
+                  index === currentSlide ? 'bg-white' : 'bg-white/30'
+                }`}
+                aria-label={`Go to slide ${index + 1}`}
+              />
+            ))}
+          </div>
         </div>
       </div>
 

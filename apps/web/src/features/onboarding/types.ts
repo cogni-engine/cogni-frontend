@@ -35,10 +35,9 @@ export interface OnboardingContext {
   tutorialWorkspaceId?: number;
   bossWorkspaceMemberId?: number;
   bossAgentProfileId?: string;
-  // First note content
+  // First note (noteId only, saved by backend)
   firstNote?: {
-    title: string;
-    content: string;
+    noteId: number;
   };
 }
 

@@ -44,15 +44,14 @@ const onboardingMachineSetup = setup({
           throw new Error('Failed to complete tier 1 onboarding');
         }
 
-        let firstNoteTitle = 'My First Note';
-        let firstNoteContent =
-          'This is your first note! You can write anything here...';
+        // Generate and create first note (backend handles everything)
+        let firstNote: { noteId: number } | undefined;
 
         try {
           const locale =
             typeof navigator !== 'undefined' ? navigator.language : 'en';
 
-          const noteResult = await generateFirstNote({
+          const note = await generateFirstNote({
             primary_role: Array.isArray(input.answers.primaryRole)
               ? input.answers.primaryRole
               : input.answers.primaryRole
@@ -74,32 +73,18 @@ const onboardingMachineSetup = setup({
             locale: locale,
           });
 
-          firstNoteTitle = noteResult.title;
-          firstNoteContent = noteResult.content;
-
-          try {
-            await onboardingService.saveFirstNoteToContext(
-              input.onboardingSessionId,
-              {
-                title: firstNoteTitle,
-                content: firstNoteContent,
-              }
-            );
-          } catch (error) {
-            console.error('Failed to save first note to context:', error);
-          }
+          // Backend already created the note and saved noteId to context
+          firstNote = { noteId: note.id };
         } catch (error) {
           console.error('Failed to generate first note:', error);
+          // Note creation failed, but we still return workspace info
         }
 
         return {
           workspaceId: result.workspaceId,
           bossWorkspaceMemberId: result.bossWorkspaceMemberId,
           bossAgentProfileId: result.bossAgentProfileId,
-          firstNote: {
-            title: firstNoteTitle,
-            content: firstNoteContent,
-          },
+          firstNote,
         };
       }
     ),
@@ -156,7 +141,7 @@ export const onboardingMachine = onboardingMachineSetup.createMachine({
       userEmail: '',
     },
     onboardingSessionId: input.onboardingSessionId,
-    firstNote: undefined as { title: string; content: string } | undefined,
+    firstNote: undefined as { noteId: number } | undefined,
   }),
   on: {
     // Global UPDATE_PROFILE handler - can be called from any state
@@ -183,6 +168,7 @@ export const onboardingMachine = onboardingMachineSetup.createMachine({
         name: {
           on: {
             NEXT: 'icon',
+            BACK: '#onboarding.appIntro',
           },
         },
         icon: {

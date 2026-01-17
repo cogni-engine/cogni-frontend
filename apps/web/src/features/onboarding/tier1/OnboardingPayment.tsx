@@ -1,5 +1,5 @@
 import { NextStepButton } from '../components/NextStepButton';
-import { Check } from 'lucide-react';
+import { X } from 'lucide-react';
 import { useState } from 'react';
 
 interface OnboardingPaymentProps {
@@ -7,6 +7,7 @@ interface OnboardingPaymentProps {
   loading: boolean;
   handleContinue: () => void;
   handleBack: () => void;
+  userName?: string;
 }
 
 interface PricingTier {
@@ -34,7 +35,7 @@ const pricingTiers: PricingTier[] = [
   },
   {
     name: 'Pro',
-    price: '$12',
+    price: '$40',
     period: 'per month',
     description: 'For power users',
     features: [
@@ -50,7 +51,7 @@ const pricingTiers: PricingTier[] = [
   },
   {
     name: 'Team',
-    price: '$49',
+    price: '$45',
     period: 'per month',
     description: 'For growing teams',
     features: [
@@ -68,98 +69,93 @@ export function OnboardingPayment({
   error,
   loading,
   handleContinue,
-  handleBack,
+  handleBack: _handleBack,
+  userName,
 }: OnboardingPaymentProps) {
   const [selectedTier, setSelectedTier] = useState<string>('Free');
 
   return (
-    <div className='space-y-6 animate-in fade-in duration-500'>
-      <div className='text-center space-y-3'>
-        <h1 className='text-4xl font-bold text-white'>Choose Your Plan</h1>
-        <p className='text-xl text-gray-300'>
-          Start with free and upgrade anytime
-        </p>
-      </div>
-
-      {/* Pricing Cards */}
-      <div className='grid grid-cols-1 md:grid-cols-3 gap-4'>
-        {pricingTiers.map(tier => (
-          <button
-            key={tier.name}
-            onClick={() => setSelectedTier(tier.name)}
-            className={`relative text-left p-6 rounded-2xl border transition-all duration-200 ${
-              selectedTier === tier.name
-                ? tier.highlighted
-                  ? 'bg-blue-500/20 border-blue-400 shadow-lg shadow-blue-500/20'
-                  : 'bg-white/10 border-white/30 shadow-lg'
-                : 'bg-white/5 border-white/10 hover:bg-white/8 hover:border-white/20'
-            } backdrop-blur-sm`}
-          >
-            {/* Badge */}
-            {tier.badge && (
-              <div className='absolute -top-3 left-1/2 -translate-x-1/2'>
-                <span className='bg-linear-to-r from-blue-500 to-indigo-600 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg'>
-                  {tier.badge}
-                </span>
-              </div>
-            )}
-
-            {/* Selected Indicator */}
-            {selectedTier === tier.name && (
-              <div className='absolute top-4 right-4'>
-                <div className='w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center'>
-                  <Check className='w-4 h-4 text-white' />
-                </div>
-              </div>
-            )}
-
-            <div className='space-y-4'>
-              {/* Tier Name */}
-              <h3 className='text-2xl font-bold text-white'>{tier.name}</h3>
-
-              {/* Price */}
-              <div className='space-y-1'>
-                <div className='flex items-baseline gap-1'>
-                  <span className='text-4xl font-bold text-white'>
-                    {tier.price}
-                  </span>
-                  <span className='text-gray-400 text-sm'>/{tier.period}</span>
-                </div>
-                <p className='text-gray-400 text-sm'>{tier.description}</p>
-              </div>
-            </div>
-          </button>
-        ))}
-      </div>
-
-      {/* Info Banner */}
-      <div className='bg-blue-500/10 border border-blue-400/30 rounded-xl p-4 backdrop-blur-sm'>
-        <p className='text-blue-200 text-sm text-center'>
-          💡 You can change your plan anytime from settings. No credit card
-          required for free tier.
-        </p>
-      </div>
-
-      {error && (
-        <div className='bg-red-900/30 border border-red-500/50 rounded-lg p-4 backdrop-blur-sm'>
-          <p className='text-red-300 text-sm'>{error}</p>
-        </div>
-      )}
-
-      {/* Action Buttons */}
-      <div className='flex justify-between items-center pt-4'>
+    <div className='flex flex-col h-full animate-in fade-in duration-500'>
+      {/* Close button - top right */}
+      <div className='flex justify-end mb-4'>
         <button
-          onClick={handleBack}
-          className='text-gray-400 hover:text-white transition-colors'
+          type='button'
+          onClick={handleContinue}
+          className='text-gray-400 hover:text-gray-300 transition-colors p-2'
+          aria-label='Close'
         >
-          ← Back
+          <X className='size-6' />
         </button>
+      </div>
+
+      {/* Header */}
+      <div className='shrink-0 text-center space-y-3 mb-8'>
+        <h1 className='text-3xl md:text-4xl font-bold text-white leading-tight'>
+          Hey {userName || 'there'}! It&apos;s time to get full access to Cogno!
+        </h1>
+      </div>
+
+      {/* Scrollable Content: Pricing Cards */}
+      <div className='flex-1 overflow-y-auto min-h-0 question-card-scroll'>
+        <div className='space-y-4'>
+          {/* Pricing Cards */}
+          <div className='grid grid-cols-1 md:grid-cols-3 gap-3'>
+            {pricingTiers.map(tier => (
+              <button
+                key={tier.name}
+                type='button'
+                onClick={() => setSelectedTier(tier.name)}
+                className={`relative w-full py-4 px-4 text-left rounded-xl bg-white/5 border transition-all duration-200 ${
+                  selectedTier === tier.name
+                    ? 'text-white border-white/50'
+                    : 'text-gray-300 border-transparent'
+                }`}
+              >
+                <div className='space-y-2'>
+                  {/* Tier Name */}
+                  <h3 className='text-xl font-bold'>{tier.name}</h3>
+
+                  {/* Price */}
+                  <div className='space-y-0.5'>
+                    <div className='flex items-baseline gap-1'>
+                      <span className='text-3xl font-bold'>{tier.price}</span>
+                      <span className='text-sm opacity-70'>/{tier.period}</span>
+                    </div>
+                  </div>
+                </div>
+              </button>
+            ))}
+          </div>
+
+          {/* Info Banner */}
+          <div className='bg-white/5 border border-white/10 rounded-xl p-4 backdrop-blur-sm mt-4'>
+            <p className='text-gray-400 text-sm text-center'>
+              You can change your plan anytime from settings. No credit card
+              required for free tier.
+            </p>
+          </div>
+
+          {/* Error Message */}
+          {error && (
+            <div className='mt-4 bg-red-900/30 border border-red-500/50 rounded-lg p-4 backdrop-blur-sm'>
+              <p className='text-red-300 text-sm'>{error}</p>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Fixed Footer: Continue Button */}
+      <div className='shrink-0 mt-4 pt-6'>
         <NextStepButton
           type='button'
           onClick={handleContinue}
           loading={loading}
-          variant='glass'
-          text={`Continue with ${selectedTier} →`}
+          variant='primary'
+          text={
+            selectedTier === 'Free'
+              ? 'Try for $0'
+              : `Continue with ${selectedTier}`
+          }
           loadingText='Processing...'
         />
       </div>

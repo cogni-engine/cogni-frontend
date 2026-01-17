@@ -6,7 +6,6 @@ import {
 } from './services/tutorialInitializationService';
 import { sendBossGreeting } from './services/bossGreetingService';
 import { createTutorialNote } from './services/tutorialNoteService';
-import { createNote } from '@/lib/api/notesApi';
 
 /**
  * Tutorial Input - data passed when creating the machine
@@ -98,7 +97,7 @@ const createTutorialNoteActor = fromPromise(
     input: {
       workspaceId: number;
       sessionId: string;
-      onboardingContext: Record<string, unknown>;
+      onboardingContext: OnboardingContext;
     };
   }) => {
     return createTutorialNote(input);
@@ -138,30 +137,6 @@ export const tutorialMachine = setup({
     sendBossGreeting: sendBossGreetingActor,
     createTutorialNote: createTutorialNoteActor,
     createAINotification: createAINotificationActor,
-    createFirstNote: fromPromise(
-      async ({
-        input,
-      }: {
-        input: {
-          workspaceId: number;
-          firstNote?: { title: string; content: string };
-        };
-      }) => {
-        const noteTitle = input.firstNote?.title || 'My First Note';
-        const noteContent =
-          input.firstNote?.content ||
-          'This is your first note! You can write anything here - ideas, tasks, thoughts, or plans. Try editing this text.';
-
-        const note = await createNote(
-          input.workspaceId,
-          noteTitle,
-          noteContent,
-          null
-        );
-
-        return { noteId: note.id };
-      }
-    ),
   },
   actions: {
     loadSessionData: assign(({ event }) => {
@@ -296,10 +271,7 @@ export const tutorialMachine = setup({
         input: ({ context }) => ({
           workspaceId: context.tutorialWorkspaceId!,
           sessionId: context.onboardingSessionId!,
-          onboardingContext: (context.onboardingContext || {}) as Record<
-            string,
-            unknown
-          >,
+          onboardingContext: context.onboardingContext!,
         }),
         onDone: {
           actions: 'storeTutorialNoteId',

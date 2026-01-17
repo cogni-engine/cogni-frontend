@@ -1,15 +1,14 @@
 /**
  * Tutorial Note Service
- * Handles creating the tutorial note and updating the onboarding session
+ * Returns the noteId of the first note that was already created by the backend in Tier1
  */
 
-import { createClient } from '@/lib/supabase/browserClient';
-import { createNote } from '@/lib/api/notesApi';
+import { OnboardingContext } from '../../services/onboardingService';
 
 export interface TutorialNoteInput {
   workspaceId: number;
   sessionId: string;
-  onboardingContext: Record<string, unknown>;
+  onboardingContext: OnboardingContext;
 }
 
 export interface TutorialNoteOutput {
@@ -17,36 +16,23 @@ export interface TutorialNoteOutput {
 }
 
 /**
- * Create tutorial note and update onboarding session context
+ * Get tutorial note ID from onboarding context
+ * Note: The note is already created by the backend during Tier1 completion
  */
 export async function createTutorialNote(
   input: TutorialNoteInput
 ): Promise<TutorialNoteOutput> {
-  const { workspaceId, sessionId, onboardingContext } = input;
+  const { onboardingContext } = input;
 
-  // Create the tutorial note
-  const note = await createNote(
-    workspaceId,
-    'My First Note',
-    'This is your first note! You can write anything here - ideas, tasks, thoughts, or plans. Try editing this text.',
-    null // No folder
-  );
+  // Backend (Tier1) already created the note
+  // We just need to return the noteId from context
+  const noteId = onboardingContext.firstNote?.noteId;
 
-  console.log('Created tutorial note:', note.id);
+  if (!noteId) {
+    throw new Error(
+      'First note not found. It should have been created in Tier1.'
+    );
+  }
 
-  // Update onboarding session context with note ID
-  const supabase = createClient();
-  await supabase
-    .from('onboarding_sessions')
-    .update({
-      context: {
-        ...onboardingContext,
-        tutorialNoteId: note.id,
-      },
-    })
-    .eq('id', sessionId);
-
-  return {
-    noteId: note.id,
-  };
+  return { noteId };
 }
