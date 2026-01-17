@@ -384,6 +384,7 @@ export default function WebAppView({ url = 'https://app.cogno.studio', session }
         // Allow file access
         allowFileAccess={true}
         allowUniversalAccessFromFileURLs={true}
+        mediaCapturePermissionGrantType="deny"
         // Enable third-party cookies for session management
         thirdPartyCookiesEnabled={true}
         sharedCookiesEnabled={true}
