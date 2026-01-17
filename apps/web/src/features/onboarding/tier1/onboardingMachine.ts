@@ -2,6 +2,7 @@ import { setup, assign, fromPromise } from 'xstate';
 import type { OnboardingContext, OnboardingEvent } from '../types';
 import { OnboardingService } from '../services/onboardingService';
 import { createBrowserClient } from '@supabase/ssr';
+import { generateFirstNote } from '@/lib/api/onboardingApi';
 
 /**
  * XState Machine for Onboarding Flow
@@ -42,12 +43,63 @@ const onboardingMachineSetup = setup({
         if (!result.success) {
           throw new Error('Failed to complete tier 1 onboarding');
         }
-        console.log('result', result);
+
+        let firstNoteTitle = 'My First Note';
+        let firstNoteContent =
+          'This is your first note! You can write anything here...';
+
+        try {
+          const locale =
+            typeof navigator !== 'undefined' ? navigator.language : 'en';
+
+          const noteResult = await generateFirstNote({
+            primary_role: Array.isArray(input.answers.primaryRole)
+              ? input.answers.primaryRole
+              : input.answers.primaryRole
+                ? [input.answers.primaryRole]
+                : undefined,
+            ai_relationship: Array.isArray(input.answers.aiRelationship)
+              ? input.answers.aiRelationship
+              : input.answers.aiRelationship
+                ? [input.answers.aiRelationship]
+                : undefined,
+            use_case: Array.isArray(input.answers.useCase)
+              ? input.answers.useCase
+              : input.answers.useCase
+                ? [input.answers.useCase]
+                : undefined,
+            user_id: input.userId,
+            workspace_id: result.workspaceId!,
+            onboarding_session_id: input.onboardingSessionId,
+            locale: locale,
+          });
+
+          firstNoteTitle = noteResult.title;
+          firstNoteContent = noteResult.content;
+
+          try {
+            await onboardingService.saveFirstNoteToContext(
+              input.onboardingSessionId,
+              {
+                title: firstNoteTitle,
+                content: firstNoteContent,
+              }
+            );
+          } catch (error) {
+            console.error('Failed to save first note to context:', error);
+          }
+        } catch (error) {
+          console.error('Failed to generate first note:', error);
+        }
 
         return {
           workspaceId: result.workspaceId,
           bossWorkspaceMemberId: result.bossWorkspaceMemberId,
           bossAgentProfileId: result.bossAgentProfileId,
+          firstNote: {
+            title: firstNoteTitle,
+            content: firstNoteContent,
+          },
         };
       }
     ),
@@ -104,6 +156,7 @@ export const onboardingMachine = onboardingMachineSetup.createMachine({
       userEmail: '',
     },
     onboardingSessionId: input.onboardingSessionId,
+    firstNote: undefined as { title: string; content: string } | undefined,
   }),
   on: {
     // Global UPDATE_PROFILE handler - can be called from any state
@@ -205,6 +258,7 @@ export const onboardingMachine = onboardingMachineSetup.createMachine({
             bossWorkspaceMemberId: ({ event }) =>
               event.output.bossWorkspaceMemberId,
             bossAgentProfileId: ({ event }) => event.output.bossAgentProfileId,
+            firstNote: ({ event }) => event.output.firstNote,
           }),
         },
         onError: {
