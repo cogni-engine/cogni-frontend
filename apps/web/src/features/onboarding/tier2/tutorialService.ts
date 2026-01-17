@@ -28,6 +28,8 @@ export interface TutorialContext {
   onboardingContext?: OnboardingContext;
   // Tutorial note ID (created for the user to interact with)
   tutorialNoteId?: number;
+  // Tutorial notification ID (created for the user to interact with)
+  tutorialNotificationId?: number;
   // Tutorial flow state
   currentStep: number;
   completedSteps: number[];
@@ -46,6 +48,9 @@ export type TutorialEvent =
   | { type: 'AI_SUGGESTION_RECEIVED' }
   | { type: 'AI_SUGGESTION_ACCEPTED' }
   | { type: 'AI_SUGGESTION_LOADING' } // New loading state event
+  | { type: 'NAVIGATE_TO_COGNO' } // User clicked button to navigate to cogno
+  | { type: 'BELL_CLICKED' } // User clicked the bell icon
+  | { type: 'NOTIFICATION_VIEWED' } // User viewed the notification
   | {
       type: 'xstate.done.actor.initializeTutorial';
       output: {
@@ -58,6 +63,10 @@ export type TutorialEvent =
   | {
       type: 'xstate.done.actor.createTutorialNote';
       output: { noteId: number };
+    }
+  | {
+      type: 'xstate.done.actor.createAINotification';
+      output: { notificationId: number };
     };
 
 /**
@@ -96,6 +105,25 @@ const createTutorialNoteActor = fromPromise(
 );
 
 /**
+ * Actor to create AI notification
+ */
+const createAINotificationActor = fromPromise(
+  async ({
+    input,
+  }: {
+    input: {
+      workspaceId: number;
+      sessionId: string;
+    };
+  }) => {
+    console.log('Creating AI notification:', input);
+    //  this needs to be implemented
+    console.log('AI notification created:');
+    return { notificationId: 1 };
+  }
+);
+
+/**
  * Minimal XState Machine for Tutorial Flow
  */
 export const tutorialMachine = setup({
@@ -108,6 +136,7 @@ export const tutorialMachine = setup({
     initializeTutorial: initializeTutorialActor,
     sendBossGreeting: sendBossGreetingActor,
     createTutorialNote: createTutorialNoteActor,
+    createAINotification: createAINotificationActor,
   },
   actions: {
     loadSessionData: assign(({ event }) => {
@@ -135,6 +164,17 @@ export const tutorialMachine = setup({
       if (output && 'noteId' in output) {
         return {
           tutorialNoteId: output.noteId,
+        };
+      }
+      return {};
+    }),
+    storeTutorialNotificationId: assign(({ event }) => {
+      // Handle actor output
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const output = (event as any).output;
+      if (output && 'notificationId' in output) {
+        return {
+          tutorialNotificationId: output.notificationId,
         };
       }
       return {};
@@ -167,6 +207,7 @@ export const tutorialMachine = setup({
     tutorialWorkspaceId: undefined,
     onboardingContext: undefined,
     tutorialNoteId: undefined,
+    tutorialNotificationId: undefined,
     currentStep: 0,
     completedSteps: [],
   },
@@ -316,8 +357,45 @@ export const tutorialMachine = setup({
       },
     },
     notifications: {
-      type: 'final',
-      // Static state for now - navigation handled by TutorialProvider
+      initial: 'creatingNotification',
+      states: {
+        creatingNotification: {
+          invoke: {
+            src: 'createAINotification',
+            input: ({ context }) => ({
+              workspaceId: context.tutorialWorkspaceId!,
+              sessionId: context.onboardingSessionId!,
+            }),
+            onDone: {
+              target: 'redirectingToCogno',
+              actions: 'storeTutorialNotificationId',
+            },
+            onError: {
+              actions: ({ event }) => {
+                console.error('Failed to create AI notification:', event.error);
+              },
+            },
+          },
+        },
+        redirectingToCogno: {
+          // Show modal to guide user to cogno page
+          on: {
+            NAVIGATE_TO_COGNO: 'waitingForBellClick',
+          },
+        },
+        waitingForBellClick: {
+          // Guide user to click bell icon
+          on: {
+            BELL_CLICKED: 'waitingForNotificationView',
+          },
+        },
+        waitingForNotificationView: {
+          // Wait for user to view the notification
+          on: {
+            NOTIFICATION_VIEWED: '#tutorial.completed',
+          },
+        },
+      },
     },
     active: {
       on: {

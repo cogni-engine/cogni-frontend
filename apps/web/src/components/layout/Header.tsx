@@ -18,6 +18,7 @@ import { useNoteFolders } from '@/features/notes/hooks/useNoteFolders';
 import { useNotes } from '@/features/notes/hooks/useNotes';
 import { getPersonalWorkspaceId } from '@/lib/cookies';
 import NotificationProcessDrawer from '@/features/notifications/components/NotificationProcessDrawer';
+import { getAppEventBus } from '@/lib/events/appEventBus';
 
 export default function Header() {
   const pathname = usePathname();
@@ -175,6 +176,10 @@ export default function Header() {
   const handleToggleNotificationPanel = async () => {
     if (!userId) return;
 
+    // Emit event for tutorial tracking
+    const eventBus = getAppEventBus();
+    eventBus.emit({ type: 'NOTIFICATION_BELL_CLICKED' });
+
     // Fetch notifications and open drawer
     await fetchPastDueNotifications();
     setIsNotificationDrawerOpen(true);
@@ -267,6 +272,7 @@ export default function Header() {
             title='Notifications'
             size='icon'
             className='size-12'
+            data-shepherd-target='notification-bell'
           >
             <BellIcon className='w-5 h-5 text-white' />
           </GlassButton>

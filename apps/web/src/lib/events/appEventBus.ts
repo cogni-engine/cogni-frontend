@@ -22,7 +22,9 @@ export type AppEvent =
       noteId: number;
       workspaceId: number;
       suggestionId?: string;
-    };
+    }
+  | { type: 'NOTIFICATION_BELL_CLICKED' }
+  | { type: 'NOTIFICATION_VIEWED'; notificationId: number };
 
 class AppEventBus {
   private listeners = new Set<(event: AppEvent) => void>();

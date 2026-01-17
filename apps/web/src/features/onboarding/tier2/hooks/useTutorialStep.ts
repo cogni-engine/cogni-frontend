@@ -27,6 +27,11 @@ export interface TutorialStepConfig {
   requireTutorialWorkspace?: boolean;
   /** Delay before showing step (ms) */
   delay?: number;
+  /** Optional buttons to show in the tooltip */
+  buttons?: Array<{
+    text: string;
+    action: () => 'next' | 'back' | 'complete' | 'cancel';
+  }>;
 }
 
 /**
@@ -193,6 +198,7 @@ export function useTutorialStep(config: TutorialStepConfig) {
                 on: config.position ?? 'top',
               },
               ripplePosition: config.ripplePosition,
+              buttons: config.buttons,
             });
             cleanup();
             return;

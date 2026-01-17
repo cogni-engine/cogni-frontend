@@ -1,6 +1,6 @@
 'use client';
 
-import { usePathname, useParams } from 'next/navigation';
+import { usePathname, useParams, useRouter } from 'next/navigation';
 import { useEffect, useRef } from 'react';
 import { useTutorialStep } from '../hooks/useTutorialStep';
 import { useTutorial } from '../TutorialProvider';
@@ -13,6 +13,7 @@ import { useShepherd } from '../shepherd/ShepherdProvider';
 export function TutorialStepManager() {
   const pathname = usePathname();
   const params = useParams();
+  const router = useRouter();
   const { state: tutorialState, send: sendTutorialEvent } = useTutorial();
   const { cancelTour } = useShepherd();
   const previousStepIdRef = useRef<string | null>(null);
@@ -34,7 +35,7 @@ export function TutorialStepManager() {
       pathnamePattern: '/chat',
       workspaceId,
       requireTutorialWorkspace: true,
-      delay: 500,
+      delay: 1000,
     },
     redirectToNotesChat: {
       id: 'redirect-to-notes',
@@ -46,7 +47,7 @@ export function TutorialStepManager() {
       pathnamePattern: '/chat',
       workspaceId,
       requireTutorialWorkspace: true,
-      delay: 300,
+      delay: 800,
     },
     redirectToNotesNotes: {
       id: 'highlight-tutorial-note',
@@ -58,7 +59,7 @@ export function TutorialStepManager() {
       pathnamePattern: '/notes',
       workspaceId,
       requireTutorialWorkspace: true,
-      delay: 500,
+      delay: 1000,
     },
     noteTourAIInput: {
       id: 'note-tour-ai-input',
@@ -70,7 +71,7 @@ export function TutorialStepManager() {
       pathnamePattern: '/notes/',
       workspaceId,
       requireTutorialWorkspace: false,
-      delay: 500,
+      delay: 1000,
       buttons: [
         {
           text: 'Next',
@@ -91,7 +92,7 @@ export function TutorialStepManager() {
       pathnamePattern: '/notes/',
       workspaceId,
       requireTutorialWorkspace: false,
-      delay: 500,
+      delay: 1000,
       buttons: [
         {
           text: 'Back',
@@ -119,7 +120,7 @@ export function TutorialStepManager() {
       pathnamePattern: '/notes/',
       workspaceId,
       requireTutorialWorkspace: false,
-      delay: 500,
+      delay: 1000,
       buttons: [
         {
           text: 'Back',
@@ -148,7 +149,7 @@ export function TutorialStepManager() {
       pathnamePattern: '/notes/',
       workspaceId,
       requireTutorialWorkspace: false,
-      delay: 500,
+      delay: 1000,
     },
     noteTourProcessingAI: {
       id: 'note-tour-processing-ai',
@@ -160,7 +161,7 @@ export function TutorialStepManager() {
       pathnamePattern: '/notes/',
       workspaceId,
       requireTutorialWorkspace: false,
-      delay: 300,
+      delay: 1000,
     },
     noteTourAcceptSuggestion: {
       id: 'note-tour-accept-suggestion',
@@ -172,7 +173,53 @@ export function TutorialStepManager() {
       pathnamePattern: '/notes/',
       workspaceId,
       requireTutorialWorkspace: false,
-      delay: 500,
+      delay: 1000,
+    },
+    notificationRedirect: {
+      id: 'notification-redirect',
+      text: "Great work! Now let's check out your notifications.",
+      selector: 'header', // Target the header so it appears at top center
+      position: 'bottom' as const,
+      ripplePosition: 'center' as const,
+      showWhenState: 'notifications.redirectingToCogno',
+      pathnamePattern: undefined, // Show on any page
+      workspaceId: undefined,
+      requireTutorialWorkspace: false,
+      delay: 1000,
+      buttons: [
+        {
+          text: 'Continue',
+          action: () => {
+            router.push('/home');
+            sendTutorialEvent?.({ type: 'NAVIGATE_TO_COGNO' });
+            return 'cancel' as const;
+          },
+        },
+      ],
+    },
+    notificationBellIcon: {
+      id: 'notification-bell-icon',
+      text: 'Click the bell icon to see your notifications!',
+      selector: '[data-shepherd-target="notification-bell"]',
+      position: 'bottom' as const,
+      ripplePosition: 'center' as const,
+      showWhenState: 'notifications.waitingForBellClick',
+      pathnamePattern: '/home',
+      workspaceId: undefined, // Not workspace-specific
+      requireTutorialWorkspace: false,
+      delay: 1000,
+    },
+    notificationPanel: {
+      id: 'notification-panel',
+      text: 'Here are your notifications! Click on the AI notification to view it.',
+      selector: '[data-shepherd-target="notification-panel"]',
+      position: 'left' as const,
+      ripplePosition: 'center' as const,
+      showWhenState: 'notifications.waitingForNotificationView',
+      pathnamePattern: '/home',
+      workspaceId: undefined, // Not workspace-specific
+      requireTutorialWorkspace: false,
+      delay: 1000,
     },
   };
 
@@ -252,7 +299,34 @@ export function TutorialStepManager() {
                     ? stepConfigs.redirectToNotesNotes
                     : null;
             })()
-          : null;
+          : tutorialState.matches('notifications')
+            ? // Check notification substates
+              (() => {
+                if (
+                  typeof stateValue === 'object' &&
+                  stateValue !== null &&
+                  'notifications' in stateValue
+                ) {
+                  const notificationsState = (
+                    stateValue as { notifications: string }
+                  ).notifications;
+                  console.log('notificationsState', notificationsState);
+
+                  if (notificationsState === 'redirectingToCogno') {
+                    return stepConfigs.notificationRedirect;
+                  }
+
+                  if (notificationsState === 'waitingForBellClick') {
+                    return stepConfigs.notificationBellIcon;
+                  }
+
+                  if (notificationsState === 'waitingForNotificationView') {
+                    return stepConfigs.notificationPanel;
+                  }
+                }
+                return null;
+              })()
+            : null;
 
   const currentStepId = currentStep?.id || 'none';
 

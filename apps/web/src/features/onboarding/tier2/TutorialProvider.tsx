@@ -141,6 +141,36 @@ export function TutorialProvider({ children }: { children: ReactNode }) {
           }
           break;
 
+        case 'NOTIFICATION_BELL_CLICKED':
+          // Check if we're in the waitingForBellClick substate
+          if (
+            typeof stateValue === 'object' &&
+            stateValue !== null &&
+            'notifications' in stateValue &&
+            (stateValue as { notifications: string }).notifications ===
+              'waitingForBellClick'
+          ) {
+            console.log(
+              'Bell clicked, transitioning to waitingForNotificationView'
+            );
+            send({ type: 'BELL_CLICKED' });
+          }
+          break;
+
+        case 'NOTIFICATION_VIEWED':
+          // Check if we're in the waitingForNotificationView substate
+          if (
+            typeof stateValue === 'object' &&
+            stateValue !== null &&
+            'notifications' in stateValue &&
+            (stateValue as { notifications: string }).notifications ===
+              'waitingForNotificationView'
+          ) {
+            console.log('Notification viewed, completing tutorial');
+            send({ type: 'NOTIFICATION_VIEWED' });
+          }
+          break;
+
         default:
           break;
       }
