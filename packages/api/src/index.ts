@@ -69,3 +69,10 @@ export { useNoteEditor } from './hooks/useNoteEditor';
 // Export note helpers
 export { parseNote } from './utils/noteHelpers';
 
+// Export onboarding functions
+export {
+  generateFirstNote,
+  type GenerateFirstNoteRequest,
+  type GenerateFirstNoteResponse,
+} from './onboarding';
+

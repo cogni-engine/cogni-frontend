@@ -1,5 +1,6 @@
-import { setup, assign } from 'xstate';
+import { setup, assign, fromPromise } from 'xstate';
 import { OnboardingContext } from '../services/onboardingService';
+import { createNote } from '@/lib/api/notesApi';
 
 /**
  * Tutorial Input - data passed when creating the machine
@@ -48,6 +49,32 @@ export const tutorialMachine = setup({
     events: {} as TutorialEvent,
     input: {} as TutorialInput,
   },
+  actors: {
+    createFirstNote: fromPromise(
+      async ({
+        input,
+      }: {
+        input: {
+          workspaceId: number;
+          firstNote?: { title: string; content: string };
+        };
+      }) => {
+        const noteTitle = input.firstNote?.title || 'My First Note';
+        const noteContent =
+          input.firstNote?.content ||
+          'This is your first note! You can write anything here - ideas, tasks, thoughts, or plans. Try editing this text.';
+
+        const note = await createNote(
+          input.workspaceId,
+          noteTitle,
+          noteContent,
+          null
+        );
+
+        return { noteId: note.id };
+      }
+    ),
+  },
   actions: {
     storeTutorialNoteId: assign({
       tutorialNoteId: ({ event }) => {
@@ -92,10 +119,25 @@ export const tutorialMachine = setup({
       },
     },
     redirectToNotes: {
-      on: {
-        TUTORIAL_NOTE_CREATED: {
-          actions: 'storeTutorialNoteId',
+      invoke: {
+        id: 'createFirstNote',
+        src: 'createFirstNote',
+        input: ({ context }) => ({
+          workspaceId: context.tutorialWorkspaceId!,
+          firstNote: (context.onboardingContext as any)?.firstNote,
+        }),
+        onDone: {
+          actions: assign({
+            tutorialNoteId: ({ event }) => event.output.noteId,
+          }),
         },
+        onError: {
+          actions: ({ event }) => {
+            console.error('Failed to create tutorial note:', event.error);
+          },
+        },
+      },
+      on: {
         NEXT: 'noteTour',
         SKIP: 'completed',
       },

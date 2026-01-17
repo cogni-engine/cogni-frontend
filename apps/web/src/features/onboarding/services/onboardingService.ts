@@ -225,6 +225,49 @@ export class OnboardingService {
   }
 
   /**
+   * Save first note content to onboarding session context
+   */
+  async saveFirstNoteToContext(
+    onboardingSessionId: string,
+    firstNote: { title: string; content: string }
+  ): Promise<boolean> {
+    try {
+      // Get current context
+      const { data: session } = await this.supabase
+        .from('onboarding_sessions')
+        .select('context')
+        .eq('id', onboardingSessionId)
+        .single();
+
+      if (!session) {
+        console.error('Session not found:', onboardingSessionId);
+        return false;
+      }
+
+      // Update context with firstNote
+      const { error } = await this.supabase
+        .from('onboarding_sessions')
+        .update({
+          context: {
+            ...session.context,
+            firstNote,
+          },
+        })
+        .eq('id', onboardingSessionId);
+
+      if (error) {
+        console.error('Error saving first note to context:', error);
+        return false;
+      }
+
+      return true;
+    } catch (error) {
+      console.error('Error in saveFirstNoteToContext:', error);
+      return false;
+    }
+  }
+
+  /**
    * Restart onboarding (for testing)
    * Cancels all existing sessions and creates a new one
    */

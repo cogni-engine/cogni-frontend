@@ -17,7 +17,6 @@ import {
   getWorkspaceMessages,
   sendWorkspaceMessage,
 } from '@/lib/api/workspaceMessagesApi';
-import { createNote } from '@/lib/api/notesApi';
 
 interface TutorialContextType {
   isActive: boolean;
@@ -126,8 +125,6 @@ export function TutorialProvider({ children }: { children: ReactNode }) {
           return;
         }
 
-        console.log('All workspace members:', allMembers);
-
         if (!allMembers || allMembers.length === 0) {
           console.error(
             'No workspace members found for workspace',
@@ -150,8 +147,6 @@ export function TutorialProvider({ children }: { children: ReactNode }) {
           }
           return profile && profile.name === 'boss';
         });
-
-        console.log('Boss member found:', bossMember);
 
         if (!bossMember) {
           console.error('Boss workspace member not found in workspace members');
@@ -188,56 +183,6 @@ Feel free to ask me anything or explore the features. I'll be guiding you throug
     sendBossGreeting();
   }, [state, isActive, isLoading]);
 
-  // Create tutorial note when entering redirectToNotes state
-  useEffect(() => {
-    const createTutorialNote = async () => {
-      if (
-        !state.matches('redirectToNotes') ||
-        !state.context.tutorialWorkspaceId ||
-        state.context.tutorialNoteId || // Already created
-        !isActive ||
-        isLoading
-      ) {
-        return;
-      }
-
-      try {
-        const supabase = createClient();
-        const workspaceId = state.context.tutorialWorkspaceId;
-
-        // Create the tutorial note
-        const note = await createNote(
-          workspaceId,
-          'My First Note',
-          'This is your first note! You can write anything here - ideas, tasks, thoughts, or plans. Try editing this text.',
-          null // No folder
-        );
-
-        console.log('Created tutorial note:', note.id);
-
-        // Store note ID in tutorial context
-        send({ type: 'TUTORIAL_NOTE_CREATED', noteId: note.id });
-
-        // Update onboarding session context with note ID
-        if (state.context.onboardingSessionId) {
-          await supabase
-            .from('onboarding_sessions')
-            .update({
-              context: {
-                ...state.context.onboardingContext,
-                tutorialNoteId: note.id,
-              },
-            })
-            .eq('id', state.context.onboardingSessionId);
-        }
-      } catch (error) {
-        console.error('Failed to create tutorial note:', error);
-      }
-    };
-
-    createTutorialNote();
-  }, [state, isActive, isLoading, send]);
-
   // Detect when user clicks on the tutorial note
   useEffect(() => {
     if (
@@ -254,7 +199,6 @@ Feel free to ask me anything or explore the features. I'll be guiding you throug
     );
 
     if (noteIdInUrl) {
-      console.log('User opened tutorial note, moving to noteTour state');
       send({ type: 'NEXT' });
     }
   }, [state, pathname, isActive, send]);

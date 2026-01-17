@@ -35,6 +35,11 @@ export interface OnboardingContext {
   tutorialWorkspaceId?: number;
   bossWorkspaceMemberId?: number;
   bossAgentProfileId?: string;
+  // First note content
+  firstNote?: {
+    title: string;
+    content: string;
+  };
 }
 
 // Onboarding events
