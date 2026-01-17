@@ -137,9 +137,47 @@ export function TutorialStepManager() {
         },
       ],
     },
+    noteTourRequestAI: {
+      id: 'note-tour-request-ai',
+      text: 'Try asking AI to improve your note! Type something like "Make this more professional" and press Enter.',
+      // Target both mobile and desktop - selector will match either
+      selector: '[data-shepherd-target="note-ai-input"]',
+      position: 'top' as const,
+      ripplePosition: 'center' as const,
+      showWhenState: 'noteTour.waitingForAIRequest',
+      pathnamePattern: '/notes/',
+      workspaceId,
+      requireTutorialWorkspace: false,
+      delay: 500,
+    },
+    noteTourProcessingAI: {
+      id: 'note-tour-processing-ai',
+      text: 'AI is processing your request... Please wait while suggestions are generated.',
+      selector: '[data-shepherd-target="note-ai-input"]', // Keep focus on input area
+      position: 'top' as const,
+      ripplePosition: 'center' as const,
+      showWhenState: 'noteTour.processingAIRequest',
+      pathnamePattern: '/notes/',
+      workspaceId,
+      requireTutorialWorkspace: false,
+      delay: 300,
+    },
+    noteTourAcceptSuggestion: {
+      id: 'note-tour-accept-suggestion',
+      text: 'Great! Now accept the AI suggestion by clicking the "Accept" button above.',
+      selector: '[data-shepherd-target="note-accept-button"]',
+      position: 'bottom' as const,
+      ripplePosition: 'center' as const,
+      showWhenState: 'noteTour.waitingForAcceptance',
+      pathnamePattern: '/notes/',
+      workspaceId,
+      requireTutorialWorkspace: false,
+      delay: 500,
+    },
   };
 
   // Get current step config based on state and pathname
+  const stateValue = tutorialState.value as string;
   const currentStep =
     tutorialState.matches('idle') ||
     tutorialState.matches('initialize') ||
@@ -148,25 +186,82 @@ export function TutorialStepManager() {
       : tutorialState.matches('bossGreeting')
         ? stepConfigs.bossGreeting
         : tutorialState.matches('noteTour')
-          ? // Check if user is viewing the tutorial note
-            pathname?.includes(`/notes/${tutorialState.context.tutorialNoteId}`)
-            ? // User is in the note - show tour steps
-              tutorialState.context.currentStep === 0
-              ? stepConfigs.noteTourAIInput
-              : tutorialState.context.currentStep === 1
-                ? stepConfigs.noteTourToolbar
-                : tutorialState.context.currentStep === 2
-                  ? stepConfigs.noteTourEditor
-                  : null
-            : // User is not in the note - redirect them
-              pathname?.includes('/chat')
-              ? stepConfigs.redirectToNotesChat
-              : pathname?.includes('/notes')
-                ? stepConfigs.redirectToNotesNotes
-                : null
+          ? // Check substates first - use state value string matching
+            (() => {
+              const tutorialNoteId = tutorialState.context.tutorialNoteId;
+              const notePath = `/notes/${tutorialNoteId}`;
+
+              // Check if we're in a substate by checking the state value string
+              if (
+                typeof stateValue === 'object' &&
+                stateValue !== null &&
+                'noteTour' in stateValue
+              ) {
+                const noteTourState = (stateValue as { noteTour: string })
+                  .noteTour;
+                console.log('noteTourState', noteTourState);
+
+                if (noteTourState === 'waitingForAIRequest') {
+                  // User needs to request AI suggestion
+                  return pathname?.includes(notePath)
+                    ? stepConfigs.noteTourRequestAI
+                    : pathname?.includes('/chat')
+                      ? stepConfigs.redirectToNotesChat
+                      : pathname?.includes('/notes')
+                        ? stepConfigs.redirectToNotesNotes
+                        : null;
+                }
+
+                if (noteTourState === 'processingAIRequest') {
+                  // AI is processing - show loading state
+                  return pathname?.includes(notePath)
+                    ? stepConfigs.noteTourProcessingAI
+                    : pathname?.includes('/chat')
+                      ? stepConfigs.redirectToNotesChat
+                      : pathname?.includes('/notes')
+                        ? stepConfigs.redirectToNotesNotes
+                        : null;
+                }
+
+                if (noteTourState === 'waitingForAcceptance') {
+                  // User needs to accept suggestion
+                  return pathname?.includes(notePath)
+                    ? stepConfigs.noteTourAcceptSuggestion
+                    : pathname?.includes('/chat')
+                      ? stepConfigs.redirectToNotesChat
+                      : pathname?.includes('/notes')
+                        ? stepConfigs.redirectToNotesNotes
+                        : null;
+                }
+              }
+
+              // Legacy step-based tour (for backwards compatibility)
+              return pathname?.includes(notePath)
+                ? // User is in the note - show tour steps
+                  tutorialState.context.currentStep === 0
+                  ? stepConfigs.noteTourAIInput
+                  : tutorialState.context.currentStep === 1
+                    ? stepConfigs.noteTourToolbar
+                    : tutorialState.context.currentStep === 2
+                      ? stepConfigs.noteTourEditor
+                      : null
+                : // User is not in the note - redirect them
+                  pathname?.includes('/chat')
+                  ? stepConfigs.redirectToNotesChat
+                  : pathname?.includes('/notes')
+                    ? stepConfigs.redirectToNotesNotes
+                    : null;
+            })()
           : null;
 
   const currentStepId = currentStep?.id || 'none';
+
+  // Debug log
+  if (currentStep) {
+    console.log(
+      `[TutorialStepManager] Selected step: ${currentStep.id}, showWhenState: ${currentStep.showWhenState}, selector: ${currentStep.selector}`
+    );
+  }
 
   // Cancel tour when step ID changes
   useEffect(() => {

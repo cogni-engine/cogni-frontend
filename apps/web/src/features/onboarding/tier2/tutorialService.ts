@@ -1,6 +1,9 @@
 import { setup, assign, fromPromise } from 'xstate';
 import { OnboardingContext } from '../services/onboardingService';
-import { initializeTutorial } from './services/tutorialInitializationService';
+import {
+  initializeTutorial,
+  type TutorialInitializationData,
+} from './services/tutorialInitializationService';
 import { sendBossGreeting } from './services/bossGreetingService';
 import { createTutorialNote } from './services/tutorialNoteService';
 
@@ -40,6 +43,9 @@ export type TutorialEvent =
   | { type: 'BACK' }
   | { type: 'COMPLETE' }
   | { type: 'SKIP' }
+  | { type: 'AI_SUGGESTION_RECEIVED' }
+  | { type: 'AI_SUGGESTION_ACCEPTED' }
+  | { type: 'AI_SUGGESTION_LOADING' } // New loading state event
   | {
       type: 'xstate.done.actor.initializeTutorial';
       output: {
@@ -105,7 +111,8 @@ export const tutorialMachine = setup({
   },
   actions: {
     loadSessionData: assign(({ event }) => {
-      const output = (event as any).output;
+      const output = (event as { output: TutorialInitializationData | null })
+        .output;
 
       if (!output) {
         return {
@@ -146,6 +153,10 @@ export const tutorialMachine = setup({
       currentStep: 0,
       completedSteps: [],
     }),
+    navigateToNotifications: () => {
+      // Navigation will be handled by TutorialProvider via useEffect
+      // This action is a placeholder for clarity
+    },
   },
 }).createMachine({
   /** @xstate-layout N4IgpgJg5mDOIC5QBcCuyD2AnAlgQwBsA6HCAsAYgGUAVAQQCUaBtABgF1FQAHDWHZDgwA7LiAAeiAIwAmAKxEALAE5VygGzLFMqXIDscxQBoQAT0Qy9UournqAzK12G9rBwF93JtJlyEieADGggBulAByAKIAGiwcYrz8giJikggy9opEcvay2qxujrn2JuYIUnp6RMo5um5STjLKrPae3ujY+MRBoZQAQnQAwgDSbJxIIIkCQqITaRkyRPYyABxSUiuKKznKK+oypYhr2QWncjK2rHqabSA+nf49OGEUgwDyALIACgAykTSRMYJPjTFJzRD2DTVTb2dSKPSZWw6dSHdLbJYyJrqOGqRTqKS3e5+brBZ6UKjDACSXyBEymyVmoDSkPU0MUsPhiPOUhRZgsmSIK0xyis2LkUg0yhkni8IGEGAgcDERK6wKSM1SiAAtLyyjrCR1iSQyGA1aDGRJENpUZZFroHE45C43IoDb4ugFSWEzQzNelbNkhawMgU8c0Vja9MolIUCpp7AZWK7ZSr-IEMABbbjkZCQH0a8EIQyLByrVhO1Z6RTByOs5r7ZSyNzqSorGXuIA */
@@ -212,6 +223,7 @@ export const tutorialMachine = setup({
       },
     },
     noteTour: {
+      initial: 'waitingForAIRequest',
       entry: 'resetStep',
       invoke: {
         src: 'createTutorialNote',
@@ -232,6 +244,59 @@ export const tutorialMachine = setup({
           },
         },
       },
+      states: {
+        waitingForAIRequest: {
+          on: {
+            AI_SUGGESTION_LOADING: 'processingAIRequest',
+            AI_SUGGESTION_RECEIVED: 'waitingForAcceptance',
+            NEXT: [
+              {
+                target: '#tutorial.noteTour',
+                actions: 'incrementStep',
+                guard: ({ context }) => context.currentStep < 2,
+              },
+              {
+                target: '#tutorial.active',
+                actions: 'resetStep',
+              },
+            ],
+            BACK: {
+              actions: 'decrementStep',
+            },
+            SKIP: '#tutorial.completed',
+          },
+        },
+        processingAIRequest: {
+          // Loading state while AI is processing the suggestion
+          on: {
+            AI_SUGGESTION_RECEIVED: 'waitingForAcceptance',
+            SKIP: '#tutorial.completed',
+          },
+        },
+        waitingForAcceptance: {
+          on: {
+            AI_SUGGESTION_ACCEPTED: {
+              target: '#tutorial.notifications',
+              actions: 'navigateToNotifications',
+            },
+            NEXT: [
+              {
+                target: '#tutorial.noteTour',
+                actions: 'incrementStep',
+                guard: ({ context }) => context.currentStep < 2,
+              },
+              {
+                target: '#tutorial.active',
+                actions: 'resetStep',
+              },
+            ],
+            BACK: {
+              target: '#tutorial.noteTour.waitingForAIRequest',
+            },
+            SKIP: '#tutorial.completed',
+          },
+        },
+      },
       on: {
         NEXT: [
           {
@@ -249,6 +314,10 @@ export const tutorialMachine = setup({
         },
         SKIP: 'completed',
       },
+    },
+    notifications: {
+      type: 'final',
+      // Static state for now - navigation handled by TutorialProvider
     },
     active: {
       on: {

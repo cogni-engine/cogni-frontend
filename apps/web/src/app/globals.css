@@ -186,8 +186,8 @@ body {
   color: rgba(255, 255, 255, 0.95) !important;
 }
 
-.shepherd-cancel-icon:hover {
-  color: rgba(255, 255, 255, 0.9) !important;
+.shepherd-cancel-icon {
+  display: none !important;
 }
 
 /* Shepherd Arrow - Hidden */
@@ -195,159 +195,65 @@ body {
   display: none !important;
 }
 
-/* Shepherd Target - Pulsing Circle Ripple Effect */
-@keyframes shepherd-ripple {
-  0% {
-    transform: scale(0.6);
-    opacity: 0.8;
+/* Shepherd Target - Brightness Pulsing Effect */
+@keyframes shepherd-pulse {
+  0%,
+  100% {
+    filter: brightness(0.7);
   }
   50% {
-    transform: scale(1.5);
-    opacity: 0.4;
-  }
-  100% {
-    transform: scale(2.5);
-    opacity: 0;
+    filter: brightness(1.3);
   }
 }
 
-@keyframes shepherd-ripple-inner {
-  0% {
-    transform: scale(0.7);
-    opacity: 0.6;
+@keyframes shepherd-pulse-overlay {
+  0%,
+  100% {
+    opacity: 0;
   }
   50% {
-    transform: scale(1.3);
-    opacity: 0.3;
-  }
-  100% {
-    transform: scale(2.2);
-    opacity: 0;
+    opacity: 0.25;
   }
 }
 
 .shepherd-target {
   position: relative !important;
-  overflow: visible !important;
+  animation: shepherd-pulse 2s ease-in-out infinite !important;
+  transition: filter 0.2s ease-out !important;
+  /* isolation: isolate !important; */
 }
 
 .shepherd-target::before {
   content: '' !important;
   position: absolute !important;
-  width: 100px !important;
-  height: 100px !important;
-  border-radius: 50% !important;
-  background: radial-gradient(
-    circle,
-    rgba(255, 255, 255, 0.3) 0%,
-    rgba(255, 255, 255, 0.15) 40%,
-    transparent 70%
-  ) !important;
+  inset: 0 !important;
+  background: rgba(255, 255, 255, 0.2) !important;
+  border-radius: inherit !important;
   pointer-events: none !important;
-  z-index: 9999 !important;
-  animation: shepherd-ripple 2s ease-out infinite !important;
-  /* Default position: center */
-  top: 50% !important;
-  left: 50% !important;
-  transform: translate(-50%, -50%) scale(0.6) !important;
-  transform-origin: center center !important;
+  z-index: -1 !important;
+  animation: shepherd-pulse-overlay 1.8s ease-in-out infinite !important;
+  mix-blend-mode: overlay !important;
 }
 
-.shepherd-target::after {
-  content: '' !important;
-  position: absolute !important;
-  width: 80px !important;
-  height: 80px !important;
-  border-radius: 50% !important;
-  background: radial-gradient(
-    circle,
-    rgba(255, 255, 255, 0.4) 0%,
-    rgba(255, 255, 255, 0.2) 50%,
-    transparent 80%
-  ) !important;
-  pointer-events: none !important;
-  z-index: 10000 !important;
-  animation: shepherd-ripple-inner 2s ease-out infinite !important;
-  /* Default position: center */
-  top: 50% !important;
-  left: 50% !important;
-  transform: translate(-50%, -50%) scale(0.7) !important;
-  transform-origin: center center !important;
-}
-
-/* Position variants - can be set via data attribute or class */
-.shepherd-target[data-ripple-position='top-left']::before,
-.shepherd-target[data-ripple-position='top-left']::after {
-  top: 20% !important;
-  left: 20% !important;
-  transform: translate(-50%, -50%) scale(0.8) !important;
-}
-
-.shepherd-target[data-ripple-position='top-right']::before,
-.shepherd-target[data-ripple-position='top-right']::after {
-  top: 20% !important;
-  left: 80% !important;
-  transform: translate(-50%, -50%) scale(0.8) !important;
-}
-
-.shepherd-target[data-ripple-position='bottom-left']::before,
-.shepherd-target[data-ripple-position='bottom-left']::after {
-  top: 80% !important;
-  left: 20% !important;
-  transform: translate(-50%, -50%) scale(0.8) !important;
-}
-
-.shepherd-target[data-ripple-position='bottom-right']::before,
-.shepherd-target[data-ripple-position='bottom-right']::after {
-  top: 80% !important;
-  left: 80% !important;
-  transform: translate(-50%, -50%) scale(0.8) !important;
-}
-
-.shepherd-target[data-ripple-position='top']::before,
-.shepherd-target[data-ripple-position='top']::after {
-  top: 20% !important;
-  left: 50% !important;
-  transform: translate(-50%, -50%) scale(0.8) !important;
-}
-
-.shepherd-target[data-ripple-position='bottom']::before,
-.shepherd-target[data-ripple-position='bottom']::after {
-  top: 80% !important;
-  left: 50% !important;
-  transform: translate(-50%, -50%) scale(0.8) !important;
-}
-
-.shepherd-target[data-ripple-position='left']::before,
-.shepherd-target[data-ripple-position='left']::after {
-  top: 50% !important;
-  left: 20% !important;
-  transform: translate(-50%, -50%) scale(0.8) !important;
-}
-
-.shepherd-target[data-ripple-position='right']::before,
-.shepherd-target[data-ripple-position='right']::after {
-  top: 50% !important;
-  left: 80% !important;
-  transform: translate(-50%, -50%) scale(0.8) !important;
-}
-
-/* Hide ripple effects when target element is focused */
-.shepherd-target:focus::before,
-.shepherd-target:focus::after,
-.shepherd-target:focus-within::before,
-.shepherd-target:focus-within::after {
+/* Pause pulsing when target element is focused */
+.shepherd-target:focus,
+.shepherd-target:focus-within {
   animation-play-state: paused !important;
-  opacity: 0 !important;
-  transition: opacity 0.2s ease-out !important;
+  filter: brightness(1) !important;
+}
+
+.shepherd-target:focus::before,
+.shepherd-target:focus-within::before {
+  animation-play-state: paused !important;
+
 }
 
 /* Hide shepherd tooltip when target has focus */
-body:has(.shepherd-target:focus-within) .shepherd-element {
+/* body:has(.shepherd-target:focus-within) .shepherd-element {
   opacity: 0 !important;
   pointer-events: none !important;
   transition: opacity 0.15s ease-out !important;
-}
+} */
 
 /* Smooth transition for tooltip visibility */
 .shepherd-element {

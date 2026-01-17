@@ -46,8 +46,30 @@ export function TutorialProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const bus = getAppEventBus();
     const unsubscribe = bus.subscribe((event: AppEvent) => {
-      const stateValue = state.value as string;
+      const stateValue = state.value;
       const context = state.context;
+
+      // Type guard to check if we're in a noteTour substate
+      const isNoteTourState = (
+        value: typeof stateValue
+      ): value is {
+        noteTour:
+          | 'waitingForAIRequest'
+          | 'processingAIRequest'
+          | 'waitingForAcceptance';
+      } => {
+        return (
+          typeof value === 'object' &&
+          value !== null &&
+          'noteTour' in value &&
+          ((value as { noteTour: unknown }).noteTour ===
+            'waitingForAIRequest' ||
+            (value as { noteTour: unknown }).noteTour ===
+              'processingAIRequest' ||
+            (value as { noteTour: unknown }).noteTour ===
+              'waitingForAcceptance')
+        );
+      };
 
       switch (event.type) {
         case 'WORKSPACE_MESSAGE_SENT':
@@ -60,12 +82,62 @@ export function TutorialProvider({ children }: { children: ReactNode }) {
           break;
 
         case 'NOTE_OPENED':
+          // Check if we're in noteTour (any substate)
           if (
-            stateValue === 'noteTour' &&
+            isNoteTourState(stateValue) &&
             context.tutorialNoteId === event.noteId
           ) {
             // User opened tutorial note - tour will start automatically
             console.log('Tutorial note opened');
+          }
+          break;
+
+        case 'NOTE_AI_SUGGESTION_REQUESTED':
+          // Check if we're in the waitingForAIRequest substate
+          // XState represents nested states as objects, not dot-notation strings
+          if (
+            isNoteTourState(stateValue) &&
+            stateValue.noteTour === 'waitingForAIRequest' &&
+            context.tutorialNoteId === event.noteId
+          ) {
+            console.log(
+              'AI suggestion requested, transitioning to loading state'
+            );
+            send({ type: 'AI_SUGGESTION_LOADING' });
+
+            // After a short delay, transition to waitingForAcceptance
+            // (AI suggestions are applied immediately, so we can transition quickly)
+            setTimeout(() => {
+              send({ type: 'AI_SUGGESTION_RECEIVED' });
+            }, 500);
+          } else {
+            console.log('AI suggestion requested but state mismatch:', {
+              stateValue,
+              stateValueType: typeof stateValue,
+              tutorialNoteId: context.tutorialNoteId,
+              eventNoteId: event.noteId,
+            });
+          }
+          break;
+
+        case 'NOTE_AI_SUGGESTION_ACCEPTED':
+          // Check if we're in the waitingForAcceptance substate
+          if (
+            isNoteTourState(stateValue) &&
+            stateValue.noteTour === 'waitingForAcceptance' &&
+            context.tutorialNoteId === event.noteId
+          ) {
+            console.log(
+              'AI suggestion accepted, transitioning to notifications'
+            );
+            send({ type: 'AI_SUGGESTION_ACCEPTED' });
+          } else {
+            console.log('AI suggestion accepted but state mismatch:', {
+              stateValue,
+              stateValueType: typeof stateValue,
+              tutorialNoteId: context.tutorialNoteId,
+              eventNoteId: event.noteId,
+            });
           }
           break;
 

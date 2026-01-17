@@ -91,7 +91,7 @@ export function ShepherdProvider({ children, tours }: ShepherdProviderProps) {
       useModalOverlay: false,
       defaultStepOptions: {
         cancelIcon: {
-          enabled: true,
+          enabled: false,
         },
         classes: 'shepherd-theme-custom ',
         scrollTo: { behavior: 'smooth', block: 'center' },
@@ -162,7 +162,7 @@ export function ShepherdProvider({ children, tours }: ShepherdProviderProps) {
       useModalOverlay: false,
       defaultStepOptions: {
         cancelIcon: {
-          enabled: true,
+          enabled: false,
         },
         classes: 'shepherd-theme-custom',
         scrollTo: { behavior: 'smooth', block: 'center' },
@@ -175,14 +175,7 @@ export function ShepherdProvider({ children, tours }: ShepherdProviderProps) {
 
     const step = tour.addStep({
       ...stepOptions,
-      buttons: stepOptions.buttons || [
-        {
-          text: 'Close',
-          action: () => {
-            return 'cancel';
-          },
-        },
-      ],
+      buttons: stepOptions.buttons || [],
     }) as Step;
 
     // Add ripple position data attribute to target element

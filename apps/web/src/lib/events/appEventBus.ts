@@ -10,7 +10,19 @@ export type AppEvent =
       workspaceId: number;
       messageText?: string;
     }
-  | { type: 'NOTE_OPENED'; noteId: number };
+  | { type: 'NOTE_OPENED'; noteId: number; workspaceId: number }
+  | {
+      type: 'NOTE_AI_SUGGESTION_REQUESTED';
+      noteId: number;
+      workspaceId: number;
+      instruction: string;
+    }
+  | {
+      type: 'NOTE_AI_SUGGESTION_ACCEPTED';
+      noteId: number;
+      workspaceId: number;
+      suggestionId?: string;
+    };
 
 class AppEventBus {
   private listeners = new Set<(event: AppEvent) => void>();

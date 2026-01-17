@@ -27,6 +27,7 @@ import type { Note } from '@/types/note';
 import { Check, X } from 'lucide-react';
 import GlassCard from '@/components/glass-design/GlassCard';
 import GlassButton from '@/components/glass-design/GlassButton';
+import { useAppEvents } from '@/hooks/useAppEvents';
 
 export default function CollaborativeNoteEditor({
   noteId,
@@ -64,6 +65,9 @@ export default function CollaborativeNoteEditor({
 
   // Editor focus state for mobile toolbar switching
   const [isEditorFocused, setIsEditorFocused] = useState(false);
+
+  // App events for decoupled feature communication
+  const appEvents = useAppEvents();
 
   // Fetch workspace members if this is a group note
   const { members } = useWorkspaceMembers(
@@ -239,9 +243,18 @@ export default function CollaborativeNoteEditor({
     hasPendingSuggestions,
     hasOtherUserSuggestions,
     insertBlockSuggestion,
-    acceptAllSuggestions,
+    acceptAllSuggestions: originalAcceptAllSuggestions,
     rejectAllSuggestions,
   } = useDiffSuggestion({ editor, userId: userInfo?.id || null });
+
+  // Wrap acceptAllSuggestions to emit event
+  const acceptAllSuggestions = useCallback(() => {
+    originalAcceptAllSuggestions();
+    // Emit event after accepting - tutorial can react if needed
+    if (note?.workspace_id) {
+      appEvents.emitNoteAISuggestionAccepted(id, note.workspace_id);
+    }
+  }, [originalAcceptAllSuggestions, appEvents, note?.workspace_id, id]);
 
   // Convert Y.Doc to annotated markdown locally (no API call needed)
   const fetchYdocMarkdown = useCallback((): string => {
@@ -316,8 +329,18 @@ export default function CollaborativeNoteEditor({
   const handleAISuggest = useCallback(async () => {
     if (!aiInstruction.trim() || aiLoading || !editor) return;
 
+    const instructionText = aiInstruction; // Save instruction before clearing
     setAiLoading(true);
     setAiError(null);
+
+    // Emit loading event immediately when AI starts processing
+    if (note?.workspace_id) {
+      appEvents.emitNoteAISuggestionRequested(
+        id,
+        note.workspace_id,
+        instructionText
+      );
+    }
 
     try {
       // Get fresh annotated markdown with block IDs from local Y.Doc
@@ -418,6 +441,9 @@ export default function CollaborativeNoteEditor({
 
       // Clear instruction after successful application
       setAiInstruction('');
+
+      // Note: The AI_SUGGESTION_REQUESTED event was already emitted when loading started
+      // No need to emit again here
     } catch (err) {
       console.error('AI suggestion failed:', err);
       setAiError(
@@ -434,6 +460,9 @@ export default function CollaborativeNoteEditor({
     insertBlockSuggestion,
     findBlockPosition,
     wrapBlockInDeleteSuggestion,
+    appEvents,
+    note?.workspace_id,
+    id,
   ]);
 
   // Handle toggle task list
@@ -567,6 +596,7 @@ export default function CollaborativeNoteEditor({
           </GlassButton>
           <GlassButton
             onClick={acceptAllSuggestions}
+            data-shepherd-target='note-accept-button'
             className='flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-medium transition-all bg-green-500/15 text-green-300 border-green-500/20 hover:bg-green-500/25 hover:text-green-200 hover:border-green-500/40 hover:scale-105'
           >
             <Check className='w-4 h-4' /> Accept
@@ -624,7 +654,7 @@ export default function CollaborativeNoteEditor({
       />
 
       {/* Desktop AI Input - always visible on desktop */}
-      <div className='hidden md:block'>
+      <div className='hidden md:block' data-shepherd-target='note-ai-input'>
         <DesktopAIInput
           aiInstruction={aiInstruction}
           aiLoading={aiLoading}
