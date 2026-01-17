@@ -5,11 +5,12 @@
 
 import { createClient } from '@/lib/supabase/browserClient';
 import { createNote } from '@/lib/api/notesApi';
+import { OnboardingContext } from '../..';
 
 export interface TutorialNoteInput {
   workspaceId: number;
   sessionId: string;
-  onboardingContext: Record<string, unknown>;
+  onboardingContext: OnboardingContext;
 }
 
 export interface TutorialNoteOutput {
@@ -27,8 +28,9 @@ export async function createTutorialNote(
   // Create the tutorial note
   const note = await createNote(
     workspaceId,
-    'My First Note',
-    'This is your first note! You can write anything here - ideas, tasks, thoughts, or plans. Try editing this text.',
+    onboardingContext.firstNote?.title || 'My First Note',
+    onboardingContext.firstNote?.content ||
+      'This is your first note! You can write anything here - ideas, tasks, thoughts, or plans. Try editing this text.',
     null // No folder
   );
 

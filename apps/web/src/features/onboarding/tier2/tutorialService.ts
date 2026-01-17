@@ -1,5 +1,5 @@
 import { setup, assign, fromPromise } from 'xstate';
-import { OnboardingContext } from '../services/onboardingService';
+import { OnboardingContext } from '../types';
 import {
   initializeTutorial,
   type TutorialInitializationData,
@@ -98,10 +98,14 @@ const createTutorialNoteActor = fromPromise(
     input: {
       workspaceId: number;
       sessionId: string;
-      onboardingContext: Record<string, unknown>;
+      onboardingContext: OnboardingContext;
     };
   }) => {
-    return createTutorialNote(input);
+    return createTutorialNote({
+      workspaceId: input.workspaceId,
+      sessionId: input.sessionId,
+      onboardingContext: input.onboardingContext,
+    });
   }
 );
 
@@ -296,10 +300,7 @@ export const tutorialMachine = setup({
         input: ({ context }) => ({
           workspaceId: context.tutorialWorkspaceId!,
           sessionId: context.onboardingSessionId!,
-          onboardingContext: (context.onboardingContext || {}) as Record<
-            string,
-            unknown
-          >,
+          onboardingContext: context.onboardingContext!,
         }),
         onDone: {
           actions: 'storeTutorialNoteId',

@@ -4,11 +4,12 @@
  */
 
 import { createClient } from '@/lib/supabase/browserClient';
+import { OnboardingContext } from '../../types';
 
 export interface TutorialInitializationData {
   onboardingSessionId?: string;
   tutorialWorkspaceId?: number;
-  onboardingContext?: Record<string, unknown>;
+  onboardingContext?: OnboardingContext;
   isTier2Active?: boolean;
 }
 
@@ -50,7 +51,8 @@ export async function initializeTutorial(): Promise<TutorialInitializationData |
     const result: TutorialInitializationData = {
       onboardingSessionId: session.id,
       tutorialWorkspaceId: workspace?.id,
-      onboardingContext: session.context || {},
+      onboardingContext:
+        (session.context as OnboardingContext) || ({} as OnboardingContext),
       isTier2Active: session.state === 'tier2',
     };
 
