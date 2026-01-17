@@ -1,5 +1,5 @@
 import { setup, assign, fromPromise } from 'xstate';
-import { OnboardingContext } from '../services/onboardingService';
+import { OnboardingContext } from '../types';
 import {
   initializeTutorial,
   type TutorialInitializationData,
@@ -100,7 +100,11 @@ const createTutorialNoteActor = fromPromise(
       onboardingContext: OnboardingContext;
     };
   }) => {
-    return createTutorialNote(input);
+    return createTutorialNote({
+      workspaceId: input.workspaceId,
+      sessionId: input.sessionId,
+      onboardingContext: input.onboardingContext,
+    });
   }
 );
 
