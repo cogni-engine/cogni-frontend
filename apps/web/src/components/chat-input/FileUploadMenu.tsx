@@ -88,7 +88,7 @@ export default function FileUploadMenu({
         <input
           ref={imageInputRef}
           type='file'
-          accept='image/*'
+          accept='image/png,image/jpeg,image/jpg,image/gif,image/webp'
           multiple
           className='hidden'
           onChange={handleFileSelect}
