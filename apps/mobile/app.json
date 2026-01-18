@@ -11,6 +11,8 @@
     "ios": {
       "supportsTablet": true,
       "buildNumber": "2",
+      "bundleIdentifier": "com.cogno.ai.mobile",
+      "usesAppleSignIn": true,
       "infoPlist": {
         "NSAppTransportSecurity": {
           "NSAllowsArbitraryLoads": true,

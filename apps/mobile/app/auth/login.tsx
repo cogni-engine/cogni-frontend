@@ -13,6 +13,7 @@ import {
 } from 'react-native';
 import { supabase } from '@/lib/supabase';
 import GoogleSignInButton from '@/components/auth/google-sign-in-button';
+import AppleSignInButton from '@/components/auth/apple-sign-in-button';
 
 export default function LoginScreen() {
   const [email, setEmail] = useState('');
@@ -114,6 +115,10 @@ export default function LoginScreen() {
 
               <View style={styles.googleButtonContainer}>
                 <GoogleSignInButton />
+              </View>
+
+              <View style={styles.appleButtonContainer}>
+                <AppleSignInButton />
               </View>
 
               <View style={styles.registerContainer}>
@@ -233,6 +238,10 @@ const styles = StyleSheet.create({
   },
   googleButtonContainer: {
     width: '100%',
+  },
+  appleButtonContainer: {
+    width: '100%',
+    marginTop: 12,
   },
   registerContainer: {
     marginTop: 32,
