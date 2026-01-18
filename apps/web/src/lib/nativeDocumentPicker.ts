@@ -10,7 +10,7 @@ import { isInMobileWebView } from './platform';
 export interface NativeFileOptions {
   /**
    * MIME types to allow (e.g., ['application/pdf', 'text/*'])
-   * Use '*/*' for all file types
+   * Use 'all' for all file types
    */
   type?: string[];
 
@@ -48,8 +48,9 @@ function generateRequestId(): string {
 
 /**
  * Convert base64 string to File object
+ * (Same implementation as nativeImagePicker for consistency)
  */
-export function base64ToFile(
+function base64ToFile(
   base64: string,
   fileName: string,
   mimeType: string = 'application/octet-stream'
@@ -101,10 +102,7 @@ export function initNativeDocumentPickerListener() {
           callback.resolve(message.data);
           pendingRequests.delete(message.requestId);
         }
-      } else if (
-        message.type === 'NATIVE_FILE_CANCELED' &&
-        message.requestId
-      ) {
+      } else if (message.type === 'NATIVE_FILE_CANCELED' && message.requestId) {
         const callback = pendingRequests.get(message.requestId);
         if (callback) {
           callback.reject(new Error('User canceled file selection'));
@@ -117,7 +115,7 @@ export function initNativeDocumentPickerListener() {
           pendingRequests.delete(message.requestId);
         }
       }
-    } catch (error) {
+    } catch {
       // Not a JSON message or not for us, ignore
     }
   };
@@ -153,7 +151,9 @@ export function pickNativeFile(
       options,
     };
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     if ((window as any).ReactNativeWebView) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (window as any).ReactNativeWebView.postMessage(JSON.stringify(message));
     } else {
       reject(new Error('ReactNativeWebView not found'));

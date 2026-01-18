@@ -32,7 +32,6 @@ export {
   pickNativeFileAsFile,
   initNativeDocumentPickerListener,
   nativeFileToFile,
-  base64ToFile as base64ToFileForDocument,
   type NativeFileData,
   type NativeFileOptions,
 } from './nativeDocumentPicker';
