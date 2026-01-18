@@ -6,6 +6,8 @@ import {
 } from './services/tutorialInitializationService';
 import { sendBossGreeting } from './services/bossGreetingService';
 import { createTutorialNote } from './services/tutorialNoteService';
+import { createTutorialNotification } from '@/lib/api/notificationsApi';
+import { createClient } from '@/lib/supabase/browserClient';
 
 /**
  * Tutorial Input - data passed when creating the machine
@@ -120,10 +122,52 @@ const createAINotificationActor = fromPromise(
       sessionId: string;
     };
   }) => {
-    console.log('Creating AI notification:', input);
-    //  this needs to be implemented
-    console.log('AI notification created:');
-    return { notificationId: 1 };
+    console.log('[Tutorial Notification] 🚀 Starting creation:', {
+      workspaceId: input.workspaceId,
+      sessionId: input.sessionId,
+    });
+
+    try {
+      // Get user ID
+      const supabase = createClient();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (!user) {
+        console.error('[Tutorial Notification] ❌ User not found');
+        throw new Error('User not found');
+      }
+
+      console.log('[Tutorial Notification] ✅ User ID:', user.id);
+
+      // Get locale
+      const locale =
+        typeof navigator !== 'undefined' ? navigator.language : 'en';
+      console.log('[Tutorial Notification] 🌍 Locale:', locale);
+
+      // Call backend API to generate task and notification
+      console.log('[Tutorial Notification] 📡 Calling API...');
+      const result = await createTutorialNotification(
+        input.sessionId,
+        user.id,
+        locale
+      );
+
+      console.log('[Tutorial Notification] ✅ API Response:', {
+        taskId: result.taskId,
+        notificationId: result.notificationId,
+      });
+
+      console.log(
+        '[Tutorial Notification] 🎉 SUCCESS! Notification will appear in ~5 seconds'
+      );
+
+      return { notificationId: result.notificationId };
+    } catch (error) {
+      console.error('[Tutorial Notification] ❌ ERROR:', error);
+      throw error;
+    }
   }
 );
 

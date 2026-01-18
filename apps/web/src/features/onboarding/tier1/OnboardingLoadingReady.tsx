@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 
 interface OnboardingLoadingReadyProps {
   userName?: string;
@@ -16,34 +16,57 @@ export function OnboardingLoadingReady({
   handleContinue,
 }: OnboardingLoadingReadyProps) {
   const [progress, setProgress] = useState(0);
+  const workspaceReadyRef = useRef(workspaceReady);
+  const handleContinueRef = useRef(handleContinue);
 
+  // Keep refs up to date
   useEffect(() => {
-    // Simulate loading with smooth progress
-    const duration = 3000; // 3 seconds total
-    const intervalTime = 30; // Update every 30ms
-    const steps = duration / intervalTime;
-    const increment = 100 / steps;
-
-    const interval = setInterval(() => {
-      setProgress(prev => {
-        const next = prev + increment;
-        if (next >= 100) {
-          clearInterval(interval);
-          return 100;
-        }
-        return next;
-      });
-    }, intervalTime);
-
-    return () => clearInterval(interval);
-  }, []);
-
-  // Auto-transition to payment when workspace is ready
-  useEffect(() => {
-    if (workspaceReady) {
-      handleContinue();
-    }
+    workspaceReadyRef.current = workspaceReady;
+    handleContinueRef.current = handleContinue;
   }, [workspaceReady, handleContinue]);
+
+  useEffect(() => {
+    // Simulate loading with smooth progress using requestAnimationFrame
+    // Progress animation runs for minimum 5 seconds, but waits for actual processing
+    const minDuration = 5000; // Minimum 5 seconds total
+    const startTime = Date.now();
+    let processingCompleted = false;
+    let animationId: number | null = null;
+    const checkInterval: NodeJS.Timeout | null = null;
+
+    const animate = () => {
+      const elapsed = Date.now() - startTime;
+      const t = Math.min(elapsed / minDuration, 1); // Normalize to 0-1
+
+      // Simple stepped progress: 5 steps in 5 seconds (20% per second)
+      const step = Math.floor(t * 5); // 0-4
+      const newProgress = Math.min(step * 20, 100);
+
+      setProgress(newProgress);
+
+      // Check if processing completed
+      if (workspaceReadyRef.current && !processingCompleted) {
+        processingCompleted = true;
+      }
+
+      // Continue animation until minimum duration is met AND processing is completed
+      if (t < 1 || !processingCompleted) {
+        animationId = requestAnimationFrame(animate);
+      } else {
+        // Minimum duration met and processing completed, trigger transition
+        setTimeout(() => {
+          handleContinueRef.current();
+        }, 300); // Small delay for smooth transition
+      }
+    };
+
+    animationId = requestAnimationFrame(animate);
+
+    return () => {
+      if (checkInterval) clearInterval(checkInterval);
+      if (animationId !== null) cancelAnimationFrame(animationId);
+    };
+  }, []); // Run only once on mount
 
   // Calculate the circle properties for the progress ring
   const size = 160;
@@ -91,7 +114,7 @@ export function OnboardingLoadingReady({
             strokeDashoffset={strokeDashoffset}
             strokeLinecap='round'
             style={{
-              transition: 'stroke-dashoffset 0.3s ease-out',
+              transition: 'stroke-dashoffset 0.1s linear',
             }}
           />
           <defs>
