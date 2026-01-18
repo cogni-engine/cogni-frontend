@@ -97,6 +97,23 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
               `/workspace/${workspaceId}/chat?messageId=${messageId}`
             );
           }
+        } else if (data.type === 'TRIGGER_NOTIFICATION') {
+          console.log('🌐 Global TRIGGER_NOTIFICATION from mobile:', {
+            notificationId: data.notificationId,
+          });
+
+          // Navigate to /cogno if not already there
+          if (pathname !== '/cogno') {
+            router.push('/cogno');
+          }
+
+          // Dispatch event to open notification panel after a short delay
+          // to ensure navigation completes
+          setTimeout(() => {
+            window.dispatchEvent(
+              new CustomEvent('header:toggleNotificationPanel')
+            );
+          }, 100);
         }
       } catch (error) {
         // Ignore errors from unrelated postMessage events
@@ -109,7 +126,7 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
     return () => {
       window.removeEventListener('message', handleMobileNavigation);
     };
-  }, [router]);
+  }, [router, pathname]);
 
   const showTopLevelChrome =
     pathname === '/cogno' ||
