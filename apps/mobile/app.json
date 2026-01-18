@@ -7,7 +7,7 @@
     "icon": "./assets/images/cogno-icon.png",
     "scheme": "cogni",
     "userInterfaceStyle": "automatic",
-    "newArchEnabled": true,
+    "newArchEnabled": false,
     "ios": {
       "supportsTablet": true,
       "buildNumber": "2",
@@ -19,8 +19,7 @@
           "NSAllowsLocalNetworking": true
         },
         "ITSAppUsesNonExemptEncryption": false
-      },
-      "bundleIdentifier": "com.cogno.ai.mobile"
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -38,8 +37,7 @@
         "ACCESS_NETWORK_STATE",
         "POST_NOTIFICATIONS"
       ],
-      "package": "com.cogno.ai.mobile",
-      "googleServicesFile": "./google-services.json"
+      "package": "com.cogno.ai.mobile"
     },
     "web": {
       "output": "static",
@@ -48,16 +46,7 @@
     "plugins": [
       "expo-router",
       "expo-secure-store",
-      [
-        "expo-notifications",
-        {
-          "icon": "./assets/images/cogno-icon.png",
-          "color": "#ffffff",
-          "sounds": [],
-          "mode": "production",
-          "enableBackgroundRemoteNotifications": true
-        }
-      ]
+      "expo-apple-authentication"
     ],
     "experiments": {
       "typedRoutes": true,

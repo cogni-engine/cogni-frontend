@@ -132,12 +132,21 @@ importers:
       '@supabase/supabase-js':
         specifier: ^2.58.0
         version: 2.81.0
+      crypto-js:
+        specifier: ^4.2.0
+        version: 4.2.0
       expo:
         specifier: ~54.0.23
         version: 54.0.23(@babel/core@7.28.5)(@expo/metro-runtime@6.1.2)(expo-router@6.0.14)(graphql@16.12.0)(react-native-webview@13.16.0(react-native@0.81.5(@babel/core@7.28.5)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0))(react-native@0.81.5(@babel/core@7.28.5)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0)
+      expo-apple-authentication:
+        specifier: ~8.0.8
+        version: 8.0.8(expo@54.0.23)(react-native@0.81.5(@babel/core@7.28.5)(@types/react@19.1.17)(react@19.1.0))
       expo-constants:
         specifier: ~18.0.10
         version: 18.0.10(expo@54.0.23)(react-native@0.81.5(@babel/core@7.28.5)(@types/react@19.1.17)(react@19.1.0))
+      expo-crypto:
+        specifier: ~15.0.8
+        version: 15.0.8(expo@54.0.23)
       expo-dev-client:
         specifier: ~6.0.17
         version: 6.0.17(expo@54.0.23)
@@ -217,6 +226,9 @@ importers:
         specifier: 0.5.1
         version: 0.5.1(@babel/core@7.28.5)(react-native@0.81.5(@babel/core@7.28.5)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0)
     devDependencies:
+      '@types/crypto-js':
+        specifier: ^4.2.2
+        version: 4.2.2
       '@types/react':
         specifier: ~19.1.0
         version: 19.1.17
@@ -267,7 +279,7 @@ importers:
         version: 1.10.6(@types/react-dom@19.2.2(@types/react@19.2.2))(@types/react@19.2.2)(graphql@16.12.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       '@copilotkit/runtime':
         specifier: ^1.10.6
-        version: 1.10.6(@ag-ui/client@0.0.39)(@ag-ui/core@0.0.39)(@ag-ui/encoder@0.0.39)(@ag-ui/langgraph@0.0.18(@ag-ui/client@0.0.39)(@ag-ui/core@0.0.39)(@opentelemetry/api@1.9.0)(openai@4.104.0(ws@8.18.3)(zod@3.25.76))(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(@ag-ui/proto@0.0.39)(@aws-crypto/sha256-js@5.2.0)(@aws-sdk/client-bedrock-agent-runtime@3.927.0)(@aws-sdk/client-bedrock-runtime@3.927.0)(@aws-sdk/client-kendra@3.927.0)(@aws-sdk/credential-provider-node@3.927.0)(@browserbasehq/sdk@2.6.0)(@browserbasehq/stagehand@1.14.0(@playwright/test@1.56.1)(deepmerge@4.3.1)(dotenv@16.6.1)(openai@4.104.0(ws@8.18.3)(zod@3.25.76))(zod@4.1.12))(@ibm-cloud/watsonx-ai@1.7.2)(@opentelemetry/api@1.9.0)(@smithy/util-utf8@2.3.0)(@supabase/supabase-js@2.81.0)(axios@1.13.2)(fast-xml-parser@5.2.5)(google-auth-library@8.9.0)(html-to-text@9.0.5)(ibm-cloud-sdk-core@5.4.3)(ignore@5.3.2)(jsonwebtoken@9.0.2)(lodash@4.17.21)(playwright@1.56.1)(react@19.1.0)(weaviate-client@3.9.0)(ws@8.18.3)
+        version: 1.10.6(@ag-ui/client@0.0.39)(@ag-ui/core@0.0.39)(@ag-ui/encoder@0.0.39)(@ag-ui/langgraph@0.0.18(@ag-ui/client@0.0.39)(@ag-ui/core@0.0.39)(@opentelemetry/api@1.9.0)(openai@4.104.0(ws@8.18.3)(zod@3.25.76))(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(@ag-ui/proto@0.0.39)(@aws-crypto/sha256-js@5.2.0)(@aws-sdk/client-bedrock-agent-runtime@3.927.0)(@aws-sdk/client-bedrock-runtime@3.927.0)(@aws-sdk/client-kendra@3.927.0)(@aws-sdk/credential-provider-node@3.927.0)(@browserbasehq/sdk@2.6.0)(@browserbasehq/stagehand@1.14.0(@playwright/test@1.56.1)(deepmerge@4.3.1)(dotenv@16.6.1)(openai@4.104.0(ws@8.18.3)(zod@3.25.76))(zod@4.1.12))(@ibm-cloud/watsonx-ai@1.7.2)(@opentelemetry/api@1.9.0)(@smithy/util-utf8@2.3.0)(@supabase/supabase-js@2.81.0)(axios@1.13.2)(crypto-js@4.2.0)(fast-xml-parser@5.2.5)(google-auth-library@8.9.0)(html-to-text@9.0.5)(ibm-cloud-sdk-core@5.4.3)(ignore@5.3.2)(jsonwebtoken@9.0.2)(lodash@4.17.21)(playwright@1.56.1)(react@19.1.0)(weaviate-client@3.9.0)(ws@8.18.3)
       '@hocuspocus/provider':
         specifier: ^2.13.6
         version: 2.15.3(y-protocols@1.0.6(yjs@13.6.27))(yjs@13.6.27)
@@ -3762,6 +3774,9 @@ packages:
   '@types/cookie@0.6.0':
     resolution: {integrity: sha512-4Kh9a6B2bQciAhf7FSuMRRkUWecJgJu9nPnx3yzpsfXX/c50REIqpHY4C82bXP90qrLtXtkDxTZosYO3UpOwlA==}
 
+  '@types/crypto-js@4.2.2':
+    resolution: {integrity: sha512-sDOLlVbHhXpAUAL0YHDUUwDZf3iN4Bwi4W6a0W0b+QcAezUbRtH4FVb+9J4h+XFPW7l/gQ9F8qC7P+Ec4k8QVQ==}
+
   '@types/debug@4.1.12':
     resolution: {integrity: sha512-vIChWdVG3LG1SMxEvI/AK+FWJthlrqlTu7fbrlywTkkaONwk/UAGaULXRlf8vkzFBLVm0zkMdCquhL5aOjhXPQ==}
 
@@ -4700,6 +4715,9 @@ packages:
     resolution: {integrity: sha512-uV2QOWP2nWzsy2aMp8aRibhi9dlzF5Hgh5SHaB9OiTGEyDTiJJyx0uy51QXdyWbtAHNua4XJzUKca3OzKUd3vA==}
     engines: {node: '>= 8'}
 
+  crypto-js@4.2.0:
+    resolution: {integrity: sha512-KALDyEYgpY+Rlob/iriUtjV6d5Eq+Y191A5g4UqLAi8CyGP9N1+FdVbkc1SxKc2r4YAYqG8JzO2KGL+AizD70Q==}
+
   crypto-random-string@2.0.0:
     resolution: {integrity: sha512-v1plID3y9r/lPhviJ1wrXpLeyUIGAZ2SHNYTEapm7/8A9nLPoyvVp3RK/EPFqn5kEznyWgYZNsRtYYIWbuG8KA==}
     engines: {node: '>=8'}
@@ -5173,6 +5191,12 @@ packages:
   exec-async@2.2.0:
     resolution: {integrity: sha512-87OpwcEiMia/DeiKFzaQNBNFeN3XkkpYIh9FyOqq5mS2oKv3CBE67PXoEKcr6nodWdXNogTiQ0jE2NGuoffXPw==}
 
+  expo-apple-authentication@8.0.8:
+    resolution: {integrity: sha512-TwCHWXYR1kS0zaeV7QZKLWYluxsvqL31LFJubzK30njZqeWoWO89HZ8nZVaeXbFV1LrArKsze4BmMb+94wS0AQ==}
+    peerDependencies:
+      expo: '*'
+      react-native: '*'
+
   expo-application@7.0.7:
     resolution: {integrity: sha512-Jt1/qqnoDUbZ+bK91+dHaZ1vrPDtRBOltRa681EeedkisqguuEeUx4UHqwVyDK2oHWsK6lO3ojetoA4h8OmNcg==}
     peerDependencies:
@@ -5190,6 +5214,11 @@ packages:
     peerDependencies:
       expo: '*'
       react-native: '*'
+
+  expo-crypto@15.0.8:
+    resolution: {integrity: sha512-aF7A914TB66WIlTJvl5J6/itejfY78O7dq3ibvFltL9vnTALJ/7LYHvLT4fwmx9yUNS6ekLBtDGWivFWnj2Fcw==}
+    peerDependencies:
+      expo: '*'
 
   expo-dev-client@6.0.17:
     resolution: {integrity: sha512-zVilIum3sqXFbhYhPT6TuxR3ddH/IfHL82FiOTqJUiYaTQqun1I6ogSvU1djhY1eXUYhfYIBieQNWMVjXPxMvw==}
@@ -10281,7 +10310,7 @@ snapshots:
       - encoding
       - graphql
 
-  '@copilotkit/runtime@1.10.6(@ag-ui/client@0.0.39)(@ag-ui/core@0.0.39)(@ag-ui/encoder@0.0.39)(@ag-ui/langgraph@0.0.18(@ag-ui/client@0.0.39)(@ag-ui/core@0.0.39)(@opentelemetry/api@1.9.0)(openai@4.104.0(ws@8.18.3)(zod@3.25.76))(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(@ag-ui/proto@0.0.39)(@aws-crypto/sha256-js@5.2.0)(@aws-sdk/client-bedrock-agent-runtime@3.927.0)(@aws-sdk/client-bedrock-runtime@3.927.0)(@aws-sdk/client-kendra@3.927.0)(@aws-sdk/credential-provider-node@3.927.0)(@browserbasehq/sdk@2.6.0)(@browserbasehq/stagehand@1.14.0(@playwright/test@1.56.1)(deepmerge@4.3.1)(dotenv@16.6.1)(openai@4.104.0(ws@8.18.3)(zod@3.25.76))(zod@4.1.12))(@ibm-cloud/watsonx-ai@1.7.2)(@opentelemetry/api@1.9.0)(@smithy/util-utf8@2.3.0)(@supabase/supabase-js@2.81.0)(axios@1.13.2)(fast-xml-parser@5.2.5)(google-auth-library@8.9.0)(html-to-text@9.0.5)(ibm-cloud-sdk-core@5.4.3)(ignore@5.3.2)(jsonwebtoken@9.0.2)(lodash@4.17.21)(playwright@1.56.1)(react@19.1.0)(weaviate-client@3.9.0)(ws@8.18.3)':
+  '@copilotkit/runtime@1.10.6(@ag-ui/client@0.0.39)(@ag-ui/core@0.0.39)(@ag-ui/encoder@0.0.39)(@ag-ui/langgraph@0.0.18(@ag-ui/client@0.0.39)(@ag-ui/core@0.0.39)(@opentelemetry/api@1.9.0)(openai@4.104.0(ws@8.18.3)(zod@3.25.76))(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(@ag-ui/proto@0.0.39)(@aws-crypto/sha256-js@5.2.0)(@aws-sdk/client-bedrock-agent-runtime@3.927.0)(@aws-sdk/client-bedrock-runtime@3.927.0)(@aws-sdk/client-kendra@3.927.0)(@aws-sdk/credential-provider-node@3.927.0)(@browserbasehq/sdk@2.6.0)(@browserbasehq/stagehand@1.14.0(@playwright/test@1.56.1)(deepmerge@4.3.1)(dotenv@16.6.1)(openai@4.104.0(ws@8.18.3)(zod@3.25.76))(zod@4.1.12))(@ibm-cloud/watsonx-ai@1.7.2)(@opentelemetry/api@1.9.0)(@smithy/util-utf8@2.3.0)(@supabase/supabase-js@2.81.0)(axios@1.13.2)(crypto-js@4.2.0)(fast-xml-parser@5.2.5)(google-auth-library@8.9.0)(html-to-text@9.0.5)(ibm-cloud-sdk-core@5.4.3)(ignore@5.3.2)(jsonwebtoken@9.0.2)(lodash@4.17.21)(playwright@1.56.1)(react@19.1.0)(weaviate-client@3.9.0)(ws@8.18.3)':
     dependencies:
       '@ag-ui/client': 0.0.39
       '@ag-ui/core': 0.0.39
@@ -10292,7 +10321,7 @@ snapshots:
       '@copilotkit/shared': 1.10.6
       '@graphql-yoga/plugin-defer-stream': 3.16.2(graphql-yoga@5.16.2(graphql@16.12.0))(graphql@16.12.0)
       '@langchain/aws': 0.1.15(@langchain/core@0.3.79(@opentelemetry/api@1.9.0)(openai@4.104.0(ws@8.18.3)(zod@3.25.76)))
-      '@langchain/community': 0.3.57(@aws-crypto/sha256-js@5.2.0)(@aws-sdk/client-bedrock-agent-runtime@3.927.0)(@aws-sdk/client-bedrock-runtime@3.927.0)(@aws-sdk/client-kendra@3.927.0)(@aws-sdk/credential-provider-node@3.927.0)(@browserbasehq/sdk@2.6.0)(@browserbasehq/stagehand@1.14.0(@playwright/test@1.56.1)(deepmerge@4.3.1)(dotenv@16.6.1)(openai@4.104.0(ws@8.18.3)(zod@3.25.76))(zod@4.1.12))(@ibm-cloud/watsonx-ai@1.7.2)(@langchain/aws@0.1.15(@langchain/core@0.3.79(@opentelemetry/api@1.9.0)(openai@4.104.0(ws@8.18.3)(zod@3.25.76))))(@langchain/core@0.3.79(@opentelemetry/api@1.9.0)(openai@4.104.0(ws@8.18.3)(zod@3.25.76)))(@opentelemetry/api@1.9.0)(@smithy/util-utf8@2.3.0)(@supabase/supabase-js@2.81.0)(axios@1.13.2)(fast-xml-parser@5.2.5)(google-auth-library@8.9.0)(html-to-text@9.0.5)(ibm-cloud-sdk-core@5.4.3)(ignore@5.3.2)(jsonwebtoken@9.0.2)(lodash@4.17.21)(openai@4.104.0(ws@8.18.3)(zod@3.25.76))(playwright@1.56.1)(weaviate-client@3.9.0)(ws@8.18.3)
+      '@langchain/community': 0.3.57(@aws-crypto/sha256-js@5.2.0)(@aws-sdk/client-bedrock-agent-runtime@3.927.0)(@aws-sdk/client-bedrock-runtime@3.927.0)(@aws-sdk/client-kendra@3.927.0)(@aws-sdk/credential-provider-node@3.927.0)(@browserbasehq/sdk@2.6.0)(@browserbasehq/stagehand@1.14.0(@playwright/test@1.56.1)(deepmerge@4.3.1)(dotenv@16.6.1)(openai@4.104.0(ws@8.18.3)(zod@3.25.76))(zod@4.1.12))(@ibm-cloud/watsonx-ai@1.7.2)(@langchain/aws@0.1.15(@langchain/core@0.3.79(@opentelemetry/api@1.9.0)(openai@4.104.0(ws@8.18.3)(zod@3.25.76))))(@langchain/core@0.3.79(@opentelemetry/api@1.9.0)(openai@4.104.0(ws@8.18.3)(zod@3.25.76)))(@opentelemetry/api@1.9.0)(@smithy/util-utf8@2.3.0)(@supabase/supabase-js@2.81.0)(axios@1.13.2)(crypto-js@4.2.0)(fast-xml-parser@5.2.5)(google-auth-library@8.9.0)(html-to-text@9.0.5)(ibm-cloud-sdk-core@5.4.3)(ignore@5.3.2)(jsonwebtoken@9.0.2)(lodash@4.17.21)(openai@4.104.0(ws@8.18.3)(zod@3.25.76))(playwright@1.56.1)(weaviate-client@3.9.0)(ws@8.18.3)
       '@langchain/core': 0.3.79(@opentelemetry/api@1.9.0)(openai@4.104.0(ws@8.18.3)(zod@3.25.76))
       '@langchain/google-gauth': 0.1.8(@langchain/core@0.3.79(@opentelemetry/api@1.9.0)(openai@4.104.0(ws@8.18.3)(zod@3.25.76)))(zod@3.25.76)
       '@langchain/langgraph-sdk': 0.0.70(@langchain/core@0.3.79(@opentelemetry/api@1.9.0)(openai@4.104.0(ws@8.18.3)(zod@3.25.76)))(react@19.1.0)
@@ -11301,7 +11330,7 @@ snapshots:
     transitivePeerDependencies:
       - aws-crt
 
-  '@langchain/community@0.3.57(@aws-crypto/sha256-js@5.2.0)(@aws-sdk/client-bedrock-agent-runtime@3.927.0)(@aws-sdk/client-bedrock-runtime@3.927.0)(@aws-sdk/client-kendra@3.927.0)(@aws-sdk/credential-provider-node@3.927.0)(@browserbasehq/sdk@2.6.0)(@browserbasehq/stagehand@1.14.0(@playwright/test@1.56.1)(deepmerge@4.3.1)(dotenv@16.6.1)(openai@4.104.0(ws@8.18.3)(zod@3.25.76))(zod@4.1.12))(@ibm-cloud/watsonx-ai@1.7.2)(@langchain/aws@0.1.15(@langchain/core@0.3.79(@opentelemetry/api@1.9.0)(openai@4.104.0(ws@8.18.3)(zod@3.25.76))))(@langchain/core@0.3.79(@opentelemetry/api@1.9.0)(openai@4.104.0(ws@8.18.3)(zod@3.25.76)))(@opentelemetry/api@1.9.0)(@smithy/util-utf8@2.3.0)(@supabase/supabase-js@2.81.0)(axios@1.13.2)(fast-xml-parser@5.2.5)(google-auth-library@8.9.0)(html-to-text@9.0.5)(ibm-cloud-sdk-core@5.4.3)(ignore@5.3.2)(jsonwebtoken@9.0.2)(lodash@4.17.21)(openai@4.104.0(ws@8.18.3)(zod@3.25.76))(playwright@1.56.1)(weaviate-client@3.9.0)(ws@8.18.3)':
+  '@langchain/community@0.3.57(@aws-crypto/sha256-js@5.2.0)(@aws-sdk/client-bedrock-agent-runtime@3.927.0)(@aws-sdk/client-bedrock-runtime@3.927.0)(@aws-sdk/client-kendra@3.927.0)(@aws-sdk/credential-provider-node@3.927.0)(@browserbasehq/sdk@2.6.0)(@browserbasehq/stagehand@1.14.0(@playwright/test@1.56.1)(deepmerge@4.3.1)(dotenv@16.6.1)(openai@4.104.0(ws@8.18.3)(zod@3.25.76))(zod@4.1.12))(@ibm-cloud/watsonx-ai@1.7.2)(@langchain/aws@0.1.15(@langchain/core@0.3.79(@opentelemetry/api@1.9.0)(openai@4.104.0(ws@8.18.3)(zod@3.25.76))))(@langchain/core@0.3.79(@opentelemetry/api@1.9.0)(openai@4.104.0(ws@8.18.3)(zod@3.25.76)))(@opentelemetry/api@1.9.0)(@smithy/util-utf8@2.3.0)(@supabase/supabase-js@2.81.0)(axios@1.13.2)(crypto-js@4.2.0)(fast-xml-parser@5.2.5)(google-auth-library@8.9.0)(html-to-text@9.0.5)(ibm-cloud-sdk-core@5.4.3)(ignore@5.3.2)(jsonwebtoken@9.0.2)(lodash@4.17.21)(openai@4.104.0(ws@8.18.3)(zod@3.25.76))(playwright@1.56.1)(weaviate-client@3.9.0)(ws@8.18.3)':
     dependencies:
       '@browserbasehq/stagehand': 1.14.0(@playwright/test@1.56.1)(deepmerge@4.3.1)(dotenv@16.6.1)(openai@4.104.0(ws@8.18.3)(zod@3.25.76))(zod@4.1.12)
       '@ibm-cloud/watsonx-ai': 1.7.2
@@ -11327,6 +11356,7 @@ snapshots:
       '@browserbasehq/sdk': 2.6.0
       '@smithy/util-utf8': 2.3.0
       '@supabase/supabase-js': 2.81.0
+      crypto-js: 4.2.0
       fast-xml-parser: 5.2.5
       google-auth-library: 8.9.0
       html-to-text: 9.0.5
@@ -13284,6 +13314,8 @@ snapshots:
 
   '@types/cookie@0.6.0': {}
 
+  '@types/crypto-js@4.2.2': {}
+
   '@types/debug@4.1.12':
     dependencies:
       '@types/ms': 2.1.0
@@ -14330,6 +14362,8 @@ snapshots:
       shebang-command: 2.0.0
       which: 2.0.2
 
+  crypto-js@4.2.0: {}
+
   crypto-random-string@2.0.0: {}
 
   css-in-js-utils@3.1.0:
@@ -14702,7 +14736,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  eslint-module-utils@2.12.1(@typescript-eslint/parser@8.46.3(eslint@9.39.1(jiti@2.6.1))(typescript@5.9.3))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.10.1(eslint-plugin-import@2.32.0)(eslint@9.39.1(jiti@2.6.1)))(eslint@9.39.1(jiti@2.6.1)):
+  eslint-module-utils@2.12.1(@typescript-eslint/parser@8.46.3(eslint@9.39.1(jiti@2.6.1))(typescript@5.9.3))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.10.1)(eslint@9.39.1(jiti@2.6.1)):
     dependencies:
       debug: 3.2.7
     optionalDependencies:
@@ -14733,7 +14767,7 @@ snapshots:
       doctrine: 2.1.0
       eslint: 9.39.1(jiti@2.6.1)
       eslint-import-resolver-node: 0.3.9
-      eslint-module-utils: 2.12.1(@typescript-eslint/parser@8.46.3(eslint@9.39.1(jiti@2.6.1))(typescript@5.9.3))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.10.1(eslint-plugin-import@2.32.0)(eslint@9.39.1(jiti@2.6.1)))(eslint@9.39.1(jiti@2.6.1))
+      eslint-module-utils: 2.12.1(@typescript-eslint/parser@8.46.3(eslint@9.39.1(jiti@2.6.1))(typescript@5.9.3))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.10.1)(eslint@9.39.1(jiti@2.6.1))
       hasown: 2.0.2
       is-core-module: 2.16.1
       is-glob: 4.0.3
@@ -14891,6 +14925,11 @@ snapshots:
 
   exec-async@2.2.0: {}
 
+  expo-apple-authentication@8.0.8(expo@54.0.23)(react-native@0.81.5(@babel/core@7.28.5)(@types/react@19.1.17)(react@19.1.0)):
+    dependencies:
+      expo: 54.0.23(@babel/core@7.28.5)(@expo/metro-runtime@6.1.2)(expo-router@6.0.14)(graphql@16.12.0)(react-native-webview@13.16.0(react-native@0.81.5(@babel/core@7.28.5)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0))(react-native@0.81.5(@babel/core@7.28.5)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0)
+      react-native: 0.81.5(@babel/core@7.28.5)(@types/react@19.1.17)(react@19.1.0)
+
   expo-application@7.0.7(expo@54.0.23):
     dependencies:
       expo: 54.0.23(@babel/core@7.28.5)(@expo/metro-runtime@6.1.2)(expo-router@6.0.14)(graphql@16.12.0)(react-native-webview@13.16.0(react-native@0.81.5(@babel/core@7.28.5)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0))(react-native@0.81.5(@babel/core@7.28.5)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0)
@@ -14913,6 +14952,11 @@ snapshots:
       react-native: 0.81.5(@babel/core@7.28.5)(@types/react@19.1.17)(react@19.1.0)
     transitivePeerDependencies:
       - supports-color
+
+  expo-crypto@15.0.8(expo@54.0.23):
+    dependencies:
+      base64-js: 1.5.1
+      expo: 54.0.23(@babel/core@7.28.5)(@expo/metro-runtime@6.1.2)(expo-router@6.0.14)(graphql@16.12.0)(react-native-webview@13.16.0(react-native@0.81.5(@babel/core@7.28.5)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0))(react-native@0.81.5(@babel/core@7.28.5)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0)
 
   expo-dev-client@6.0.17(expo@54.0.23):
     dependencies:

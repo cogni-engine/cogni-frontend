@@ -1,118 +1,138 @@
+import { View, StyleSheet, Alert, Platform, TouchableOpacity, Text } from 'react-native';
 import { supabase } from '@/lib/supabase';
-import { useEffect } from 'react';
-import { TouchableOpacity, Text, StyleSheet } from 'react-native';
-import * as WebBrowser from 'expo-web-browser';
+import { useEffect, useState } from 'react';
 import { AntDesign } from '@expo/vector-icons';
-
-WebBrowser.maybeCompleteAuthSession();
+import * as AppleAuthentication from 'expo-apple-authentication';
+import CryptoJS from 'crypto-js';
 
 export default function AppleSignInButton() {
-  function extractParamsFromUrl(url: string) {
-    const parsedUrl = new URL(url);
-    const hash = parsedUrl.hash.substring(1); // Remove the leading '#'
-    const params = new URLSearchParams(hash);
+  const [isAvailable, setIsAvailable] = useState(false);
 
-    return {
-      access_token: params.get('access_token'),
-      expires_in: parseInt(params.get('expires_in') || '0'),
-      refresh_token: params.get('refresh_token'),
-      token_type: params.get('token_type'),
-      provider_token: params.get('provider_token'),
-      code: params.get('code'),
-    };
-  }
-
-  async function onSignInButtonPress() {
-    console.debug('Apple sign in - start');
-
-    const redirectUrl = 'cogni://auth/callback';
-
-    const res = await supabase.auth.signInWithOAuth({
-      provider: 'apple',
-      options: {
-        redirectTo: redirectUrl,
-        skipBrowserRedirect: true,
-      },
-    });
-
-    const appleOAuthUrl = res.data.url;
-
-    if (!appleOAuthUrl) {
-      console.error('no oauth url found!');
+  useEffect(() => {
+    // Only check availability on iOS
+    if (Platform.OS !== 'ios') {
       return;
     }
 
-    const result = await WebBrowser.openAuthSessionAsync(
-      appleOAuthUrl,
-      redirectUrl,
-      { showInRecents: true }
-    ).catch((err) => {
-      console.error('Apple sign in - openAuthSessionAsync - error', { err });
-      console.log(err);
-    });
-
-    console.debug('Apple sign in - openAuthSessionAsync - result', { result });
-
-    if (result && result.type === 'success') {
-      console.debug('Apple sign in - openAuthSessionAsync - success');
-      const params = extractParamsFromUrl(result.url);
-      console.debug('Apple sign in - extracted params', { params });
-
-      if (params.access_token && params.refresh_token) {
-        console.debug('Apple sign in - setSession');
-        const { data, error } = await supabase.auth.setSession({
-          access_token: params.access_token,
-          refresh_token: params.refresh_token,
-        });
-
-        console.debug('Apple sign in - setSession - success', { data, error });
-        return;
-      } else {
-        console.error('Apple sign in - setSession - failed');
-        // sign in/up failed
-      }
-    } else {
-      console.error('Apple sign in - openAuthSessionAsync - failed');
-    }
-  }
-
-  // to warm up the browser
-  useEffect(() => {
-    WebBrowser.warmUpAsync();
-
-    return () => {
-      WebBrowser.coolDownAsync();
+    // Check if Apple Authentication is available on this device
+    const checkAvailability = async () => {
+      const available = await AppleAuthentication.isAvailableAsync();
+      setIsAvailable(available);
     };
+    checkAvailability();
   }, []);
 
+  const handleAppleSignIn = async () => {
+    try {
+      console.log('Apple sign in - native - start');
+      
+      // Generate a raw nonce for security (as recommended by Supabase docs)
+      const rawNonce = Math.random().toString(36).substring(2, 15) + 
+                       Math.random().toString(36).substring(2, 15);
+      
+      // Apple requires the nonce to be SHA-256 hashed
+      const hashedNonce = CryptoJS.SHA256(rawNonce).toString(CryptoJS.enc.Hex);
+      
+      const credential = await AppleAuthentication.signInAsync({
+        requestedScopes: [
+          AppleAuthentication.AppleAuthenticationScope.FULL_NAME,
+          AppleAuthentication.AppleAuthenticationScope.EMAIL,
+        ],
+        nonce: hashedNonce, // Pass the HASHED nonce to Apple
+      });
+
+      console.log('Apple credential received:', credential);
+
+      // Sign in to Supabase with the Apple identity token
+      if (credential.identityToken) {
+        const { data, error } = await supabase.auth.signInWithIdToken({
+          provider: 'apple',
+          token: credential.identityToken,
+          nonce: rawNonce, // Pass the RAW nonce to Supabase (not hashed!)
+        });
+
+        if (error) {
+          console.error('Supabase sign in error:', error);
+          Alert.alert('Sign In Error', error.message);
+          return;
+        }
+
+        console.log('Successfully signed in with Apple:', data);
+
+        // Apple only provides the user's full name on the first sign-in
+        // Save it to user metadata for future use (as recommended by Supabase docs)
+        if (credential.fullName) {
+          const nameParts = [
+            credential.fullName.givenName,
+            credential.fullName.middleName,
+            credential.fullName.familyName,
+          ].filter(Boolean);
+
+          if (nameParts.length > 0) {
+            console.log('Saving user full name to metadata:', nameParts.join(' '));
+            
+            const { error: updateError } = await supabase.auth.updateUser({
+              data: {
+                full_name: nameParts.join(' '),
+                given_name: credential.fullName.givenName || null,
+                family_name: credential.fullName.familyName || null,
+              },
+            });
+
+            if (updateError) {
+              console.error('Error updating user metadata:', updateError);
+              // Don't fail the sign-in if metadata update fails
+            }
+          }
+        }
+      } else {
+        console.error('No identity token received from Apple');
+        Alert.alert('Sign In Error', 'No identity token received from Apple');
+      }
+    } catch (e: any) {
+      if (e.code === 'ERR_REQUEST_CANCELED') {
+        console.log('User canceled Apple sign in');
+        // User canceled the sign-in flow - do nothing
+      } else {
+        console.error('Apple sign in error:', e);
+        Alert.alert('Sign In Error', e.message || 'An error occurred');
+      }
+    }
+  };
+
+  // Only show button if Apple Authentication is available
+  if (!isAvailable || Platform.OS !== 'ios') {
+    return null;
+  }
+
   return (
-    <TouchableOpacity
-      onPress={onSignInButtonPress}
-      style={styles.button}
-      activeOpacity={0.8}
-    >
-      <AntDesign name="apple1" size={20} color="#fff" style={styles.icon} />
-      <Text style={styles.text}>Continue with Apple</Text>
-    </TouchableOpacity>
+    <View style={styles.container}>
+      <TouchableOpacity
+        onPress={handleAppleSignIn}
+        style={styles.button}
+        activeOpacity={0.8}
+      >
+        <AntDesign name="apple" size={20} color="#fff" style={styles.icon} />
+        <Text style={styles.text}>Continue with Apple</Text>
+      </TouchableOpacity>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  container: {
+    width: '100%',
+  },
   button: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'transparent',
-    borderWidth: 1,
-    borderColor: '#52525b', // zinc-600
+    backgroundColor: '#000',
     borderRadius: 24,
     paddingVertical: 12,
     paddingHorizontal: 24,
     justifyContent: 'center',
-    shadowColor: '#fff',
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.06,
-    shadowRadius: 1,
-    elevation: 2,
+    width: '100%',
+    height: 48,
   },
   icon: {
     marginRight: 12,
