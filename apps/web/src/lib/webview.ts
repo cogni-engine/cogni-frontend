@@ -2,13 +2,14 @@
  * Utility functions for mobile webview communication
  */
 
+import { isInMobileWebView as checkIsInMobileWebView } from './platform';
+
 /**
  * Check if the app is running inside a mobile webview
+ * @deprecated Use `usePlatform().isInWebView` from PlatformContext instead
  */
 export function isInMobileWebView(): boolean {
-  if (typeof window === 'undefined') return false;
-
-  return !!(window as any).ReactNativeWebView;
+  return checkIsInMobileWebView();
 }
 
 /**

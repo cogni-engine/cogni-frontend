@@ -10,6 +10,7 @@ import { AvatarCard } from './components/AvatarCard';
 import { AvatarCropDialog } from './components/AvatarCropDialog';
 import { AiSuggestionToggle } from './components/AiSuggestionToggle';
 import { DeleteAccountSection } from './components/DeleteAccountSection';
+import { PlatformInfoCard } from './components/PlatformInfoCard';
 import { useUserSettings } from './hooks/useUserSettings';
 import {
   getCroppedImageBlob,
@@ -222,6 +223,8 @@ export default function UserSettingsClient() {
               onToggle={toggleAiSuggestion}
               saving={savingAiSuggestion}
             />
+
+            <PlatformInfoCard />
           </div>
 
           <AvatarCard
