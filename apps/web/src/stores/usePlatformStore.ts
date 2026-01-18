@@ -104,7 +104,7 @@ export const useFullPlatformInfo = () => {
   const userAgent = usePlatformStore(state => state.userAgent);
   const isMobile = usePlatformStore(state => state.isMobile);
   const isNativeMobile = usePlatformStore(state => state.isNativeMobile);
-  
+
   return {
     platform,
     os,
