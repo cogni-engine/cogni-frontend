@@ -181,7 +181,7 @@ export function pickNativeImage(
  */
 export function pickNativeCamera(
   options: NativeImageOptions = {}
-): Promise<NativeImageData> {
+): Promise<NativeImageData | NativeImageData[]> {
   if (!isInMobileWebView()) {
     return Promise.reject(new Error('Not in mobile webview'));
   }
@@ -238,6 +238,12 @@ export async function pickNativeCameraAsFile(
   options: NativeImageOptions = {}
 ): Promise<File> {
   const result = await pickNativeCamera(options);
+
+  // Camera always returns a single image, but handle array just in case
+  if (Array.isArray(result)) {
+    return nativeImageToFile(result[0]);
+  }
+
   return nativeImageToFile(result);
 }
 
