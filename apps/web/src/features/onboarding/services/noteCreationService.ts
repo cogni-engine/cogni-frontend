@@ -36,7 +36,8 @@ export function generateNoteTitle(userMessage: string): string {
 export async function createNoteFromMessage(
   workspaceId: number,
   userMessage: string,
-  userName?: string
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  _userName?: string
 ): Promise<{ id: number; title: string }> {
   const title = generateNoteTitle(userMessage);
   const content = userMessage.trim();

@@ -6,7 +6,7 @@ import { useNotifications } from '@/hooks/useNotifications';
 import { createClient } from '@/lib/supabase/browserClient';
 import type { User } from '@supabase/supabase-js';
 import { UserMenu } from '@/components/layout/UserMenu';
-import { BellIcon, Menu, PenSquare } from 'lucide-react';
+import { BellIcon, TextAlignStart } from 'lucide-react';
 import {
   dispatchHeaderEvent,
   HEADER_EVENTS,
@@ -34,7 +34,6 @@ export default function Header() {
   const pageTitle = pageTitleMap[pathname] ?? null;
   const [user, setUser] = useState<User | null>(null);
   const [isMounted, setIsMounted] = useState(false);
-  const [currentTime, setCurrentTime] = useState('');
   const [isMobile, setIsMobile] = useState(false);
 
   // Get folders for notes page
@@ -87,7 +86,6 @@ export default function Header() {
   const userId = user?.id ?? null;
   const {
     notifications: pastDueNotifications,
-    unreadCount,
     fetchPastDueNotifications,
     fetchUnreadCount,
   } = useNotifications(userId || undefined);
@@ -137,7 +135,8 @@ export default function Header() {
           hour12: false,
         })
         .replace(/,/g, '');
-      setCurrentTime(formatted);
+      // Time updated but not currently displayed
+      void formatted; // Suppress unused variable warning
     };
 
     updateTime();
@@ -165,10 +164,6 @@ export default function Header() {
     return unsubscribe;
   }, [userId, fetchUnreadCount]);
 
-  const handleCreateThread = () => {
-    dispatchHeaderEvent(HEADER_EVENTS.CREATE_THREAD);
-  };
-
   const handleToggleThreadSidebar = () => {
     dispatchHeaderEvent(HEADER_EVENTS.TOGGLE_THREAD_SIDEBAR);
   };
@@ -193,95 +188,79 @@ export default function Header() {
   };
 
   return (
-    <header className='fixed top-0 left-0 right-0 flex items-center justify-between px-4 md:px-6 py-3 z-100'>
-      {/* Left Side - Thread Controls + Logo */}
-      <div className='flex items-center gap-4'>
-        {isHomePage && isMounted && (
-          <div className='flex items-center gap-2'>
-            {/* Thread Sidebar Toggle */}
-            <button
-              onClick={handleToggleThreadSidebar}
-              className='flex items-center gap-1.5 text-white/60 hover:text-white transition-colors group'
-              title='Threads'
+    <header className='fixed top-0 left-0 right-0 z-100 py-3'>
+      <div className='w-full md:max-w-7xl md:mx-auto px-4 md:px-6'>
+        <div className='flex items-center justify-between'>
+          {/* Left Side - Thread Controls + Logo */}
+          <div className='flex items-center gap-4'>
+            {isHomePage && isMounted && (
+              <div>
+                {/* Thread Sidebar Toggle */}
+                <GlassButton
+                  onClick={handleToggleThreadSidebar}
+                  title='Threads'
+                  size='icon'
+                  className='size-12'
+                >
+                  <TextAlignStart className='w-5 h-5 text-white' />
+                </GlassButton>
+              </div>
+            )}
+
+            {/* Logo */}
+            <h1
+              className={`text-lg font-semibold text-white ${pathname === '/workspace' || pathname === '/notes' || pathname === '/user/tasks' ? 'ml-2' : ''}`}
             >
-              <Menu className='w-5 h-5' />
-            </button>
-
-            {/* New Thread Button */}
-            <button
-              onClick={handleCreateThread}
-              className='flex items-center gap-2 text-white/60 hover:text-white transition-colors group'
-              title='New Thread'
-            >
-              <PenSquare className='w-5 h-5' />
-            </button>
-
-            {/* Divider */}
-            <div className='w-px h-5 bg-white/20'></div>
-          </div>
-        )}
-
-        {/* Logo */}
-        <h1
-          className={`text-lg font-semibold text-white ${pathname === '/workspace' || pathname === '/notes' || pathname === '/user/tasks' ? 'ml-2' : ''}`}
-        >
-          Cogno
-          {pageTitle && (
-            <span className='text-base text-white/60 font-normal'>
-              {' '}
-              | {pageTitle}
-            </span>
-          )}
-        </h1>
-      </div>
-
-      <div className='flex items-center gap-2'>
-        {isHomePage && isMounted && (
-          <button
-            onClick={handleToggleNotificationPanel}
-            data-notification-trigger='true'
-            className='flex items-center gap-2 text-white/60 hover:text-white transition-colors group relative'
-          >
-            {/* <span className='text-sm font-medium'>{currentTime}</span> */}
-            {/* Cogno Icon (Star/Comet) */}
-            <div className='relative'>
-              {/* <div className='w-2 h-2 bg-white rounded-full'></div>
-              <div className='absolute top-1/2 left-0 w-6 h-0.5 bg-gradient-to-r from-white/50 via-white/20 to-transparent transform -translate-y-1/2'></div> */}
-              {/* Unread Badge */}
-              {unreadCount > 0 && (
-                <span className='absolute -top-3 right-0 h-2 w-2 rounded-full bg-red-500 border border-black/50' />
+              Cogno
+              {pageTitle && (
+                <span className='text-base text-white/60 font-normal'>
+                  {' '}
+                  | {pageTitle}
+                </span>
               )}
-            </div>
-          </button>
-        )}
-        {isNotesPage && isMounted && (
-          <FolderActionButton
-            folders={folders}
-            onUpdateFolder={handleUpdateFolder}
-            onDeleteFolder={handleDeleteFolder}
-            onCreateFolder={createFolder}
-            trashCount={trashCount}
-            onTrashClick={() => {
-              window.dispatchEvent(new CustomEvent('trash-folder-selected'));
-            }}
-          />
-        )}
-        {isHomePage && isMounted && (
-          <GlassButton
-            onClick={handleToggleNotificationPanel}
-            title='Notifications'
-            size='icon'
-            className='size-12'
-            data-shepherd-target='notification-bell'
-          >
-            <BellIcon className='w-5 h-5 text-white' />
-          </GlassButton>
-        )}
-        {isMounted && <UserMenu user={user} />}
+            </h1>
+          </div>
+
+          <div className='flex items-center gap-2'>
+            {isNotesPage && isMounted && (
+              <FolderActionButton
+                folders={folders}
+                onUpdateFolder={handleUpdateFolder}
+                onDeleteFolder={handleDeleteFolder}
+                onCreateFolder={createFolder}
+                trashCount={trashCount}
+                onTrashClick={() => {
+                  window.dispatchEvent(
+                    new CustomEvent('trash-folder-selected')
+                  );
+                }}
+              />
+            )}
+            {(isHomePage ||
+              pathname === '/workspace' ||
+              pathname === '/notes' ||
+              pathname === '/personal') &&
+              isMounted && (
+                <GlassButton
+                  onClick={handleToggleNotificationPanel}
+                  title='Notifications'
+                  size='icon'
+                  className='size-12'
+                  data-shepherd-target='notification-bell'
+                >
+                  <BellIcon className='w-5 h-5 text-white' />
+                </GlassButton>
+              )}
+            {isMounted && <UserMenu user={user} />}
+          </div>
+        </div>
       </div>
 
       {/* Notification Process Drawer */}
-      {isHomePage && (
+      {(isHomePage ||
+        pathname === '/workspace' ||
+        pathname === '/notes' ||
+        pathname === '/personal') && (
         <NotificationProcessDrawer
           open={isNotificationDrawerOpen}
           onOpenChange={setIsNotificationDrawerOpen}

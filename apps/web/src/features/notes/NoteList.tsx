@@ -50,14 +50,14 @@ function getTimeGroup(dateString: string): string {
 
   // Today
   if (noteDate.getTime() === today.getTime()) {
-    return '今日';
+    return 'Today';
   }
 
   // This week (last 7 days)
   const weekAgo = new Date(today);
   weekAgo.setDate(weekAgo.getDate() - 7);
   if (noteDate > weekAgo) {
-    return '今週';
+    return 'This Week';
   }
 
   // This month
@@ -65,16 +65,30 @@ function getTimeGroup(dateString: string): string {
     date.getMonth() === now.getMonth() &&
     date.getFullYear() === now.getFullYear()
   ) {
-    return '今月';
+    return 'This Month';
   }
 
   // Previous months in the same year
   if (date.getFullYear() === now.getFullYear()) {
-    return `${date.getMonth() + 1}月`;
+    const monthNames = [
+      'January',
+      'February',
+      'March',
+      'April',
+      'May',
+      'June',
+      'July',
+      'August',
+      'September',
+      'October',
+      'November',
+      'December',
+    ];
+    return monthNames[date.getMonth()];
   }
 
   // Previous years
-  return `${date.getFullYear()}年`;
+  return `${date.getFullYear()}`;
 }
 
 function groupNotesByTime(notes: NoteListItem[]): GroupedNotes {
@@ -92,7 +106,7 @@ function groupNotesByTime(notes: NoteListItem[]): GroupedNotes {
 }
 
 function sortGroupKeys(keys: string[]): string[] {
-  const order = ['今日', '今週', '今月'];
+  const order = ['Today', 'This Week', 'This Month'];
 
   return keys.sort((a, b) => {
     // Priority order
@@ -105,23 +119,37 @@ function sortGroupKeys(keys: string[]): string[] {
     if (aIndex !== -1) return -1;
     if (bIndex !== -1) return 1;
 
-    // Month comparison (e.g., "10月", "11月")
-    const aMonth = a.match(/^(\d+)月$/);
-    const bMonth = b.match(/^(\d+)月$/);
-    if (aMonth && bMonth) {
-      return parseInt(bMonth[1]) - parseInt(aMonth[1]); // Descending
+    // Month comparison (e.g., "October", "November")
+    const monthNames = [
+      'January',
+      'February',
+      'March',
+      'April',
+      'May',
+      'June',
+      'July',
+      'August',
+      'September',
+      'October',
+      'November',
+      'December',
+    ];
+    const aMonthIndex = monthNames.indexOf(a);
+    const bMonthIndex = monthNames.indexOf(b);
+    if (aMonthIndex !== -1 && bMonthIndex !== -1) {
+      return bMonthIndex - aMonthIndex; // Descending
     }
 
-    // Year comparison (e.g., "2024年", "2023年")
-    const aYear = a.match(/^(\d+)年$/);
-    const bYear = b.match(/^(\d+)年$/);
+    // Year comparison (e.g., "2024", "2023")
+    const aYear = a.match(/^(\d{4})$/);
+    const bYear = b.match(/^(\d{4})$/);
     if (aYear && bYear) {
       return parseInt(bYear[1]) - parseInt(aYear[1]); // Descending
     }
 
     // Months come before years
-    if (aMonth) return -1;
-    if (bMonth) return 1;
+    if (aMonthIndex !== -1) return -1;
+    if (bMonthIndex !== -1) return 1;
 
     return 0;
   });

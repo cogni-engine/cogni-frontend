@@ -15,19 +15,15 @@ import { Plus, Sparkles } from 'lucide-react';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import GlassButton from '@/components/glass-design/GlassButton';
-import { Button } from '@/components/ui/button';
 import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+  Drawer,
+  DrawerContent,
+  DrawerHandle,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerBody,
+  DrawerFooter,
+} from '@/components/ui/drawer';
 import { WorkspaceIconCropDialog } from './WorkspaceIconCropDialog';
 import {
   getCroppedImageBlob,
@@ -291,118 +287,168 @@ export default function WorkspaceForm({
 
   return (
     <>
-      <Dialog open={open} onOpenChange={handleDialogOpenChange}>
-        <DialogTrigger asChild>
-          <GlassButton
-            type='button'
-            disabled={isLoading}
-            size='icon'
-            className='size-12 disabled:cursor-not-allowed'
-          >
-            <Plus className='size-6' />
-          </GlassButton>
-        </DialogTrigger>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>
-              {workspace ? 'Edit workspace' : 'Create new workspace'}
-            </DialogTitle>
-            <DialogDescription>
-              Give your workspace a name and optional icon.
-            </DialogDescription>
-          </DialogHeader>
-          <form onSubmit={handleSubmit} className='space-y-6'>
-            <div className='space-y-2'>
-              <Label htmlFor='workspace-title'>Workspace name</Label>
-              <Input
-                id='workspace-title'
-                placeholder='Enter workspace name'
-                value={title}
-                onChange={event => handleTitleChange(event.target.value)}
-                disabled={isSubmitting}
-                autoComplete='organization'
-                autoFocus
-              />
-            </div>
-            <div className='space-y-3'>
-              <Label>Workspace icon</Label>
-              <div className='flex items-center gap-4'>
-                <Avatar className='h-16 w-16 border border-white/10 text-xl'>
-                  {iconPreviewUrl ? (
-                    <AvatarImage
-                      src={iconPreviewUrl}
-                      alt='Workspace icon preview'
-                    />
-                  ) : (
-                    <AvatarFallback>{initials}</AvatarFallback>
-                  )}
-                </Avatar>
-                <div className='text-sm text-white/60'>
-                  <p>Recommended: square image, at least 256×256px.</p>
-                  <p>Supported formats: PNG or JPG.</p>
-                </div>
+      <GlassButton
+        type='button'
+        onClick={() => setOpen(true)}
+        disabled={isLoading}
+        size='icon'
+        className='size-12 disabled:cursor-not-allowed'
+      >
+        <Plus className='size-6' />
+      </GlassButton>
+
+      <Drawer open={open} onOpenChange={handleDialogOpenChange}>
+        <DrawerContent zIndex={150} maxHeight='85vh'>
+          <DrawerHandle />
+
+          <DrawerHeader className='px-6 pb-2 pt-0'>
+            <DrawerTitle>
+              {workspace ? 'Edit workspace' : 'Create workspace'}
+            </DrawerTitle>
+          </DrawerHeader>
+
+          <DrawerBody>
+            <form onSubmit={handleSubmit} className='space-y-6 px-4'>
+              <div className='space-y-2'>
+                <label
+                  htmlFor='workspace-title'
+                  className='text-sm font-medium text-white/80'
+                >
+                  Workspace name
+                </label>
+                <input
+                  id='workspace-title'
+                  type='text'
+                  placeholder='Enter workspace name'
+                  value={title}
+                  onChange={event => handleTitleChange(event.target.value)}
+                  disabled={isSubmitting}
+                  autoComplete='organization'
+                  autoFocus
+                  className='w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-white/20 transition-all'
+                />
               </div>
-              <div className='flex flex-wrap items-center gap-2'>
-                <Button
-                  type='button'
-                  variant='secondary'
-                  onClick={handleUploadClick}
-                  disabled={isSubmitting || generatingIcon}
-                >
-                  {iconPreviewUrl ? 'Change icon' : 'Upload icon'}
-                </Button>
-                <Button
-                  type='button'
-                  variant='secondary'
-                  onClick={handleGenerateIcon}
-                  disabled={isSubmitting || generatingIcon}
-                  className='gap-2'
-                >
-                  <Sparkles className='w-4 h-4' />
-                  {generatingIcon ? 'Generating…' : 'Generate icon'}
-                </Button>
-                {iconPreviewUrl && iconFile && (
-                  <Button
+
+              <div className='space-y-3'>
+                <label className='text-sm font-medium text-white/80'>
+                  Workspace icon
+                </label>
+                <div className='flex items-center gap-4'>
+                  <Avatar className='h-16 w-16 border border-white/10 text-xl'>
+                    {iconPreviewUrl ? (
+                      <AvatarImage
+                        src={iconPreviewUrl}
+                        alt='Workspace icon preview'
+                      />
+                    ) : (
+                      <AvatarFallback>{initials}</AvatarFallback>
+                    )}
+                  </Avatar>
+                  <div className='text-sm text-white/60 flex-1'>
+                    <p>Recommended: square image, at least 256×256px.</p>
+                    <p>Supported formats: PNG or JPG.</p>
+                  </div>
+                </div>
+                <div className='flex flex-wrap items-center gap-2'>
+                  <GlassButton
                     type='button'
-                    variant='ghost'
-                    onClick={handleClearSelectedIcon}
+                    onClick={handleUploadClick}
                     disabled={isSubmitting || generatingIcon}
+                    className='px-4 py-2'
                   >
-                    Reset selection
-                  </Button>
+                    {iconPreviewUrl ? 'Change icon' : 'Upload icon'}
+                  </GlassButton>
+                  <GlassButton
+                    type='button'
+                    onClick={handleGenerateIcon}
+                    disabled={isSubmitting || generatingIcon}
+                    className='px-4 py-2 gap-2'
+                  >
+                    <Sparkles className='w-4 h-4' />
+                    {generatingIcon ? 'Generating…' : 'Generate icon'}
+                  </GlassButton>
+                  {iconPreviewUrl && iconFile && (
+                    <GlassButton
+                      type='button'
+                      onClick={handleClearSelectedIcon}
+                      disabled={isSubmitting || generatingIcon}
+                      variant='ghost'
+                      className='px-4 py-2'
+                    >
+                      Reset
+                    </GlassButton>
+                  )}
+                </div>
+                <input
+                  ref={fileInputRef}
+                  type='file'
+                  accept='image/*'
+                  className='hidden'
+                  onChange={handleFileChange}
+                />
+                {iconError && (
+                  <p className='text-sm text-red-300'>{iconError}</p>
                 )}
               </div>
-              <input
-                ref={fileInputRef}
-                type='file'
-                accept='image/*'
-                className='hidden'
-                onChange={handleFileChange}
-              />
-              {iconError && <p className='text-sm text-red-300'>{iconError}</p>}
-            </div>
-            {error && (
-              <div className='rounded-md border border-red-500/40 bg-red-500/10 p-3 text-sm text-red-200'>
-                {error}
-              </div>
-            )}
-            <DialogFooter>
-              <DialogClose asChild>
-                <Button type='button' variant='ghost' disabled={isSubmitting}>
-                  Cancel
-                </Button>
-              </DialogClose>
-              <Button type='submit' disabled={isSubmitting}>
-                {isSubmitting
-                  ? 'Saving…'
-                  : workspace
-                    ? 'Save changes'
-                    : 'Create workspace'}
-              </Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
+
+              {error && (
+                <div className='rounded-xl border border-red-500/40 bg-red-500/10 p-3 text-sm text-red-200'>
+                  {error}
+                </div>
+              )}
+            </form>
+          </DrawerBody>
+
+          <DrawerFooter className='flex gap-3 px-4 pb-4'>
+            <GlassButton
+              type='button'
+              onClick={() => handleDialogOpenChange(false)}
+              disabled={isSubmitting}
+              variant='ghost'
+              className='flex-1'
+            >
+              Cancel
+            </GlassButton>
+            <GlassButton
+              type='button'
+              onClick={async () => {
+                setError(null);
+                const trimmedTitle = title.trim();
+                if (!trimmedTitle) {
+                  setError('Workspace name is required');
+                  return;
+                }
+                setIsSubmitting(true);
+                try {
+                  await onSubmit({
+                    id: workspace?.id ?? null,
+                    title: trimmedTitle,
+                    iconFile,
+                  });
+                  handleDialogOpenChange(false);
+                } catch (err) {
+                  console.error('Failed to save workspace', err);
+                  setError(
+                    err instanceof Error
+                      ? err.message
+                      : 'Failed to save workspace'
+                  );
+                } finally {
+                  setIsSubmitting(false);
+                }
+              }}
+              disabled={isSubmitting || !title.trim()}
+              className='flex-1'
+            >
+              {isSubmitting
+                ? 'Saving…'
+                : workspace
+                  ? 'Save changes'
+                  : 'Create workspace'}
+            </GlassButton>
+          </DrawerFooter>
+        </DrawerContent>
+      </Drawer>
 
       <WorkspaceIconCropDialog
         open={cropDialogOpen}

@@ -69,6 +69,7 @@ export function OnboardingPayment({
   error,
   loading,
   handleContinue,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   handleBack: _handleBack,
   userName,
 }: OnboardingPaymentProps) {

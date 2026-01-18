@@ -40,7 +40,7 @@ export function NoteEditorHeader({
         type='text'
         value={title}
         onChange={e => onTitleChange(e.target.value)}
-        placeholder='タイトル'
+        placeholder='Title'
         className='flex-1 min-w-0 text-md font-bold bg-transparent focus:outline-none text-white placeholder-gray-500 truncate'
       />
       {/* Assignment button for group notes */}
@@ -49,7 +49,7 @@ export function NoteEditorHeader({
           <GlassButton
             onClick={onToggleAssignmentDropdown}
             className='size-12'
-            title='担当者'
+            title='Assignees'
           >
             <Users className='w-5 h-5' />
             {assigneeIds.length > 0 && (

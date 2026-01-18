@@ -23,9 +23,7 @@ export default function ActivityTimeline({
   if (activities.length === 0) {
     return (
       <div className='flex items-center justify-center py-12'>
-        <p className='text-white/60 text-center'>
-          まだアクティビティがありません
-        </p>
+        <p className='text-white/60 text-center'>No activity yet</p>
       </div>
     );
   }

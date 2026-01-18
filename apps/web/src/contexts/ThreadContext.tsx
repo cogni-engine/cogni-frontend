@@ -96,7 +96,8 @@ export function ThreadProvider({ children }: { children: ReactNode }) {
       hasAutoSelected.current = true;
       setSelectedThreadId(threads[0].id);
     }
-  }, [threads, isLoading, setSelectedThreadId]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [threads.length, isLoading]);
 
   const updateExistingThread = useCallback(
     async (id: number, title: string) => {

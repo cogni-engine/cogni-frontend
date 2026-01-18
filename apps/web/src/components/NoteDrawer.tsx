@@ -111,14 +111,9 @@ export default function NoteDrawer({
 
         {/* Header */}
         <DrawerHeader className='px-4 pb-2 pt-0'>
-          <div className='flex items-center gap-2 flex-1 min-w-0'>
-            <div className='w-8 h-8 rounded-lg bg-purple-500/20 flex items-center justify-center shrink-0'>
-              <FileText className='w-4 h-4 text-purple-400' />
-            </div>
-            <DrawerTitle className='truncate'>
-              {note ? getNoteTitle(note.text) : 'Note'}
-            </DrawerTitle>
-          </div>
+          <DrawerTitle className='truncate'>
+            {note ? getNoteTitle(note.text) : 'Note'}
+          </DrawerTitle>
           {note && (
             <button
               onClick={handleNavigateToNote}

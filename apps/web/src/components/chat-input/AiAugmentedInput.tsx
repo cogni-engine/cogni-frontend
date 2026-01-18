@@ -26,7 +26,7 @@ const AiAugmentedInput = forwardRef<AiAugmentedInputRef, TextInputProps>(
       onSend,
       onStop,
       isLoading = false,
-      placeholder = 'メッセージを入力...',
+      placeholder = 'Type a message...',
       canStop = true,
       disableCopilot = false,
       isUploading = false,

@@ -157,7 +157,9 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
         {children}
 
         {/* Bottom darkening gradient */}
-        <div className='absolute bottom-0 left-0 right-0 h-32 bg-linear-to-t from-black via-black/50 to-transparent pointer-events-none z-50' />
+        {!isDrawerOpen && (
+          <div className='absolute bottom-0 left-0 right-0 h-32 bg-linear-to-t from-black via-black/50 to-transparent pointer-events-none z-50' />
+        )}
       </main>
 
       {/* Bottom Navigation - Absolutely Positioned */}

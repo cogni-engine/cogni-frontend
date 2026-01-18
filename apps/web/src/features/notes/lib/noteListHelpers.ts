@@ -5,9 +5,9 @@ type GroupedNotes = Record<string, FormattedNote[]>;
 
 // Time group labels
 const TIME_GROUPS = {
-  TODAY: '今日',
-  THIS_WEEK: '今週',
-  THIS_MONTH: '今月',
+  TODAY: 'Today',
+  THIS_WEEK: 'This Week',
+  THIS_MONTH: 'This Month',
 } as const;
 
 /**
@@ -42,10 +42,24 @@ function getTimeGroup(dateString: string): string {
   }
 
   if (date.getFullYear() === now.getFullYear()) {
-    return `${date.getMonth() + 1}月`;
+    const monthNames = [
+      'January',
+      'February',
+      'March',
+      'April',
+      'May',
+      'June',
+      'July',
+      'August',
+      'September',
+      'October',
+      'November',
+      'December',
+    ];
+    return monthNames[date.getMonth()];
   }
 
-  return `${date.getFullYear()}年`;
+  return `${date.getFullYear()}`;
 }
 
 /**
@@ -81,23 +95,37 @@ export function sortTimeGroupKeys(keys: string[]): string[] {
     if (aIndex !== -1) return -1;
     if (bIndex !== -1) return 1;
 
-    // Month comparison (e.g., "10月", "11月")
-    const aMonth = a.match(/^(\d+)月$/);
-    const bMonth = b.match(/^(\d+)月$/);
-    if (aMonth && bMonth) {
-      return parseInt(bMonth[1]) - parseInt(aMonth[1]);
+    // Month comparison (e.g., "October", "November")
+    const monthNames = [
+      'January',
+      'February',
+      'March',
+      'April',
+      'May',
+      'June',
+      'July',
+      'August',
+      'September',
+      'October',
+      'November',
+      'December',
+    ];
+    const aMonthIndex = monthNames.indexOf(a);
+    const bMonthIndex = monthNames.indexOf(b);
+    if (aMonthIndex !== -1 && bMonthIndex !== -1) {
+      return bMonthIndex - aMonthIndex;
     }
 
-    // Year comparison (e.g., "2024年", "2023年")
-    const aYear = a.match(/^(\d+)年$/);
-    const bYear = b.match(/^(\d+)年$/);
+    // Year comparison (e.g., "2024", "2023")
+    const aYear = a.match(/^(\d{4})$/);
+    const bYear = b.match(/^(\d{4})$/);
     if (aYear && bYear) {
       return parseInt(bYear[1]) - parseInt(aYear[1]);
     }
 
     // Months before years
-    if (aMonth) return -1;
-    if (bMonth) return 1;
+    if (aMonthIndex !== -1) return -1;
+    if (bMonthIndex !== -1) return 1;
 
     return 0;
   });
