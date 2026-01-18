@@ -15,7 +15,6 @@ import { uploadWorkspaceFile } from '@/lib/api/workspaceFilesApi';
 import { ReplyIndicator } from './ReplyIndicator';
 import type { WorkspaceMember } from '@/types/workspace';
 import type { Note } from '@/types/note';
-import { useNativeImagePicker } from '@/hooks/useNativeImagePicker';
 
 type ChatInputProps = {
   onSend: (
@@ -63,12 +62,6 @@ const ChatInput = forwardRef<ChatInputRef, ChatInputProps>(function ChatInput(
 
   const hasAttachments = uploadItems.length > 0;
   const hasUploadingFiles = uploadItems.some(item => item.uploading);
-
-  // Handle images from native mobile image picker
-  useNativeImagePicker(file => {
-    console.log('📱 Received image from native picker:', file.name);
-    handleFilesSelected([file]);
-  });
 
   useImperativeHandle(ref, () => ({
     focus: () => {
