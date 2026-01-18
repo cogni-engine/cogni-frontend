@@ -26,6 +26,17 @@ export {
   type NativeImageOptions,
 } from './nativeImagePicker';
 
+// Re-export native document picker utilities for convenience
+export {
+  pickNativeFile,
+  pickNativeFileAsFile,
+  initNativeDocumentPickerListener,
+  nativeFileToFile,
+  base64ToFile as base64ToFileForDocument,
+  type NativeFileData,
+  type NativeFileOptions,
+} from './nativeDocumentPicker';
+
 /**
  * Send message to native app (if in webview)
  */

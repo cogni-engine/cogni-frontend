@@ -23,7 +23,7 @@ const getWebAppUrl = () => {
   }
 
   // Default to production URL
-  return 'https://cogni-frontend-es1hs9xz3-yusei-moriwakis-projects.vercel.app';
+  return 'https://cogni-frontend-5io9nri4s-yusei-moriwakis-projects.vercel.app';
 };
 
 export const Config = {

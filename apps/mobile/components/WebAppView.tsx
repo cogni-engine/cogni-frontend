@@ -9,7 +9,8 @@ import { supabase } from '@/lib/supabase';
 import type { NotificationData } from '@/lib/notifications';
 import { generateNavigationScript } from '@/lib/deep-linking';
 import * as ImagePicker from 'expo-image-picker';
-import { Ionicons } from '@expo/vector-icons';
+import * as DocumentPicker from 'expo-document-picker';
+import * as FileSystem from 'expo-file-system';
 
 interface WebAppViewProps {
   url?: string;
@@ -21,6 +22,12 @@ interface ImagePickerOptions {
   allowsEditing?: boolean;
   quality?: number;
   multiple?: boolean;
+}
+
+interface FilePickerOptions {
+  type?: string[]; // MIME types, e.g., ['application/pdf', 'text/*']
+  multiple?: boolean;
+  copyToCacheDirectory?: boolean;
 }
 
 export default function WebAppView({ url = 'https://app.cogno.studio', session }: WebAppViewProps) {
@@ -405,6 +412,68 @@ export default function WebAppView({ url = 'https://app.cogno.studio', session }
     }
   };
 
+  // Handle native document picker
+  const handleFilePick = async (requestId?: string, options?: FilePickerOptions) => {
+    try {
+      // Launch document picker
+      const result = await DocumentPicker.getDocumentAsync({
+        type: options?.type || '*/*', // All file types by default
+        multiple: options?.multiple ?? false,
+        copyToCacheDirectory: options?.copyToCacheDirectory ?? true,
+      });
+
+      if (!result.canceled && result.assets && result.assets.length > 0) {
+        // Read files as base64 and prepare data
+        const assets = await Promise.all(
+          result.assets.map(async (asset) => {
+            // Read file as base64
+            const base64 = await FileSystem.readAsStringAsync(asset.uri, {
+              encoding: 'base64',
+            });
+
+            return {
+              uri: asset.uri,
+              base64,
+              mimeType: asset.mimeType || 'application/octet-stream',
+              fileName: asset.name || `file_${Date.now()}`,
+              fileSize: asset.size || 0,
+            };
+          })
+        );
+
+        // Send file data to WebView
+        const fileData = {
+          type: 'NATIVE_FILE_SELECTED',
+          requestId,
+          data: options?.multiple ? assets : assets[0],
+        };
+
+        webViewRef.current?.postMessage(JSON.stringify(fileData));
+        console.log(`${assets.length} file(s) selected and sent to WebView`);
+      } else {
+        // User canceled
+        if (requestId) {
+          webViewRef.current?.postMessage(JSON.stringify({
+            type: 'NATIVE_FILE_CANCELED',
+            requestId,
+          }));
+        }
+      }
+    } catch (error) {
+      console.error('Error picking file:', error);
+      Alert.alert('Error', 'Failed to pick file. Please try again.');
+      
+      // Send error response
+      if (requestId) {
+        webViewRef.current?.postMessage(JSON.stringify({
+          type: 'NATIVE_FILE_ERROR',
+          requestId,
+          error: error instanceof Error ? error.message : 'Unknown error',
+        }));
+      }
+    }
+  };
+
   // Handle messages from the WebView
   const handleMessage = async (event: any) => {
     try {
@@ -455,6 +524,12 @@ export default function WebAppView({ url = 'https://app.cogno.studio', session }
           // Web app requesting native camera
           console.log('Camera requested from web');
           await handleCameraPick(message.requestId, message.options);
+          break;
+
+        case 'PICK_FILE':
+          // Web app requesting native document picker
+          console.log('Document picker requested from web');
+          await handleFilePick(message.requestId, message.options);
           break;
 
         default:
@@ -598,16 +673,6 @@ export default function WebAppView({ url = 'https://app.cogno.studio', session }
         </View>
       )}
 
-      {/* Floating Image Upload Button */}
-      {!loading && !error && (
-        <TouchableOpacity
-          style={styles.floatingButton}
-          onPress={() => handleImagePick()}
-          activeOpacity={0.8}
-        >
-          <Ionicons name="image" size={24} color="#fff" />
-        </TouchableOpacity>
-      )}
       </ThemedView>
     </>
   );
@@ -678,26 +743,6 @@ const styles = StyleSheet.create({
     color: '#000',
     fontSize: 16,
     fontWeight: '600',
-  },
-  floatingButton: {
-    position: 'absolute',
-    bottom: 30,
-    right: 20,
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    backgroundColor: '#007AFF',
-    justifyContent: 'center',
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 4,
-    },
-    shadowOpacity: 0.3,
-    shadowRadius: 4.65,
-    elevation: 8,
-    zIndex: 999,
   },
 });
 
