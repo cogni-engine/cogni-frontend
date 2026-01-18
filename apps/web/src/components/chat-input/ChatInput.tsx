@@ -65,7 +65,7 @@ const ChatInput = forwardRef<ChatInputRef, ChatInputProps>(function ChatInput(
   const hasUploadingFiles = uploadItems.some(item => item.uploading);
 
   // Handle images from native mobile image picker
-  useNativeImagePicker((file) => {
+  useNativeImagePicker(file => {
     console.log('📱 Received image from native picker:', file.name);
     handleFilesSelected([file]);
   });

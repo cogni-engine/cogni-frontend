@@ -38,7 +38,7 @@ export function useNativeImagePicker(onImageSelected: (file: File) => void) {
           const byteString = atob(base64);
           const ab = new ArrayBuffer(byteString.length);
           const ia = new Uint8Array(ab);
-          
+
           for (let i = 0; i < byteString.length; i++) {
             ia[i] = byteString.charCodeAt(i);
           }
@@ -48,7 +48,12 @@ export function useNativeImagePicker(onImageSelected: (file: File) => void) {
           // Convert Blob to File
           const file = new File([blob], fileName, { type: mimeType });
 
-          console.log('✅ Converted native image to File:', file.name, file.size, 'bytes');
+          console.log(
+            '✅ Converted native image to File:',
+            file.name,
+            file.size,
+            'bytes'
+          );
 
           // Call the callback with the file
           onImageSelected(file);
