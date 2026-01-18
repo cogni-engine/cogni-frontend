@@ -63,14 +63,12 @@ function RootNavigator() {
     const cleanup = setupNotificationListeners(
       // On notification received (foreground)
       async (notification) => {
-        console.log('📬 Notification received in foreground');
         // Sync badge count when notification is received
         await syncBadgeCount();
       },
       // On notification tapped (user interaction)
       async (response) => {
         const data = response.notification.request.content.data as NotificationData;
-        console.log('🔔 Notification tapped:', data);
         handleNotificationResponse(data, router);
         // Sync badge count after a short delay to allow message to be marked as read
         setTimeout(async () => {

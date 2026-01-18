@@ -24,8 +24,6 @@ export default function AppleSignInButton() {
 
   const handleAppleSignIn = async () => {
     try {
-      console.log('Apple sign in - native - start');
-      
       // Generate a raw nonce for security (as recommended by Supabase docs)
       const rawNonce = Math.random().toString(36).substring(2, 15) + 
                        Math.random().toString(36).substring(2, 15);
@@ -41,8 +39,6 @@ export default function AppleSignInButton() {
         nonce: hashedNonce, // Pass the HASHED nonce to Apple
       });
 
-      console.log('Apple credential received:', credential);
-
       // Sign in to Supabase with the Apple identity token
       if (credential.identityToken) {
         const { data, error } = await supabase.auth.signInWithIdToken({
@@ -57,8 +53,6 @@ export default function AppleSignInButton() {
           return;
         }
 
-        console.log('Successfully signed in with Apple:', data);
-
         // Apple only provides the user's full name on the first sign-in
         // Save it to user metadata for future use (as recommended by Supabase docs)
         if (credential.fullName) {
@@ -69,8 +63,6 @@ export default function AppleSignInButton() {
           ].filter(Boolean);
 
           if (nameParts.length > 0) {
-            console.log('Saving user full name to metadata:', nameParts.join(' '));
-            
             const { error: updateError } = await supabase.auth.updateUser({
               data: {
                 full_name: nameParts.join(' '),
@@ -91,7 +83,6 @@ export default function AppleSignInButton() {
       }
     } catch (e: any) {
       if (e.code === 'ERR_REQUEST_CANCELED') {
-        console.log('User canceled Apple sign in');
         // User canceled the sign-in flow - do nothing
       } else {
         console.error('Apple sign in error:', e);

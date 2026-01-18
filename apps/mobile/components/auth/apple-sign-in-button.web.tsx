@@ -4,8 +4,6 @@ import { AntDesign } from '@expo/vector-icons';
 
 export default function AppleSignInButton() {
   async function onSignInButtonPress() {
-    console.log('Apple sign in (web) - start');
-
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: 'apple',
       options: {
@@ -15,10 +13,6 @@ export default function AppleSignInButton() {
 
     if (error) {
       console.error('Error signing in with Apple:', error);
-    }
-
-    if (data) {
-      console.log('Apple sign in successful:', data);
     }
   }
 

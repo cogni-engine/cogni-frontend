@@ -49,7 +49,6 @@ export default function GoogleSignInButton() {
       { showInRecents: true }
     ).catch((err) => {
       console.error('onSignInButtonPress - openAuthSessionAsync - error', { err });
-      console.log(err);
     });
 
     console.debug('onSignInButtonPress - openAuthSessionAsync - result', { result });
