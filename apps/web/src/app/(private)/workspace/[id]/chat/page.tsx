@@ -478,6 +478,10 @@ export default function WorkspaceChatPage() {
         ref={scrollContainerRef}
         className='relative flex flex-col-reverse pt-30 pb-20'
       >
+        {/* Spacer: with column-reverse, first DOM child appears at visual bottom.
+            flex-1 makes it grow to fill remaining space, pushing messages to visual top when few */}
+        <div className='flex-1 min-h-0' />
+
         {/* Loading indicator for older messages - appears at top when scrolling up */}
         {isLoadingMore && (
           <div className='flex items-center justify-center py-4'>

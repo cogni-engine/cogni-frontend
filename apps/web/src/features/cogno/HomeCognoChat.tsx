@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useCallback, useMemo, useEffect } from 'react';
+import { useRef, useCallback, useMemo } from 'react';
 import ChatContainer from './components/ChatContainer';
 import AiChatInput from '@/components/chat-input/AiChatInput';
 import NotificationPanel from '@/features/notifications/components/NotificationPanel';
@@ -83,7 +83,7 @@ export default function HomeCognoChat({ isInitialMount }: HomeCognoChatProps) {
 
       {/* Absolutely positioned ChatInput */}
       <div
-        className={`fixed left-0 right-0 z-50 py-4 transition-all duration-300 ${
+        className={`fixed left-0 right-0 z-100 py-4 transition-all duration-300 ${
           isInputActive ? 'bottom-0 md:bottom-[60px]' : 'bottom-[60px]'
         }`}
       >
