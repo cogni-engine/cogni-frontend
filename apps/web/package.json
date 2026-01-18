@@ -76,7 +76,8 @@
     "uuid": "^11.0.3",
     "y-prosemirror": "^1.2.15",
     "yjs": "^13.6.18",
-    "zod": "^4.1.12"
+    "zod": "^4.1.12",
+    "zustand": "^5.0.2"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",

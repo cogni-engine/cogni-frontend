@@ -10,7 +10,9 @@ import { AvatarCard } from './components/AvatarCard';
 import { AvatarCropDialog } from './components/AvatarCropDialog';
 import { AiSuggestionToggle } from './components/AiSuggestionToggle';
 import { DeleteAccountSection } from './components/DeleteAccountSection';
+import { PlatformInfoCard } from './components/PlatformInfoCard';
 import { useUserSettings } from './hooks/useUserSettings';
+import { useNativeImagePicker } from '@/hooks/useNativeImagePicker';
 import {
   getCroppedImageBlob,
   getInitials,
@@ -52,6 +54,7 @@ export default function UserSettingsClient() {
   const [zoom, setZoom] = useState(1);
 
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const { isNativeAvailable, pickImage } = useNativeImagePicker();
 
   const emailFallback = useMemo(
     () => userEmail || profile?.id || '',
@@ -170,9 +173,34 @@ export default function UserSettingsClient() {
     resetFileInput();
   }, [resetFileInput]);
 
-  const handleUploadClick = useCallback(() => {
-    fileInputRef.current?.click();
-  }, []);
+  const handleUploadClick = useCallback(async () => {
+    // Use native picker if available (mobile webview)
+    if (isNativeAvailable) {
+      try {
+        const file = await pickImage({
+          allowsEditing: false,
+          quality: 0.9,
+        });
+
+        // Convert File to data URL for cropping
+        if (!Array.isArray(file)) {
+          setAvatarStatus(null);
+          const dataUrl = await readFileAsDataUrl(file);
+          setSelectedImageSrc(dataUrl);
+          setCrop({ x: 0, y: 0 });
+          setZoom(1);
+          setCroppedAreaPixels(null);
+          setAvatarDialogOpen(true);
+        }
+      } catch (error) {
+        console.error('Failed to pick avatar image:', error);
+        // User probably canceled, no need to show error
+      }
+    } else {
+      // Fallback to file input
+      fileInputRef.current?.click();
+    }
+  }, [isNativeAvailable, pickImage, setAvatarStatus]);
 
   const handleGenerateAvatar = useCallback(async () => {
     try {
@@ -222,6 +250,8 @@ export default function UserSettingsClient() {
               onToggle={toggleAiSuggestion}
               saving={savingAiSuggestion}
             />
+
+            <PlatformInfoCard />
           </div>
 
           <AvatarCard

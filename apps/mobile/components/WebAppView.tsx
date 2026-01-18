@@ -1,5 +1,5 @@
 import React, { useRef, useState, useEffect } from 'react';
-import { View, StyleSheet, Platform, Text, TouchableOpacity, Animated, Easing } from 'react-native';
+import { View, StyleSheet, Platform, Text, TouchableOpacity, Animated, Easing, Alert } from 'react-native';
 import { WebView } from 'react-native-webview';
 import { ThemedView } from './themed-view';
 import { Session } from '@supabase/supabase-js';
@@ -8,10 +8,26 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { supabase } from '@/lib/supabase';
 import type { NotificationData } from '@/lib/notifications';
 import { generateNavigationScript } from '@/lib/deep-linking';
+import * as ImagePicker from 'expo-image-picker';
+import * as DocumentPicker from 'expo-document-picker';
+import * as FileSystem from 'expo-file-system/legacy';
 
 interface WebAppViewProps {
   url?: string;
   session?: Session | null;
+}
+
+interface ImagePickerOptions {
+  mediaTypes?: ('images' | 'videos')[];
+  allowsEditing?: boolean;
+  quality?: number;
+  multiple?: boolean;
+}
+
+interface FilePickerOptions {
+  type?: string[]; // MIME types, e.g., ['application/pdf', 'text/*']
+  multiple?: boolean;
+  copyToCacheDirectory?: boolean;
 }
 
 export default function WebAppView({ url = 'https://app.cogno.studio', session }: WebAppViewProps) {
@@ -53,14 +69,8 @@ export default function WebAppView({ url = 'https://app.cogno.studio', session }
 
       // Skip if we've already processed these exact params
       if (lastProcessedParamsRef.current === paramsKey) {
-        console.log('⏭️  Skipping duplicate navigation for:', paramsKey);
         return;
       }
-
-      console.log('🆕 New notification navigation params:', {
-        workspaceId: params.workspaceId,
-        messageId: params.messageId,
-      });
 
       const workspaceId = parseInt(params.workspaceId as string, 10);
       const messageId = parseInt(params.messageId as string, 10);
@@ -70,8 +80,6 @@ export default function WebAppView({ url = 'https://app.cogno.studio', session }
 
       // Only navigate if WebView is ready
       if (webViewReady && webViewRef.current) {
-        console.log('🚀 WebView is ready, sending postMessage for workspace', workspaceId, 'message', messageId);
-
         // Use postMessage to notify web app (no page reload!)
         const notificationData: NotificationData = {
           type: 'workspace_message',
@@ -81,12 +89,10 @@ export default function WebAppView({ url = 'https://app.cogno.studio', session }
         const navigationScript = generateNavigationScript(notificationData);
 
         if (navigationScript) {
-          console.log('✅ Injecting postMessage script');
           webViewRef.current.injectJavaScript(navigationScript);
         }
       } else {
         // WebView not ready yet, store for later
-        console.log('⏰ WebView not ready, storing for later');
         const notificationData: NotificationData = {
           type: 'workspace_message',
           workspaceId: workspaceId,
@@ -105,13 +111,8 @@ export default function WebAppView({ url = 'https://app.cogno.studio', session }
 
       // Skip if we've already processed these exact params
       if (lastProcessedParamsRef.current === paramsKey) {
-        console.log('⏭️  Skipping duplicate notification trigger for:', paramsKey);
         return;
       }
-
-      console.log('🆕 New notification trigger params:', {
-        notificationId: params.notificationId,
-      });
 
       const notificationId = parseInt(params.notificationId as string, 10);
 
@@ -120,8 +121,6 @@ export default function WebAppView({ url = 'https://app.cogno.studio', session }
 
       // Only trigger if WebView is ready
       if (webViewReady && webViewRef.current) {
-        console.log('🚀 WebView is ready, sending TRIGGER_NOTIFICATION postMessage for notificationId', notificationId);
-
         // Use postMessage to notify web app (no page reload!)
         const notificationData: NotificationData = {
           type: 'ai_notification',
@@ -130,12 +129,10 @@ export default function WebAppView({ url = 'https://app.cogno.studio', session }
         const navigationScript = generateNavigationScript(notificationData);
 
         if (navigationScript) {
-          console.log('✅ Injecting TRIGGER_NOTIFICATION postMessage script');
           webViewRef.current.injectJavaScript(navigationScript);
         }
       } else {
         // WebView not ready yet, store for later
-        console.log('⏰ WebView not ready, storing notification trigger for later');
         const notificationData: NotificationData = {
           type: 'ai_notification',
           notificationId: notificationId,
@@ -149,11 +146,8 @@ export default function WebAppView({ url = 'https://app.cogno.studio', session }
   useEffect(() => {
     if (webViewReady && pendingNavigationRef.current && webViewRef.current) {
       const data = pendingNavigationRef.current;
-      console.log('🎬 WebView just became ready, processing pending navigation:', data);
 
       if (data.workspaceId && data.messageId) {
-        console.log('🚀 Sending postMessage for workspace', data.workspaceId, 'message', data.messageId);
-
         // Use postMessage to notify web app (no page reload!)
         const navigationScript = generateNavigationScript(data);
 
@@ -161,16 +155,12 @@ export default function WebAppView({ url = 'https://app.cogno.studio', session }
           // Wait a bit for auth and page to be fully ready
           setTimeout(() => {
             if (webViewRef.current) {
-              console.log('✅ Injecting postMessage script');
               webViewRef.current.injectJavaScript(navigationScript);
               pendingNavigationRef.current = null; // Clear after use
-              console.log('🧹 Cleared pending navigation');
             }
           }, 1500);
         }
       } else if (data.type === 'ai_notification' && data.notificationId) {
-        console.log('🚀 Sending TRIGGER_NOTIFICATION postMessage for notificationId', data.notificationId);
-
         // Use postMessage to notify web app (no page reload!)
         const navigationScript = generateNavigationScript(data);
 
@@ -178,10 +168,8 @@ export default function WebAppView({ url = 'https://app.cogno.studio', session }
           // Wait a bit for auth and page to be fully ready
           setTimeout(() => {
             if (webViewRef.current) {
-              console.log('✅ Injecting TRIGGER_NOTIFICATION postMessage script');
               webViewRef.current.injectJavaScript(navigationScript);
               pendingNavigationRef.current = null; // Clear after use
-              console.log('🧹 Cleared pending notification trigger');
             }
           }, 1500);
         }
@@ -249,28 +237,228 @@ export default function WebAppView({ url = 'https://app.cogno.studio', session }
     webViewRef.current?.reload();
   };
 
+  // Handle native image picker from library
+  const handleImagePick = async (requestId?: string, options?: ImagePickerOptions) => {
+    try {
+      // Request permissions
+      const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      
+      if (!permissionResult.granted) {
+        Alert.alert('Permission Required', 'Please allow access to your photo library to upload images.');
+        
+        // Send error response
+        if (requestId) {
+          webViewRef.current?.postMessage(JSON.stringify({
+            type: 'NATIVE_IMAGE_ERROR',
+            requestId,
+            error: 'Permission denied',
+          }));
+        }
+        return;
+      }
+
+      // Launch image picker (library only, no camera)
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: options?.mediaTypes || ['images'],
+        allowsEditing: options?.allowsEditing ?? false,
+        quality: options?.quality ?? 0.8,
+        base64: true, // Get base64 data to send to web
+        allowsMultipleSelection: options?.multiple ?? false,
+      });
+
+      if (!result.canceled && result.assets && result.assets.length > 0) {
+        const assets = result.assets.map(asset => ({
+          uri: asset.uri,
+          base64: asset.base64,
+          mimeType: asset.mimeType || 'image/jpeg',
+          fileName: asset.fileName || `image_${Date.now()}.jpg`,
+          width: asset.width,
+          height: asset.height,
+          fileSize: asset.fileSize,
+        }));
+        
+        // Send image data to WebView
+        const imageData = {
+          type: 'NATIVE_IMAGE_SELECTED',
+          requestId,
+          data: options?.multiple ? assets : assets[0],
+        };
+
+        // Send to WebView via postMessage
+        webViewRef.current?.postMessage(JSON.stringify(imageData));
+      } else {
+        // User canceled
+        if (requestId) {
+          webViewRef.current?.postMessage(JSON.stringify({
+            type: 'NATIVE_IMAGE_CANCELED',
+            requestId,
+          }));
+        }
+      }
+    } catch (error) {
+      console.error('Error picking image:', error);
+      Alert.alert('Error', 'Failed to pick image. Please try again.');
+      
+      // Send error response
+      if (requestId) {
+        webViewRef.current?.postMessage(JSON.stringify({
+          type: 'NATIVE_IMAGE_ERROR',
+          requestId,
+          error: error instanceof Error ? error.message : 'Unknown error',
+        }));
+      }
+    }
+  };
+
+  // Handle native camera
+  const handleCameraPick = async (requestId?: string, options?: ImagePickerOptions) => {
+    try {
+      // Request camera permissions
+      const permissionResult = await ImagePicker.requestCameraPermissionsAsync();
+      
+      if (!permissionResult.granted) {
+        Alert.alert('Permission Required', 'Please allow access to your camera to take photos.');
+        
+        // Send error response
+        if (requestId) {
+          webViewRef.current?.postMessage(JSON.stringify({
+            type: 'NATIVE_IMAGE_ERROR',
+            requestId,
+            error: 'Camera permission denied',
+          }));
+        }
+        return;
+      }
+
+      // Launch camera
+      const result = await ImagePicker.launchCameraAsync({
+        mediaTypes: options?.mediaTypes || ['images'],
+        allowsEditing: options?.allowsEditing ?? false,
+        quality: options?.quality ?? 0.8,
+        base64: true, // Get base64 data to send to web
+      });
+
+      if (!result.canceled && result.assets && result.assets[0]) {
+        const asset = result.assets[0];
+        
+        // Send image data to WebView
+        const imageData = {
+          type: 'NATIVE_IMAGE_SELECTED',
+          requestId,
+          data: {
+            uri: asset.uri,
+            base64: asset.base64,
+            mimeType: asset.mimeType || 'image/jpeg',
+            fileName: asset.fileName || `photo_${Date.now()}.jpg`,
+            width: asset.width,
+            height: asset.height,
+            fileSize: asset.fileSize,
+          },
+        };
+
+        // Send to WebView via postMessage
+        webViewRef.current?.postMessage(JSON.stringify(imageData));
+      } else {
+        // User canceled
+        if (requestId) {
+          webViewRef.current?.postMessage(JSON.stringify({
+            type: 'NATIVE_IMAGE_CANCELED',
+            requestId,
+          }));
+        }
+      }
+    } catch (error) {
+      console.error('Error taking photo:', error);
+      Alert.alert('Error', 'Failed to take photo. Please try again.');
+      
+      // Send error response
+      if (requestId) {
+        webViewRef.current?.postMessage(JSON.stringify({
+          type: 'NATIVE_IMAGE_ERROR',
+          requestId,
+          error: error instanceof Error ? error.message : 'Unknown error',
+        }));
+      }
+    }
+  };
+
+  // Handle native document picker
+  const handleFilePick = async (requestId?: string, options?: FilePickerOptions) => {
+    try {
+      // Launch document picker
+      const result = await DocumentPicker.getDocumentAsync({
+        type: options?.type || '*/*', // All file types by default
+        multiple: options?.multiple ?? false,
+        copyToCacheDirectory: options?.copyToCacheDirectory ?? true,
+      });
+
+      if (!result.canceled && result.assets && result.assets.length > 0) {
+        // Read files as base64 and prepare data
+        const assets = await Promise.all(
+          result.assets.map(async (asset) => {
+            // Read file as base64
+            const base64 = await FileSystem.readAsStringAsync(asset.uri, {
+              encoding: 'base64',
+            });
+
+            return {
+              uri: asset.uri,
+              base64,
+              mimeType: asset.mimeType || 'application/octet-stream',
+              fileName: asset.name || `file_${Date.now()}`,
+              fileSize: asset.size || 0,
+            };
+          })
+        );
+
+        // Send file data to WebView
+        const fileData = {
+          type: 'NATIVE_FILE_SELECTED',
+          requestId,
+          data: options?.multiple ? assets : assets[0],
+        };
+
+        webViewRef.current?.postMessage(JSON.stringify(fileData));
+      } else {
+        // User canceled
+        if (requestId) {
+          webViewRef.current?.postMessage(JSON.stringify({
+            type: 'NATIVE_FILE_CANCELED',
+            requestId,
+          }));
+        }
+      }
+    } catch (error) {
+      console.error('Error picking file:', error);
+      Alert.alert('Error', 'Failed to pick file. Please try again.');
+      
+      // Send error response
+      if (requestId) {
+        webViewRef.current?.postMessage(JSON.stringify({
+          type: 'NATIVE_FILE_ERROR',
+          requestId,
+          error: error instanceof Error ? error.message : 'Unknown error',
+        }));
+      }
+    }
+  };
+
   // Handle messages from the WebView
   const handleMessage = async (event: any) => {
     try {
       const message = JSON.parse(event.nativeEvent.data);
 
-      console.log('Received message from WebView:', message);
-
       switch (message.type) {
         case 'AUTH_REQUIRED':
           // Session expired or invalid - go back to native login
-          console.log('Auth required, redirecting to login');
           router.replace('/auth/login');
           break;
 
         case 'LOGOUT':
           // User logged out from web - clear native session and go to login
-          console.log('User logged out from web');
-
           // Clear native Supabase session
           try {
             await supabase.auth.signOut();
-            console.log('Native session cleared');
           } catch (error) {
             console.error('Error clearing native session:', error);
           }
@@ -285,16 +473,26 @@ export default function WebAppView({ url = 'https://app.cogno.studio', session }
 
         case 'NAVIGATION':
           // Handle specific navigation requests from web
-          console.log('Navigation request:', message.path);
           // Could handle special routes here if needed
           break;
 
-        default:
-          console.log('Unknown message type:', message.type);
+        case 'PICK_IMAGE':
+          // Web app requesting native image picker
+          await handleImagePick(message.requestId, message.options);
+          break;
+
+        case 'PICK_CAMERA':
+          // Web app requesting native camera
+          await handleCameraPick(message.requestId, message.options);
+          break;
+
+        case 'PICK_FILE':
+          // Web app requesting native document picker
+          await handleFilePick(message.requestId, message.options);
+          break;
       }
     } catch {
       // Non-JSON message, ignore
-      console.log('Non-JSON message from WebView:', event.nativeEvent.data);
     }
   };
 
@@ -302,14 +500,10 @@ export default function WebAppView({ url = 'https://app.cogno.studio', session }
   const handleShouldStartLoadWithRequest = (request: any) => {
     const { url: requestUrl } = request;
 
-    console.log('Navigation request:', requestUrl);
-
     // Block navigation to web login/register pages
-    if (requestUrl.includes('/login') ||
+    if (      requestUrl.includes('/login') ||
       requestUrl.includes('/register') ||
       requestUrl.includes('/mobile-auth-required')) {
-      console.log('Blocking web auth page, redirecting to native login');
-
       // Redirect to native login
       router.replace('/auth/login');
       return false; // Block the navigation
@@ -327,7 +521,6 @@ export default function WebAppView({ url = 'https://app.cogno.studio', session }
       if (navUrl && (navUrl.includes('/login') ||
         navUrl.includes('/register') ||
         navUrl.includes('/mobile-auth-required'))) {
-        console.log('Android: Blocking web auth page, redirecting to native login');
         router.replace('/auth/login');
         webViewRef.current?.stopLoading();
       }
@@ -335,22 +528,28 @@ export default function WebAppView({ url = 'https://app.cogno.studio', session }
   };
 
   return (
-    <ThemedView style={[styles.container, {
-      paddingTop: Math.max(insets.top - 10, 0), // Reduce top inset by 10px
-      paddingBottom: Math.max(insets.bottom - 10, 0), // Reduce bottom inset by 10px
-    }]}>
-      {/* WebView - visually hidden until loaded */}
+    <>
+      {/* Black background that extends beyond safe area */}
+      <View style={styles.absoluteBackground} />
+      
+      <ThemedView style={[styles.container, {
+        paddingTop: Math.max(insets.top - 10, 0), // Reduce top inset by 10px
+        paddingBottom: 0, // Remove bottom padding to eliminate white edges
+      }]}>
+        {/* WebView - visually hidden until loaded */}
       <WebView
         ref={webViewRef}
         source={{
           uri: authUrl,
-          // Add custom headers to identify mobile app
+          // Add custom headers to identify mobile app and bypass ngrok warning
           headers: {
             'X-Mobile-App': 'true',
-            'User-Agent': `${Platform.OS === 'ios' ? 'iOS' : 'Android'} Cogni-Mobile/1.0`,
+            'User-Agent': 'Cogni-Mobile-App/1.0', // Custom UA to bypass ngrok warning
+            'ngrok-skip-browser-warning': 'true', // Skip ngrok warning page for dev
           }
         }}
-        style={[styles.webview, { opacity: loading || error ? 0 : 1 }]}
+        style={[styles.webview, { opacity: loading || error ? 0 : 1, backgroundColor: '#000' }]}
+        containerStyle={{ backgroundColor: '#000' }}
         onLoadStart={() => {
           setLoading(true);
           setError(null);
@@ -384,6 +583,7 @@ export default function WebAppView({ url = 'https://app.cogno.studio', session }
         // Allow file access
         allowFileAccess={true}
         allowUniversalAccessFromFileURLs={true}
+        mediaCapturePermissionGrantType="deny"
         // Enable third-party cookies for session management
         thirdPartyCookiesEnabled={true}
         sharedCookiesEnabled={true}
@@ -422,17 +622,25 @@ export default function WebAppView({ url = 'https://app.cogno.studio', session }
           </TouchableOpacity>
         </View>
       )}
-    </ThemedView>
+
+      </ThemedView>
+    </>
   );
 }
 
 const styles = StyleSheet.create({
+  absoluteBackground: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: '#000',
+    zIndex: -1,
+  },
   container: {
     flex: 1,
     backgroundColor: '#000',
   },
   webview: {
     flex: 1,
+    backgroundColor: '#000',
   },
   loadingContainer: {
     ...StyleSheet.absoluteFillObject,
