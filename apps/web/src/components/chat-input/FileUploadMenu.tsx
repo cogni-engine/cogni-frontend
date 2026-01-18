@@ -1,13 +1,14 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { Image as ImageIcon, File as FileIcon } from 'lucide-react';
+import { Image as ImageIcon, File as FileIcon, Camera } from 'lucide-react';
 import {
   Drawer,
   DrawerContent,
   DrawerHandle,
   DrawerBody,
 } from '@/components/ui/drawer';
+import { useNativeImagePicker } from '@/hooks/useNativeImagePicker';
 
 type FileUploadMenuProps = {
   onFilesSelected: (files: File[]) => void;
@@ -23,6 +24,7 @@ export default function FileUploadMenu({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const imageInputRef = useRef<HTMLInputElement>(null);
   const [isOpen, setIsOpen] = useState(false);
+  const { isNativeAvailable, pickImage, takePhoto } = useNativeImagePicker();
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
@@ -47,6 +49,32 @@ export default function FileUploadMenu({
     const input = accept === 'image' ? imageInputRef : fileInputRef;
     input.current?.click();
     setIsOpen(false);
+  };
+
+  const handleNativeImagePick = async () => {
+    setIsOpen(false);
+    try {
+      const result = await pickImage({
+        multiple: true,
+        quality: 0.8,
+      });
+      const files = Array.isArray(result) ? result : [result];
+      const limitedFiles = files.slice(0, maxFiles);
+      onFilesSelected(limitedFiles);
+    } catch (error) {
+      console.error('Failed to pick image:', error);
+      // User probably canceled, no need to show error
+    }
+  };
+
+  const handleNativeCamera = async () => {
+    setIsOpen(false);
+    try {
+      const file = await takePhoto({ quality: 0.8 });
+      onFilesSelected([file]);
+    } catch (error) {
+      console.error('Failed to take photo:', error);
+    }
   };
 
   useEffect(() => {
@@ -108,28 +136,57 @@ export default function FileUploadMenu({
           <DrawerHandle />
           <DrawerBody className='pb-8'>
             <div className='flex flex-col gap-2'>
-              <button
-                type='button'
-                onClick={() => triggerFileInput('image')}
-                disabled={disabled}
-                className='flex items-center gap-4 w-full px-4 py-3 rounded-xl bg-white/5 text-white/90 transition-all duration-200 hover:bg-white/10 active:bg-white/15 disabled:opacity-50 disabled:cursor-not-allowed'
-              >
-                <div className='flex h-10 w-10 items-center justify-center rounded-full bg-white/10'>
-                  <ImageIcon className='h-5 w-5' />
-                </div>
-                <span className='text-[17px]'>Upload images</span>
-              </button>
-              <button
-                type='button'
-                onClick={() => triggerFileInput('file')}
-                disabled={disabled}
-                className='flex items-center gap-4 w-full px-4 py-3 rounded-xl bg-white/5 text-white/90 transition-all duration-200 hover:bg-white/10 active:bg-white/15 disabled:opacity-50 disabled:cursor-not-allowed'
-              >
-                <div className='flex h-10 w-10 items-center justify-center rounded-full bg-white/10'>
-                  <FileIcon className='h-5 w-5' />
-                </div>
-                <span className='text-[17px]'>Upload files</span>
-              </button>
+              {isNativeAvailable ? (
+                <>
+                  <button
+                    type='button'
+                    onClick={handleNativeImagePick}
+                    disabled={disabled}
+                    className='flex items-center gap-4 w-full px-4 py-3 rounded-xl bg-white/5 text-white/90 transition-all duration-200 hover:bg-white/10 active:bg-white/15 disabled:opacity-50 disabled:cursor-not-allowed'
+                  >
+                    <div className='flex h-10 w-10 items-center justify-center rounded-full bg-white/10'>
+                      <ImageIcon className='h-5 w-5' />
+                    </div>
+                    <span className='text-[17px]'>Choose from library</span>
+                  </button>
+                  <button
+                    type='button'
+                    onClick={handleNativeCamera}
+                    disabled={disabled}
+                    className='flex items-center gap-4 w-full px-4 py-3 rounded-xl bg-white/5 text-white/90 transition-all duration-200 hover:bg-white/10 active:bg-white/15 disabled:opacity-50 disabled:cursor-not-allowed'
+                  >
+                    <div className='flex h-10 w-10 items-center justify-center rounded-full bg-white/10'>
+                      <Camera className='h-5 w-5' />
+                    </div>
+                    <span className='text-[17px]'>Take photo</span>
+                  </button>
+                </>
+              ) : (
+                <>
+                  <button
+                    type='button'
+                    onClick={() => triggerFileInput('image')}
+                    disabled={disabled}
+                    className='flex items-center gap-4 w-full px-4 py-3 rounded-xl bg-white/5 text-white/90 transition-all duration-200 hover:bg-white/10 active:bg-white/15 disabled:opacity-50 disabled:cursor-not-allowed'
+                  >
+                    <div className='flex h-10 w-10 items-center justify-center rounded-full bg-white/10'>
+                      <ImageIcon className='h-5 w-5' />
+                    </div>
+                    <span className='text-[17px]'>Upload images</span>
+                  </button>
+                  <button
+                    type='button'
+                    onClick={() => triggerFileInput('file')}
+                    disabled={disabled}
+                    className='flex items-center gap-4 w-full px-4 py-3 rounded-xl bg-white/5 text-white/90 transition-all duration-200 hover:bg-white/10 active:bg-white/15 disabled:opacity-50 disabled:cursor-not-allowed'
+                  >
+                    <div className='flex h-10 w-10 items-center justify-center rounded-full bg-white/10'>
+                      <FileIcon className='h-5 w-5' />
+                    </div>
+                    <span className='text-[17px]'>Upload files</span>
+                  </button>
+                </>
+              )}
             </div>
           </DrawerBody>
         </DrawerContent>

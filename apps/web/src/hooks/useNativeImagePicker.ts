@@ -1,72 +1,121 @@
-'use client';
+/**
+ * React hook for using native image picker in webview
+ */
 
-import { useEffect } from 'react';
+import { useEffect, useState, useCallback } from 'react';
+import {
+  initNativeImagePickerListener,
+  pickNativeImageAsFile,
+  pickNativeCameraAsFile,
+  type NativeImageOptions,
+} from '@/lib/nativeImagePicker';
+import { isInMobileWebView } from '@/lib/platform';
 
-interface NativeImageData {
-  type: 'NATIVE_IMAGE_SELECTED';
-  data: {
-    uri: string;
-    base64?: string;
-    mimeType: string;
-    fileName: string;
-    width: number;
-    height: number;
-  };
+export interface UseNativeImagePickerResult {
+  /**
+   * Whether the app is running in a mobile webview
+   */
+  isNativeAvailable: boolean;
+
+  /**
+   * Pick image from library
+   */
+  pickImage: (options?: NativeImageOptions) => Promise<File | File[]>;
+
+  /**
+   * Take photo with camera
+   */
+  takePhoto: (options?: NativeImageOptions) => Promise<File>;
+
+  /**
+   * Whether an operation is in progress
+   */
+  isLoading: boolean;
+
+  /**
+   * Last error that occurred
+   */
+  error: Error | null;
 }
 
 /**
- * Hook to listen for images selected from native mobile image picker
- * and convert them to File objects for upload
+ * Hook for using native image picker
+ *
+ * @example
+ * ```typescript
+ * function MyComponent() {
+ *   const { isNativeAvailable, pickImage, takePhoto, isLoading } = useNativeImagePicker();
+ *
+ *   const handlePickImage = async () => {
+ *     try {
+ *       const file = await pickImage();
+ *       // Use the file
+ *     } catch (error) {
+ *       console.error(error);
+ *     }
+ *   };
+ *
+ *   if (!isNativeAvailable) {
+ *     // Use regular file input
+ *     return <input type="file" />;
+ *   }
+ *
+ *   return <button onClick={handlePickImage}>Pick Image</button>;
+ * }
+ * ```
  */
-export function useNativeImagePicker(onImageSelected: (file: File) => void) {
+export function useNativeImagePicker(): UseNativeImagePickerResult {
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<Error | null>(null);
+  const [isNativeAvailable] = useState(() => isInMobileWebView());
+
+  // Initialize listener on mount
   useEffect(() => {
-    const handleNativeImage = async (event: MessageEvent) => {
-      try {
-        const data: NativeImageData = event.data;
+    if (!isNativeAvailable) return;
 
-        if (data.type === 'NATIVE_IMAGE_SELECTED' && data.data) {
-          console.log('📱 Received native image:', data.data.fileName);
+    const cleanup = initNativeImagePickerListener();
+    return cleanup;
+  }, [isNativeAvailable]);
 
-          const { base64, mimeType, fileName } = data.data;
+  const pickImage = useCallback(async (options?: NativeImageOptions) => {
+    setIsLoading(true);
+    setError(null);
 
-          if (!base64) {
-            console.error('No base64 data in native image');
-            return;
-          }
+    try {
+      const result = await pickNativeImageAsFile(options);
+      setIsLoading(false);
+      return result;
+    } catch (err) {
+      const error =
+        err instanceof Error ? err : new Error('Failed to pick image');
+      setError(error);
+      setIsLoading(false);
+      throw error;
+    }
+  }, []);
 
-          // Convert base64 to Blob
-          const byteString = atob(base64);
-          const ab = new ArrayBuffer(byteString.length);
-          const ia = new Uint8Array(ab);
+  const takePhoto = useCallback(async (options?: NativeImageOptions) => {
+    setIsLoading(true);
+    setError(null);
 
-          for (let i = 0; i < byteString.length; i++) {
-            ia[i] = byteString.charCodeAt(i);
-          }
+    try {
+      const result = await pickNativeCameraAsFile(options);
+      setIsLoading(false);
+      return result;
+    } catch (err) {
+      const error =
+        err instanceof Error ? err : new Error('Failed to take photo');
+      setError(error);
+      setIsLoading(false);
+      throw error;
+    }
+  }, []);
 
-          const blob = new Blob([ab], { type: mimeType });
-
-          // Convert Blob to File
-          const file = new File([blob], fileName, { type: mimeType });
-
-          console.log(
-            '✅ Converted native image to File:',
-            file.name,
-            file.size,
-            'bytes'
-          );
-
-          // Call the callback with the file
-          onImageSelected(file);
-        }
-      } catch (error) {
-        console.error('Error processing native image:', error);
-      }
-    };
-
-    window.addEventListener('message', handleNativeImage);
-
-    return () => {
-      window.removeEventListener('message', handleNativeImage);
-    };
-  }, [onImageSelected]);
+  return {
+    isNativeAvailable,
+    pickImage,
+    takePhoto,
+    isLoading,
+    error,
+  };
 }

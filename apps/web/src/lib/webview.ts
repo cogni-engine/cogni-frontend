@@ -12,12 +12,30 @@ export function isInMobileWebView(): boolean {
   return checkIsInMobileWebView();
 }
 
+// Re-export native image picker utilities for convenience
+export {
+  pickNativeImage,
+  pickNativeCamera,
+  pickNativeImageAsFile,
+  pickNativeCameraAsFile,
+  showNativeImagePickerDialog,
+  initNativeImagePickerListener,
+  base64ToFile,
+  nativeImageToFile,
+  type NativeImageData,
+  type NativeImageOptions,
+} from './nativeImagePicker';
+
 /**
  * Send message to native app (if in webview)
  */
-export function sendToNativeApp(message: { type: string; [key: string]: any }) {
+export function sendToNativeApp(message: {
+  type: string;
+  [key: string]: unknown;
+}) {
   if (isInMobileWebView()) {
     try {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (window as any).ReactNativeWebView.postMessage(JSON.stringify(message));
       console.log('Sent message to native app:', message);
     } catch (error) {

@@ -16,6 +16,13 @@ interface WebAppViewProps {
   session?: Session | null;
 }
 
+interface ImagePickerOptions {
+  mediaTypes?: ('images' | 'videos')[];
+  allowsEditing?: boolean;
+  quality?: number;
+  multiple?: boolean;
+}
+
 export default function WebAppView({ url = 'https://app.cogno.studio', session }: WebAppViewProps) {
   const webViewRef = useRef<WebView>(null);
   const [loading, setLoading] = useState(true);
@@ -251,22 +258,105 @@ export default function WebAppView({ url = 'https://app.cogno.studio', session }
     webViewRef.current?.reload();
   };
 
-  // Handle native image picker
-  const handleImagePick = async () => {
+  // Handle native image picker from library
+  const handleImagePick = async (requestId?: string, options?: ImagePickerOptions) => {
     try {
       // Request permissions
       const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
       
       if (!permissionResult.granted) {
         Alert.alert('Permission Required', 'Please allow access to your photo library to upload images.');
+        
+        // Send error response
+        if (requestId) {
+          webViewRef.current?.postMessage(JSON.stringify({
+            type: 'NATIVE_IMAGE_ERROR',
+            requestId,
+            error: 'Permission denied',
+          }));
+        }
         return;
       }
 
       // Launch image picker (library only, no camera)
       const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ['images'],
-        allowsEditing: false,
-        quality: 0.8,
+        mediaTypes: options?.mediaTypes || ['images'],
+        allowsEditing: options?.allowsEditing ?? false,
+        quality: options?.quality ?? 0.8,
+        base64: true, // Get base64 data to send to web
+        allowsMultipleSelection: options?.multiple ?? false,
+      });
+
+      if (!result.canceled && result.assets && result.assets.length > 0) {
+        const assets = result.assets.map(asset => ({
+          uri: asset.uri,
+          base64: asset.base64,
+          mimeType: asset.mimeType || 'image/jpeg',
+          fileName: asset.fileName || `image_${Date.now()}.jpg`,
+          width: asset.width,
+          height: asset.height,
+          fileSize: asset.fileSize,
+        }));
+        
+        // Send image data to WebView
+        const imageData = {
+          type: 'NATIVE_IMAGE_SELECTED',
+          requestId,
+          data: options?.multiple ? assets : assets[0],
+        };
+
+        // Send to WebView via postMessage
+        webViewRef.current?.postMessage(JSON.stringify(imageData));
+        console.log(`${assets.length} image(s) selected and sent to WebView`);
+      } else {
+        // User canceled
+        if (requestId) {
+          webViewRef.current?.postMessage(JSON.stringify({
+            type: 'NATIVE_IMAGE_CANCELED',
+            requestId,
+          }));
+        }
+      }
+    } catch (error) {
+      console.error('Error picking image:', error);
+      Alert.alert('Error', 'Failed to pick image. Please try again.');
+      
+      // Send error response
+      if (requestId) {
+        webViewRef.current?.postMessage(JSON.stringify({
+          type: 'NATIVE_IMAGE_ERROR',
+          requestId,
+          error: error instanceof Error ? error.message : 'Unknown error',
+        }));
+      }
+    }
+  };
+
+  // Handle native camera
+  const handleCameraPick = async (requestId?: string, options?: ImagePickerOptions) => {
+    try {
+      // Request camera permissions
+      const permissionResult = await ImagePicker.requestCameraPermissionsAsync();
+      
+      if (!permissionResult.granted) {
+        Alert.alert('Permission Required', 'Please allow access to your camera to take photos.');
+        
+        // Send error response
+        if (requestId) {
+          webViewRef.current?.postMessage(JSON.stringify({
+            type: 'NATIVE_IMAGE_ERROR',
+            requestId,
+            error: 'Camera permission denied',
+          }));
+        }
+        return;
+      }
+
+      // Launch camera
+      const result = await ImagePicker.launchCameraAsync({
+        mediaTypes: options?.mediaTypes || ['images'],
+        allowsEditing: options?.allowsEditing ?? false,
+        quality: options?.quality ?? 0.8,
         base64: true, // Get base64 data to send to web
       });
 
@@ -276,23 +366,42 @@ export default function WebAppView({ url = 'https://app.cogno.studio', session }
         // Send image data to WebView
         const imageData = {
           type: 'NATIVE_IMAGE_SELECTED',
+          requestId,
           data: {
             uri: asset.uri,
             base64: asset.base64,
             mimeType: asset.mimeType || 'image/jpeg',
-            fileName: asset.fileName || `image_${Date.now()}.jpg`,
+            fileName: asset.fileName || `photo_${Date.now()}.jpg`,
             width: asset.width,
             height: asset.height,
-          }
+            fileSize: asset.fileSize,
+          },
         };
 
         // Send to WebView via postMessage
         webViewRef.current?.postMessage(JSON.stringify(imageData));
-        console.log('Image selected and sent to WebView:', asset.fileName);
+        console.log('Photo captured and sent to WebView');
+      } else {
+        // User canceled
+        if (requestId) {
+          webViewRef.current?.postMessage(JSON.stringify({
+            type: 'NATIVE_IMAGE_CANCELED',
+            requestId,
+          }));
+        }
       }
     } catch (error) {
-      console.error('Error picking image:', error);
-      Alert.alert('Error', 'Failed to pick image. Please try again.');
+      console.error('Error taking photo:', error);
+      Alert.alert('Error', 'Failed to take photo. Please try again.');
+      
+      // Send error response
+      if (requestId) {
+        webViewRef.current?.postMessage(JSON.stringify({
+          type: 'NATIVE_IMAGE_ERROR',
+          requestId,
+          error: error instanceof Error ? error.message : 'Unknown error',
+        }));
+      }
     }
   };
 
@@ -334,6 +443,18 @@ export default function WebAppView({ url = 'https://app.cogno.studio', session }
           // Handle specific navigation requests from web
           console.log('Navigation request:', message.path);
           // Could handle special routes here if needed
+          break;
+
+        case 'PICK_IMAGE':
+          // Web app requesting native image picker
+          console.log('Image picker requested from web');
+          await handleImagePick(message.requestId, message.options);
+          break;
+
+        case 'PICK_CAMERA':
+          // Web app requesting native camera
+          console.log('Camera requested from web');
+          await handleCameraPick(message.requestId, message.options);
           break;
 
         default:
@@ -382,11 +503,15 @@ export default function WebAppView({ url = 'https://app.cogno.studio', session }
   };
 
   return (
-    <ThemedView style={[styles.container, {
-      paddingTop: Math.max(insets.top - 10, 0), // Reduce top inset by 10px
-      paddingBottom: Math.max(insets.bottom - 10, 0), // Reduce bottom inset by 10px
-    }]}>
-      {/* WebView - visually hidden until loaded */}
+    <>
+      {/* Black background that extends beyond safe area */}
+      <View style={styles.absoluteBackground} />
+      
+      <ThemedView style={[styles.container, {
+        paddingTop: Math.max(insets.top - 10, 0), // Reduce top inset by 10px
+        paddingBottom: 0, // Remove bottom padding to eliminate white edges
+      }]}>
+        {/* WebView - visually hidden until loaded */}
       <WebView
         ref={webViewRef}
         source={{
@@ -398,7 +523,8 @@ export default function WebAppView({ url = 'https://app.cogno.studio', session }
             'ngrok-skip-browser-warning': 'true', // Skip ngrok warning page for dev
           }
         }}
-        style={[styles.webview, { opacity: loading || error ? 0 : 1 }]}
+        style={[styles.webview, { opacity: loading || error ? 0 : 1, backgroundColor: '#000' }]}
+        containerStyle={{ backgroundColor: '#000' }}
         onLoadStart={() => {
           setLoading(true);
           setError(null);
@@ -476,23 +602,30 @@ export default function WebAppView({ url = 'https://app.cogno.studio', session }
       {!loading && !error && (
         <TouchableOpacity
           style={styles.floatingButton}
-          onPress={handleImagePick}
+          onPress={() => handleImagePick()}
           activeOpacity={0.8}
         >
           <Ionicons name="image" size={24} color="#fff" />
         </TouchableOpacity>
       )}
-    </ThemedView>
+      </ThemedView>
+    </>
   );
 }
 
 const styles = StyleSheet.create({
+  absoluteBackground: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: '#000',
+    zIndex: -1,
+  },
   container: {
     flex: 1,
     backgroundColor: '#000',
   },
   webview: {
     flex: 1,
+    backgroundColor: '#000',
   },
   loadingContainer: {
     ...StyleSheet.absoluteFillObject,
