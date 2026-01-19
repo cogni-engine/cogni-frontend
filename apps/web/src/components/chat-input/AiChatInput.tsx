@@ -59,6 +59,7 @@ const AiChatInput = forwardRef<AiChatInputRef, AiChatInputProps>(
   ) {
     const inputRef = useRef<TiptapChatInputRef | null>(null);
     const [uploadItems, setUploadItems] = useState<FileUploadItem[]>([]);
+    const [isInputFocused, setIsInputFocused] = useState(false);
 
     const hasAttachments = uploadItems.length > 0;
 
@@ -195,7 +196,9 @@ const AiChatInput = forwardRef<AiChatInputRef, AiChatInputProps>(
     return (
       <div className='relative rounded-t-3xl'>
         {/* Input UI */}
-        <div className='px-4 md:px-6 py-2'>
+        <div
+          className={`py-2 transition-[padding] duration-300 ease-out ${isInputFocused ? 'px-2' : 'px-4 md:px-6'}`}
+        >
           <div className='w-full md:max-w-7xl md:mx-auto'>
             <div className='flex gap-2 items-end'>
               {/* File Upload Menu - Plus button */}
@@ -219,6 +222,7 @@ const AiChatInput = forwardRef<AiChatInputRef, AiChatInputProps>(
                 hasAttachments={hasAttachments}
                 workspaceMembers={workspaceMembers}
                 workspaceNotes={workspaceNotes}
+                onFocusChange={setIsInputFocused}
                 topContent={
                   uploadItems.length > 0 ? (
                     <FileUploadPreview

@@ -482,16 +482,6 @@ export default function WorkspaceChatPage() {
             flex-1 makes it grow to fill remaining space, pushing messages to visual top when few */}
         <div className='flex-1 min-h-0' />
 
-        {/* Loading indicator for older messages - appears at top when scrolling up */}
-        {isLoadingMore && (
-          <div className='flex items-center justify-center py-4'>
-            <div className='flex items-center gap-2 text-gray-400 text-sm'>
-              <div className='animate-spin rounded-full h-4 w-4 border-b-2 border-gray-400'></div>
-              <span>Loading older messages...</span>
-            </div>
-          </div>
-        )}
-
         {(isConnected || messages.length > 0) && currentUserId ? (
           <WorkspaceMessageList
             messages={messages}
@@ -508,6 +498,16 @@ export default function WorkspaceChatPage() {
               <p className='text-gray-400 font-medium animate-pulse'>
                 Connecting to real-time chat...
               </p>
+            </div>
+          </div>
+        )}
+
+        {/* Loading indicator for older messages - appears at top when scrolling up */}
+        {isLoadingMore && messages.length > 0 && (
+          <div className='flex items-center justify-center py-4'>
+            <div className='flex items-center gap-2 text-gray-400 text-sm'>
+              <div className='animate-spin rounded-full h-4 w-4 border-b-2 border-gray-400'></div>
+              <span>Loading older messages...</span>
             </div>
           </div>
         )}

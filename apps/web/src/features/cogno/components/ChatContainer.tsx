@@ -107,7 +107,7 @@ const ChatContainer = forwardRef<HTMLDivElement, ChatContainerProps>(
 
           {/* Messages Content - shown when messages exist */}
           <div
-            className={`transition-opacity duration-100 ${
+            className={`transition-opacity duration-100 mx-2 ${
               messages.length === 0
                 ? 'opacity-0 pointer-events-none absolute inset-0'
                 : 'opacity-100 pointer-events-auto relative'
