@@ -126,11 +126,8 @@ export default function RegisterScreen() {
                 <View style={styles.dividerLine} />
               </View>
 
-              <View style={styles.googleButtonContainer}>
+              <View style={styles.socialButtonsContainer}>
                 <GoogleSignInButton />
-              </View>
-
-              <View style={styles.appleButtonContainer}>
                 <AppleSignInButton />
               </View>
 
@@ -163,39 +160,40 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 32,
+    paddingHorizontal: 32,
+    paddingVertical: 32,
     backgroundColor: '#000',
   },
   card: {
     width: '100%',
     maxWidth: 448,
-    backgroundColor: 'rgba(24, 24, 27, 0.8)', // zinc-900/80
-    borderRadius: 24,
-    padding: 32,
+    backgroundColor: 'rgba(24, 24, 27, 0.8)', // zinc-900/80 - matches web bg-zinc-900/80
+    borderRadius: 24, // rounded-3xl
+    padding: 32, // p-8
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 20 },
-    shadowOpacity: 0.5,
-    shadowRadius: 40,
-    elevation: 20,
+    shadowOffset: { width: 0, height: 25 },
+    shadowOpacity: 0.25,
+    shadowRadius: 50,
+    elevation: 25, // shadow-2xl equivalent
   },
   title: {
-    fontSize: 24,
-    fontWeight: '600',
+    fontSize: 24, // text-2xl
+    fontWeight: '600', // font-semibold
     color: '#fff',
     textAlign: 'center',
-    marginBottom: 24,
+    marginBottom: 24, // mb-6
   },
   formContainer: {
-    gap: 16,
+    gap: 16, // gap-4
   },
   input: {
     width: '100%',
-    height: 48,
     backgroundColor: '#27272a', // zinc-800
     borderWidth: 1,
     borderColor: '#3f3f46', // zinc-700
-    borderRadius: 12,
-    paddingHorizontal: 16,
+    borderRadius: 8, // rounded-lg
+    paddingHorizontal: 16, // px-4
+    paddingVertical: 12, // py-3
     fontSize: 16,
     color: '#fff',
   },
@@ -205,7 +203,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
     borderWidth: 1,
     borderColor: '#52525b', // zinc-600
-    borderRadius: 24,
+    borderRadius: 9999, // rounded-full
     justifyContent: 'center',
     alignItems: 'center',
     shadowColor: '#fff',
@@ -219,7 +217,7 @@ const styles = StyleSheet.create({
   primaryButtonText: {
     color: '#fff',
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: '600', // font-semibold
   },
   loadingContainer: {
     flexDirection: 'row',
@@ -229,13 +227,12 @@ const styles = StyleSheet.create({
   errorText: {
     color: '#ef4444', // red-500
     fontSize: 14,
-    marginTop: 4,
   },
   divider: {
     flexDirection: 'row',
     alignItems: 'center',
     width: '100%',
-    marginVertical: 24,
+    marginVertical: 24, // my-6
   },
   dividerLine: {
     flex: 1,
@@ -245,21 +242,17 @@ const styles = StyleSheet.create({
   dividerText: {
     marginHorizontal: 8,
     color: '#9ca3af', // gray-400
-    fontSize: 14,
-    backgroundColor: 'rgba(24, 24, 27, 0.8)', // matches card bg
-    paddingHorizontal: 4,
+    fontSize: 14, // text-sm
+    backgroundColor: 'rgba(24, 24, 27, 0.8)',
+    paddingHorizontal: 8, // px-2
   },
-  googleButtonContainer: {
-    width: '100%',
-  },
-  appleButtonContainer: {
-    width: '100%',
-    marginTop: 12,
+  socialButtonsContainer: {
+    gap: 12, // gap-3
   },
   registerContainer: {
-    marginTop: 32,
+    marginTop: 32, // mt-8
     alignItems: 'center',
-    gap: 12,
+    gap: 12, // mb-3 equivalent spacing
   },
   registerPrompt: {
     color: '#d4d4d8', // gray-300
@@ -268,7 +261,7 @@ const styles = StyleSheet.create({
   registerLink: {
     color: '#60a5fa', // blue-400
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: '600', // font-semibold
   },
 });
 

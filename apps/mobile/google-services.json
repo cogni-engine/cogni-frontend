@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "979919062328",
+    "project_id": "cogno-d0e3b",
+    "storage_bucket": "cogno-d0e3b.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:979919062328:android:dace8509f7d25f73102dcd",
+        "android_client_info": {
+          "package_name": "com.cogno.ai.mobile"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBGhuZC2CcsHTKPSYzPcNRWJUzpEeZAwxo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

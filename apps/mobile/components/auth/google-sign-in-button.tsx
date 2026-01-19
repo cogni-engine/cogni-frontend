@@ -108,11 +108,12 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     paddingHorizontal: 24,
     justifyContent: 'center',
+    width: '100%',
+    height: 48,
     shadowColor: '#fff',
     shadowOffset: { width: 0, height: 0 },
     shadowOpacity: 0.06,
     shadowRadius: 1,
-    elevation: 2,
   },
   icon: {
     marginRight: 12,

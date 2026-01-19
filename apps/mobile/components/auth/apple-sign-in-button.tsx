@@ -117,13 +117,19 @@ const styles = StyleSheet.create({
   button: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#000',
+    backgroundColor: 'transparent',
+    borderWidth: 1,
+    borderColor: '#52525b', // zinc-600
     borderRadius: 24,
     paddingVertical: 12,
     paddingHorizontal: 24,
     justifyContent: 'center',
     width: '100%',
     height: 48,
+    shadowColor: '#fff',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.06,
+    shadowRadius: 1,
   },
   icon: {
     marginRight: 12,
