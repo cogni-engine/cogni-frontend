@@ -40,7 +40,7 @@
         "POST_NOTIFICATIONS"
       ],
       "package": "com.cogno.ai.mobile",
-      "googleServicesFile": "cogni-frontend/apps/mobile/google-services.json"
+      "googleServicesFile": "./google-services.json"
     },
     "web": {
       "output": "static",
