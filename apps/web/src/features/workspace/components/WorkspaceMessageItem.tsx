@@ -1,7 +1,7 @@
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import type { WorkspaceMessage } from '@/types/workspace';
 import { format } from 'date-fns';
-import { User, Reply, AlertCircle, Loader2 } from 'lucide-react';
+import { User, Reply, AlertCircle } from 'lucide-react';
 import { useState, useRef, useEffect, useCallback, useMemo, memo } from 'react';
 import { useDrag } from '@use-gesture/react';
 import MessageContextMenu from './MessageContextMenu';
@@ -376,12 +376,6 @@ function WorkspaceMessageItem({
             {showTimestamp && (
               <div className='flex flex-col justify-end shrink-0'>
                 {/* Show status for optimistic messages */}
-                {isOptimistic && !isFailed && (
-                  <div className='flex items-center justify-end gap-1 text-xs text-gray-500'>
-                    <Loader2 className='w-3 h-3 animate-spin' />
-                    <span>Sending...</span>
-                  </div>
-                )}
                 {isFailed && (
                   <div className='flex items-center justify-end gap-1'>
                     <button
