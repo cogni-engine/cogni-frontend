@@ -19,6 +19,8 @@ type Props = {
   isHighlighted?: boolean;
   workspaceMembers?: WorkspaceMember[];
   workspaceNotes?: Note[];
+  showTimestamp?: boolean;
+  showAvatar?: boolean;
 };
 
 function ReadStatus({ readCount }: { readCount: number }) {
@@ -35,6 +37,8 @@ function WorkspaceMessageItem({
   isHighlighted = false,
   workspaceMembers = [],
   workspaceNotes = [],
+  showTimestamp = true,
+  showAvatar = true,
 }: Props) {
   const { openNoteDrawer } = useGlobalUI();
   const [contextMenu, setContextMenu] = useState<{
@@ -296,7 +300,7 @@ function WorkspaceMessageItem({
     return (
       <div
         data-replied-preview
-        className='mb-2 border-white/20 cursor-pointer hover:bg-white/5 rounded transition-colors'
+        className='mb-2 border-white/20 cursor-pointer rounded transition-colors'
         onClick={handleClick}
         style={{ pointerEvents: 'auto' }}
       >
@@ -361,17 +365,19 @@ function WorkspaceMessageItem({
               transform: `translateX(${swipeOffset}px)`,
             }}
           >
-            <div className='flex flex-col justify-end shrink-0'>
-              <div className='text-right'>
-                <ReadStatus readCount={readCount} />
+            {showTimestamp && (
+              <div className='flex flex-col justify-end shrink-0'>
+                <div className='text-right'>
+                  <ReadStatus readCount={readCount} />
+                </div>
+                <p className='text-xs text-gray-500 text-right'>
+                  {format(new Date(message.created_at), 'HH:mm')}
+                </p>
               </div>
-              <p className='text-xs text-gray-500 text-right'>
-                {format(new Date(message.created_at), 'HH:mm')}
-              </p>
-            </div>
+            )}
             <div className='flex flex-col gap-2 items-end'>
               {(message.text || message.replied_message) && (
-                <div className='inline-block bg-white/13 backdrop-blur-xl border border-black rounded-3xl px-4 py-2.5 shadow-[0_8px_32px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.12)]'>
+                <div className='inline-block max-w-[75vw] bg-white/13 backdrop-blur-xl border border-black rounded-3xl px-4 py-2.5 shadow-[0_8px_32px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.12)]'>
                   {message.replied_message && (
                     <RepliedMessagePreview
                       repliedMessage={message.replied_message}
@@ -463,15 +469,20 @@ function WorkspaceMessageItem({
             transform: `translateX(${swipeOffset}px)`,
           }}
         >
-          <Avatar className='h-8 w-8 border border-white/15 bg-white/10 text-xs font-medium'>
-            {avatarUrl ? (
-              <AvatarImage src={avatarUrl} alt={name} />
-            ) : (
-              <AvatarFallback>
-                <User className='h-4 w-4' />
-              </AvatarFallback>
-            )}
-          </Avatar>
+          {showAvatar ? (
+            <Avatar className='h-8 w-8 border border-white/15 bg-white/10 text-xs font-medium'>
+              {avatarUrl ? (
+                <AvatarImage src={avatarUrl} alt={name} />
+              ) : (
+                <AvatarFallback>
+                  <User className='h-4 w-4' />
+                </AvatarFallback>
+              )}
+            </Avatar>
+          ) : (
+            /* Spacer to maintain alignment */
+            <div className='w-8' />
+          )}
         </div>
         <div
           className='flex flex-col min-w-0 relative flex-1 transition-transform duration-75'
@@ -479,11 +490,11 @@ function WorkspaceMessageItem({
             transform: `translateX(${swipeOffset}px)`,
           }}
         >
-          <p className='text-xs text-gray-400 mb-1'>{name}</p>
+          {showAvatar && <p className='text-xs text-gray-400 mb-1'>{name}</p>}
           <div className='flex items-end'>
             <div className='flex flex-col gap-2 min-w-0'>
               {(message.text || message.replied_message) && (
-                <div className='inline-block bg-white/8 backdrop-blur-xl border border-black rounded-3xl px-4 py-2.5 shadow-[0_8px_32px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.12)]'>
+                <div className='inline-block max-w-[75vw] bg-white/8 backdrop-blur-xl border border-black rounded-3xl px-4 py-2.5 shadow-[0_8px_32px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.12)]'>
                   {message.replied_message && (
                     <RepliedMessagePreview
                       repliedMessage={message.replied_message}
@@ -531,9 +542,11 @@ function WorkspaceMessageItem({
                 <MessageFiles files={message.files} align='left' />
               )}
             </div>
-            <p className='text-xs text-gray-500 mt-1'>
-              {format(new Date(message.created_at), 'HH:mm')}
-            </p>
+            {showTimestamp && (
+              <p className='text-xs text-gray-500 mt-1'>
+                {format(new Date(message.created_at), 'HH:mm')}
+              </p>
+            )}
           </div>
         </div>
       </div>
