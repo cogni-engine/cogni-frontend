@@ -240,17 +240,6 @@ const ChatContainer = forwardRef<HTMLDivElement, ChatContainerProps>(
             {/* Messages before the recent/streaming section - grouped by date */}
             {groupsBeforeRecent.map(group => (
               <div key={group.dateKey} className='relative'>
-                {/* Sticky date indicator - stays pinned for all messages in this date group */}
-                {group.dateKey !== 'streaming' && group.dateLabel && (
-                  <div className='sticky top-16 z-20 flex justify-center py-3'>
-                    <div className='px-3 py-1 rounded-full bg-white/5 backdrop-blur-md border border-white/10 shadow-lg'>
-                      <span className='text-xs font-medium text-white/60'>
-                        {group.dateLabel}
-                      </span>
-                    </div>
-                  </div>
-                )}
-
                 {/* Messages for this date */}
                 {group.messages.map(({ message, showTimestamp, index }) => {
                   const messageId =
