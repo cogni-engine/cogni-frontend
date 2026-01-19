@@ -103,6 +103,7 @@ type Props = {
   highlightedMessageId?: number | null;
   workspaceMembers?: WorkspaceMember[];
   workspaceNotes?: Note[];
+  onDismissFailedMessage?: (optimisticId: number) => void;
 };
 
 function WorkspaceMessageList({
@@ -113,6 +114,7 @@ function WorkspaceMessageList({
   highlightedMessageId,
   workspaceMembers = [],
   workspaceNotes = [],
+  onDismissFailedMessage,
 }: Props) {
   // Process messages for grouping by minute and date
   const dateGroups = useMemo(
@@ -161,6 +163,7 @@ function WorkspaceMessageList({
                   workspaceNotes={workspaceNotes}
                   showTimestamp={showTimestamp}
                   showAvatar={showAvatar}
+                  onDismissFailedMessage={onDismissFailedMessage}
                 />
               </div>
             ))}

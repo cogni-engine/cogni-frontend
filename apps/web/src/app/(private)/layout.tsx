@@ -4,8 +4,6 @@ import { usePathname, useRouter } from 'next/navigation';
 import Header from '@/components/layout/Header';
 import BottomNav from '@/components/layout/BottomNav';
 import { GlobalUIProvider, useGlobalUI } from '@/contexts/GlobalUIContext';
-import { CopilotKit } from '@copilotkit/react-core';
-import '@copilotkit/react-textarea/styles.css';
 import { createClient } from '@/lib/supabase/browserClient';
 import {
   setCurrentUserId,
@@ -204,9 +202,7 @@ export default function DashboardLayout({
 }) {
   return (
     <GlobalUIProvider>
-      <CopilotKit runtimeUrl='/api/copilotkit'>
-        <LayoutContent>{children}</LayoutContent>
-      </CopilotKit>
+      <LayoutContent>{children}</LayoutContent>
     </GlobalUIProvider>
   );
 }

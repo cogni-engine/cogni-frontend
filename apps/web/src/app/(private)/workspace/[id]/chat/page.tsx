@@ -50,6 +50,9 @@ export default function WorkspaceChatPage() {
   const chatInputRef = useRef<ChatInputRef>(null);
   const sendingMessageRef = useRef(false);
 
+  // Fetch workspace members for mentions (fetch first so we can pass to chat hook)
+  const { members } = useWorkspaceMembers(workspaceId);
+
   const {
     messages,
     sendMessage: originalSendMessage,
@@ -59,10 +62,8 @@ export default function WorkspaceChatPage() {
     isConnected,
     loadMoreMessages,
     hasMoreMessages,
-  } = useWorkspaceChat(workspaceId);
-
-  // Fetch workspace members for mentions
-  const { members } = useWorkspaceMembers(workspaceId);
+    dismissFailedMessage,
+  } = useWorkspaceChat(workspaceId, members);
 
   // Fetch workspace notes - deferred to not block message rendering
   const { notes: rawNotes } = useNotes({
@@ -382,6 +383,7 @@ export default function WorkspaceChatPage() {
             highlightedMessageId={highlightedMessageId}
             workspaceMembers={members}
             workspaceNotes={workspaceNotes}
+            onDismissFailedMessage={dismissFailedMessage}
           />
         ) : (
           <div className='flex-1 flex items-center justify-center'>

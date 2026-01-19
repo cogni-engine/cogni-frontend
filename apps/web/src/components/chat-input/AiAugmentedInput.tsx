@@ -3,7 +3,6 @@
 import { useRef, useState, useImperativeHandle, forwardRef } from 'react';
 import { ArrowUp, Square } from 'lucide-react';
 import { VoiceInputButton } from './VoiceInputButton';
-import { CopilotTextarea } from '@copilotkit/react-textarea';
 
 type TextInputProps = {
   onSend: (text: string) => void | Promise<void>;
@@ -11,7 +10,6 @@ type TextInputProps = {
   isLoading?: boolean;
   placeholder?: string;
   canStop?: boolean;
-  disableCopilot?: boolean;
   isUploading?: boolean;
   hasAttachments?: boolean;
 };
@@ -28,7 +26,6 @@ const AiAugmentedInput = forwardRef<AiAugmentedInputRef, TextInputProps>(
       isLoading = false,
       placeholder = 'メッセージを入力...',
       canStop = true,
-      disableCopilot = false,
       isUploading = false,
       hasAttachments = false,
     },
@@ -93,7 +90,7 @@ const AiAugmentedInput = forwardRef<AiAugmentedInputRef, TextInputProps>(
       });
     };
 
-    // Unified keydown handler (accepts any keyboard event since CopilotTextarea may wrap it)
+    // Unified keydown handler
     const handleKeyDown = (e: React.KeyboardEvent) => {
       // Shift+Enter: 改行（デフォルト動作を許可）
       if (e.key === 'Enter' && e.shiftKey) {
@@ -115,17 +112,7 @@ const AiAugmentedInput = forwardRef<AiAugmentedInputRef, TextInputProps>(
 
     return (
       <div className='flex-1 relative ml-[55px]'>
-        <CopilotTextarea
-          disableBranding={true}
-          autosuggestionsConfig={{
-            textareaPurpose: `Assist me in replying to this chat thread. Remember all important details.`,
-            contextCategories: ['workspace_chat', 'cogni_chat'],
-            chatApiConfigs: {},
-            disableWhenEmpty: false,
-            temporarilyDisableWhenMovingCursorWithoutChangingText: false,
-            temporarilyDisableNotTrustedEvents: false,
-            disabled: disableCopilot,
-          }}
+        <textarea
           ref={textareaRef}
           value={input}
           onChange={handleChange}
