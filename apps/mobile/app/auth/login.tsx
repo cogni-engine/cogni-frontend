@@ -10,14 +10,17 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
+  Image,
 } from 'react-native';
 import { supabase } from '@/lib/supabase';
 import GoogleSignInButton from '@/components/auth/google-sign-in-button';
 import AppleSignInButton from '@/components/auth/apple-sign-in-button';
+import { Ionicons } from '@expo/vector-icons';
 
 export default function LoginScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -53,40 +56,76 @@ export default function LoginScreen() {
         <ScrollView contentContainerStyle={styles.scrollContent}>
           <View style={styles.container}>
             <View style={styles.card}>
-              <Text style={styles.title}>Sign in to Cogni Engine</Text>
+              {/* Logo */}
+              <View style={styles.logoContainer}>
+                <Image
+                  source={require('@/assets/images/cogno-icon.png')}
+                  style={styles.logo}
+                />
+                <Text style={styles.title}>Sign in to Cogno</Text>
+              </View>
 
+              {/* Social Sign-In Buttons First */}
+              <View style={styles.socialButtonsContainer}>
+                <GoogleSignInButton />
+                <AppleSignInButton />
+              </View>
+
+              {/* OR Divider */}
+              <View style={styles.divider}>
+                <View style={styles.dividerLine} />
+                <Text style={styles.dividerText}>OR</Text>
+                <View style={styles.dividerLine} />
+              </View>
+
+              {/* Email/Password Form */}
               <View style={styles.formContainer}>
-                <TextInput
-                  style={styles.input}
-                  placeholder="Email"
-                  placeholderTextColor="#71717a"
-                  value={email}
-                  onChangeText={(text) => {
-                    setEmail(text);
-                    setError('');
-                  }}
-                  autoCapitalize="none"
-                  keyboardType="email-address"
-                  autoComplete="email"
-                  editable={!loading}
-                />
+                <View style={styles.inputWrapper}>
+                  <TextInput
+                    style={styles.input}
+                    placeholder="Email"
+                    placeholderTextColor="#6b7280"
+                    value={email}
+                    onChangeText={(text) => {
+                      setEmail(text);
+                      setError('');
+                    }}
+                    autoCapitalize="none"
+                    keyboardType="email-address"
+                    autoComplete="email"
+                    editable={!loading}
+                  />
+                </View>
 
-                <TextInput
-                  style={styles.input}
-                  placeholder="Password"
-                  placeholderTextColor="#71717a"
-                  value={password}
-                  onChangeText={(text) => {
-                    setPassword(text);
-                    setError('');
-                  }}
-                  secureTextEntry
-                  autoCapitalize="none"
-                  autoComplete="password"
-                  editable={!loading}
-                  returnKeyType="go"
-                  onSubmitEditing={handleSignIn}
-                />
+                <View style={styles.inputWrapper}>
+                  <TextInput
+                    style={styles.input}
+                    placeholder="Password"
+                    placeholderTextColor="#6b7280"
+                    value={password}
+                    onChangeText={(text) => {
+                      setPassword(text);
+                      setError('');
+                    }}
+                    secureTextEntry={!showPassword}
+                    autoCapitalize="none"
+                    autoComplete="password"
+                    editable={!loading}
+                    returnKeyType="go"
+                    onSubmitEditing={handleSignIn}
+                  />
+                  <TouchableOpacity
+                    style={styles.eyeButton}
+                    onPress={() => setShowPassword(!showPassword)}
+                    hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                  >
+                    <Ionicons
+                      name={showPassword ? 'eye' : 'eye-off'}
+                      size={20}
+                      color="#9ca3af"
+                    />
+                  </TouchableOpacity>
+                </View>
 
                 <TouchableOpacity
                   style={[styles.primaryButton, loading && styles.buttonDisabled]}
@@ -96,7 +135,7 @@ export default function LoginScreen() {
                 >
                   {loading ? (
                     <View style={styles.loadingContainer}>
-                      <ActivityIndicator color="#fff" size="small" />
+                      <ActivityIndicator color="#000" size="small" />
                       <Text style={styles.primaryButtonText}>Signing in...</Text>
                     </View>
                   ) : (
@@ -107,24 +146,14 @@ export default function LoginScreen() {
                 {error ? <Text style={styles.errorText}>{error}</Text> : null}
               </View>
 
-              <View style={styles.divider}>
-                <View style={styles.dividerLine} />
-                <Text style={styles.dividerText}>Or continue with</Text>
-                <View style={styles.dividerLine} />
-              </View>
-
-              <View style={styles.socialButtonsContainer}>
-                <GoogleSignInButton />
-                <AppleSignInButton />
-              </View>
-
+              {/* Register Link */}
               <View style={styles.registerContainer}>
-                <Text style={styles.registerPrompt}>Don&apos;t have an account?</Text>
-                <Link href="/auth/register" asChild>
-                  <TouchableOpacity>
+                <Text style={styles.registerText}>
+                  Don&apos;t have an account?{' '}
+                  <Link href="/auth/register" asChild>
                     <Text style={styles.registerLink}>Create account</Text>
-                  </TouchableOpacity>
-                </Link>
+                  </Link>
+                </Text>
               </View>
             </View>
           </View>
@@ -147,64 +176,90 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: 32,
+    paddingHorizontal: 24,
     paddingVertical: 32,
     backgroundColor: '#000',
   },
   card: {
     width: '100%',
     maxWidth: 448,
-    backgroundColor: 'rgba(24, 24, 27, 0.8)', // zinc-900/80 - matches web bg-zinc-900/80
-    borderRadius: 24, // rounded-3xl
-    padding: 32, // p-8
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 25 },
-    shadowOpacity: 0.25,
-    shadowRadius: 50,
-    elevation: 25, // shadow-2xl equivalent
+    paddingHorizontal: 24,
+    paddingVertical: 32,
+  },
+  logoContainer: {
+    alignItems: 'center',
+    marginBottom: 32,
+  },
+  logo: {
+    width: 60,
+    height: 60,
+    borderRadius: 10,
+    marginBottom: 24,
   },
   title: {
-    fontSize: 24, // text-2xl
-    fontWeight: '600', // font-semibold
+    fontSize: 24,
+    fontWeight: '600',
     color: '#fff',
     textAlign: 'center',
-    marginBottom: 24, // mb-6
+  },
+  socialButtonsContainer: {
+    gap: 12,
+    marginBottom: 24,
+  },
+  divider: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    width: '100%',
+    marginBottom: 24,
+  },
+  dividerLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: '#3f3f46',
+  },
+  dividerText: {
+    marginHorizontal: 8,
+    color: '#9ca3af',
+    fontSize: 14,
+    paddingHorizontal: 8,
   },
   formContainer: {
-    gap: 16, // gap-4
+    gap: 24,
+  },
+  inputWrapper: {
+    position: 'relative',
   },
   input: {
     width: '100%',
-    backgroundColor: '#27272a', // zinc-800
-    borderWidth: 1,
-    borderColor: '#3f3f46', // zinc-700
-    borderRadius: 8, // rounded-lg
-    paddingHorizontal: 16, // px-4
-    paddingVertical: 12, // py-3
+    backgroundColor: 'transparent',
+    borderBottomWidth: 1,
+    borderBottomColor: '#3f3f46',
+    paddingVertical: 8,
+    paddingRight: 40,
     fontSize: 16,
     color: '#fff',
   },
+  eyeButton: {
+    position: 'absolute',
+    right: 0,
+    bottom: 8,
+    padding: 4,
+  },
   primaryButton: {
     width: '100%',
-    height: 48,
-    backgroundColor: 'transparent',
-    borderWidth: 1,
-    borderColor: '#52525b', // zinc-600
-    borderRadius: 9999, // rounded-full
+    height: 44,
+    backgroundColor: '#fff',
+    borderRadius: 9999,
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#fff',
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.06,
-    shadowRadius: 1,
   },
   buttonDisabled: {
     opacity: 0.6,
   },
   primaryButtonText: {
-    color: '#fff',
+    color: '#000',
     fontSize: 16,
-    fontWeight: '600', // font-semibold
+    fontWeight: '500',
   },
   loadingContainer: {
     flexDirection: 'row',
@@ -212,43 +267,19 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   errorText: {
-    color: '#ef4444', // red-500
+    color: '#ef4444',
     fontSize: 14,
   },
-  divider: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    width: '100%',
-    marginVertical: 24, // my-6
-  },
-  dividerLine: {
-    flex: 1,
-    height: 1,
-    backgroundColor: '#3f3f46', // zinc-700
-  },
-  dividerText: {
-    marginHorizontal: 8,
-    color: '#9ca3af', // gray-400
-    fontSize: 14, // text-sm
-    backgroundColor: 'rgba(24, 24, 27, 0.8)',
-    paddingHorizontal: 8, // px-2
-  },
-  socialButtonsContainer: {
-    gap: 12, // gap-3
-  },
   registerContainer: {
-    marginTop: 32, // mt-8
+    marginTop: 32,
     alignItems: 'center',
-    gap: 12, // mb-3 equivalent spacing
   },
-  registerPrompt: {
-    color: '#d4d4d8', // gray-300
+  registerText: {
+    color: '#d1d5db',
     fontSize: 14,
   },
   registerLink: {
-    color: '#60a5fa', // blue-400
-    fontSize: 16,
-    fontWeight: '600', // font-semibold
+    color: '#60a5fa',
+    fontWeight: '500',
   },
 });
-

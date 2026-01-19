@@ -1,6 +1,6 @@
 import { supabase } from '@/lib/supabase';
 import { useEffect } from 'react';
-import { TouchableOpacity, Text, StyleSheet } from 'react-native';
+import { TouchableOpacity, Text, StyleSheet, View } from 'react-native';
 import * as WebBrowser from 'expo-web-browser';
 import { AntDesign } from '@expo/vector-icons';
 
@@ -89,39 +89,35 @@ export default function GoogleSignInButton() {
     <TouchableOpacity
       onPress={onSignInButtonPress}
       style={styles.button}
-      activeOpacity={0.8}
+      activeOpacity={0.9}
     >
-      <AntDesign name="google" size={20} color="#fff" style={styles.icon} />
-      <Text style={styles.text}>Continue with Google</Text>
+      <View style={styles.iconContainer}>
+        <AntDesign name="google" size={20} color="#000" />
+      </View>
+      <Text style={styles.text}>Sign in with Google</Text>
     </TouchableOpacity>
   );
 }
 
 const styles = StyleSheet.create({
   button: {
-    flexDirection: 'row',
+    position: 'relative',
     alignItems: 'center',
-    backgroundColor: 'transparent',
-    borderWidth: 1,
-    borderColor: '#52525b', // zinc-600
-    borderRadius: 24,
-    paddingVertical: 12,
-    paddingHorizontal: 24,
     justifyContent: 'center',
+    backgroundColor: '#fff',
+    borderRadius: 9999,
     width: '100%',
-    height: 48,
-    shadowColor: '#fff',
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.06,
-    shadowRadius: 1,
+    height: 44,
   },
-  icon: {
-    marginRight: 12,
+  iconContainer: {
+    position: 'absolute',
+    left: 50,
   },
   text: {
+    position: 'absolute',
+    left: 90,
     fontSize: 16,
-    color: '#fff',
-    fontWeight: '600',
+    color: '#000',
+    fontWeight: '500',
   },
 });
-
