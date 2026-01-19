@@ -35,6 +35,8 @@ interface TiptapChatInputProps {
   workspaceNotes?: Note[];
   /** Content to render above the editor, inside the input container */
   topContent?: React.ReactNode;
+  /** Callback when focus state changes */
+  onFocusChange?: (focused: boolean) => void;
 }
 
 export type TiptapChatInputRef = {
@@ -55,6 +57,7 @@ const TiptapChatInput = forwardRef<TiptapChatInputRef, TiptapChatInputProps>(
       workspaceMembers = [],
       workspaceNotes = [],
       topContent,
+      onFocusChange,
     },
     ref
   ) {
@@ -96,8 +99,14 @@ const TiptapChatInput = forwardRef<TiptapChatInputRef, TiptapChatInputProps>(
           const text = editor.getText();
           setIsEmpty(text.trim().length === 0);
         },
-        onFocus: () => setIsFocused(true),
-        onBlur: () => setIsFocused(false),
+        onFocus: () => {
+          setIsFocused(true);
+          onFocusChange?.(true);
+        },
+        onBlur: () => {
+          setIsFocused(false);
+          onFocusChange?.(false);
+        },
       },
       [extensions, placeholder]
     );

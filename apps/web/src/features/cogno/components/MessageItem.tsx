@@ -8,6 +8,7 @@ import { useGlobalUI } from '@/contexts/GlobalUIContext';
 import type { WorkspaceMember } from '@/types/workspace';
 import type { Note } from '@/types/note';
 import type { UploadedFile } from '@/lib/api/workspaceFilesApi';
+import { format } from 'date-fns';
 
 type MessageItemProps = {
   message: Message | AIMessage;
@@ -21,6 +22,7 @@ type MessageItemProps = {
   ) => Promise<void>;
   workspaceMembers?: WorkspaceMember[];
   workspaceNotes?: Note[];
+  showTimestamp?: boolean;
 };
 
 export default function MessageItem({
@@ -28,6 +30,7 @@ export default function MessageItem({
   sendMessage,
   workspaceMembers = [],
   workspaceNotes = [],
+  showTimestamp = false,
 }: MessageItemProps) {
   const { openNoteDrawer } = useGlobalUI();
 
@@ -107,6 +110,9 @@ export default function MessageItem({
   const hasFiles =
     'files' in message && message.files && message.files.length > 0;
 
+  // Get timestamp from AIMessage
+  const timestamp = 'created_at' in message ? message.created_at : null;
+
   return (
     <div className='w-full max-w-5xl mx-auto flex justify-end mb-4 px-1 md:px-3'>
       <div className='max-w-[80%] flex flex-col items-end gap-2'>
@@ -133,6 +139,13 @@ export default function MessageItem({
               />
             </div>
           </div>
+        )}
+
+        {/* Timestamp - only show when showTimestamp is true */}
+        {showTimestamp && timestamp && (
+          <p className='text-xs text-gray-500 mt-0.5'>
+            {format(new Date(timestamp), 'HH:mm')}
+          </p>
         )}
       </div>
     </div>
