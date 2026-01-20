@@ -33,8 +33,6 @@ export default function Header() {
   const pageTitle = pageTitleMap[pathname] ?? null;
   const [user, setUser] = useState<User | null>(null);
   const [isMounted, setIsMounted] = useState(false);
-  const [currentTime, setCurrentTime] = useState('');
-  const [isMobile, setIsMobile] = useState(false);
 
   // Get folders for notes page
   const personalWorkspaceId = isNotesPage ? getPersonalWorkspaceId() : null;
@@ -110,40 +108,6 @@ export default function Header() {
     };
     getUserData();
   }, []);
-
-  // Detect mobile screen size
-  useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768);
-    };
-
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
-  }, []);
-
-  // Update time every minute
-  useEffect(() => {
-    const updateTime = () => {
-      const now = new Date();
-      const formatted = now
-        .toLocaleString('en-US', {
-          ...(isMobile ? {} : { weekday: 'short' }),
-          month: 'short',
-          day: 'numeric',
-          hour: '2-digit',
-          minute: '2-digit',
-          hour12: false,
-        })
-        .replace(/,/g, '');
-      setCurrentTime(formatted);
-    };
-
-    updateTime();
-    const interval = setInterval(updateTime, 60000); // Update every minute
-
-    return () => clearInterval(interval);
-  }, [isMobile]);
 
   // Fetch unread notifications when user detected
   useEffect(() => {

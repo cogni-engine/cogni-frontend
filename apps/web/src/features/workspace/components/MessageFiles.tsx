@@ -7,11 +7,8 @@ import { X, Play, Volume2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import AspectImage from '@/components/sendable/AspectImage';
 import SendableDefaultFile from '@/components/sendable/SendableDefaultFile';
-import { createClient } from '@/lib/supabase/browserClient';
 import { useGlobalUI } from '@/contexts/GlobalUIContext';
-
-const supabase = createClient();
-const WORKSPACE_FILES_BUCKET = 'workspace-files';
+import { getFileSignedUrl } from '../api/filesApi';
 
 export interface MessageFile {
   id: number;
@@ -126,12 +123,10 @@ export default function MessageFiles({
         setLoadingFiles(prev => new Set(prev).add(file.id));
 
         try {
-          const { data, error } = await supabase.storage
-            .from(WORKSPACE_FILES_BUCKET)
-            .createSignedUrl(file.file_path, 3600);
+          const signedUrl = await getFileSignedUrl(file.file_path, 3600);
 
-          if (!error && data?.signedUrl) {
-            setFileUrls(prev => new Map(prev).set(file.id, data.signedUrl));
+          if (signedUrl) {
+            setFileUrls(prev => new Map(prev).set(file.id, signedUrl));
           }
         } catch (error) {
           console.error('Error loading file URL:', error);
@@ -161,11 +156,7 @@ export default function MessageFiles({
     try {
       let url = fileUrls.get(file.id);
       if (!url) {
-        const { data, error } = await supabase.storage
-          .from(WORKSPACE_FILES_BUCKET)
-          .createSignedUrl(file.file_path, 3600);
-        if (error) throw error;
-        url = data.signedUrl;
+        url = await getFileSignedUrl(file.file_path, 3600);
       }
 
       if (url) {

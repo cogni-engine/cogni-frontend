@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import type { Workspace } from '@/types/workspace';
+import type { Workspace } from '../domain';
 import { Building2 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import GlassCard from '@/components/glass-design/GlassCard';

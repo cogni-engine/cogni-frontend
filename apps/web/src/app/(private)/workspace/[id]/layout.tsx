@@ -13,7 +13,7 @@ import {
 } from 'lucide-react';
 import GlassCard from '@/components/glass-design/GlassCard';
 import GlassButton from '@/components/glass-design/GlassButton';
-import { useWorkspace } from '@/hooks/useWorkspace';
+import { useWorkspace } from '@/features/workspace';
 import FolderActionButton from '@/components/FolderActionButton';
 import { useNoteFolders } from '@/features/notes/hooks/useNoteFolders';
 import { useNotes } from '@/features/notes/hooks/useNotes';
@@ -130,7 +130,6 @@ export default function WorkspaceLayout({
   }, []);
 
   const basePath = `/workspace/${workspaceId}`;
-  console.log(workspace);
 
   return (
     <div className='flex flex-col h-full relative overflow-hidden'>

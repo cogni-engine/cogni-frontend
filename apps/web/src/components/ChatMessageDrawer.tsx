@@ -7,7 +7,7 @@ import { TiptapRenderer } from '@/components/tiptap/TiptapRenderer';
 import type { WorkspaceMessage, WorkspaceMember } from '@/types/workspace';
 import type { Note } from '@/types/note';
 import { useGlobalUI } from '@/contexts/GlobalUIContext';
-import { useWorkspaceMembers } from '@/hooks/useWorkspace';
+import { useWorkspaceMembers } from '@/features/workspace';
 import { useNotes } from '@/features/notes/hooks/useNotes';
 import {
   Drawer,

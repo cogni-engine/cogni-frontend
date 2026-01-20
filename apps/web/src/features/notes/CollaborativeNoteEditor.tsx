@@ -12,7 +12,7 @@ import {
 } from './hooks';
 import { EditorContent } from '@tiptap/react';
 import { getPersonalWorkspaceId } from '@/lib/cookies';
-import { useWorkspaceMembers } from '@/hooks/useWorkspace';
+import { useWorkspaceMembers } from '@/features/workspace';
 import { TaskListChain } from './types';
 import { NoteEditorHeader } from './components/NoteEditorHeader';
 import { NoteEditorToolbar } from './components/NoteEditorToolbar';

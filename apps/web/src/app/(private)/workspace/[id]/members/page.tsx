@@ -4,7 +4,7 @@ import { useParams } from 'next/navigation';
 import { useState, useCallback } from 'react';
 import MemberList from '@/features/workspace/components/MemberList';
 import { useWorkspaceInvitations } from '@/hooks/useWorkspaceInvitations';
-import { useWorkspaceMembers } from '@/hooks/useWorkspace';
+import { useWorkspaceMembers } from '@/features/workspace';
 import { generateInvitationLink } from '@/lib/api/invitationsApi';
 import { Plus, X, Mail, Link, Copy } from 'lucide-react';
 import GlassCard from '@/components/glass-design/GlassCard';

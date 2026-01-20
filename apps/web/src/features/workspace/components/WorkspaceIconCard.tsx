@@ -14,7 +14,7 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 
-import type { StatusMessage } from '@/features/users/utils/avatar';
+import type { StatusMessage } from '@/shared/utils/avatar';
 
 type WorkspaceIconCardProps = {
   iconUrl?: string | null;

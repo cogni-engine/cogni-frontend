@@ -1,7 +1,6 @@
 import { memo, useMemo } from 'react';
-import type { WorkspaceMessage, WorkspaceMember } from '@/types/workspace';
-import WorkspaceMessageItem from '@/features/workspace/components/WorkspaceMessageItem';
-import type { Note } from '@/types/note';
+import type { WorkspaceMessage, WorkspaceMember, Note } from '../domain';
+import WorkspaceMessageItem from './WorkspaceMessageItem';
 import { format, isToday, isYesterday, parseISO } from 'date-fns';
 
 // Helper to format date for sticky headers

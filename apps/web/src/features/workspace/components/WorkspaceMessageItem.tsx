@@ -1,5 +1,5 @@
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import type { WorkspaceMessage } from '@/types/workspace';
+import type { WorkspaceMessage, WorkspaceMember, Note } from '../domain';
 import { format } from 'date-fns';
 import { User, Reply, AlertCircle } from 'lucide-react';
 import { useState, useRef, useEffect, useCallback, useMemo, memo } from 'react';
@@ -7,10 +7,8 @@ import { useDrag } from '@use-gesture/react';
 import MessageContextMenu from './MessageContextMenu';
 import MessageFiles from './MessageFiles';
 import { TiptapRenderer } from '@/components/tiptap/TiptapRenderer';
-import type { WorkspaceMember } from '@/types/workspace';
-import type { Note } from '@/types/note';
 import { useGlobalUI } from '@/contexts/GlobalUIContext';
-import type { OptimisticMessage } from '@/hooks/useWorkspaceChat';
+import type { OptimisticMessage } from '../hooks/useWorkspaceChat';
 
 type Props = {
   message: WorkspaceMessage | OptimisticMessage;

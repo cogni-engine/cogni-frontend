@@ -17,7 +17,7 @@ import {
   getCroppedImageBlob,
   getInitials,
   readFileAsDataUrl,
-} from './utils/avatar';
+} from '@/shared/utils/avatar';
 
 export default function UserSettingsClient() {
   const router = useRouter();

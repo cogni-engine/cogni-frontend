@@ -10,7 +10,7 @@ import {
   useState,
 } from 'react';
 import type { Area } from 'react-easy-crop';
-import type { Workspace } from '@/types/workspace';
+import type { Workspace } from '../domain';
 import { Plus, Sparkles } from 'lucide-react';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -33,8 +33,8 @@ import {
   getCroppedImageBlob,
   getInitials,
   readFileAsDataUrl,
-} from '@/features/users/utils/avatar';
-import { generateAvatarBlob } from '@/features/users/utils/avatarGenerator';
+} from '@/shared/utils/avatar';
+import { generateAvatarBlob } from '@/shared/utils/avatarGenerator';
 
 interface WorkspaceFormProps {
   workspace?: Workspace | null;

@@ -3,15 +3,12 @@
 import { useCallback, useEffect, useState } from 'react';
 import { mutate } from 'swr';
 
-import {
-  removeWorkspaceIcon,
-  uploadWorkspaceIcon,
-} from '@/lib/api/workspaceApi';
-import { useWorkspace, useWorkspaceMutations } from '@/hooks/useWorkspace';
-import { generateAvatarBlob } from '@/features/users/utils/avatarGenerator';
+import { removeWorkspaceIcon, uploadWorkspaceIcon } from '../api/workspaceApi';
+import { useWorkspace, useWorkspaceMutations } from './useWorkspace';
+import { generateAvatarBlob } from '@/shared/utils/avatarGenerator';
 
-import type { StatusMessage } from '@/features/users/utils/avatar';
-import type { Workspace } from '@/types/workspace';
+import type { StatusMessage } from '@/shared/utils/avatar';
+import type { Workspace } from '../domain';
 
 type UseWorkspaceSettingsReturn = {
   workspaceId: number | null;

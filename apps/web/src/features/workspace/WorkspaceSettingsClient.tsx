@@ -13,7 +13,7 @@ import {
   getCroppedImageBlob,
   getInitials,
   readFileAsDataUrl,
-} from '@/features/users/utils/avatar';
+} from '@/shared/utils/avatar';
 import { Button } from '@/components/ui/button';
 import {
   Card,

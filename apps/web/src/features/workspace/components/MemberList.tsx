@@ -1,7 +1,7 @@
 'use client';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { WorkspaceMember } from '@/types/workspace';
+import type { WorkspaceMember } from '../domain';
 import { User, Crown, Shield } from 'lucide-react';
 
 interface MemberListProps {

@@ -13,7 +13,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
-import type { StatusMessage } from '@/features/users/utils/avatar';
+import type { StatusMessage } from '@/shared/utils/avatar';
 
 type WorkspaceInfoFormProps = {
   title: string;

@@ -13,8 +13,8 @@ import {
 import { createClient } from '@/lib/supabase/browserClient';
 import type { UserProfile } from '@/types/userProfile';
 
-import type { StatusMessage } from '../utils/avatar';
-import { generateAvatarBlob } from '../utils/avatarGenerator';
+import type { StatusMessage } from '@/shared/utils/avatar';
+import { generateAvatarBlob } from '@/shared/utils/avatarGenerator';
 
 type UseUserSettingsReturn = {
   userId: string | null;

@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/browserClient';
 import type { UserProfile, UserProfileUpdateInput } from '@/types/userProfile';
-import { generateAvatarBlob } from '@/features/users/utils/avatarGenerator';
+import { generateAvatarBlob } from '@/shared/utils/avatarGenerator';
 
 const supabase = createClient();
 

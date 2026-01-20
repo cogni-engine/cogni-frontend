@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { useWorkspaces, useWorkspaceMutations } from '@/hooks/useWorkspace';
+import { useWorkspaces, useWorkspaceMutations } from '@/features/workspace';
 import WorkspaceList from '@/features/workspace/components/WorkspaceList';
 import WorkspaceForm from '@/features/workspace/components/WorkspaceForm';
 import { uploadWorkspaceIcon } from '@/lib/api/workspaceApi';
