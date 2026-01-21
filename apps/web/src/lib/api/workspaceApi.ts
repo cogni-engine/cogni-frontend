@@ -401,7 +401,11 @@ export async function getWorkspaceMembers(
 
 /**
  * Get all workspace members from all workspaces the user belongs to
- * Excludes the current user and deduplicates by user_id
+ * Uses Supabase query builder to get members from all workspaces
+ * Excludes the current user and deduplicates by user_id in JavaScript
+ *
+ * This gets members from all workspaces where the current user is a member
+ * Uses a single query with workspace_id IN clause and JavaScript for deduplication
  */
 export async function getAllWorkspaceMembersForUser(): Promise<
   WorkspaceMember[]
@@ -413,7 +417,6 @@ export async function getAllWorkspaceMembersForUser(): Promise<
   if (!user) {
     throw new Error('User not authenticated');
   }
-
   // Get all workspace IDs where user is a member
   const { data: userMemberships, error: membershipError } = await supabase
     .from('workspace_member')
@@ -428,7 +431,8 @@ export async function getAllWorkspaceMembersForUser(): Promise<
 
   const workspaceIds = userMemberships.map(m => m.workspace_id);
 
-  // Fetch all workspace members from these workspaces
+  // Fetch all workspace members from these workspaces in a single query
+  // Using Supabase query builder - no SQL functions needed
   const { data, error } = await supabase
     .from('workspace_member')
     .select(
@@ -449,7 +453,8 @@ export async function getAllWorkspaceMembersForUser(): Promise<
 
   const members = (data ?? []) as SupabaseWorkspaceMember[];
 
-  // Deduplicate by user_id (a user might be in multiple workspaces)
+  // Deduplicate by user_id in JavaScript
+  // A user might be in multiple workspaces, so we only keep one instance
   const uniqueMembersMap = new Map<string, WorkspaceMember>();
 
   members.forEach(member => {
@@ -460,4 +465,90 @@ export async function getAllWorkspaceMembersForUser(): Promise<
   });
 
   return Array.from(uniqueMembersMap.values());
+}
+
+/**
+ * Add members to a workspace using Supabase query builder
+ * Checks for duplicates and inserts only new members
+ * Uses direct Supabase queries - no SQL functions needed
+ * @param workspaceId - The workspace ID
+ * @param userIds - Array of user IDs to add as members
+ * @returns Response with added members information
+ */
+export async function addWorkspaceMembers(
+  workspaceId: number,
+  userIds: string[]
+): Promise<{
+  added_count: number;
+  skipped_count: number;
+  members: Array<{
+    id: number;
+    user_id: string;
+    workspace_id: number;
+    role: string;
+    created_at: string;
+  }>;
+}> {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    throw new Error('User not authenticated');
+  }
+
+  // First, check which users are already members to avoid duplicates
+  const { data: existingMembers, error: checkError } = await supabase
+    .from('workspace_member')
+    .select('user_id')
+    .eq('workspace_id', workspaceId)
+    .in('user_id', userIds);
+
+  if (checkError) {
+    throw new Error(`Failed to check existing members: ${checkError.message}`);
+  }
+
+  const existingUserIds = new Set(
+    (existingMembers || []).map((m: { user_id: string }) => m.user_id)
+  );
+
+  // Filter out users that are already members
+  const newUserIds = userIds.filter(userId => !existingUserIds.has(userId));
+
+  if (newUserIds.length === 0) {
+    return {
+      added_count: 0,
+      skipped_count: userIds.length,
+      members: [],
+    };
+  }
+
+  // Insert new members
+  const membersToInsert = newUserIds.map(userId => ({
+    workspace_id: workspaceId,
+    user_id: userId,
+    role: 'member',
+  }));
+
+  const { data: insertedMembers, error: insertError } = await supabase
+    .from('workspace_member')
+    .insert(membersToInsert)
+    .select('id, user_id, workspace_id, role, created_at');
+
+  if (insertError) {
+    throw new Error(`Failed to add members: ${insertError.message}`);
+  }
+
+  return {
+    added_count: insertedMembers?.length || 0,
+    skipped_count: existingUserIds.size,
+    members:
+      insertedMembers?.map(m => ({
+        id: m.id,
+        user_id: m.user_id,
+        workspace_id: m.workspace_id,
+        role: m.role,
+        created_at: m.created_at,
+      })) || [],
+  };
 }
