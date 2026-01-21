@@ -43,6 +43,7 @@ export default function WebAppView({ url = 'https://app.cogno.studio', session }
   const params = useLocalSearchParams();
   const pendingNavigationRef = useRef<NotificationData | null>(null);
   const lastProcessedParamsRef = useRef<string>('');
+  const hasInitiallyLoaded = useRef(false); // Track if initial load has completed
 
   // Build auth URL with tokens for initial login
   const getAuthUrl = () => {
@@ -248,11 +249,9 @@ export default function WebAppView({ url = 'https://app.cogno.studio', session }
         
         // Send error response
         if (requestId) {
-          webViewRef.current?.postMessage(JSON.stringify({
-            type: 'NATIVE_IMAGE_ERROR',
-            requestId,
-            error: 'Permission denied',
-          }));
+          const errorData = { type: 'NATIVE_IMAGE_ERROR', requestId, error: 'Permission denied' };
+          const script = `window.postMessage(${JSON.stringify(JSON.stringify(errorData))}, '*'); true;`;
+          webViewRef.current?.injectJavaScript(script);
         }
         return;
       }
@@ -284,15 +283,18 @@ export default function WebAppView({ url = 'https://app.cogno.studio', session }
           data: options?.multiple ? assets : assets[0],
         };
 
-        // Send to WebView via postMessage
-        webViewRef.current?.postMessage(JSON.stringify(imageData));
+        // Send to WebView via injectJavaScript (more reliable than postMessage on Android)
+        const script = `
+          window.postMessage(${JSON.stringify(JSON.stringify(imageData))}, '*');
+          true;
+        `;
+        webViewRef.current?.injectJavaScript(script);
       } else {
         // User canceled
         if (requestId) {
-          webViewRef.current?.postMessage(JSON.stringify({
-            type: 'NATIVE_IMAGE_CANCELED',
-            requestId,
-          }));
+          const cancelData = { type: 'NATIVE_IMAGE_CANCELED', requestId };
+          const script = `window.postMessage(${JSON.stringify(JSON.stringify(cancelData))}, '*'); true;`;
+          webViewRef.current?.injectJavaScript(script);
         }
       }
     } catch (error) {
@@ -301,11 +303,9 @@ export default function WebAppView({ url = 'https://app.cogno.studio', session }
       
       // Send error response
       if (requestId) {
-        webViewRef.current?.postMessage(JSON.stringify({
-          type: 'NATIVE_IMAGE_ERROR',
-          requestId,
-          error: error instanceof Error ? error.message : 'Unknown error',
-        }));
+        const errorData = { type: 'NATIVE_IMAGE_ERROR', requestId, error: error instanceof Error ? error.message : 'Unknown error' };
+        const script = `window.postMessage(${JSON.stringify(JSON.stringify(errorData))}, '*'); true;`;
+        webViewRef.current?.injectJavaScript(script);
       }
     }
   };
@@ -321,11 +321,9 @@ export default function WebAppView({ url = 'https://app.cogno.studio', session }
         
         // Send error response
         if (requestId) {
-          webViewRef.current?.postMessage(JSON.stringify({
-            type: 'NATIVE_IMAGE_ERROR',
-            requestId,
-            error: 'Camera permission denied',
-          }));
+          const errorData = { type: 'NATIVE_IMAGE_ERROR', requestId, error: 'Camera permission denied' };
+          const script = `window.postMessage(${JSON.stringify(JSON.stringify(errorData))}, '*'); true;`;
+          webViewRef.current?.injectJavaScript(script);
         }
         return;
       }
@@ -356,15 +354,15 @@ export default function WebAppView({ url = 'https://app.cogno.studio', session }
           },
         };
 
-        // Send to WebView via postMessage
-        webViewRef.current?.postMessage(JSON.stringify(imageData));
+        // Send to WebView via injectJavaScript (more reliable than postMessage on Android)
+        const script = `window.postMessage(${JSON.stringify(JSON.stringify(imageData))}, '*'); true;`;
+        webViewRef.current?.injectJavaScript(script);
       } else {
         // User canceled
         if (requestId) {
-          webViewRef.current?.postMessage(JSON.stringify({
-            type: 'NATIVE_IMAGE_CANCELED',
-            requestId,
-          }));
+          const cancelData = { type: 'NATIVE_IMAGE_CANCELED', requestId };
+          const script = `window.postMessage(${JSON.stringify(JSON.stringify(cancelData))}, '*'); true;`;
+          webViewRef.current?.injectJavaScript(script);
         }
       }
     } catch (error) {
@@ -373,11 +371,9 @@ export default function WebAppView({ url = 'https://app.cogno.studio', session }
       
       // Send error response
       if (requestId) {
-        webViewRef.current?.postMessage(JSON.stringify({
-          type: 'NATIVE_IMAGE_ERROR',
-          requestId,
-          error: error instanceof Error ? error.message : 'Unknown error',
-        }));
+        const errorData = { type: 'NATIVE_IMAGE_ERROR', requestId, error: error instanceof Error ? error.message : 'Unknown error' };
+        const script = `window.postMessage(${JSON.stringify(JSON.stringify(errorData))}, '*'); true;`;
+        webViewRef.current?.injectJavaScript(script);
       }
     }
   };
@@ -418,14 +414,15 @@ export default function WebAppView({ url = 'https://app.cogno.studio', session }
           data: options?.multiple ? assets : assets[0],
         };
 
-        webViewRef.current?.postMessage(JSON.stringify(fileData));
+        // Send to WebView via injectJavaScript (more reliable than postMessage on Android)
+        const script = `window.postMessage(${JSON.stringify(JSON.stringify(fileData))}, '*'); true;`;
+        webViewRef.current?.injectJavaScript(script);
       } else {
         // User canceled
         if (requestId) {
-          webViewRef.current?.postMessage(JSON.stringify({
-            type: 'NATIVE_FILE_CANCELED',
-            requestId,
-          }));
+          const cancelData = { type: 'NATIVE_FILE_CANCELED', requestId };
+          const script = `window.postMessage(${JSON.stringify(JSON.stringify(cancelData))}, '*'); true;`;
+          webViewRef.current?.injectJavaScript(script);
         }
       }
     } catch (error) {
@@ -434,11 +431,9 @@ export default function WebAppView({ url = 'https://app.cogno.studio', session }
       
       // Send error response
       if (requestId) {
-        webViewRef.current?.postMessage(JSON.stringify({
-          type: 'NATIVE_FILE_ERROR',
-          requestId,
-          error: error instanceof Error ? error.message : 'Unknown error',
-        }));
+        const errorData = { type: 'NATIVE_FILE_ERROR', requestId, error: error instanceof Error ? error.message : 'Unknown error' };
+        const script = `window.postMessage(${JSON.stringify(JSON.stringify(errorData))}, '*'); true;`;
+        webViewRef.current?.injectJavaScript(script);
       }
     }
   };
@@ -534,7 +529,7 @@ export default function WebAppView({ url = 'https://app.cogno.studio', session }
       
       <ThemedView style={[styles.container, {
         paddingTop: Math.max(insets.top - 10, 0), // Reduce top inset by 10px
-        paddingBottom: 0, // Remove bottom padding to eliminate white edges
+        paddingBottom: Platform.OS === 'android' ? insets.bottom : 0, // Add bottom padding for Android nav bar only
       }]}>
         {/* WebView - visually hidden until loaded */}
       <WebView
@@ -551,12 +546,16 @@ export default function WebAppView({ url = 'https://app.cogno.studio', session }
         style={[styles.webview, { opacity: loading || error ? 0 : 1, backgroundColor: '#000' }]}
         containerStyle={{ backgroundColor: '#000' }}
         onLoadStart={() => {
-          setLoading(true);
+          // Only show loading screen on initial load, not on in-webview navigation
+          if (!hasInitiallyLoaded.current) {
+            setLoading(true);
+          }
           setError(null);
         }}
         onLoadEnd={() => {
           setLoading(false);
           setWebViewReady(true);
+          hasInitiallyLoaded.current = true;
         }}
         onError={handleError}
         onHttpError={(syntheticEvent) => {

@@ -41,7 +41,7 @@ export default function AppleSignInButton() {
 
       // Sign in to Supabase with the Apple identity token
       if (credential.identityToken) {
-        const { data, error } = await supabase.auth.signInWithIdToken({
+        const { error } = await supabase.auth.signInWithIdToken({
           provider: 'apple',
           token: credential.identityToken,
           nonce: rawNonce, // Pass the RAW nonce to Supabase (not hashed!)
@@ -101,10 +101,12 @@ export default function AppleSignInButton() {
       <TouchableOpacity
         onPress={handleAppleSignIn}
         style={styles.button}
-        activeOpacity={0.8}
+        activeOpacity={0.9}
       >
-        <AntDesign name="apple" size={20} color="#fff" style={styles.icon} />
-        <Text style={styles.text}>Continue with Apple</Text>
+        <View style={styles.iconContainer}>
+          <AntDesign name="apple" size={20} color="#000" />
+        </View>
+        <Text style={styles.text}>Sign in with Apple</Text>
       </TouchableOpacity>
     </View>
   );
@@ -115,22 +117,23 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   button: {
-    flexDirection: 'row',
+    position: 'relative',
     alignItems: 'center',
-    backgroundColor: '#000',
-    borderRadius: 24,
-    paddingVertical: 12,
-    paddingHorizontal: 24,
     justifyContent: 'center',
+    backgroundColor: '#fff',
+    borderRadius: 9999,
     width: '100%',
-    height: 48,
+    height: 44,
   },
-  icon: {
-    marginRight: 12,
+  iconContainer: {
+    position: 'absolute',
+    left: 50,
   },
   text: {
+    position: 'absolute',
+    left: 90,
     fontSize: 16,
-    color: '#fff',
-    fontWeight: '600',
+    color: '#000',
+    fontWeight: '500',
   },
 });

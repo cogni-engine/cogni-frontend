@@ -1,7 +1,7 @@
 import { supabase } from '@/lib/supabase';
 import { GoogleOAuthProvider, useGoogleLogin } from '@react-oauth/google';
 import { TouchableOpacity, Text, StyleSheet } from 'react-native';
-import { Image } from 'expo-image';
+import { AntDesign } from '@expo/vector-icons';
 
 function GoogleSignInButtonComponent() {
   const login = useGoogleLogin({
@@ -35,11 +35,8 @@ function GoogleSignInButtonComponent() {
       style={styles.button}
       activeOpacity={0.8}
     >
-      <Image
-        source={{ uri: 'https://developers.google.com/identity/images/g-logo.png' }}
-        style={styles.icon}
-      />
-      <Text style={styles.text}>Sign in with Google</Text>
+      <AntDesign name="google" size={20} color="#fff" style={styles.icon} />
+      <Text style={styles.text}>Continue with Google</Text>
     </TouchableOpacity>
   );
 }
@@ -63,28 +60,27 @@ const styles = StyleSheet.create({
   button: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#ffffff',
+    backgroundColor: 'transparent',
     borderWidth: 1,
-    borderColor: '#dbdbdb',
-    borderRadius: 4,
-    paddingVertical: 10,
-    paddingHorizontal: 15,
+    borderColor: '#52525b', // zinc-600
+    borderRadius: 24,
+    paddingVertical: 12,
+    paddingHorizontal: 24,
     justifyContent: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 2, // For Android shadow
+    width: '100%',
+    height: 48,
+    shadowColor: '#fff',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.06,
+    shadowRadius: 1,
   },
   icon: {
-    width: 24,
-    height: 24,
-    marginRight: 10,
+    marginRight: 12,
   },
   text: {
     fontSize: 16,
-    color: '#757575',
-    fontWeight: '500',
+    color: '#fff',
+    fontWeight: '600',
   },
 });
 

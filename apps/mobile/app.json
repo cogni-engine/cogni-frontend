@@ -39,7 +39,8 @@
         "ACCESS_NETWORK_STATE",
         "POST_NOTIFICATIONS"
       ],
-      "package": "com.cogno.ai.mobile"
+      "package": "com.cogno.ai.mobile",
+      "googleServicesFile": "./google-services.json"
     },
     "web": {
       "output": "static",
