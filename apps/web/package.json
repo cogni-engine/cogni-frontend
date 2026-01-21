@@ -23,6 +23,7 @@
     "@cogni/api": "workspace:*",
     "@cogni/types": "workspace:*",
     "@cogni/utils": "workspace:*",
+    "@floating-ui/dom": "^1.7.4",
     "@hocuspocus/provider": "^2.13.6",
     "@langchain/langgraph-sdk": "^0.0.34",
     "@radix-ui/react-avatar": "^1.1.10",

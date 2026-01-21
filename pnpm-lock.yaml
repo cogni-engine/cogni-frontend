@@ -277,6 +277,9 @@ importers:
       '@cogni/utils':
         specifier: workspace:*
         version: link:../../packages/utils
+      '@floating-ui/dom':
+        specifier: ^1.7.4
+        version: 1.7.4
       '@hocuspocus/provider':
         specifier: ^2.13.6
         version: 2.15.3(y-protocols@1.0.6(yjs@13.6.27))(yjs@13.6.27)
