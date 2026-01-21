@@ -14,7 +14,7 @@ import {
   getThreads,
   updateThread as apiUpdateThread,
   deleteThread as apiDeleteThread,
-} from '@/lib/api/threadsApi';
+} from '../api/threadsApi';
 import type { Thread } from '@/types/thread';
 import { getPersonalWorkspaceId } from '@/lib/cookies';
 

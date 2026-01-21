@@ -7,7 +7,7 @@ import { useChat } from './hooks/useChat';
 import { useGlobalUI } from '@/contexts/GlobalUIContext';
 import { useAIChatMentions } from './hooks/useAIChatMentions';
 import { useMessageAutoScroll } from './hooks/useMessageAutoScroll';
-import { useThreadContext } from '@/contexts/ThreadContext';
+import { useThreadContext } from './contexts/ThreadContext';
 import type { UploadedFile } from '@/lib/api/workspaceFilesApi';
 
 interface HomeCognoChatProps {

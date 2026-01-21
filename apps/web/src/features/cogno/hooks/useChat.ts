@@ -3,7 +3,7 @@
 import { useRef } from 'react';
 import { useMessages } from './useMessages';
 import { useSendMessage } from './useSendMessage';
-import type { ThreadId } from '@/contexts/ThreadContext';
+import type { ThreadId } from '../contexts/ThreadContext';
 
 export interface UseChatOptions {
   apiBaseUrl?: string;

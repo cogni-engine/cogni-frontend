@@ -1,9 +1,9 @@
 'use client';
 
 import { ReactNode, useEffect } from 'react';
-import { ThreadProvider } from '@/contexts/ThreadContext';
+import { ThreadProvider } from '@/features/cogno/contexts/ThreadContext';
 import { HomeUIProvider, useHomeUI } from '@/contexts/HomeUIContext';
-import ThreadSidebar from '@/features/thread/ThreadSidebar';
+import ThreadSidebar from '@/features/cogno/components/ThreadSidebar';
 import { onHeaderEvent, HEADER_EVENTS } from '@/lib/headerEvents';
 
 function HomeLayoutContent({ children }: { children: ReactNode }) {

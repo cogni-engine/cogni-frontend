@@ -2,8 +2,8 @@
 
 import { useState, useCallback, useRef } from 'react';
 import type { AIMessage } from '@/types/chat';
-import type { ThreadId } from '@/contexts/ThreadContext';
-import { createThread } from '@/lib/api/threadsApi';
+import type { ThreadId } from '../contexts/ThreadContext';
+import { createThread } from '../api/threadsApi';
 import { getPersonalWorkspaceId } from '@/lib/cookies';
 import type { UploadedFile } from '@/lib/api/workspaceFilesApi';
 

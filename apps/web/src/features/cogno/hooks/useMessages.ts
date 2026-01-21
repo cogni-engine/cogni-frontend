@@ -4,7 +4,7 @@ import { useEffect } from 'react';
 import useSWR from 'swr';
 import { getThreadMessages } from '@/lib/api/aiMessagesApi';
 import type { AIMessage } from '@/types/chat';
-import type { ThreadId } from '@/contexts/ThreadContext';
+import type { ThreadId } from '../contexts/ThreadContext';
 
 const CACHE_KEY = 'cogno-messages-cache';
 const MAX_CACHED_THREADS = 5;

@@ -2,7 +2,7 @@
 
 import { useState, useCallback } from 'react';
 import { PenSquare } from 'lucide-react';
-import { useThreadContext } from '@/contexts/ThreadContext';
+import { useThreadContext } from '@/features/cogno/contexts/ThreadContext';
 import { useHomeUI } from '@/contexts/HomeUIContext';
 
 export default function ThreadSidebar() {
@@ -187,7 +187,7 @@ export default function ThreadSidebar() {
 
                           {/* Menu Dropdown */}
                           {menuOpenId === thread.id && (
-                            <div className='absolute right-0 mt-1 w-32 bg-black/90 backdrop-blur-xl border border-black rounded-lg shadow-xl z-[100]'>
+                            <div className='absolute right-0 mt-1 w-32 bg-black/90 backdrop-blur-xl border border-black rounded-lg shadow-xl z-100'>
                               <button
                                 onClick={() => startRename(thread)}
                                 className='w-full text-left px-3 py-2 text-sm text-white/80 hover:text-white hover:bg-white/10 transition-colors rounded-t-lg'
