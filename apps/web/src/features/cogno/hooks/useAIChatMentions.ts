@@ -1,7 +1,7 @@
 'use client';
 
 import useSWR from 'swr';
-import { getAllWorkspaceMembersForUser } from '@/lib/api/workspaceApi';
+import { getAllWorkspaceMembersForUser } from '@/features/workspace';
 import { useNotes } from '@/features/notes/hooks/useNotes';
 import { getPersonalWorkspaceId } from '@cogni/utils';
 import type { WorkspaceMember } from '@/types/workspace';

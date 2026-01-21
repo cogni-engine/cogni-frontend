@@ -12,7 +12,7 @@ import {
   setCookie,
   COOKIE_KEYS,
 } from '@cogni/utils';
-import { getPersonalWorkspace } from '@/lib/api/workspaceApi';
+import { getPersonalWorkspace } from '@/features/workspace/api/workspaceApi';
 import NoteDrawer from '@/components/NoteDrawer';
 import FilePreviewDrawer from '@/components/FilePreviewDrawer';
 import ChatMessageDrawer from '@/components/ChatMessageDrawer';
