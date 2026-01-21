@@ -6,7 +6,10 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { TiptapRenderer } from '@/components/tiptap/TiptapRenderer';
 import type { WorkspaceMessage, WorkspaceMember } from '@/types/workspace';
 import type { Note } from '@/types/note';
-import { useGlobalUI } from '@/contexts/GlobalUIContext';
+import {
+  useChatMessageDrawer,
+  useGlobalUIStore,
+} from '@/stores/useGlobalUIStore';
 import { useWorkspaceMembers } from '@/hooks/useWorkspace';
 import { useNotes } from '@/features/notes/hooks/useNotes';
 import {
@@ -27,11 +30,11 @@ export default function ChatMessageDrawer({
   workspaceNotes: propsNotes,
 }: ChatMessageDrawerProps) {
   const {
-    selectedChatMessage,
-    chatMessageDrawerOpen,
-    closeChatMessageDrawer,
-    openNoteDrawer,
-  } = useGlobalUI();
+    isOpen: chatMessageDrawerOpen,
+    message: selectedChatMessage,
+    close: closeChatMessageDrawer,
+  } = useChatMessageDrawer();
+  const openNoteDrawer = useGlobalUIStore(state => state.openNoteDrawer);
 
   const message = selectedChatMessage;
   const workspaceId = message?.workspace_id;

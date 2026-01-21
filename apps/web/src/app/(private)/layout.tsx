@@ -3,7 +3,12 @@ import React, { useState, useEffect } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import Header from '@/components/layout/Header';
 import BottomNav from '@/components/layout/BottomNav';
-import { GlobalUIProvider, useGlobalUI } from '@/contexts/GlobalUIContext';
+import {
+  useIsInputActive,
+  useIsDrawerOpen,
+  useNoteDrawer,
+  useFileDrawer,
+} from '@/stores/useGlobalUIStore';
 import { createClient } from '@/lib/supabase/browserClient';
 import {
   setCurrentUserId,
@@ -18,23 +23,24 @@ import FilePreviewDrawer from '@/components/FilePreviewDrawer';
 import ChatMessageDrawer from '@/components/ChatMessageDrawer';
 import { ShepherdProvider } from '@/features/onboarding/tier2/shepherd/ShepherdProvider';
 import { exampleTours } from '@/features/onboarding/tier2/shepherd/tours';
-import { ShepherdControlPanel } from '@/components/dev/ShepherdControlPanel';
 import { TutorialProvider } from '@/features/onboarding/tier2/TutorialProvider';
 import { TutorialStepManager } from '@/features/onboarding/tier2/components/TutorialStepManager';
 
 function LayoutContent({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
+  const isInputActive = useIsInputActive();
+  const isDrawerOpen = useIsDrawerOpen();
   const {
-    isInputActive,
-    isDrawerOpen,
-    noteDrawerOpen,
-    selectedNoteId,
-    closeNoteDrawer,
-    fileDrawerOpen,
-    selectedFile,
-    closeFileDrawer,
-  } = useGlobalUI();
+    isOpen: noteDrawerOpen,
+    noteId: selectedNoteId,
+    close: closeNoteDrawer,
+  } = useNoteDrawer();
+  const {
+    isOpen: fileDrawerOpen,
+    file: selectedFile,
+    close: closeFileDrawer,
+  } = useFileDrawer();
   const [isMobile, setIsMobile] = useState(false);
   const supabase = createClient();
 
@@ -198,9 +204,6 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
 
       {/* Global Chat Message Drawer */}
       <ChatMessageDrawer />
-
-      {/* Shepherd Control Panel (Development Only) */}
-      <ShepherdControlPanel />
     </div>
   );
 }
@@ -211,13 +214,11 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   return (
-    <GlobalUIProvider>
-      <TutorialProvider>
-        <ShepherdProvider tours={exampleTours}>
-          <TutorialStepManager />
-          <LayoutContent>{children}</LayoutContent>
-        </ShepherdProvider>
-      </TutorialProvider>
-    </GlobalUIProvider>
+    <TutorialProvider>
+      <ShepherdProvider tours={exampleTours}>
+        <TutorialStepManager />
+        <LayoutContent>{children}</LayoutContent>
+      </ShepherdProvider>
+    </TutorialProvider>
   );
 }

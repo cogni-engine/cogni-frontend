@@ -2,7 +2,7 @@ import { Message, AIMessage } from '@/types/chat';
 import { forwardRef } from 'react';
 import MessageItem from './MessageItem';
 import EmptyState from './EmptyState';
-import { useGlobalUI } from '@/contexts/GlobalUIContext';
+import { useIsInputActive } from '@/stores/useGlobalUIStore';
 import ScrollableView from '@/components/layout/ScrollableView';
 import type { WorkspaceMember } from '@/types/workspace';
 import type { Note } from '@/types/note';
@@ -52,7 +52,7 @@ const ChatContainer = forwardRef<HTMLDivElement, ChatContainerProps>(
       }
     });
 
-    const { isInputActive } = useGlobalUI();
+    const isInputActive = useIsInputActive();
 
     const hasStreamingMessages = streamingMessages.length > 0;
 

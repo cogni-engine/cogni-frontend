@@ -4,7 +4,7 @@ import { useRef, useCallback, useMemo } from 'react';
 import ChatContainer from './components/ChatContainer';
 import AiChatInput from '@/components/chat-input/AiChatInput';
 import { useChat } from './hooks/useChat';
-import { useGlobalUI } from '@/contexts/GlobalUIContext';
+import { useIsInputActive } from '@/stores/useGlobalUIStore';
 import { useAIChatMentions } from './hooks/useAIChatMentions';
 import { useMessageAutoScroll } from './hooks/useMessageAutoScroll';
 import { useThreadContext } from './contexts/ThreadContext';
@@ -30,7 +30,7 @@ export default function HomeCognoChat({ isInitialMount }: HomeCognoChatProps) {
 
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const streamingContainerRef = useRef<HTMLDivElement>(null);
-  const { isInputActive } = useGlobalUI();
+  const isInputActive = useIsInputActive();
   const { members, notes } = useAIChatMentions();
 
   // Memoize arrays to prevent unnecessary re-renders

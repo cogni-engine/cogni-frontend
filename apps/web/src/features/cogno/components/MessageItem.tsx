@@ -4,7 +4,7 @@ import { TimerDisplay } from './TimerDisplay';
 import { AIInitiatedMessageWrapper } from './AIInitiatedMessageWrapper';
 import MessageFiles from '@/features/workspace/components/MessageFiles'; // TODO: Move to @cogni/components
 import { TiptapRenderer } from '@/components/tiptap/TiptapRenderer';
-import { useGlobalUI } from '@/contexts/GlobalUIContext';
+import { useGlobalUIStore } from '@/stores/useGlobalUIStore';
 import type { WorkspaceMember } from '@/types/workspace';
 import type { Note } from '@/types/note';
 import type { UploadedFile } from '@/lib/api/workspaceFilesApi';
@@ -32,7 +32,7 @@ export default function MessageItem({
   workspaceNotes = [],
   showTimestamp = false,
 }: MessageItemProps) {
-  const { openNoteDrawer } = useGlobalUI();
+  const openNoteDrawer = useGlobalUIStore(state => state.openNoteDrawer);
 
   const handleNoteMentionClick = useCallback(
     (noteId: number) => {

@@ -9,7 +9,7 @@ import MessageFiles from './MessageFiles';
 import { TiptapRenderer } from '@/components/tiptap/TiptapRenderer';
 import type { WorkspaceMember } from '@/types/workspace';
 import type { Note } from '@/types/note';
-import { useGlobalUI } from '@/contexts/GlobalUIContext';
+import { useGlobalUIStore } from '@/stores/useGlobalUIStore';
 import type { OptimisticMessage } from '@/features/workspace/api/useWorkspaceChat';
 
 type Props = {
@@ -48,7 +48,10 @@ function WorkspaceMessageItem({
   const isOptimistic = optimisticMessage._optimistic === true;
   const isFailed = optimisticMessage._failed === true;
   const optimisticId = optimisticMessage._optimisticId;
-  const { openNoteDrawer } = useGlobalUI();
+  const openNoteDrawer = useGlobalUIStore(state => state.openNoteDrawer);
+  const openChatMessageDrawer = useGlobalUIStore(
+    state => state.openChatMessageDrawer
+  );
   const [contextMenu, setContextMenu] = useState<{
     x: number;
     y: number;
@@ -65,7 +68,6 @@ function WorkspaceMessageItem({
   const MAX_COLLAPSED_HEIGHT = 200; // IN PX
   const [isOverflowing, setIsOverflowing] = useState(false);
   const contentRef = useRef<HTMLDivElement>(null);
-  const { openChatMessageDrawer } = useGlobalUI();
 
   // collapsible message handler
   useEffect(() => {

@@ -1,7 +1,7 @@
 'use client';
 
 import { getPersonalWorkspaceId } from '@/lib/cookies';
-import { useGlobalUI } from '@/contexts/GlobalUIContext';
+import { useIsInputActive } from '@/stores/useGlobalUIStore';
 import ScrollableView from '@/components/layout/ScrollableView';
 import { NotesPageHeader } from './components/NotesPageHeader';
 import { NotesPageContent } from './components/NotesPageContent';
@@ -10,7 +10,7 @@ import { NotesProvider } from './NotesProvider';
 import { NoteActionsLayer } from './components/NoteActionsLayer';
 
 function PersonalNotesContent() {
-  const { isInputActive } = useGlobalUI();
+  const isInputActive = useIsInputActive();
 
   return (
     <div className='flex flex-col h-full text-gray-100 relative overflow-hidden'>

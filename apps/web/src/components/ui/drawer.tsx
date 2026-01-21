@@ -4,7 +4,7 @@ import * as React from 'react';
 import { createContext, useContext, useEffect, useState, useRef } from 'react';
 import { useDrag } from '@use-gesture/react';
 import { cn } from '@/lib/utils';
-import { useGlobalUI } from '@/contexts/GlobalUIContext';
+import { useGlobalUIStore } from '@/stores/useGlobalUIStore';
 
 // ============================================================================
 // Drawer Context
@@ -55,7 +55,7 @@ interface DrawerProps {
  * ```
  */
 function Drawer({ children, open, onOpenChange }: DrawerProps) {
-  const { setDrawerOpen } = useGlobalUI();
+  const setDrawerOpen = useGlobalUIStore(state => state.setDrawerOpen);
   const [dragOffset, setDragOffset] = useState(0);
   const drawerRef = useRef<HTMLDivElement>(null);
 

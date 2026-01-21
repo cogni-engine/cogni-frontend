@@ -3,7 +3,7 @@
 import { useState, useCallback } from 'react';
 import { PenSquare } from 'lucide-react';
 import { useThreadContext } from '@/features/cogno/contexts/ThreadContext';
-import { useHomeUI } from '@/contexts/HomeUIContext';
+import { useThreadSidebar } from '@/stores/useHomeUIStore';
 
 export default function ThreadSidebar() {
   const {
@@ -13,7 +13,8 @@ export default function ThreadSidebar() {
     selectedThreadId,
     setSelectedThreadId,
   } = useThreadContext();
-  const { isThreadSidebarOpen, closeThreadSidebar } = useHomeUI();
+  const { isOpen: isThreadSidebarOpen, close: closeThreadSidebar } =
+    useThreadSidebar();
 
   const [menuOpenId, setMenuOpenId] = useState<number | null>(null);
   const [renamingId, setRenamingId] = useState<number | null>(null);

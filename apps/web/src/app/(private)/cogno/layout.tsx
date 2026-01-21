@@ -2,12 +2,17 @@
 
 import { ReactNode, useEffect } from 'react';
 import { ThreadProvider } from '@/features/cogno/contexts/ThreadContext';
-import { HomeUIProvider, useHomeUI } from '@/contexts/HomeUIContext';
+import { useHomeUIStore } from '@/stores/useHomeUIStore';
 import ThreadSidebar from '@/features/cogno/components/ThreadSidebar';
 import { onHeaderEvent, HEADER_EVENTS } from '@/lib/headerEvents';
 
 function HomeLayoutContent({ children }: { children: ReactNode }) {
-  const { toggleThreadSidebar, toggleNotificationPanel } = useHomeUI();
+  const toggleThreadSidebar = useHomeUIStore(
+    state => state.toggleThreadSidebar
+  );
+  const toggleNotificationPanel = useHomeUIStore(
+    state => state.toggleNotificationPanel
+  );
 
   // Listen to header events
   useEffect(() => {
@@ -38,9 +43,7 @@ function HomeLayoutContent({ children }: { children: ReactNode }) {
 export default function HomeLayout({ children }: { children: ReactNode }) {
   return (
     <ThreadProvider>
-      <HomeUIProvider>
-        <HomeLayoutContent>{children}</HomeLayoutContent>
-      </HomeUIProvider>
+      <HomeLayoutContent>{children}</HomeLayoutContent>
     </ThreadProvider>
   );
 }

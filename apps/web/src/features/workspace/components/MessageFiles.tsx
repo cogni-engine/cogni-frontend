@@ -8,7 +8,7 @@ import { cn } from '@/lib/utils';
 import AspectImage from '@/components/sendable/AspectImage';
 import SendableDefaultFile from '@/components/sendable/SendableDefaultFile';
 import { createClient } from '@/lib/supabase/browserClient';
-import { useGlobalUI } from '@/contexts/GlobalUIContext';
+import { useGlobalUIStore } from '@/stores/useGlobalUIStore';
 
 const supabase = createClient();
 const WORKSPACE_FILES_BUCKET = 'workspace-files';
@@ -99,7 +99,7 @@ export default function MessageFiles({
   bucket = 'workspace',
   align = 'right',
 }: MessageFilesProps) {
-  const { openFileDrawer } = useGlobalUI();
+  const openFileDrawer = useGlobalUIStore(state => state.openFileDrawer);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [fileUrls, setFileUrls] = useState<Map<number, string>>(new Map());
   const [loadingFiles, setLoadingFiles] = useState<Set<number>>(new Set());

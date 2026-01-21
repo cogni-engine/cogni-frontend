@@ -7,13 +7,13 @@ import WorkspaceForm from '@/features/workspace/components/WorkspaceForm';
 import { uploadWorkspaceIcon } from '@/lib/api/workspaceApi';
 import type { Workspace } from '@/types/workspace';
 import SearchBar from '@/components/SearchBar';
-import { useGlobalUI } from '@/contexts/GlobalUIContext';
+import { useIsInputActive } from '@/stores/useGlobalUIStore';
 import ScrollableView from '@/components/layout/ScrollableView';
 
 export default function WorkspacePage() {
   const { workspaces, isLoading, error } = useWorkspaces();
   const { create, update } = useWorkspaceMutations();
-  const { isInputActive } = useGlobalUI();
+  const isInputActive = useIsInputActive();
   const [searchQuery, setSearchQuery] = useState('');
 
   const filteredWorkspaces = useMemo(() => {
