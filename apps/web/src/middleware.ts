@@ -145,9 +145,9 @@ export async function middleware(request: NextRequest) {
       return NextResponse.redirect(new URL('/onboarding', request.url));
     }
 
-    // If completed and trying to access onboarding, redirect to home
+    // If completed and trying to access onboarding, redirect to cogno
     if (status === 'completed' && isOnboardingRoute) {
-      return NextResponse.redirect(new URL('/home', request.url));
+      return NextResponse.redirect(new URL('/cogno', request.url));
     }
   }
 

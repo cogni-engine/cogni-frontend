@@ -61,7 +61,7 @@ export const exampleTours: Record<string, StepOptions[]> = {
       id: 'nav-home',
       text: 'This is the home page. Here you can see your threads and conversations.',
       attachTo: {
-        element: '[data-nav-link="/home"]',
+        element: '[data-nav-link="/cogno"]',
         on: 'top',
       },
     },

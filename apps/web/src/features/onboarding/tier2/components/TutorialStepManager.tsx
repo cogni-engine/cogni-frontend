@@ -190,7 +190,7 @@ export function TutorialStepManager() {
         {
           text: 'Continue',
           action: () => {
-            router.push('/home');
+            router.push('/cogno');
             sendTutorialEvent?.({ type: 'NAVIGATE_TO_COGNO' });
             return 'cancel' as const;
           },
@@ -204,7 +204,7 @@ export function TutorialStepManager() {
       position: 'bottom' as const,
       ripplePosition: 'center' as const,
       showWhenState: 'notifications.waitingForBellClick',
-      pathnamePattern: '/home',
+      pathnamePattern: '/cogno',
       workspaceId: undefined, // Not workspace-specific
       requireTutorialWorkspace: false,
       delay: 1000,
@@ -216,7 +216,7 @@ export function TutorialStepManager() {
       position: 'left' as const,
       ripplePosition: 'center' as const,
       showWhenState: 'notifications.waitingForNotificationView',
-      pathnamePattern: '/home',
+      pathnamePattern: '/cogno',
       workspaceId: undefined, // Not workspace-specific
       requireTutorialWorkspace: false,
       delay: 1000,
