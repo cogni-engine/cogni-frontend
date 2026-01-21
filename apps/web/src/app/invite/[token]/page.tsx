@@ -5,8 +5,8 @@ import { useState, useEffect } from 'react';
 import {
   getInvitationByToken,
   acceptInvitation,
-} from '@/lib/api/invitationsApi';
-import { checkWorkspaceMembership } from '@/lib/api/workspaceApi';
+  checkWorkspaceMembership,
+} from '@/features/workspace';
 import { createClient } from '@/lib/supabase/browserClient';
 import { setCookie, clearPendingInviteToken, COOKIE_KEYS } from '@cogni/utils';
 import { CheckCircle, XCircle } from 'lucide-react';

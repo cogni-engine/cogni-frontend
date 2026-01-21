@@ -2,3 +2,4 @@
 export * from './workspaceApi';
 export * from './messagesApi';
 export * from './filesApi';
+export * from './invitationsApi';

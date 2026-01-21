@@ -7,11 +7,8 @@ import {
   cancelInvitation,
   disableInviteLink,
   generateInvitationLink,
-} from '@/lib/api/invitationsApi';
-import type {
-  WorkspaceInvitation,
-  WorkspaceInviteLink,
-} from '@/types/workspace';
+} from '../api/invitationsApi';
+import type { WorkspaceInvitation, WorkspaceInviteLink } from '../domain';
 
 interface UseWorkspaceInvitationsReturn {
   invitations: WorkspaceInvitation[];

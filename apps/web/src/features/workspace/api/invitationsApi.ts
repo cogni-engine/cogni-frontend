@@ -1,8 +1,5 @@
 import { createClient } from '@/lib/supabase/browserClient';
-import type {
-  WorkspaceInvitation,
-  WorkspaceInviteLink,
-} from '@/types/workspace';
+import type { WorkspaceInvitation, WorkspaceInviteLink } from '../domain';
 
 const supabase = createClient();
 

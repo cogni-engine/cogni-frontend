@@ -11,6 +11,7 @@ export * from './hooks/useWorkspace';
 export * from './hooks/useWorkspaceChat';
 export * from './hooks/useWorkspaceSettings';
 export * from './hooks/useWorkspaceActivity';
+export { useWorkspaceInvitations } from './hooks/useWorkspaceInvitations';
 
 // Components (export specific ones as needed)
 export { default as WorkspaceForm } from './components/WorkspaceForm';
