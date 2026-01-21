@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react';
 import useSWR from 'swr';
-import { getThreadMessages } from '@/lib/api/aiMessagesApi';
+import { getThreadMessages } from '@/features/cogno/api/aiMessagesApi';
 import type { AIMessage } from '@/types/chat';
 import type { ThreadId } from '../contexts/ThreadContext';
 

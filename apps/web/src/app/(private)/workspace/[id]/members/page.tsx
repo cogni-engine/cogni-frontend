@@ -3,7 +3,7 @@
 import { useParams } from 'next/navigation';
 import { useState, useCallback } from 'react';
 import MemberList from '@/features/workspace/components/MemberList';
-import { useWorkspaceInvitations } from '@/hooks/useWorkspaceInvitations';
+import { useWorkspaceInvitations } from '@/features/workspace/hooks/useWorkspaceInvitations';
 import { useWorkspaceMembers } from '@/hooks/useWorkspace';
 import { generateInvitationLink } from '@/lib/api/invitationsApi';
 import { Plus, X, Mail, Link, Copy } from 'lucide-react';

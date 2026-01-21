@@ -10,7 +10,7 @@ import { TiptapRenderer } from '@/components/tiptap/TiptapRenderer';
 import type { WorkspaceMember } from '@/types/workspace';
 import type { Note } from '@/types/note';
 import { useGlobalUI } from '@/contexts/GlobalUIContext';
-import type { OptimisticMessage } from '@/hooks/useWorkspaceChat';
+import type { OptimisticMessage } from '@/features/workspace/api/useWorkspaceChat';
 
 type Props = {
   message: WorkspaceMessage | OptimisticMessage;

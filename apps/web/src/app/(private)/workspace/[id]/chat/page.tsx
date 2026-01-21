@@ -8,7 +8,7 @@ import {
   useCallback,
   useDeferredValue,
 } from 'react';
-import { useWorkspaceChat } from '@/hooks/useWorkspaceChat';
+import { useWorkspaceChat } from '@/features/workspace/api/useWorkspaceChat';
 import { ChatInput, type ChatInputRef } from '@/components/chat-input';
 import GlassButton from '@/components/glass-design/GlassButton';
 import WorkspaceMessageList from '@/features/workspace/components/WorkspaceMessageList';
