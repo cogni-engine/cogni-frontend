@@ -17,7 +17,7 @@ import {
 import GlassButton from '@/components/glass-design/GlassButton';
 import { ChevronLeft } from 'lucide-react';
 import { getRecommendedUseCases } from '@/features/onboarding/tier1/useCaseMapping';
-import { useOnboardingStore } from '@/store/onboardingStore';
+import { useOnboardingStore } from '@/stores/onboardingStore';
 
 interface OnboardingFlowProps {
   userId: string;

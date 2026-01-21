@@ -1,6 +1,6 @@
 'use client';
 
-import { useOnboardingStore } from '@/store/onboardingStore';
+import { useOnboardingStore } from '@/stores/onboardingStore';
 import { OnboardingFlow } from '@/features/onboarding/tier1/OnboardingFlow';
 
 export default function OnboardingPage() {

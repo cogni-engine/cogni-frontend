@@ -8,7 +8,7 @@ import {
   updateFolder,
   deleteFolder,
   moveNoteToFolder,
-} from '@/lib/api/foldersApi';
+} from '@/features/notes/api/foldersApi';
 
 interface UseNoteFoldersOptions {
   workspaceId: number;

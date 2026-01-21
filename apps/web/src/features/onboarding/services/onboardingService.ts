@@ -3,7 +3,7 @@
  * Direct database access - no backend API needed
  */
 
-import { useOnboardingStore } from '@/store/onboardingStore';
+import { useOnboardingStore } from '@/stores/onboardingStore';
 import { SupabaseClient } from '@supabase/supabase-js';
 
 export type OnboardingStatus =

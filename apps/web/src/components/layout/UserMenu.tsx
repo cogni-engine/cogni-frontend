@@ -10,7 +10,7 @@ import type { User } from '@supabase/supabase-js';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import GlassButton from '@/components/glass-design/GlassButton';
 import { signOut } from '@cogni/api';
-import { useUserProfile } from '@/hooks/useUserProfile';
+import { useUserProfile } from '@/features/users/hooks/useUserProfile';
 import type { UserProfile } from '@/types/userProfile';
 import GlassCard from '@/components/glass-design/GlassCard';
 import { isInMobileWebView, notifyNativeLogout } from '@/lib/webview';

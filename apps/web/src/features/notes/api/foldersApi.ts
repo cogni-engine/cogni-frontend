@@ -18,24 +18,6 @@ export async function getFolders(workspaceId: number): Promise<NoteFolder[]> {
 }
 
 /**
- * Get a single folder by ID
- */
-export async function getFolder(id: number): Promise<NoteFolder | null> {
-  const { data, error } = await supabase
-    .from('note_folders')
-    .select('*')
-    .eq('id', id)
-    .single();
-
-  if (error) {
-    if (error.code === 'PGRST116') return null;
-    throw error;
-  }
-
-  return data;
-}
-
-/**
  * Create a new folder
  */
 export async function createFolder(

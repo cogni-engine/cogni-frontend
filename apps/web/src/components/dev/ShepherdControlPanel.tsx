@@ -13,11 +13,6 @@ export function ShepherdControlPanel() {
   const { showStep, cancelTour, isActive } = useShepherd();
   const { state: tutorialState, send: tutorialSend } = useTutorial();
   const [isOpen, setIsOpen] = useState(false);
-  const [customSelector, setCustomSelector] = useState('');
-  const [customText, setCustomText] = useState('');
-  const [customPosition, setCustomPosition] = useState<
-    'top' | 'bottom' | 'left' | 'right'
-  >('bottom');
 
   // Only show in development
   if (process.env.NODE_ENV !== 'development') {
