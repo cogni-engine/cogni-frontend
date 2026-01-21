@@ -156,7 +156,7 @@ export default function MessageFiles({
     try {
       let url = fileUrls.get(file.id);
       if (!url) {
-        url = await getFileSignedUrl(file.file_path, 3600);
+        url = (await getFileSignedUrl(file.file_path, 3600)) ?? undefined;
       }
 
       if (url) {
