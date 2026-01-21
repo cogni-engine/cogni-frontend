@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useCallback, useEffect } from 'react';
-import { ChevronsRight, Check } from 'lucide-react';
+import { ChevronsRight, Check, FileText, X } from 'lucide-react';
+import { createPortal } from 'react-dom';
 import {
   Drawer,
   DrawerContent,
@@ -10,17 +11,20 @@ import {
   DrawerFooter,
 } from '@/components/ui/drawer';
 import GlassButton from '@/components/glass-design/GlassButton';
-import type { Notification } from '@/types/notification';
+import GlassCard from '@/components/glass-design/GlassCard';
 import {
-  updateNotificationReaction,
-  getTaskResult,
-} from '@/lib/api/notificationsApi';
+  type AINotification,
+  completeNotification,
+  postponeNotification,
+} from '@/features/notifications/api/aiNotificationsApi';
 import TextInputDrawer from './TextInputDrawer';
+import { AIMessageView } from '@/features/cogno/components/AIMessageView';
+import { cn } from '@/lib/utils';
 
 interface NotificationProcessDrawerProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  notifications: Notification[];
+  notifications: AINotification[];
   onNotificationProcessed?: () => void;
 }
 
@@ -33,33 +37,35 @@ export default function NotificationProcessDrawer({
   const [currentIndex, setCurrentIndex] = useState(0);
   const [showTextInputDrawer, setShowTextInputDrawer] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [taskResult, setTaskResult] = useState<{
-    result_title: string;
-    result_text: string;
-  } | null>(null);
-  const [loadingTaskResult, setLoadingTaskResult] = useState(false);
+  const [showFullScreenResult, setShowFullScreenResult] = useState(false);
+  const [isAnimatingIn, setIsAnimatingIn] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
   const currentNotification = notifications[currentIndex];
 
-  // task_result_idがある場合、task_resultを取得
   useEffect(() => {
-    if (currentNotification?.task_result_id) {
-      setLoadingTaskResult(true);
-      getTaskResult(currentNotification.task_result_id)
-        .then(result => {
-          setTaskResult(result);
-        })
-        .catch(error => {
-          console.error('Failed to fetch task result:', error);
-          setTaskResult(null);
-        })
-        .finally(() => {
-          setLoadingTaskResult(false);
-        });
+    setMounted(true);
+  }, []);
+
+  // Handle full screen animation
+  useEffect(() => {
+    if (showFullScreenResult) {
+      // Start animation after a small delay to ensure the element is mounted
+      requestAnimationFrame(() => {
+        setIsAnimatingIn(true);
+      });
     } else {
-      setTaskResult(null);
+      setIsAnimatingIn(false);
     }
-  }, [currentNotification?.task_result_id]);
+  }, [showFullScreenResult]);
+
+  // Task result is now included in the notification response from the new endpoint
+  const taskResult = currentNotification?.task_result
+    ? {
+        result_title: currentNotification.task_result.result_title,
+        result_text: currentNotification.task_result.result_text,
+      }
+    : null;
 
   // 配列が更新された時のみインデックスを調整（最小限）
   useEffect(() => {
@@ -76,11 +82,8 @@ export default function NotificationProcessDrawer({
 
     setIsProcessing(true);
     try {
-      await updateNotificationReaction(
-        currentNotification.id,
-        'completed',
-        null
-      );
+      // Use new backend endpoint that handles completion and resolves previous notifications
+      await completeNotification(currentNotification.id);
 
       // 通知を再取得（配列が更新される）
       onNotificationProcessed?.();
@@ -113,11 +116,8 @@ export default function NotificationProcessDrawer({
 
       setIsProcessing(true);
       try {
-        await updateNotificationReaction(
-          currentNotification.id,
-          'postponed',
-          text || null
-        );
+        // Use new backend endpoint that handles postponement and resolves previous notifications
+        await postponeNotification(currentNotification.id, text || '');
 
         setShowTextInputDrawer(false);
 
@@ -163,69 +163,87 @@ export default function NotificationProcessDrawer({
   return (
     <>
       <Drawer open={open} onOpenChange={handleDrawerClose}>
-        <DrawerContent zIndex={200} maxHeight='80vh'>
+        <DrawerContent zIndex={200} maxHeight='85vh'>
           <DrawerHandle />
 
+          {/* Fixed Header - Title Section */}
+          {currentNotification && (
+            <div className='px-6 p-2 border-b border-white/10'>
+              <h2 className='font-semibold text-lg text-white'>
+                {currentNotification.title}
+              </h2>
+            </div>
+          )}
+
+          {/* Scrollable Body */}
           <DrawerBody>
             {notifications.length === 0 ? (
               <div className='flex items-center justify-center py-12'>
                 <p className='text-white/60 text-center'>No notifications</p>
               </div>
             ) : currentNotification ? (
-              <div className='px-4 py-6 space-y-4'>
-                {/* Title */}
-                <h2 className='font-semibold text-lg text-white'>
-                  {loadingTaskResult
-                    ? '読み込み中...'
-                    : taskResult
-                      ? taskResult.result_title
-                      : currentNotification.title}
-                </h2>
-
-                {/* Body / Result Text */}
-                {loadingTaskResult ? (
-                  <p className='text-base text-white/60'>読み込み中...</p>
-                ) : taskResult ? (
-                  <p className='text-base text-white/80 whitespace-pre-wrap'>
-                    {taskResult.result_text}
-                  </p>
-                ) : (
-                  currentNotification.body && (
-                    <p className='text-base text-white/80'>
-                      {currentNotification.body}
-                    </p>
-                  )
+              <div className='space-y-4'>
+                {/* Task Result - File Card Style */}
+                {taskResult && (
+                  <GlassCard
+                    className={cn(
+                      'relative group overflow-hidden cursor-pointer',
+                      'flex items-center gap-3',
+                      'backdrop-blur-xl border border-black rounded-3xl',
+                      'px-6 py-3',
+                      'hover:bg-white/2 transition-all'
+                    )}
+                    onClick={() => setShowFullScreenResult(true)}
+                  >
+                    <FileText className='w-5 h-5' />
+                    <div className='flex-1 min-w-0 overflow-hidden'>
+                      <p className='text-sm text-white font-medium truncate'>
+                        Task Result
+                      </p>
+                      <p className='text-xs text-white/40 truncate'>
+                        Tap to view details
+                      </p>
+                    </div>
+                  </GlassCard>
                 )}
 
-                {/* Progress indicator */}
-                <div className='pt-4 text-xs text-white/40 text-center'>
-                  {notifications.length - currentIndex - 1 > 0
-                    ? `${notifications.length - currentIndex - 1} Left`
-                    : 'Last one'}
-                </div>
+                {/* Original Notification Body (if no task result) */}
+                {currentNotification.body && (
+                  <p className='text-base text-white/80'>
+                    {currentNotification.body}
+                  </p>
+                )}
               </div>
             ) : null}
           </DrawerBody>
 
           {notifications.length > 0 && (
-            <DrawerFooter className='flex gap-3 p-4'>
-              <GlassButton
-                onClick={handleSkip}
-                size='icon'
-                className='size-12'
-                disabled={isProcessing}
-              >
-                <ChevronsRight className='w-5 h-5' />
-              </GlassButton>
+            <DrawerFooter className='flex-col'>
+              {/* Progress indicator */}
+              <div className='text-xs text-white/40 text-center'>
+                {notifications.length - currentIndex - 1 > 0
+                  ? `${notifications.length - currentIndex - 1} Left`
+                  : 'Last one'}
+              </div>
+              <div className='flex gap-3 w-full'>
+                <GlassButton
+                  onClick={handleSkip}
+                  size='icon'
+                  className='size-12'
+                  disabled={isProcessing}
+                >
+                  <ChevronsRight className='w-5 h-5' />
+                </GlassButton>
 
-              <GlassButton
-                onClick={handleComplete}
-                className='flex-1 h-12 flex items-center justify-center gap-2'
-                disabled={isProcessing}
-              >
-                <Check className='w-5 h-5' />
-                <span>Complete</span>
-              </GlassButton>
+                <GlassButton
+                  onClick={handleComplete}
+                  className='flex-1 h-12 flex items-center justify-center gap-2'
+                  disabled={isProcessing}
+                >
+                  <Check className='w-5 h-5' />
+                  <span>Complete</span>
+                </GlassButton>
+              </div>
             </DrawerFooter>
           )}
         </DrawerContent>
@@ -238,6 +256,61 @@ export default function NotificationProcessDrawer({
         onSubmit={handleTextInputSubmit}
         isSubmitting={isProcessing}
       />
+
+      {/* Full Screen Task Result Modal */}
+      {mounted &&
+        showFullScreenResult &&
+        taskResult &&
+        createPortal(
+          <div
+            className={cn(
+              'fixed inset-0 z-10000 flex flex-col bg-black/95 backdrop-blur-sm',
+              'transition-all duration-300 ease-out',
+              isAnimatingIn
+                ? 'opacity-100 translate-y-0'
+                : 'opacity-0 translate-y-full'
+            )}
+          >
+            {/* Header with Close Button */}
+            <div
+              className={cn(
+                'flex items-center justify-between p-4 border-b border-white/10',
+                'transition-all duration-200 ease-out delay-100',
+                isAnimatingIn
+                  ? 'opacity-100 translate-y-0'
+                  : 'opacity-0 -translate-y-4'
+              )}
+            >
+              <div className='space-y-1'>
+                <div className='text-xs text-white/40 uppercase tracking-wide'>
+                  Task Result
+                </div>
+                <h2 className='font-semibold text-lg text-white'>
+                  {taskResult.result_title}
+                </h2>
+              </div>
+              <button
+                onClick={() => setShowFullScreenResult(false)}
+                className='p-2 rounded-full bg-white/10 hover:bg-white/20 text-white transition-all'
+              >
+                <X className='w-6 h-6' />
+              </button>
+            </div>
+
+            {/* Scrollable Content */}
+            <div
+              className={cn(
+                'flex-1 overflow-y-auto p-6',
+                'transition-all duration-500'
+              )}
+            >
+              <div className='max-w-3xl mx-auto'>
+                <AIMessageView content={taskResult.result_text} />
+              </div>
+            </div>
+          </div>,
+          document.body
+        )}
     </>
   );
 }

@@ -3,7 +3,6 @@
 import { useRef, useCallback, useMemo } from 'react';
 import ChatContainer from './components/ChatContainer';
 import AiChatInput from '@/components/chat-input/AiChatInput';
-import NotificationPanel from '@/features/notifications/components/NotificationPanel';
 import { useChat } from './hooks/useChat';
 import { useGlobalUI } from '@/contexts/GlobalUIContext';
 import { useAIChatMentions } from './hooks/useAIChatMentions';
@@ -108,13 +107,6 @@ export default function HomeCognoChat({ isInitialMount }: HomeCognoChatProps) {
           workspaceNotes={memoizedNotes}
         />
       </div>
-
-      {/* NotificationPanel */}
-      <NotificationPanel
-        sendMessage={(content: string, notificationId?: number) =>
-          sendMessage({ content, notificationId })
-        }
-      />
     </div>
   );
 }

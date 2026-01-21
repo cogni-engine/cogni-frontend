@@ -1,6 +1,6 @@
 'use client';
 
-import type { Notification } from '@/types/notification';
+import type { Notification } from '@/features/notifications/domain/notification';
 import NotificationItem from './NotificationItem';
 
 interface NotificationListProps {
