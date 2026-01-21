@@ -390,26 +390,56 @@ export default function CollaborativeNoteEditor({
           const originalNode = editor.state.doc.nodeAt(blockPos);
           if (!originalNode) continue;
 
-          const wrapped = wrapBlockInDeleteSuggestion(blockPos, suggestionId);
+          // Check if the original node is empty (appears empty to the user)
+          const nodeText = originalNode.textContent.trim();
+          const isNodeEmpty = nodeText.length === 0;
 
-          if (wrapped) {
-            // Small delay to let Y.Doc process the change
+          if (isNodeEmpty) {
+            // If the node is empty, delete it directly without wrapping in a suggestion
+            editor
+              .chain()
+              .command(({ tr }) => {
+                const node = tr.doc.nodeAt(blockPos);
+                if (!node) return false;
+                tr.delete(blockPos, blockPos + node.nodeSize);
+                return true;
+              })
+              .run();
+
             await new Promise(resolve => setTimeout(resolve, 10));
 
-            // The wrapped block is now at blockPos, find its size in the current state
-            const wrappedNode = editor.state.doc.nodeAt(blockPos);
-            if (wrappedNode) {
-              // Position cursor after the wrapped block to insert the added suggestion
-              const afterPos = blockPos + wrappedNode.nodeSize;
-              editor.commands.setTextSelection(afterPos);
+            // Position cursor at the deletion point to insert the new content
+            editor.commands.setTextSelection(blockPos);
 
-              // Combine all text blocks into a single markdown string
-              // Each block is separated by double newlines to ensure proper parsing
-              const combinedMarkdown = suggestion.suggested_text.join('\n\n');
+            // Combine all text blocks into a single markdown string
+            const combinedMarkdown = suggestion.suggested_text.join('\n\n');
 
-              // Insert as a single suggestion containing all blocks
-              insertBlockSuggestion('added', combinedMarkdown);
+            // Insert as a single suggestion containing all blocks
+            insertBlockSuggestion('added', combinedMarkdown);
+            await new Promise(resolve => setTimeout(resolve, 10));
+          } else {
+            // If the node has content, wrap it in a delete suggestion
+            const wrapped = wrapBlockInDeleteSuggestion(blockPos, suggestionId);
+
+            if (wrapped) {
+              // Small delay to let Y.Doc process the change
               await new Promise(resolve => setTimeout(resolve, 10));
+
+              // The wrapped block is now at blockPos, find its size in the current state
+              const wrappedNode = editor.state.doc.nodeAt(blockPos);
+              if (wrappedNode) {
+                // Position cursor after the wrapped block to insert the added suggestion
+                const afterPos = blockPos + wrappedNode.nodeSize;
+                editor.commands.setTextSelection(afterPos);
+
+                // Combine all text blocks into a single markdown string
+                // Each block is separated by double newlines to ensure proper parsing
+                const combinedMarkdown = suggestion.suggested_text.join('\n\n');
+
+                // Insert as a single suggestion containing all blocks
+                insertBlockSuggestion('added', combinedMarkdown);
+                await new Promise(resolve => setTimeout(resolve, 10));
+              }
             }
           }
         } else if (
