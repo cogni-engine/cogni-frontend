@@ -52,7 +52,7 @@ export default function MemberList({ members, loading }: MemberListProps) {
   return (
     <div className='space-y-2'>
       {members.map(member => {
-        const profile = member.user_profile ?? null;
+        const profile = member.user_profile ?? member.agent_profile ?? null;
 
         return (
           <div

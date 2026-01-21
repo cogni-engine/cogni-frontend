@@ -367,7 +367,7 @@ export async function getWorkspaceMembers(
     throw new Error('User not authenticated');
   }
 
-  // Fetch workspace members with their user profiles
+  // Fetch workspace members with their user profiles and agent profiles
   const { data, error } = await supabase
     .from('workspace_member')
     .select(
@@ -375,9 +375,11 @@ export async function getWorkspaceMembers(
       id,
       created_at,
       user_id,
+      agent_id,
       workspace_id,
       role,
-      user_profile:user_id(id, name, avatar_url)
+      user_profile:user_id(id, name, avatar_url),
+      agent_profile:agent_id(id, name, avatar_url)
     `
     )
     .eq('workspace_id', workspaceId)
@@ -450,12 +452,12 @@ export async function getAllWorkspaceMembersForUser(): Promise<
   const members = (data ?? []) as SupabaseWorkspaceMember[];
 
   // Deduplicate by user_id (a user might be in multiple workspaces)
-  const uniqueMembersMap = new Map<string, WorkspaceMember>();
+  const uniqueMembersMap = new Map<number, WorkspaceMember>();
 
   members.forEach(member => {
     const normalized = normalizeWorkspaceMember(member);
-    if (!uniqueMembersMap.has(member.user_id)) {
-      uniqueMembersMap.set(member.user_id, normalized);
+    if (!uniqueMembersMap.has(member.id)) {
+      uniqueMembersMap.set(member.id, normalized);
     }
   });
 

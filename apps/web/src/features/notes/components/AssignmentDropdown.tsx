@@ -24,7 +24,7 @@ export function AssignmentDropdown({
       {/* Dropdown menu */}
       <div className='absolute right-0 top-full mt-2 w-64 bg-white/10 backdrop-blur-xl border border-black rounded-[20px] shadow-[0_8px_32px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.12)] z-40 overflow-hidden'>
         <div className='px-4 py-3 border-b border-black'>
-          <div className='text-sm font-medium text-white'>担当者</div>
+          <div className='text-sm font-medium text-white'>Assignees</div>
         </div>
         <div className='max-h-64 overflow-y-auto'>
           {members.length === 0 ? (

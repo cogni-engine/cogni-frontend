@@ -2,7 +2,6 @@
 
 import Cropper, { type Area } from 'react-easy-crop';
 
-import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogClose,
@@ -45,15 +44,15 @@ export function AvatarCropDialog({
 }: AvatarCropDialogProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className='max-w-2xl'>
+      <DialogContent className='max-w-2xl rounded-3xl bg-white/2 backdrop-blur-sm border border-black shadow-[0_8px_32px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.12)]'>
         <DialogHeader>
-          <DialogTitle>Crop avatar</DialogTitle>
-          <DialogDescription>
+          <DialogTitle className='text-white'>Crop avatar</DialogTitle>
+          <DialogDescription className='text-white/70'>
             Adjust the crop to center your face. The result will be a square
             image.
           </DialogDescription>
         </DialogHeader>
-        <div className='relative h-80 w-full overflow-hidden rounded-lg bg-black/40'>
+        <div className='relative h-80 w-full overflow-hidden rounded-3xl bg-black/40 border border-white/10'>
           {imageSrc ? (
             <Cropper
               image={imageSrc}
@@ -72,7 +71,9 @@ export function AvatarCropDialog({
           )}
         </div>
         <div className='space-y-2'>
-          <Label htmlFor='zoom'>Zoom</Label>
+          <Label htmlFor='zoom' className='text-white'>
+            Zoom
+          </Label>
           <input
             id='zoom'
             type='range'
@@ -84,20 +85,25 @@ export function AvatarCropDialog({
             className='w-full accent-white'
           />
         </div>
-        <DialogModalFooter>
+        <DialogModalFooter className='gap-3 sm:flex-row sm:justify-end'>
           <DialogClose asChild>
-            <Button
+            <button
               type='button'
-              variant='ghost'
               disabled={saving}
               onClick={onCancel}
+              className='flex items-center justify-center px-6 py-2.5 text-sm font-medium bg-white/8 backdrop-blur-xl text-white rounded-3xl border border-white/10 hover:border-white/15 hover:bg-white/12 hover:scale-[1.01] transition-all duration-300 shadow-[0_8px_32px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.12)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.25),inset_0_1px_0_rgba(255,255,255,0.18)] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100'
             >
               Cancel
-            </Button>
+            </button>
           </DialogClose>
-          <Button type='button' onClick={onSave} disabled={saving || !canSave}>
+          <button
+            type='button'
+            onClick={onSave}
+            disabled={saving || !canSave}
+            className='flex items-center justify-center px-6 py-2.5 text-sm font-medium bg-white/8 backdrop-blur-xl text-white rounded-3xl border border-white/10 hover:border-white/15 hover:bg-white/12 hover:scale-[1.01] transition-all duration-300 shadow-[0_8px_32px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.12)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.25),inset_0_1px_0_rgba(255,255,255,0.18)] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100'
+          >
             {saving ? 'Saving…' : 'Save avatar'}
-          </Button>
+          </button>
         </DialogModalFooter>
       </DialogContent>
     </Dialog>

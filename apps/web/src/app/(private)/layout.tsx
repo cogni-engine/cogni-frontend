@@ -16,6 +16,11 @@ import { getPersonalWorkspace } from '@/lib/api/workspaceApi';
 import NoteDrawer from '@/components/NoteDrawer';
 import FilePreviewDrawer from '@/components/FilePreviewDrawer';
 import ChatMessageDrawer from '@/components/ChatMessageDrawer';
+import { ShepherdProvider } from '@/features/onboarding/tier2/shepherd/ShepherdProvider';
+import { exampleTours } from '@/features/onboarding/tier2/shepherd/tours';
+import { ShepherdControlPanel } from '@/components/dev/ShepherdControlPanel';
+import { TutorialProvider } from '@/features/onboarding/tier2/TutorialProvider';
+import { TutorialStepManager } from '@/features/onboarding/tier2/components/TutorialStepManager';
 
 function LayoutContent({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -167,7 +172,9 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
         {children}
 
         {/* Bottom darkening gradient */}
-        <div className='absolute bottom-0 left-0 right-0 h-32 bg-linear-to-t from-black via-black/50 to-transparent pointer-events-none z-50' />
+        {!isDrawerOpen && (
+          <div className='absolute bottom-0 left-0 right-0 h-32 bg-linear-to-t from-black via-black/50 to-transparent pointer-events-none z-50' />
+        )}
       </main>
 
       {/* Bottom Navigation - Absolutely Positioned */}
@@ -191,6 +198,9 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
 
       {/* Global Chat Message Drawer */}
       <ChatMessageDrawer />
+
+      {/* Shepherd Control Panel (Development Only) */}
+      <ShepherdControlPanel />
     </div>
   );
 }
@@ -202,7 +212,12 @@ export default function DashboardLayout({
 }) {
   return (
     <GlobalUIProvider>
-      <LayoutContent>{children}</LayoutContent>
+      <TutorialProvider>
+        <ShepherdProvider tours={exampleTours}>
+          <TutorialStepManager />
+          <LayoutContent>{children}</LayoutContent>
+        </ShepherdProvider>
+      </TutorialProvider>
     </GlobalUIProvider>
   );
 }

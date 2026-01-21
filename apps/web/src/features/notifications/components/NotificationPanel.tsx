@@ -208,9 +208,9 @@ export default function NotificationPanel({
           </div>
         ) : notifications.length === 0 ? (
           <div className='text-center py-8'>
-            <div className='text-white/40 text-sm mb-2'>通知はありません</div>
+            <div className='text-white/40 text-sm mb-2'>No notifications</div>
             <div className='text-white/30 text-xs'>
-              新しい通知があるとここに表示されます
+              New notifications will appear here
             </div>
           </div>
         ) : (

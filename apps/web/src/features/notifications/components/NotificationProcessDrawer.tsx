@@ -169,7 +169,7 @@ export default function NotificationProcessDrawer({
           <DrawerBody>
             {notifications.length === 0 ? (
               <div className='flex items-center justify-center py-12'>
-                <p className='text-white/60 text-center'>通知はありません</p>
+                <p className='text-white/60 text-center'>No notifications</p>
               </div>
             ) : currentNotification ? (
               <div className='px-4 py-6 space-y-4'>

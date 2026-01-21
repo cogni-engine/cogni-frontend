@@ -38,7 +38,7 @@ export default function WorkspaceActivityDrawer({
       <DrawerContent zIndex={150} maxHeight='85vh'>
         <DrawerHandle />
 
-        <DrawerHeader className='px-4 pb-2 pt-0'>
+        <DrawerHeader className='px-6 pb-2 pt-0'>
           <DrawerTitle>Activity</DrawerTitle>
         </DrawerHeader>
 

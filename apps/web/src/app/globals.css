@@ -1,5 +1,6 @@
 @import 'tailwindcss';
 @import 'tippy.js/dist/tippy.css';
+@import 'shepherd.js/dist/css/shepherd.css';
 @import '../components/tiptap/tiptap-styles.css';
 
 /* Override Tippy.js default styles for mention suggestions */
@@ -84,4 +85,196 @@ body {
   100% {
     transform: translateY(0);
   }
+}
+
+/* Override browser autofill styles for dark theme */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 30px #0a0a0a inset !important;
+  -webkit-text-fill-color: #ffffff !important;
+  caret-color: #ffffff !important;
+}
+
+/* Shepherd.js Custom Theme - Glassmorphism Design */
+.shepherd-element {
+  background: rgba(255, 255, 255, 0.04) !important;
+  backdrop-filter: blur(8px) !important;
+  border: 1px solid rgba(0, 0, 0, 0.1) !important;
+  border-radius: 1.5rem !important;
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12) !important;
+  transition: all 0.3s ease !important;
+  color: rgba(255, 255, 255, 0.95) !important;
+  font-family: Arial, Helvetica, sans-serif !important;
+  width: fit-content !important;
+  max-width: calc(100vw - 6rem) !important;
+  z-index: 100 !important;
+  margin: 1rem !important;
+}
+
+@media (min-width: 640px) {
+  .shepherd-element {
+    max-width: max-content !important;
+  }
+}
+
+.shepherd-content {
+  padding: 1rem !important;
+}
+
+.shepherd-text {
+  color: rgba(255, 255, 255, 0.9) !important;
+  font-size: 1rem !important;
+  line-height: 1.5 !important;
+  margin: 0 !important;
+  padding: 0.5rem !important;
+}
+
+.shepherd-header {
+  padding: 0 !important;
+  margin: 0 !important;
+  height: 1rem !important;
+}
+
+.shepherd-title {
+  color: rgba(255, 255, 255, 0.95) !important;
+  font-size: 1.125rem !important;
+  font-weight: 600 !important;
+  margin: 0 !important;
+}
+
+.shepherd-footer {
+  padding: 0 !important;
+  margin: 0 !important;
+  height: 2rem !important;
+  display: flex !important;
+  gap: 0.5rem !important;
+  justify-content: flex-end !important;
+}
+
+.shepherd-button {
+  background: rgba(255, 255, 255, 0.15) !important;
+  backdrop-filter: blur(8px) !important;
+  -webkit-backdrop-filter: blur(8px) !important;
+  border: 1px solid rgba(0, 0, 0, 0.15) !important;
+  border-radius: 0.5rem !important;
+  color: rgba(255, 255, 255, 0.95) !important;
+  font-size: 0.875rem !important;
+  font-weight: 500 !important;
+  padding: 0.5rem 1rem !important;
+  transition: all 0.2s ease !important;
+  box-shadow:
+    0 4px 16px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15) !important;
+}
+
+.shepherd-button:hover {
+  background: rgba(255, 255, 255, 0.2) !important;
+  box-shadow:
+    0 6px 24px rgba(0, 0, 0, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
+  transform: translateY(-1px) !important;
+}
+
+.shepherd-button:active {
+  transform: translateY(0) scale(0.98) !important;
+  box-shadow:
+    0 2px 8px rgba(0, 0, 0, 0.3),
+    inset 0 2px 4px rgba(0, 0, 0, 0.3) !important;
+}
+
+.shepherd-button.shepherd-button-secondary {
+  background: rgba(255, 255, 255, 0.1) !important;
+  color: rgba(255, 255, 255, 0.8) !important;
+}
+
+.shepherd-button.shepherd-button-secondary:hover {
+  background: rgba(255, 255, 255, 0.15) !important;
+  color: rgba(255, 255, 255, 0.95) !important;
+}
+
+.shepherd-cancel-icon {
+  display: none !important;
+}
+
+/* Shepherd Arrow - Hidden */
+.shepherd-arrow {
+  display: none !important;
+}
+
+/* Shepherd Target - Brightness Pulsing Effect */
+@keyframes shepherd-pulse {
+  0%,
+  100% {
+    filter: brightness(0.7);
+  }
+  50% {
+    filter: brightness(1.3);
+  }
+}
+
+@keyframes shepherd-pulse-overlay {
+  0%,
+  100% {
+    opacity: 0;
+  }
+  50% {
+    opacity: 0.25;
+  }
+}
+
+.shepherd-target {
+  position: relative !important;
+  animation: shepherd-pulse 2s ease-in-out infinite !important;
+  transition: filter 0.2s ease-out !important;
+  /* isolation: isolate !important; */
+}
+
+.shepherd-target::before {
+  content: '' !important;
+  position: absolute !important;
+  inset: 0 !important;
+  background: rgba(255, 255, 255, 0.2) !important;
+  border-radius: inherit !important;
+  pointer-events: none !important;
+  z-index: -1 !important;
+  animation: shepherd-pulse-overlay 1.8s ease-in-out infinite !important;
+  mix-blend-mode: overlay !important;
+}
+
+/* Pause pulsing when target element is focused */
+.shepherd-target:focus,
+.shepherd-target:focus-within {
+  animation-play-state: paused !important;
+  filter: brightness(1) !important;
+}
+
+.shepherd-target:focus::before,
+.shepherd-target:focus-within::before {
+  animation-play-state: paused !important;
+}
+
+/* Hide shepherd tooltip when target has focus */
+/* body:has(.shepherd-target:focus-within) .shepherd-element {
+  opacity: 0 !important;
+  pointer-events: none !important;
+  transition: opacity 0.15s ease-out !important;
+} */
+
+/* Smooth transition for tooltip visibility */
+.shepherd-element {
+  transition: opacity 0.2s ease-out !important;
+}
+
+/* Hide scrollbar for question card scroll area */
+.question-card-scroll {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+}
+
+.question-card-scroll::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
 }

@@ -26,14 +26,23 @@ export interface WorkspaceProfile {
   avatar_url: string | null;
 }
 
+export interface AgentProfile {
+  id: string;
+  name: string;
+  avatar_url: string;
+}
+
 export interface WorkspaceMember {
   id: number;
   created_at: string;
-  user_id: string;
+  user_id: string | null;
+  agent_id?: string | null;
   workspace_id: number;
   role: 'owner' | 'admin' | 'member';
   user_profile?: WorkspaceProfile | null;
+  agent_profile?: AgentProfile | null;
   last_read_message_id?: number | null;
+  is_agent?: boolean;
 }
 
 export interface WorkspaceMessageRead {
@@ -43,8 +52,10 @@ export interface WorkspaceMessageRead {
   created_at?: string;
   workspace_member?: {
     id?: number;
-    user_id?: string;
+    user_id?: string | null;
+    agent_id?: string | null;
     user_profile?: WorkspaceProfile | null;
+    agent_profile?: AgentProfile | null;
   } | null;
 }
 
@@ -93,8 +104,11 @@ export interface WorkspaceMessage {
   updated_at: string;
   reply_to_id?: number | null;
   workspace_member?: {
-    user_id?: string;
+    id?: number;
+    user_id?: string | null;
+    agent_id?: string | null;
     user_profile?: WorkspaceProfile | null;
+    agent_profile?: AgentProfile | null;
   };
   replied_message?: WorkspaceMessage | null;
   reads?: WorkspaceMessageRead[];

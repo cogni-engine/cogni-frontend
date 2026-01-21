@@ -9,6 +9,15 @@ import { generateInvitationLink } from '@/lib/api/invitationsApi';
 import { Plus, X, Mail, Link, Copy } from 'lucide-react';
 import GlassCard from '@/components/glass-design/GlassCard';
 import GlassButton from '@/components/glass-design/GlassButton';
+import {
+  Drawer,
+  DrawerContent,
+  DrawerHandle,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerBody,
+  DrawerFooter,
+} from '@/components/ui/drawer';
 
 export default function WorkspaceMembersPage() {
   const params = useParams();
@@ -229,78 +238,51 @@ export default function WorkspaceMembersPage() {
         </div>
       </div>
 
-      {/* Invite Modal */}
-      {showInviteModal && (
-        <div className='fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-100 p-4'>
-          <GlassCard className='rounded-xl w-full max-w-md'>
-            <div className='p-6'>
-              <div className='flex items-center justify-between mb-6'>
-                <h3 className='text-xl font-semibold text-white'>
-                  Invite to Workspace
-                </h3>
-                <button
-                  onClick={() => {
-                    setShowInviteModal(false);
-                    setInvitationType('email');
-                    setInviteEmail('');
-                  }}
-                  className='p-1 hover:bg-white/10 rounded-lg transition-colors'
-                >
-                  <X className='w-5 h-5 text-gray-400' />
-                </button>
-              </div>
+      {/* Invite Drawer */}
+      <Drawer open={showInviteModal} onOpenChange={setShowInviteModal}>
+        <DrawerContent zIndex={150} maxHeight='85vh'>
+          <DrawerHandle />
 
+          <DrawerHeader className='px-6 pb-2 pt-0'>
+            <DrawerTitle>Invite to Workspace</DrawerTitle>
+          </DrawerHeader>
+
+          <DrawerBody>
+            <div className='space-y-4 px-4'>
+              {/* Invitation Type Selection */}
               <div className='space-y-3'>
-                {/* Email Invitation */}
                 <button
                   onClick={() => setInvitationType('email')}
-                  className={`w-full p-4 rounded-lg transition-all duration-300 ${
+                  className={`w-full p-4 rounded-xl transition-all duration-300 ${
                     invitationType === 'email'
-                      ? 'bg-blue-500/20 border border-blue-500/50 shadow-[0_0_20px_rgba(59,130,246,0.3)]'
-                      : 'bg-white/5 border border-white/10 hover:bg-white/10'
+                      ? 'bg-white/10 border border-white/20'
+                      : 'bg-white/5 hover:bg-white/10'
                   }`}
                 >
                   <div className='flex items-center gap-3'>
-                    <div
-                      className={`p-2 rounded-lg transition-colors ${
-                        invitationType === 'email'
-                          ? 'bg-blue-500'
-                          : 'bg-white/10'
-                      }`}
-                    >
-                      <Mail className='w-5 h-5 text-white' />
-                    </div>
-                    <div className='text-left'>
+                    <Mail className='w-5 h-5 text-white' />
+                    <div className='text-left flex-1'>
                       <p className='font-medium text-white'>Invite by email</p>
-                      <p className='text-sm text-gray-400'>
+                      <p className='text-sm text-white/60'>
                         Send an invitation to a specific email address
                       </p>
                     </div>
                   </div>
                 </button>
 
-                {/* Share Link */}
                 <button
                   onClick={() => setInvitationType('anonymous')}
-                  className={`w-full p-4 rounded-lg transition-all duration-300 ${
+                  className={`w-full p-4 rounded-xl transition-all duration-300 ${
                     invitationType === 'anonymous'
-                      ? 'bg-blue-500/20 border border-blue-500/50 shadow-[0_0_20px_rgba(59,130,246,0.3)]'
-                      : 'bg-white/5 border border-white/10 hover:bg-white/10'
+                      ? 'bg-white/10 border border-white/20'
+                      : 'bg-white/5 hover:bg-white/10'
                   }`}
                 >
                   <div className='flex items-center gap-3'>
-                    <div
-                      className={`p-2 rounded-lg transition-colors ${
-                        invitationType === 'anonymous'
-                          ? 'bg-blue-500'
-                          : 'bg-white/10'
-                      }`}
-                    >
-                      <Link className='w-5 h-5 text-white' />
-                    </div>
-                    <div className='text-left'>
+                    <Link className='w-5 h-5 text-white' />
+                    <div className='text-left flex-1'>
                       <p className='font-medium text-white'>Share link</p>
-                      <p className='text-sm text-gray-400'>
+                      <p className='text-sm text-white/60'>
                         Create a link that anyone can use to join
                       </p>
                     </div>
@@ -310,8 +292,8 @@ export default function WorkspaceMembersPage() {
 
               {/* Email Input */}
               {invitationType === 'email' && (
-                <div className='mt-6'>
-                  <label className='block text-sm font-medium text-gray-300 mb-2'>
+                <div className='space-y-2'>
+                  <label className='block text-sm font-medium text-white/80'>
                     Email address
                   </label>
                   <input
@@ -319,37 +301,37 @@ export default function WorkspaceMembersPage() {
                     value={inviteEmail}
                     onChange={e => setInviteEmail(e.target.value)}
                     placeholder='colleague@company.com'
-                    className='w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all'
+                    className='w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-white/20 transition-all'
                     autoFocus
                   />
                 </div>
               )}
-
-              {/* Action Buttons */}
-              <div className='flex gap-3 mt-6'>
-                <button
-                  onClick={() => {
-                    setShowInviteModal(false);
-                    setInvitationType('email');
-                    setInviteEmail('');
-                  }}
-                  className='flex-1 px-4 py-2.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg transition-all font-medium text-white'
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleCreateInvitation}
-                  disabled={invitationType === 'email' && !inviteEmail.trim()}
-                  className='flex-1 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 disabled:bg-white/5 disabled:cursor-not-allowed disabled:text-gray-500 rounded-lg transition-all font-medium flex items-center justify-center gap-2'
-                >
-                  <Copy className='w-4 h-4' />
-                  {invitationType === 'email' ? 'Send Invite' : 'Copy Link'}
-                </button>
-              </div>
             </div>
-          </GlassCard>
-        </div>
-      )}
+          </DrawerBody>
+
+          <DrawerFooter className='flex gap-3 px-4 pb-4'>
+            <GlassButton
+              onClick={() => {
+                setShowInviteModal(false);
+                setInvitationType('email');
+                setInviteEmail('');
+              }}
+              variant='ghost'
+              className='flex-1'
+            >
+              Cancel
+            </GlassButton>
+            <GlassButton
+              onClick={handleCreateInvitation}
+              disabled={invitationType === 'email' && !inviteEmail.trim()}
+              className='flex-1 gap-2'
+            >
+              <Copy className='w-4 h-4' />
+              {invitationType === 'email' ? 'Send Invite' : 'Copy Link'}
+            </GlassButton>
+          </DrawerFooter>
+        </DrawerContent>
+      </Drawer>
     </>
   );
 }

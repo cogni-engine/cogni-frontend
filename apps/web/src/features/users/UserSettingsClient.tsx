@@ -4,6 +4,8 @@ import { ChangeEvent, useCallback, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import type { Area } from 'react-easy-crop';
 import { signOut } from '@cogni/api';
+import { createBrowserClient } from '@supabase/ssr';
+import { OnboardingService } from '@/features/onboarding/services/onboardingService';
 
 import { ProfileInfoForm } from './components/ProfileInfoForm';
 import { AvatarCard } from './components/AvatarCard';
@@ -52,9 +54,16 @@ export default function UserSettingsClient() {
   const [croppedAreaPixels, setCroppedAreaPixels] = useState<Area | null>(null);
   const [crop, setCrop] = useState({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
+  const [restartingTutorial, setRestartingTutorial] = useState(false);
+  const [restartError, setRestartError] = useState<string | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const { isNativeAvailable, pickImage } = useNativeImagePicker();
+
+  const supabase = createBrowserClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  );
 
   const emailFallback = useMemo(
     () => userEmail || profile?.id || '',
@@ -223,6 +232,28 @@ export default function UserSettingsClient() {
     }
   }, [deleteAccount, router]);
 
+  const handleRestartTutorial = useCallback(async () => {
+    setRestartingTutorial(true);
+    setRestartError(null);
+
+    try {
+      const onboardingService = new OnboardingService(supabase);
+      const success = await onboardingService.startOnboarding();
+
+      if (!success) {
+        throw new Error('Failed to restart onboarding');
+      }
+
+      // Redirect to onboarding
+      router.push('/onboarding');
+      router.refresh(); // Refresh to update middleware
+    } catch (error) {
+      console.error('Failed to restart tutorial:', error);
+      setRestartError('Failed to restart tutorial. Please try again.');
+      setRestartingTutorial(false);
+    }
+  }, [router, supabase]);
+
   return (
     <div className='flex h-full flex-col gap-6 overflow-auto p-6 py-20'>
       {isLoading ? (
@@ -273,10 +304,35 @@ export default function UserSettingsClient() {
       )}
 
       {userId && (
-        <DeleteAccountSection
-          onDelete={handleDeleteAccount}
-          isDeleting={isDeleting}
-        />
+        <>
+          {/* Restart Tutorial Section */}
+          <div className='rounded-lg border border-white/10 bg-white/4 backdrop-blur-sm p-6 shadow-[0_8px_32px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.12)]'>
+            <h3 className='mb-2 text-lg font-medium text-white'>
+              Development & Testing
+            </h3>
+            <p className='mb-4 text-sm text-gray-400'>
+              Restart the onboarding tutorial to test the flow. This will reset
+              your onboarding status.
+            </p>
+            {restartError && (
+              <div className='mb-4 rounded-lg border border-red-500/50 bg-red-900/30 backdrop-blur-sm p-3'>
+                <p className='text-sm text-red-300'>{restartError}</p>
+              </div>
+            )}
+            <button
+              onClick={handleRestartTutorial}
+              disabled={restartingTutorial}
+              className='rounded-lg bg-yellow-500 px-4 py-2 font-medium text-white transition-colors hover:bg-yellow-600 disabled:cursor-not-allowed disabled:opacity-50 shadow-lg'
+            >
+              {restartingTutorial ? 'Restarting...' : 'Restart Tutorial'}
+            </button>
+          </div>
+
+          <DeleteAccountSection
+            onDelete={handleDeleteAccount}
+            isDeleting={isDeleting}
+          />
+        </>
       )}
 
       <AvatarCropDialog

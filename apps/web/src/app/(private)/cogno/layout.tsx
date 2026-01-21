@@ -1,25 +1,16 @@
 'use client';
 
 import { ReactNode, useEffect } from 'react';
-import { ThreadProvider, useThreadContext } from '@/contexts/ThreadContext';
+import { ThreadProvider } from '@/contexts/ThreadContext';
 import { HomeUIProvider, useHomeUI } from '@/contexts/HomeUIContext';
 import ThreadSidebar from '@/features/thread/ThreadSidebar';
 import { onHeaderEvent, HEADER_EVENTS } from '@/lib/headerEvents';
 
 function HomeLayoutContent({ children }: { children: ReactNode }) {
-  const { setSelectedThreadId } = useThreadContext();
   const { toggleThreadSidebar, toggleNotificationPanel } = useHomeUI();
-
-  const handleCreateThread = () => {
-    setSelectedThreadId('new');
-  };
 
   // Listen to header events
   useEffect(() => {
-    const unsubscribeCreate = onHeaderEvent(
-      HEADER_EVENTS.CREATE_THREAD,
-      handleCreateThread
-    );
     const unsubscribeToggleSidebar = onHeaderEvent(
       HEADER_EVENTS.TOGGLE_THREAD_SIDEBAR,
       toggleThreadSidebar
@@ -30,7 +21,6 @@ function HomeLayoutContent({ children }: { children: ReactNode }) {
     );
 
     return () => {
-      unsubscribeCreate();
       unsubscribeToggleSidebar();
       unsubscribeToggleNotification();
     };

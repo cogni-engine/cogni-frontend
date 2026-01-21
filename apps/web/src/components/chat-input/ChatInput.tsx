@@ -222,7 +222,7 @@ const ChatInput = forwardRef<ChatInputRef, ChatInputProps>(function ChatInput(
   };
 
   return (
-    <div className='rounded-t-3xl'>
+    <div className='rounded-t-3xl' data-shepherd-target='chat-input'>
       {/* Reply indicator - absolutely positioned above input */}
       {/* 入力UI */}
       <div

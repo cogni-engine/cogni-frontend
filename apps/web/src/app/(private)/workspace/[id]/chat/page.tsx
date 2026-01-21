@@ -16,6 +16,7 @@ import { ChevronDown } from 'lucide-react';
 import { useWorkspaceMembers } from '@/hooks/useWorkspace';
 import { useNotes } from '@cogni/api';
 import ScrollableView from '@/components/layout/ScrollableView';
+import { useAppEvents } from '@/hooks/useAppEvents';
 import { getCurrentUserId } from '@cogni/utils';
 import {
   isNearBottom as isNearBottomFn,
@@ -65,6 +66,9 @@ export default function WorkspaceChatPage() {
     dismissFailedMessage,
   } = useWorkspaceChat(workspaceId, members);
 
+  // App events - decoupled from any specific features
+  const appEvents = useAppEvents();
+
   // Fetch workspace notes - deferred to not block message rendering
   const { notes: rawNotes } = useNotes({
     workspaceId: workspaceId,
@@ -102,6 +106,10 @@ export default function WorkspaceChatPage() {
           mentionedMemberIds,
           mentionedNoteIds
         );
+
+        // Emit app event - features can react if needed (fully decoupled)
+        appEvents.emitMessageSent(workspaceId, text);
+
         // Clear reply state after sending
         setReplyingTo(null);
         // Scroll to bottom after sending message
@@ -117,7 +125,7 @@ export default function WorkspaceChatPage() {
         throw error;
       }
     },
-    [originalSendMessage, replyingTo]
+    [originalSendMessage, replyingTo, workspaceId, appEvents]
   );
 
   // Handle reply action
@@ -421,7 +429,7 @@ export default function WorkspaceChatPage() {
       )}
 
       {/* Absolutely positioned ChatInput with transparent background */}
-      <div className='absolute bottom-0 left-0 right-0 z-100'>
+      <div className='absolute bottom-0 left-0 right-0 z-50'>
         <ChatInput
           ref={chatInputRef}
           onSend={sendMessage}

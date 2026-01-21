@@ -8,6 +8,9 @@ import type {
 
 const supabase = createClient();
 
+// API base URL with fallback (same pattern as onboardingApi.ts)
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+
 /**
  * Get all notifications for a specific user
  */
@@ -293,6 +296,64 @@ export async function getWorkspaceActivityNotifications(
     due_date: item.due_date,
     created_at: item.created_at,
   }));
+}
+
+/**
+ * Generate tutorial task and notification from onboarding note
+ * Uses the same pattern as generateFirstNote in onboardingApi.ts
+ */
+export async function createTutorialNotification(
+  onboardingSessionId: string,
+  userId: string,
+  locale: string
+): Promise<{ taskId: number; notificationId: number }> {
+  console.log('[API] createTutorialNotification - Request:', {
+    onboardingSessionId,
+    userId,
+    locale,
+    url: `${API_BASE_URL}/api/onboarding/generate-tutorial-notification`,
+  });
+
+  const response = await fetch(
+    `${API_BASE_URL}/api/onboarding/generate-tutorial-notification`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        onboarding_session_id: onboardingSessionId,
+        user_id: userId,
+        locale: locale,
+      }),
+      signal: AbortSignal.timeout(30000), // 30 second timeout (same as generateFirstNote)
+    }
+  );
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    console.error('[API] createTutorialNotification - Error:', {
+      status: response.status,
+      statusText: response.statusText,
+      body: errorText,
+    });
+    // Same error format as onboardingApi.ts
+    throw new Error(
+      `Failed to create tutorial notification: ${response.status} ${errorText}`
+    );
+  }
+
+  const data = await response.json();
+  console.log('[API] createTutorialNotification - Success:', {
+    taskId: data.task.id,
+    notificationId: data.notification.id,
+    taskTitle: data.task.title,
+    notificationTitle: data.notification.title,
+    notificationDueDate: data.notification.due_date,
+  });
+
+  return {
+    taskId: data.task.id,
+    notificationId: data.notification.id,
+  };
 }
 
 /**
