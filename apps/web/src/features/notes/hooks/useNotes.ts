@@ -14,7 +14,7 @@ import {
   emptyTrash,
   searchNotes,
   getUserAssignedNotes,
-} from '@/lib/api/notesApi';
+} from '@/features/notes/api/notesApi';
 import { parseNote } from '../lib/noteHelpers';
 
 // SWR Keys

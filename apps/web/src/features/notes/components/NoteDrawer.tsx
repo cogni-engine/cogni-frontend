@@ -12,7 +12,7 @@ import {
   DrawerBody,
 } from '@/components/ui/drawer';
 import type { Note } from '@/types/note';
-import { getNote } from '@/lib/api/notesApi';
+import { getNote } from '@/features/notes/api/notesApi';
 import { TiptapRenderer } from '@/components/tiptap/TiptapRenderer';
 
 interface NoteDrawerProps {

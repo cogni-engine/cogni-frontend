@@ -3,7 +3,7 @@
  * Handles creating notes from user message responses during tier 2 onboarding
  */
 
-import { createNote } from '@/lib/api/notesApi';
+import { createNote } from '@/features/notes/api/notesApi';
 
 /**
  * Generate a note title from user message

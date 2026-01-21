@@ -20,7 +20,11 @@ import { MobileFloatingToolbar } from './components/tool-bar/MobileFloatingToolb
 import { DesktopAIInput } from './components/DesktopAIInput';
 import { EditorStyles } from './lib/editorStyles';
 import { CollaborativeEditorStyles } from './lib/collaborativeEditorStyles';
-import { getNote, updateNoteTitle, getAISuggestions } from '@/lib/api/notesApi';
+import {
+  getNote,
+  updateNoteTitle,
+  getAISuggestions,
+} from '@/features/notes/api/notesApi';
 import { yDocToAnnotatedMarkdown } from '@/lib/ydoc/yDocToMarkdown';
 import { createClient } from '@/lib/supabase/browserClient';
 import type { Note } from '@/types/note';

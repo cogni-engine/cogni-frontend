@@ -13,7 +13,7 @@ import {
   COOKIE_KEYS,
 } from '@cogni/utils';
 import { getPersonalWorkspace } from '@/lib/api/workspaceApi';
-import NoteDrawer from '@/components/NoteDrawer';
+import NoteDrawer from '@/features/notes/components/NoteDrawer';
 import FilePreviewDrawer from '@/components/FilePreviewDrawer';
 import ChatMessageDrawer from '@/components/ChatMessageDrawer';
 import { ShepherdProvider } from '@/features/onboarding/tier2/shepherd/ShepherdProvider';
