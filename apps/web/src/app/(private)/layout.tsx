@@ -212,7 +212,12 @@ export default function DashboardLayout({
 }) {
   return (
     <GlobalUIProvider>
-      <LayoutContent>{children}</LayoutContent>
+      <TutorialProvider>
+        <ShepherdProvider tours={exampleTours}>
+          <TutorialStepManager />
+          <LayoutContent>{children}</LayoutContent>
+        </ShepherdProvider>
+      </TutorialProvider>
     </GlobalUIProvider>
   );
 }
