@@ -1,5 +1,5 @@
 import { useCallback } from 'react';
-import { Message, AIMessage } from '@/types/chat';
+import { Message, AIMessage } from '@/features/cogno/domain/chat';
 import { TimerDisplay } from './TimerDisplay';
 import { AIInitiatedMessageWrapper } from './AIInitiatedMessageWrapper';
 import MessageFiles from '@/features/workspace/components/MessageFiles'; // TODO: Move to @cogni/components

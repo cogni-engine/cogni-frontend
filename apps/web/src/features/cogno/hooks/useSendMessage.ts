@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useCallback, useRef } from 'react';
-import type { AIMessage } from '@/types/chat';
+import type { AIMessage } from '@/features/cogno/domain/chat';
 import type { ThreadId } from '../contexts/ThreadContext';
 import { createThread } from '../api/threadsApi';
 import { getPersonalWorkspaceId } from '@/lib/cookies';

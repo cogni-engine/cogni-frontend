@@ -1,5 +1,5 @@
 import { createClient } from '@/lib/supabase/browserClient';
-import type { AIMessage, MessageFile } from '@/types/chat';
+import type { AIMessage, MessageFile } from '@/features/cogno/domain/chat';
 
 const supabase = createClient();
 

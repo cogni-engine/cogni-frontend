@@ -3,7 +3,7 @@
 import { useEffect } from 'react';
 import useSWR from 'swr';
 import { getThreadMessages } from '@/features/cogno/api/aiMessagesApi';
-import type { AIMessage } from '@/types/chat';
+import type { AIMessage } from '@/features/cogno/domain/chat';
 import type { ThreadId } from '../contexts/ThreadContext';
 
 const CACHE_KEY = 'cogno-messages-cache';

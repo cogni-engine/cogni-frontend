@@ -1,5 +1,5 @@
 import { createClient } from '@/lib/supabase/browserClient';
-import type { Thread } from '@/types/thread';
+import type { Thread } from '@/features/cogno/domain/thread';
 
 const supabase = createClient();
 

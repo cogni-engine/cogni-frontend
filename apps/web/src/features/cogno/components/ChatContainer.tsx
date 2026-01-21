@@ -1,4 +1,4 @@
-import { Message, AIMessage } from '@/types/chat';
+import { Message, AIMessage } from '@/features/cogno/domain/chat';
 import { forwardRef } from 'react';
 import MessageItem from './MessageItem';
 import EmptyState from './EmptyState';

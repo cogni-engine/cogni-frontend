@@ -15,7 +15,7 @@ import {
   updateThread as apiUpdateThread,
   deleteThread as apiDeleteThread,
 } from '../api/threadsApi';
-import type { Thread } from '@/types/thread';
+import type { Thread } from '@/features/cogno/domain/thread';
 import { getPersonalWorkspaceId } from '@/lib/cookies';
 
 export type ThreadId = number | 'new' | null;

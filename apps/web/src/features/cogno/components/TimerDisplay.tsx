@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useState, useRef } from 'react';
-import { TimerState } from '@/types/chat';
+import { TimerState } from '@/features/cogno/domain/chat';
 
 type TimerDisplayProps = {
   timer: TimerState;
