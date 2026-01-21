@@ -229,6 +229,7 @@ export const VoiceInputButton = forwardRef<
     return (
       <button
         onClick={handleVoiceInput}
+        onMouseDown={e => e.preventDefault()}
         disabled={disabled}
         type='button'
         title={isRecording ? '音声認識を停止' : '音声認識を開始'}

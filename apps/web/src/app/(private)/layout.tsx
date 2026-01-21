@@ -4,8 +4,6 @@ import { usePathname, useRouter } from 'next/navigation';
 import Header from '@/components/layout/Header';
 import BottomNav from '@/components/layout/BottomNav';
 import { GlobalUIProvider, useGlobalUI } from '@/contexts/GlobalUIContext';
-import { CopilotKit } from '@copilotkit/react-core';
-import '@copilotkit/react-textarea/styles.css';
 import { createClient } from '@/lib/supabase/browserClient';
 import {
   setCurrentUserId,
@@ -102,6 +100,23 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
               `/workspace/${workspaceId}/chat?messageId=${messageId}`
             );
           }
+        } else if (data.type === 'TRIGGER_NOTIFICATION') {
+          console.log('🌐 Global TRIGGER_NOTIFICATION from mobile:', {
+            notificationId: data.notificationId,
+          });
+
+          // Navigate to /cogno if not already there
+          if (pathname !== '/cogno') {
+            router.push('/cogno');
+          }
+
+          // Dispatch event to open notification panel after a short delay
+          // to ensure navigation completes
+          setTimeout(() => {
+            window.dispatchEvent(
+              new CustomEvent('header:toggleNotificationPanel')
+            );
+          }, 100);
         }
       } catch (error) {
         // Ignore errors from unrelated postMessage events
@@ -114,10 +129,10 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
     return () => {
       window.removeEventListener('message', handleMobileNavigation);
     };
-  }, [router]);
+  }, [router, pathname]);
 
   const showTopLevelChrome =
-    pathname === '/home' ||
+    pathname === '/cogno' ||
     pathname === '/notes' ||
     pathname === '/workspace' ||
     pathname === '/personal' ||
@@ -145,7 +160,7 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
     showTopLevelChrome && (!isMobile || !isInputActive) && !isDrawerOpen;
 
   return (
-    <div className='relative h-screen bg-black px-4'>
+    <div className='relative h-screen bg-black px-2'>
       {/* Header - Absolutely Positioned, Transparent */}
       {showTopLevelChrome && <Header />}
 
@@ -197,14 +212,7 @@ export default function DashboardLayout({
 }) {
   return (
     <GlobalUIProvider>
-      <CopilotKit runtimeUrl='/api/copilotkit'>
-        <TutorialProvider>
-          <ShepherdProvider tours={exampleTours}>
-            <TutorialStepManager />
-            <LayoutContent>{children}</LayoutContent>
-          </ShepherdProvider>
-        </TutorialProvider>
-      </CopilotKit>
+      <LayoutContent>{children}</LayoutContent>
     </GlobalUIProvider>
   );
 }

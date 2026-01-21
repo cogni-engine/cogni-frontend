@@ -1,7 +1,7 @@
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import type { WorkspaceMessage } from '@/types/workspace';
 import { format } from 'date-fns';
-import { User, Reply } from 'lucide-react';
+import { User, Reply, AlertCircle } from 'lucide-react';
 import { useState, useRef, useEffect, useCallback, useMemo, memo } from 'react';
 import { useDrag } from '@use-gesture/react';
 import MessageContextMenu from './MessageContextMenu';
@@ -10,15 +10,19 @@ import { TiptapRenderer } from '@/components/tiptap/TiptapRenderer';
 import type { WorkspaceMember } from '@/types/workspace';
 import type { Note } from '@/types/note';
 import { useGlobalUI } from '@/contexts/GlobalUIContext';
+import type { OptimisticMessage } from '@/hooks/useWorkspaceChat';
 
 type Props = {
-  message: WorkspaceMessage;
+  message: WorkspaceMessage | OptimisticMessage;
   isOwnMessage: boolean;
   onReply?: (messageId: number) => void;
   onJumpToMessage?: (messageId: number) => void;
   isHighlighted?: boolean;
   workspaceMembers?: WorkspaceMember[];
   workspaceNotes?: Note[];
+  showTimestamp?: boolean;
+  showAvatar?: boolean;
+  onDismissFailedMessage?: (optimisticId: number) => void;
 };
 
 function ReadStatus({ readCount }: { readCount: number }) {
@@ -35,7 +39,15 @@ function WorkspaceMessageItem({
   isHighlighted = false,
   workspaceMembers = [],
   workspaceNotes = [],
+  showTimestamp = true,
+  showAvatar = true,
+  onDismissFailedMessage,
 }: Props) {
+  // Check if this is an optimistic message
+  const optimisticMessage = message as OptimisticMessage;
+  const isOptimistic = optimisticMessage._optimistic === true;
+  const isFailed = optimisticMessage._failed === true;
+  const optimisticId = optimisticMessage._optimisticId;
   const { openNoteDrawer } = useGlobalUI();
   const [contextMenu, setContextMenu] = useState<{
     x: number;
@@ -296,7 +308,7 @@ function WorkspaceMessageItem({
     return (
       <div
         data-replied-preview
-        className='mb-2 border-white/20 cursor-pointer hover:bg-white/5 rounded transition-colors'
+        className='mb-2 border-white/20 cursor-pointer rounded transition-colors'
         onClick={handleClick}
         style={{ pointerEvents: 'auto' }}
       >
@@ -339,10 +351,10 @@ function WorkspaceMessageItem({
           data-message-id={message.id}
           className={`flex justify-end items-end w-full relative transition-transform duration-300 ${
             isHighlighted ? 'animate-bounce-x-right' : ''
-          }`}
-          onContextMenu={handleContextMenu}
+          } ${isOptimistic && !isFailed ? 'opacity-70' : ''}`}
+          onContextMenu={!isOptimistic ? handleContextMenu : undefined}
           style={{ userSelect: 'none', WebkitUserSelect: 'none' }}
-          {...gestureBindings}
+          {...(!isOptimistic ? gestureBindings : {})}
         >
           {/* Reply icon indicator on the right side */}
           {showSwipeIndicator && (
@@ -361,17 +373,43 @@ function WorkspaceMessageItem({
               transform: `translateX(${swipeOffset}px)`,
             }}
           >
-            <div className='flex flex-col justify-end shrink-0'>
-              <div className='text-right'>
-                <ReadStatus readCount={readCount} />
+            {showTimestamp && (
+              <div className='flex flex-col justify-end shrink-0'>
+                {/* Show status for optimistic messages */}
+                {isFailed && (
+                  <div className='flex items-center justify-end gap-1'>
+                    <button
+                      onClick={() =>
+                        optimisticId && onDismissFailedMessage?.(optimisticId)
+                      }
+                      className='text-xs text-red-400 hover:text-red-300 flex items-center gap-1'
+                    >
+                      <AlertCircle className='w-3 h-3' />
+                      <span>Failed - Tap to dismiss</span>
+                    </button>
+                  </div>
+                )}
+                {!isOptimistic && (
+                  <>
+                    <div className='text-right'>
+                      <ReadStatus readCount={readCount} />
+                    </div>
+                    <p className='text-xs text-gray-500 text-right'>
+                      {format(new Date(message.created_at), 'HH:mm')}
+                    </p>
+                  </>
+                )}
               </div>
-              <p className='text-xs text-gray-500 text-right'>
-                {format(new Date(message.created_at), 'HH:mm')}
-              </p>
-            </div>
+            )}
             <div className='flex flex-col gap-2 items-end'>
               {(message.text || message.replied_message) && (
-                <div className='inline-block bg-white/13 backdrop-blur-xl border border-black rounded-3xl px-4 py-2.5 shadow-[0_8px_32px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.12)]'>
+                <div
+                  className={`inline-block max-w-[75vw] backdrop-blur-xl border rounded-3xl px-4 py-2.5 shadow-[0_8px_32px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.12)] ${
+                    isFailed
+                      ? 'bg-red-500/20 border-red-500/30'
+                      : 'bg-white/13 border-black'
+                  }`}
+                >
                   {message.replied_message && (
                     <RepliedMessagePreview
                       repliedMessage={message.replied_message}
@@ -403,7 +441,7 @@ function WorkspaceMessageItem({
                       </div>
 
                       {/* Toggle the thing  */}
-                      {isOverflowing && (
+                      {isOverflowing && !isOptimistic && (
                         <button
                           onClick={() => openChatMessageDrawer(message)}
                           className='mt-1 text-xs text-blue-400 hover:underline'
@@ -439,7 +477,7 @@ function WorkspaceMessageItem({
       <div
         ref={messageRef}
         data-message-id={message.id}
-        className={`flex gap-2 relative transition-transform duration-300 ${
+        className={`flex gap-1.5 relative transition-transform duration-300 ${
           isHighlighted ? 'animate-bounce-x-left' : ''
         }`}
         onContextMenu={handleContextMenu}
@@ -463,27 +501,32 @@ function WorkspaceMessageItem({
             transform: `translateX(${swipeOffset}px)`,
           }}
         >
-          <Avatar className='h-8 w-8 border border-white/15 bg-white/10 text-xs font-medium'>
-            {avatarUrl ? (
-              <AvatarImage src={avatarUrl} alt={name} />
-            ) : (
-              <AvatarFallback>
-                <User className='h-4 w-4' />
-              </AvatarFallback>
-            )}
-          </Avatar>
+          {showAvatar ? (
+            <Avatar className='h-8 w-8 border border-white/15 bg-white/10 text-xs font-medium'>
+              {avatarUrl ? (
+                <AvatarImage src={avatarUrl} alt={name} />
+              ) : (
+                <AvatarFallback>
+                  <User className='h-4 w-4' />
+                </AvatarFallback>
+              )}
+            </Avatar>
+          ) : (
+            /* Spacer to maintain alignment */
+            <div className='w-8' />
+          )}
         </div>
         <div
-          className='flex flex-col gap-1 min-w-0 relative flex-1 transition-transform duration-75'
+          className='flex flex-col min-w-0 relative flex-1 transition-transform duration-75'
           style={{
             transform: `translateX(${swipeOffset}px)`,
           }}
         >
-          <p className='text-xs text-gray-400 mb-1'>{name}</p>
-          <div className='flex gap-2 items-end'>
+          {showAvatar && <p className='text-xs text-gray-400 mb-1'>{name}</p>}
+          <div className='flex items-end'>
             <div className='flex flex-col gap-2 min-w-0'>
               {(message.text || message.replied_message) && (
-                <div className='inline-block bg-white/8 backdrop-blur-xl border border-black rounded-3xl px-4 py-2.5 shadow-[0_8px_32px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.12)]'>
+                <div className='inline-block max-w-[75vw] bg-white/8 backdrop-blur-xl border border-black rounded-3xl px-4 py-2.5 shadow-[0_8px_32px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.12)]'>
                   {message.replied_message && (
                     <RepliedMessagePreview
                       repliedMessage={message.replied_message}
@@ -531,9 +574,11 @@ function WorkspaceMessageItem({
                 <MessageFiles files={message.files} align='left' />
               )}
             </div>
-            <p className='text-xs text-gray-500 mt-1'>
-              {format(new Date(message.created_at), 'HH:mm')}
-            </p>
+            {showTimestamp && (
+              <p className='text-xs text-gray-500 mt-1'>
+                {format(new Date(message.created_at), 'HH:mm')}
+              </p>
+            )}
           </div>
         </div>
       </div>

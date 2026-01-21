@@ -1,9 +1,14 @@
 'use client';
 
 import { useParams, useSearchParams, useRouter } from 'next/navigation';
-import { useEffect, useRef, useState, useCallback } from 'react';
+import {
+  useEffect,
+  useRef,
+  useState,
+  useCallback,
+  useDeferredValue,
+} from 'react';
 import { useWorkspaceChat } from '@/hooks/useWorkspaceChat';
-import { createClient } from '@/lib/supabase/browserClient';
 import { ChatInput, type ChatInputRef } from '@/components/chat-input';
 import GlassButton from '@/components/glass-design/GlassButton';
 import WorkspaceMessageList from '@/features/workspace/components/WorkspaceMessageList';
@@ -12,23 +17,20 @@ import { useWorkspaceMembers } from '@/hooks/useWorkspace';
 import { useNotes } from '@cogni/api';
 import ScrollableView from '@/components/layout/ScrollableView';
 import { useAppEvents } from '@/hooks/useAppEvents';
+import { getCurrentUserId } from '@cogni/utils';
+import {
+  isNearBottom as isNearBottomFn,
+  isNearTop as isNearTopFn,
+} from '@/features/chat/utils';
 
 export default function WorkspaceChatPage() {
   const params = useParams();
   const searchParams = useSearchParams();
   const router = useRouter();
   const workspaceId = parseInt(params.id as string);
-  const scrollContainerRef = useRef<HTMLDivElement>(null);
+
   const [showScrollButton, setShowScrollButton] = useState(false);
-  const prevMessageCountRef = useRef(0);
-  const isUserScrollingRef = useRef(false);
-  const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const isLoadingMoreRef = useRef(false);
-  const prevScrollHeightRef = useRef(0);
-  const lastScrollTopRef = useRef(0);
-  const hasScrolledUpRef = useRef(false);
-  const prevMessagesRef = useRef<typeof messages>([]);
-  const chatInputRef = useRef<ChatInputRef>(null);
+  const [currentUserId] = useState<string | null>(() => getCurrentUserId());
   const [highlightedMessageId, setHighlightedMessageId] = useState<
     number | null
   >(null);
@@ -37,6 +39,21 @@ export default function WorkspaceChatPage() {
     text: string;
     authorName?: string;
   } | null>(null);
+
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const isUserScrollingRef = useRef(false);
+  const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const isLoadingMoreRef = useRef(false);
+  const prevScrollHeightRef = useRef(0);
+  const lastScrollTopRef = useRef(0);
+  const hasScrolledUpRef = useRef(false);
+  const prevMessagesRef = useRef<typeof messages>([]);
+  const chatInputRef = useRef<ChatInputRef>(null);
+  const sendingMessageRef = useRef(false);
+
+  // Fetch workspace members for mentions (fetch first so we can pass to chat hook)
+  const { members } = useWorkspaceMembers(workspaceId);
+
   const {
     messages,
     sendMessage: originalSendMessage,
@@ -46,33 +63,19 @@ export default function WorkspaceChatPage() {
     isConnected,
     loadMoreMessages,
     hasMoreMessages,
-  } = useWorkspaceChat(workspaceId);
+    dismissFailedMessage,
+  } = useWorkspaceChat(workspaceId, members);
 
   // App events - decoupled from any specific features
   const appEvents = useAppEvents();
 
-  // Fetch workspace members for mentions
-  const { members } = useWorkspaceMembers(workspaceId);
-
-  // Defer fetching workspace notes until after initial render to improve performance
-  const [enableNotesFetch, setEnableNotesFetch] = useState(false);
-
-  // Enable notes fetch after messages are loaded
-  useEffect(() => {
-    if (messages.length > 0 || !isLoading) {
-      // Defer by 200ms to let messages render first
-      const timer = setTimeout(() => {
-        setEnableNotesFetch(true);
-      }, 200);
-      return () => clearTimeout(timer);
-    }
-  }, [messages.length, isLoading]);
-
-  const { notes: workspaceNotes } = useNotes({
+  // Fetch workspace notes - deferred to not block message rendering
+  const { notes: rawNotes } = useNotes({
     workspaceId: workspaceId,
     includeDeleted: false,
-    autoFetch: enableNotesFetch,
+    autoFetch: !isLoading,
   });
+  const workspaceNotes = useDeferredValue(rawNotes);
 
   // Scroll to bottom function
   // Note: With column-reverse, bottom is at scrollTop = 0
@@ -84,9 +87,6 @@ export default function WorkspaceChatPage() {
       });
     }
   }, []);
-
-  // Track when we send a message to avoid conflicts with useEffect scroll logic
-  const sendingMessageRef = useRef(false);
 
   // Wrap sendMessage to scroll to bottom after sending
   const sendMessage = useCallback(
@@ -149,11 +149,6 @@ export default function WorkspaceChatPage() {
     [messages]
   );
 
-  // Cancel reply
-  const handleCancelReply = useCallback(() => {
-    setReplyingTo(null);
-  }, []);
-
   // Scroll to a specific message by ID
   const scrollToMessage = useCallback((messageId: number) => {
     if (!scrollContainerRef.current) return;
@@ -205,49 +200,8 @@ export default function WorkspaceChatPage() {
     }
   }, []);
 
-  // Listen for navigation commands from mobile app via postMessage
-  useEffect(() => {
-    const handlePostMessage = (event: MessageEvent) => {
-      // Validate origin for security (in production, check specific origins)
-      // For mobile WebView, origin might be 'file://' or similar
-
-      try {
-        const data = event.data;
-
-        if (data.type === 'NAVIGATE_TO_MESSAGE') {
-          const targetWorkspaceId = data.workspaceId;
-          const targetMessageId = data.messageId;
-
-          console.log('Received navigation command:', {
-            targetWorkspaceId,
-            targetMessageId,
-          });
-
-          // Check if we're on the right workspace
-          if (targetWorkspaceId && targetWorkspaceId !== workspaceId) {
-            // Navigate to the correct workspace first
-            router.push(
-              `/workspace/${targetWorkspaceId}/chat?messageId=${targetMessageId}`
-            );
-          } else if (targetMessageId) {
-            // We're on the right workspace, just scroll to message
-            scrollToMessage(targetMessageId);
-          }
-        }
-      } catch (error) {
-        // Ignore errors from unrelated postMessage events
-        console.debug('Error processing postMessage:', error);
-      }
-    };
-
-    window.addEventListener('message', handlePostMessage);
-
-    return () => {
-      window.removeEventListener('message', handlePostMessage);
-    };
-  }, [workspaceId, scrollToMessage, router]);
-
   // Handle navigation from URL query parameters (e.g., from notifications)
+  // Note: postMessage navigation is handled globally in app/(private)/layout.tsx
   useEffect(() => {
     const messageIdParam = searchParams.get('messageId');
 
@@ -268,54 +222,6 @@ export default function WorkspaceChatPage() {
     }
   }, [searchParams, messages.length, scrollToMessage, router]);
 
-  // Check if user is near bottom (within threshold)
-  // Note: With column-reverse, scrollTop 0 or positive small values are at the bottom
-  const isNearBottom = useCallback(() => {
-    if (!scrollContainerRef.current) {
-      return true;
-    }
-    const container = scrollContainerRef.current;
-    const threshold = 1000;
-    const scrollTop = container.scrollTop;
-    const scrollTopAbs = Math.abs(scrollTop);
-    // With column-reverse, bottom is at scrollTop = 0 or small positive values
-    // Negative values mean we're scrolled away from bottom (toward top)
-    const result = scrollTopAbs <= threshold;
-    return result;
-  }, []);
-
-  // Check if user is near top (within 800px - triggers earlier for faster loading)
-  // Note: With column-reverse, scrollTop can be negative, which means we're at the top
-  const isNearTop = useCallback(() => {
-    if (!scrollContainerRef.current) return false;
-    const container = scrollContainerRef.current;
-    const threshold = 800;
-
-    const scrollTop = container.scrollTop;
-    const scrollHeight = container.scrollHeight;
-    const clientHeight = container.clientHeight;
-
-    // With flex-col-reverse, negative scrollTop means we're scrolled to the top (oldest messages)
-    // This is a browser quirk with flex-col-reverse
-    // From logs: scrollTop is around -628 to -667 when scrolled up, which means we're near the top
-    if (scrollTop < 0) {
-      // If scrollTop is negative, we're scrolled up toward older messages
-      // The more negative, the more we've scrolled up
-      // Trigger if we're scrolled up significantly (absolute value > 200px threshold)
-      return Math.abs(scrollTop) > 200;
-    }
-
-    // Calculate max scroll position
-    const maxScrollTop = scrollHeight - clientHeight;
-
-    // Handle edge case where content is smaller than container
-    if (maxScrollTop <= 0) return false;
-
-    // For positive scrollTop, check if we're within threshold of the max scroll
-    const distanceFromTop = maxScrollTop - scrollTop;
-    return distanceFromTop < threshold;
-  }, []);
-
   // Handle scroll events to show/hide button
   useEffect(() => {
     const container = scrollContainerRef.current;
@@ -334,7 +240,8 @@ export default function WorkspaceChatPage() {
       }
 
       // Reset scrolled up flag if user reaches near bottom
-      if (isNearBottom()) {
+      const nearBottom = isNearBottomFn(currentScrollTop);
+      if (nearBottom) {
         hasScrolledUpRef.current = false;
       }
 
@@ -352,12 +259,15 @@ export default function WorkspaceChatPage() {
       }, 300); // Increased timeout to be more reliable
 
       // Check if we should show the scroll button
-      const nearBottom = isNearBottom();
       setShowScrollButton(!nearBottom);
 
       // Check if we're near top and should load more messages
       // With column-reverse, "top" (for loading older messages) is at high scrollTop values
-      const nearTop = isNearTop();
+      const nearTop = isNearTopFn({
+        scrollTop: currentScrollTop,
+        scrollHeight: container.scrollHeight,
+        clientHeight: container.clientHeight,
+      });
 
       if (
         nearTop &&
@@ -381,13 +291,7 @@ export default function WorkspaceChatPage() {
         clearTimeout(scrollTimeoutRef.current);
       }
     };
-  }, [
-    isNearBottom,
-    isNearTop,
-    hasMoreMessages,
-    loadMoreMessages,
-    isLoadingMore,
-  ]);
+  }, [hasMoreMessages, loadMoreMessages, isLoadingMore]);
 
   // No initial scroll needed - CSS column-reverse handles it automatically!
   // Removed useLayoutEffect and useEffect for initial scroll
@@ -440,13 +344,16 @@ export default function WorkspaceChatPage() {
       prevMessages.length > 0 &&
       !isLoadingMore &&
       !sendingMessageRef.current &&
-      !isNearBottom()
+      !isNearBottomFn(container.scrollTop)
     ) {
       const scrollTopToPreserve = container.scrollTop;
 
       // Single requestAnimationFrame is sufficient
       requestAnimationFrame(() => {
-        if (scrollContainerRef.current && !isNearBottom()) {
+        if (
+          scrollContainerRef.current &&
+          !isNearBottomFn(scrollContainerRef.current.scrollTop)
+        ) {
           scrollContainerRef.current.scrollTop = scrollTopToPreserve;
         }
       });
@@ -454,22 +361,7 @@ export default function WorkspaceChatPage() {
 
     // Update prev messages after processing
     prevMessagesRef.current = messages;
-  }, [messages, isLoadingMore, isNearBottom]);
-
-  // Track message count (no auto-scroll - removed as per user request)
-  useEffect(() => {
-    prevMessageCountRef.current = messages.length;
-  }, [messages.length]);
-
-  // Get current user ID
-  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
-
-  useEffect(() => {
-    const supabase = createClient();
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      setCurrentUserId(user?.id || null);
-    });
-  }, []);
+  }, [messages, isLoadingMore]);
 
   return (
     <div className='flex flex-col h-full relative'>
@@ -486,15 +378,9 @@ export default function WorkspaceChatPage() {
         ref={scrollContainerRef}
         className='relative flex flex-col-reverse pt-30 pb-20'
       >
-        {/* Loading indicator for older messages - appears at top when scrolling up */}
-        {isLoadingMore && (
-          <div className='flex items-center justify-center py-4'>
-            <div className='flex items-center gap-2 text-gray-400 text-sm'>
-              <div className='animate-spin rounded-full h-4 w-4 border-b-2 border-gray-400'></div>
-              <span>Loading older messages...</span>
-            </div>
-          </div>
-        )}
+        {/* Spacer: with column-reverse, first DOM child appears at visual bottom.
+            flex-1 makes it grow to fill remaining space, pushing messages to visual top when few */}
+        <div className='flex-1 min-h-0' />
 
         {(isConnected || messages.length > 0) && currentUserId ? (
           <WorkspaceMessageList
@@ -505,6 +391,7 @@ export default function WorkspaceChatPage() {
             highlightedMessageId={highlightedMessageId}
             workspaceMembers={members}
             workspaceNotes={workspaceNotes}
+            onDismissFailedMessage={dismissFailedMessage}
           />
         ) : (
           <div className='flex-1 flex items-center justify-center'>
@@ -512,6 +399,16 @@ export default function WorkspaceChatPage() {
               <p className='text-gray-400 font-medium animate-pulse'>
                 Connecting to real-time chat...
               </p>
+            </div>
+          </div>
+        )}
+
+        {/* Loading indicator for older messages - appears at top when scrolling up */}
+        {isLoadingMore && messages.length > 0 && (
+          <div className='flex items-center justify-center py-4'>
+            <div className='flex items-center gap-2 text-gray-400 text-sm'>
+              <div className='animate-spin rounded-full h-4 w-4 border-b-2 border-gray-400'></div>
+              <span>Loading older messages...</span>
             </div>
           </div>
         )}
@@ -540,7 +437,7 @@ export default function WorkspaceChatPage() {
           placeholder='Message'
           canStop={false}
           replyingTo={replyingTo}
-          onCancelReply={handleCancelReply}
+          onCancelReply={() => setReplyingTo(null)}
           workspaceId={workspaceId}
           workspaceMembers={members}
           workspaceNotes={workspaceNotes}

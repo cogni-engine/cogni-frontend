@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import useSWR from 'swr';
 import { createClient } from '@/lib/supabase/browserClient';
-import type { WorkspaceMessage } from '@/types/workspace';
+import type { WorkspaceMessage, WorkspaceMember } from '@/types/workspace';
 import {
   getWorkspaceMessages,
   sendWorkspaceMessage,
@@ -11,6 +11,10 @@ import {
   markWorkspaceMessagesAsRead,
   type CurrentWorkspaceMember,
 } from '@/lib/api/workspaceMessagesApi';
+
+// Optimistic message uses negative IDs to distinguish from real messages
+let optimisticIdCounter = -1;
+const getOptimisticId = () => optimisticIdCounter--;
 
 // SWR keys
 const messagesKey = (
@@ -38,7 +42,16 @@ type RawMessage = {
   updated_at: string;
 };
 
-export function useWorkspaceChat(workspaceId: number) {
+export type OptimisticMessage = WorkspaceMessage & {
+  _optimistic?: boolean;
+  _optimisticId?: number;
+  _failed?: boolean;
+};
+
+export function useWorkspaceChat(
+  workspaceId: number,
+  workspaceMembers?: WorkspaceMember[]
+) {
   const supabase = createClient();
   const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
   const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -49,9 +62,17 @@ export function useWorkspaceChat(workspaceId: number) {
   const oldestMessageTimestampRef = useRef<string | null>(null);
   const [isConnected, setIsConnected] = useState(false);
   const [hasMoreMessages, setHasMoreMessages] = useState(true);
-  const [localMessages, setLocalMessages] = useState<WorkspaceMessage[]>([]);
+  const [localMessages, setLocalMessages] = useState<OptimisticMessage[]>([]);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [sendError, setSendError] = useState<string | null>(null);
+
+  // Keep workspace members in a ref for optimistic updates
+  const workspaceMembersRef = useRef<WorkspaceMember[]>([]);
+  useEffect(() => {
+    if (workspaceMembers) {
+      workspaceMembersRef.current = workspaceMembers;
+    }
+  }, [workspaceMembers]);
 
   // Fetch workspace member using SWR
   const {
@@ -126,7 +147,23 @@ export function useWorkspaceChat(workspaceId: number) {
     if (initialMessages) {
       const reversedMessages = [...initialMessages].reverse();
       const decorated = decorateMessages(reversedMessages, workspaceMember);
-      setLocalMessages(decorated);
+
+      setLocalMessages(prev => {
+        // Keep any pending optimistic messages that haven't been confirmed yet
+        const pendingOptimistic = prev.filter(
+          msg => msg._optimistic && !msg._failed
+        );
+
+        // Filter out optimistic messages that now have real counterparts
+        // (matched by checking if a real message with similar text/timestamp exists)
+        const realMessageIds = new Set(decorated.map(m => m.id));
+        const stillPendingOptimistic = pendingOptimistic.filter(
+          opt => !realMessageIds.has(opt.id)
+        );
+
+        // Merge: decorated messages + still-pending optimistic messages
+        return [...decorated, ...stillPendingOptimistic];
+      });
 
       // Track pagination state
       if (reversedMessages.length > 0) {
@@ -177,6 +214,7 @@ export function useWorkspaceChat(workspaceId: number) {
           .on('broadcast', { event: 'INSERT' }, () => {
             if (!mounted) return;
             // When broadcast is received, revalidate messages
+            // This will merge with existing messages including optimistic ones
             mutateMessages();
           })
           .on('broadcast', { event: 'UPDATE' }, () => {
@@ -282,8 +320,56 @@ export function useWorkspaceChat(workspaceId: number) {
 
       setSendError(null);
 
+      // Find the current user's profile from workspace members
+      const currentMemberProfile = workspaceMembersRef.current.find(
+        m => m.id === workspaceMember.id
+      );
+
+      // Find the replied message for optimistic display
+      const repliedMessage = replyToId
+        ? localMessages.find(m => m.id === replyToId)
+        : null;
+
+      // Create optimistic message
+      const optimisticId = getOptimisticId();
+      const now = new Date().toISOString();
+      const optimisticMessage: OptimisticMessage = {
+        id: optimisticId,
+        workspace_id: workspaceId,
+        workspace_member_id: workspaceMember.id,
+        text,
+        created_at: now,
+        updated_at: now,
+        reply_to_id: replyToId ?? null,
+        workspace_member: currentMemberProfile
+          ? {
+              user_id: currentMemberProfile.user_id,
+              user_profile: currentMemberProfile.user_profile ?? null,
+            }
+          : undefined,
+        replied_message: repliedMessage
+          ? {
+              id: repliedMessage.id,
+              workspace_id: repliedMessage.workspace_id,
+              workspace_member_id: repliedMessage.workspace_member_id,
+              text: repliedMessage.text,
+              created_at: repliedMessage.created_at,
+              updated_at: repliedMessage.updated_at,
+              workspace_member: repliedMessage.workspace_member,
+            }
+          : null,
+        reads: [],
+        read_count: 0,
+        is_read_by_current_user: true,
+        _optimistic: true,
+        _optimisticId: optimisticId,
+      };
+
+      // Add optimistic message immediately
+      setLocalMessages(prev => [...prev, optimisticMessage]);
+
       try {
-        await sendWorkspaceMessage(
+        const newMessage = await sendWorkspaceMessage(
           workspaceId,
           workspaceMember.id,
           text,
@@ -292,17 +378,35 @@ export function useWorkspaceChat(workspaceId: number) {
           mentionedMemberIds,
           mentionedNoteIds
         );
-        // Revalidate messages to get the new one
-        mutateMessages();
+
+        // Replace optimistic message with real message
+        setLocalMessages(prev =>
+          prev.map(msg =>
+            msg._optimisticId === optimisticId
+              ? { ...newMessage, is_read_by_current_user: true }
+              : msg
+          )
+        );
+
+        // Don't revalidate immediately - we already have the message
+        // The realtime subscription will handle any sync issues
       } catch (err) {
         const errorMessage =
           err instanceof Error ? err.message : 'Failed to send message';
         setSendError(errorMessage);
         console.error('Error sending message:', err);
+
+        // Mark optimistic message as failed
+        setLocalMessages(prev =>
+          prev.map(msg =>
+            msg._optimisticId === optimisticId ? { ...msg, _failed: true } : msg
+          )
+        );
+
         throw err;
       }
     },
-    [workspaceId, workspaceMember, mutateMessages]
+    [workspaceId, workspaceMember, localMessages]
   );
 
   // Load more messages (for infinite scroll)
@@ -464,6 +568,13 @@ export function useWorkspaceChat(workspaceId: number) {
     };
   }, [localMessages, workspaceId, workspaceMember, mutateMember]);
 
+  // Dismiss a failed optimistic message
+  const dismissFailedMessage = useCallback((optimisticId: number) => {
+    setLocalMessages(prev =>
+      prev.filter(msg => msg._optimisticId !== optimisticId)
+    );
+  }, []);
+
   // Combine errors
   const error =
     memberError || messagesError
@@ -482,5 +593,6 @@ export function useWorkspaceChat(workspaceId: number) {
     workspaceMember,
     loadMoreMessages,
     hasMoreMessages,
+    dismissFailedMessage,
   };
 }

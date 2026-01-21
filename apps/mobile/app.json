@@ -2,23 +2,26 @@
   "expo": {
     "name": "Cogni",
     "slug": "cogni-mobile",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "orientation": "portrait",
     "icon": "./assets/images/cogno-icon.png",
     "scheme": "cogni",
-    "userInterfaceStyle": "automatic",
+    "userInterfaceStyle": "dark",
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "buildNumber": "2",
+      "buildNumber": "5",
+      "bundleIdentifier": "com.cogno.ai.mobile",
+      "usesAppleSignIn": true,
+      "backgroundColor": "#000000",
       "infoPlist": {
         "NSAppTransportSecurity": {
           "NSAllowsArbitraryLoads": true,
           "NSAllowsLocalNetworking": true
         },
-        "ITSAppUsesNonExemptEncryption": false
-      },
-      "bundleIdentifier": "com.cogno.ai.mobile"
+        "ITSAppUsesNonExemptEncryption": false,
+        "UIKeyboardAppearance": "Dark"
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -46,16 +49,7 @@
     "plugins": [
       "expo-router",
       "expo-secure-store",
-      [
-        "expo-notifications",
-        {
-          "icon": "./assets/images/cogno-icon.png",
-          "color": "#ffffff",
-          "sounds": [],
-          "mode": "production",
-          "enableBackgroundRemoteNotifications": true
-        }
-      ]
+      "expo-apple-authentication"
     ],
     "experiments": {
       "typedRoutes": true,

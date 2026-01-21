@@ -35,6 +35,8 @@ interface TiptapChatInputProps {
   workspaceNotes?: Note[];
   /** Content to render above the editor, inside the input container */
   topContent?: React.ReactNode;
+  /** Callback when focus state changes */
+  onFocusChange?: (focused: boolean) => void;
 }
 
 export type TiptapChatInputRef = {
@@ -55,6 +57,7 @@ const TiptapChatInput = forwardRef<TiptapChatInputRef, TiptapChatInputProps>(
       workspaceMembers = [],
       workspaceNotes = [],
       topContent,
+      onFocusChange,
     },
     ref
   ) {
@@ -96,8 +99,14 @@ const TiptapChatInput = forwardRef<TiptapChatInputRef, TiptapChatInputProps>(
           const text = editor.getText();
           setIsEmpty(text.trim().length === 0);
         },
-        onFocus: () => setIsFocused(true),
-        onBlur: () => setIsFocused(false),
+        onFocus: () => {
+          setIsFocused(true);
+          onFocusChange?.(true);
+        },
+        onBlur: () => {
+          setIsFocused(false);
+          onFocusChange?.(false);
+        },
       },
       [extensions, placeholder]
     );
@@ -202,7 +211,23 @@ const TiptapChatInput = forwardRef<TiptapChatInputRef, TiptapChatInputProps>(
 
         {/* 送信ボタン / 停止ボタン */}
         <button
+          type='button'
           onClick={isLoading && canStop ? handleStop : handleSend}
+          onMouseDown={e => e.preventDefault()}
+          onTouchEnd={e => {
+            // Prevent default to avoid focus loss on mobile
+            // Then manually trigger the send/stop action
+            e.preventDefault();
+            if (isLoading && canStop) {
+              handleStop();
+            } else if (
+              !isLoading &&
+              !isUploading &&
+              (!isEmpty || hasAttachments)
+            ) {
+              handleSend();
+            }
+          }}
           disabled={isLoading || isUploading || (isEmpty && !hasAttachments)}
           className='absolute right-2.5 bottom-1.5 w-10 h-10 rounded-full bg-white/10 backdrop-blur-xl border border-black text-white flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed hover:bg-white/15 hover:scale-102 transition-all duration-300 shadow-[0_8px_32px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.12)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.25),inset_0_1px_0_rgba(255,255,255,0.18)]'
         >

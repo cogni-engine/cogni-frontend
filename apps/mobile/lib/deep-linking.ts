@@ -9,14 +9,12 @@ export function handleNotificationResponse(
   router: Router
 ): void {
   if (!data || !data.type) {
-    console.log('No notification data or type provided');
     return;
   }
 
   switch (data.type) {
     case 'workspace_message':
       if (data.workspaceId && data.messageId) {
-        console.log('📍 Navigating to workspace', data.workspaceId, 'message', data.messageId);
         router.push({
           pathname: '/(tabs)',
           params: {

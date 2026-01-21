@@ -11,6 +11,7 @@ import {
   syncWorkspaceMessageMentions,
   syncWorkspaceMessageNoteMentions,
 } from './mentionsApi';
+import { getCurrentUserId } from '@cogni/utils';
 
 const supabase = createClient();
 
@@ -121,15 +122,8 @@ export async function getWorkspaceMessages(
   limit: number = 50,
   beforeTimestamp?: string
 ): Promise<WorkspaceMessage[]> {
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    throw new Error('User not authenticated');
-  }
-
-  let query = supabase
+  // Query 1: Get messages without the heavy workspace_message_reads join
+  let messagesQuery = supabase
     .from('workspace_messages')
     .select(
       `
@@ -141,18 +135,6 @@ export async function getWorkspaceMessages(
         user_profile:user_profiles!user_id(id, name, avatar_url),
         agent_profile:agent_profiles!agent_id(id, name, avatar_url)
       ),
-      workspace_message_reads(
-        workspace_message_id,
-        workspace_member_id,
-        created_at,
-        workspace_member:workspace_member_id(
-          id,
-          user_id,
-          agent_id,
-          user_profile:user_profiles!user_id(id, name, avatar_url),
-          agent_profile:agent_profiles!agent_id(id, name, avatar_url)
-        )
-      ),
       replied_message:reply_to_id(
         id,
         text,
@@ -162,8 +144,8 @@ export async function getWorkspaceMessages(
           id,
           user_id,
           agent_id,
-          user_profile:user_id(id, name, avatar_url),
-          agent_profile:agent_id(id, name, avatar_url)
+          user_profile:user_profiles!user_id(id, name, avatar_url),
+          agent_profile:agent_profiles!agent_id(id, name, avatar_url)
         )
       ),
       workspace_message_files(
@@ -183,17 +165,40 @@ export async function getWorkspaceMessages(
 
   // If beforeTimestamp is provided, get messages older than that timestamp
   if (beforeTimestamp) {
-    query = query.lt('created_at', beforeTimestamp);
+    messagesQuery = messagesQuery.lt('created_at', beforeTimestamp);
   }
 
-  const { data, error } = await query
+  const { data: messages, error } = await messagesQuery
     .order('created_at', { ascending: false })
     .limit(limit);
 
   if (error) throw error;
+  if (!messages || messages.length === 0) return [];
 
-  // Transform nested structure
-  return (data || []).map(transformMessageRow);
+  // Query 2: Get read counts separately (much faster than nested joins)
+  const messageIds = messages.map(m => m.id);
+  const { data: readCounts } = await supabase
+    .from('workspace_message_reads')
+    .select('workspace_message_id')
+    .in('workspace_message_id', messageIds);
+
+  // Build a count map
+  const countMap = new Map<number, number>();
+  (readCounts || []).forEach(r => {
+    countMap.set(
+      r.workspace_message_id,
+      (countMap.get(r.workspace_message_id) || 0) + 1
+    );
+  });
+
+  // Transform with counts
+  return messages.map(row => {
+    const transformed = transformMessageRow(row);
+    return {
+      ...transformed,
+      read_count: countMap.get(row.id) || 0,
+    };
+  });
 }
 
 export async function sendWorkspaceMessage(
@@ -220,20 +225,8 @@ export async function sendWorkspaceMessage(
         id,
         user_id,
         agent_id,
-        user_profile:user_id(id, name, avatar_url),
-        agent_profile:agent_id(id, name, avatar_url)
-      ),
-      workspace_message_reads(
-        workspace_message_id,
-        workspace_member_id,
-        created_at,
-        workspace_member:workspace_member_id(
-          id,
-          user_id,
-          agent_id,
-          user_profile:user_id(id, name, avatar_url),
-          agent_profile:agent_id(id, name, avatar_url)
-        )
+        user_profile:user_profiles!user_id(id, name, avatar_url),
+        agent_profile:agent_profiles!agent_id(id, name, avatar_url)
       ),
       replied_message:reply_to_id(
         id,
@@ -244,8 +237,8 @@ export async function sendWorkspaceMessage(
           id,
           user_id,
           agent_id,
-          user_profile:user_id(id, name, avatar_url),
-          agent_profile:agent_id(id, name, avatar_url)
+          user_profile:user_profiles!user_id(id, name, avatar_url),
+          agent_profile:agent_profiles!agent_id(id, name, avatar_url)
         )
       )
     `
@@ -316,18 +309,6 @@ export async function updateWorkspaceMessage(
         user_profile:user_profiles!user_id(id, name, avatar_url),
         agent_profile:agent_profiles!agent_id(id, name, avatar_url)
       ),
-      workspace_message_reads(
-        workspace_message_id,
-        workspace_member_id,
-        created_at,
-        workspace_member:workspace_member_id(
-          id,
-          user_id,
-          agent_id,
-          user_profile:user_profiles!user_id(id, name, avatar_url),
-          agent_profile:agent_profiles!agent_id(id, name, avatar_url)
-        )
-      ),
       replied_message:reply_to_id(
         id,
         text,
@@ -367,19 +348,12 @@ export type CurrentWorkspaceMember = {
 export async function getCurrentWorkspaceMember(
   workspaceId: number
 ): Promise<CurrentWorkspaceMember | null> {
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    throw new Error('User not authenticated');
-  }
-
+  const userId = getCurrentUserId();
   const { data, error } = await supabase
     .from('workspace_member')
     .select('id, last_read_message_id')
     .eq('workspace_id', workspaceId)
-    .eq('user_id', user.id)
+    .eq('user_id', userId)
     .maybeSingle();
 
   if (error) throw error;

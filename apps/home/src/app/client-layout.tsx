@@ -149,7 +149,7 @@ function Header() {
 
       {/* モバイルメニューパネル */}
       <div
-        className={`fixed inset-y-0 right-0 z-50 w-80 bg-[#05060b] border-l border-white/10 transition-transform duration-300 ease-in-out lg:hidden flex flex-col ${
+        className={`fixed inset-y-0 right-0 z-50 w-full bg-[#05060b] border-l border-white/10 transition-transform duration-300 ease-in-out lg:hidden flex flex-col ${
           isMobileMenuOpen ? 'translate-x-0' : 'translate-x-full'
         }`}
       >
@@ -204,7 +204,10 @@ function Header() {
 
           {/* 言語切り替え */}
           <div className='pt-4 border-t border-white/10'>
-            <LanguageSwitch activeLanguage={language} onChange={setLanguage} />
+            <MobileLanguageSwitch
+              activeLanguage={language}
+              onChange={setLanguage}
+            />
           </div>
         </div>
 
@@ -246,6 +249,12 @@ function Footer() {
           </Link>
           <Link href='/terms' className='transition hover:text-white'>
             {copy.footer.terms}
+          </Link>
+          <Link
+            href='/commercial-transaction'
+            className='transition hover:text-white'
+          >
+            {copy.footer.commercialTransaction}
           </Link>
         </div>
       </div>
@@ -336,6 +345,99 @@ function LanguageSwitch({ activeLanguage, onChange }: LanguageSwitchProps) {
           >
             <span className='mr-2'>🇯🇵</span>
             {languageLabels.ja}
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function MobileLanguageSwitch({
+  activeLanguage,
+  onChange,
+}: LanguageSwitchProps) {
+  const [isOpen, setIsOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
+        setIsOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const languageLabels = {
+    en: 'English',
+    ja: '日本語',
+  };
+
+  return (
+    <div className='relative' ref={dropdownRef}>
+      <button
+        type='button'
+        onClick={() => setIsOpen(!isOpen)}
+        className='flex w-full items-center justify-between rounded-lg border border-white/10 bg-white/5 px-4 py-3 text-base text-slate-300 transition hover:bg-white/10 hover:text-white'
+        aria-label='Select language'
+      >
+        <span className='flex items-center gap-2'>
+          <span className='text-lg'>
+            {activeLanguage === 'en' ? '🇺🇸' : '🇯🇵'}
+          </span>
+          <span className='font-medium'>{languageLabels[activeLanguage]}</span>
+        </span>
+        <svg
+          xmlns='http://www.w3.org/2000/svg'
+          width='18'
+          height='18'
+          viewBox='0 0 24 24'
+          fill='none'
+          stroke='currentColor'
+          strokeWidth='2'
+          strokeLinecap='round'
+          strokeLinejoin='round'
+          className={`transition-transform ${isOpen ? 'rotate-180' : ''}`}
+        >
+          <polyline points='6 9 12 15 18 9' />
+        </svg>
+      </button>
+      {isOpen && (
+        <div className='absolute left-0 right-0 top-full mt-2 rounded-lg border border-white/10 bg-[#0a0b11] py-1 shadow-xl overflow-hidden'>
+          <button
+            type='button'
+            onClick={() => {
+              onChange('en');
+              setIsOpen(false);
+            }}
+            className={`flex w-full items-center gap-2 px-4 py-3 text-base transition ${
+              activeLanguage === 'en'
+                ? 'bg-white/10 text-white font-medium'
+                : 'text-slate-300 hover:bg-white/5 hover:text-white'
+            }`}
+          >
+            <span className='text-lg'>🇺🇸</span>
+            <span>{languageLabels.en}</span>
+          </button>
+          <button
+            type='button'
+            onClick={() => {
+              onChange('ja');
+              setIsOpen(false);
+            }}
+            className={`flex w-full items-center gap-2 px-4 py-3 text-base transition ${
+              activeLanguage === 'ja'
+                ? 'bg-white/10 text-white font-medium'
+                : 'text-slate-300 hover:bg-white/5 hover:text-white'
+            }`}
+          >
+            <span className='text-lg'>🇯🇵</span>
+            <span>{languageLabels.ja}</span>
           </button>
         </div>
       )}

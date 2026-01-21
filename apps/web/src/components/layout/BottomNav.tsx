@@ -2,16 +2,17 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { HomeIcon, MessageSquare, Notebook } from 'lucide-react';
+import { HomeIcon, Notebook } from 'lucide-react';
 import GlassCard from '../glass-design/GlassCard';
+import { CognoSvgIcon } from '../icons/CognoSvgIcon';
 
 const tabs = [
   {
     name: 'Workspace',
     path: '/workspace',
-    icon: <MessageSquare className='w-6 h-6' />,
+    icon: <HomeIcon className='w-6 h-6' />,
   },
-  { name: 'Cogno', path: '/home', icon: <HomeIcon className='w-6 h-6' /> },
+  { name: 'Cogno', path: '/cogno', icon: <CognoSvgIcon className='w-6 h-6' /> },
   { name: 'Note', path: '/notes', icon: <Notebook className='w-6 h-6' /> },
 ];
 

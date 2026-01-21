@@ -59,6 +59,7 @@ const ChatInput = forwardRef<ChatInputRef, ChatInputProps>(function ChatInput(
     clearContent: () => void;
   } | null>(null);
   const [uploadItems, setUploadItems] = useState<FileUploadItem[]>([]);
+  const [isInputFocused, setIsInputFocused] = useState(false);
 
   const hasAttachments = uploadItems.length > 0;
   const hasUploadingFiles = uploadItems.some(item => item.uploading);
@@ -224,7 +225,9 @@ const ChatInput = forwardRef<ChatInputRef, ChatInputProps>(function ChatInput(
     <div className='rounded-t-3xl' data-shepherd-target='chat-input'>
       {/* Reply indicator - absolutely positioned above input */}
       {/* 入力UI */}
-      <div className='px-2 md:px-6 py-2'>
+      <div
+        className={`py-2 transition-[padding] duration-300 ease-out ${isInputFocused ? 'px-0' : 'px-2'} md:px-6`}
+      >
         <div className='w-full md:max-w-7xl md:mx-auto flex gap-2 items-end'>
           {/* File Upload Menu - Plus button */}
           {workspaceId && (
@@ -249,6 +252,7 @@ const ChatInput = forwardRef<ChatInputRef, ChatInputProps>(function ChatInput(
             hasAttachments={hasAttachments}
             workspaceMembers={workspaceMembers}
             workspaceNotes={workspaceNotes}
+            onFocusChange={setIsInputFocused}
             topContent={topContent()}
           />
         </div>

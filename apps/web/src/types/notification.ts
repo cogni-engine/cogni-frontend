@@ -17,7 +17,9 @@ export interface Notification {
   due_date: string;
   status: NotificationStatus;
   task_id: number;
+  task_result_id?: number | null;
   user_id: string;
+  workspace_member_id?: number | null;
   reaction_status: NotificationReactionStatus;
   reaction_text: string | null;
 }

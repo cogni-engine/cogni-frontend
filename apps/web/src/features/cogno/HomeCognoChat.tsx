@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useCallback, useMemo, useEffect } from 'react';
+import { useRef, useCallback, useMemo } from 'react';
 import ChatContainer from './components/ChatContainer';
 import AiChatInput from '@/components/chat-input/AiChatInput';
 import NotificationPanel from '@/features/notifications/components/NotificationPanel';
@@ -68,56 +68,6 @@ export default function HomeCognoChat({ isInitialMount }: HomeCognoChatProps) {
     isInitialMount: isInitialMount.current,
   });
 
-  // Listen for TRIGGER_NOTIFICATION postMessage from mobile app
-  useEffect(() => {
-    const handlePostMessage = (event: MessageEvent) => {
-      // Validate origin for security (in production, check specific origins)
-      // For mobile WebView, origin might be 'file://' or similar
-
-      try {
-        const data = event.data;
-
-        if (data.type === 'TRIGGER_NOTIFICATION') {
-          const notificationId = data.notificationId;
-
-          if (notificationId && typeof notificationId === 'number') {
-            console.log('📬 Received TRIGGER_NOTIFICATION postMessage:', {
-              notificationId,
-            });
-
-            // Trigger the same action as clicking a notification in the dropdown
-            // This calls sendMessage with empty content and notificationId
-            // which activates the main chat with the notification context
-            void handleSendMessage(
-              '',
-              undefined,
-              undefined,
-              undefined,
-              notificationId
-            );
-          } else {
-            console.warn(
-              'Invalid notificationId in TRIGGER_NOTIFICATION:',
-              notificationId
-            );
-          }
-        }
-      } catch (error) {
-        // Ignore errors from unrelated postMessage events
-        console.debug(
-          'Error processing TRIGGER_NOTIFICATION postMessage:',
-          error
-        );
-      }
-    };
-
-    window.addEventListener('message', handlePostMessage);
-
-    return () => {
-      window.removeEventListener('message', handlePostMessage);
-    };
-  }, [handleSendMessage]);
-
   return (
     <div className='flex flex-col h-full transition-all duration-300'>
       <ChatContainer
@@ -133,7 +83,7 @@ export default function HomeCognoChat({ isInitialMount }: HomeCognoChatProps) {
 
       {/* Absolutely positioned ChatInput */}
       <div
-        className={`fixed left-0 right-0 z-50 py-4 transition-all duration-300 ${
+        className={`fixed left-0 right-0 z-100 py-4 transition-all duration-300 ${
           isInputActive ? 'bottom-0 md:bottom-[60px]' : 'bottom-[60px]'
         }`}
       >
