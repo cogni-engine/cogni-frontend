@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
-import { useNotifications } from '@/hooks/useNotifications';
+import { useNotifications } from '@/features/notifications/hooks/useNotifications';
 import { createClient } from '@/lib/supabase/browserClient';
 import type { User } from '@supabase/supabase-js';
 import { UserMenu } from '@/components/layout/UserMenu';

@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react';
 import { Editor } from '@tiptap/react';
 import { uploadWorkspaceFile } from '@/lib/api/workspaceFilesApi';
-import { useNativeImagePicker } from '@/hooks/useNativeImagePicker';
+import { useNativeImagePicker } from '@/shared/hooks/useNativeImagePicker';
 
 interface UseEditorImageUploadProps {
   editor: Editor | null;

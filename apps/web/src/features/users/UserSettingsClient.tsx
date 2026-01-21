@@ -12,7 +12,7 @@ import { AiSuggestionToggle } from './components/AiSuggestionToggle';
 import { DeleteAccountSection } from './components/DeleteAccountSection';
 import { PlatformInfoCard } from './components/PlatformInfoCard';
 import { useUserSettings } from './hooks/useUserSettings';
-import { useNativeImagePicker } from '@/hooks/useNativeImagePicker';
+import { useNativeImagePicker } from '@/shared/hooks/useNativeImagePicker';
 import {
   getCroppedImageBlob,
   getInitials,

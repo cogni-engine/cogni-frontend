@@ -8,8 +8,8 @@ import {
   DrawerHandle,
   DrawerBody,
 } from '@/components/ui/drawer';
-import { useNativeImagePicker } from '@/hooks/useNativeImagePicker';
-import { useNativeDocumentPicker } from '@/hooks/useNativeDocumentPicker';
+import { useNativeImagePicker } from '@/shared/hooks/useNativeImagePicker';
+import { useNativeDocumentPicker } from '@/shared/hooks/useNativeDocumentPicker';
 
 type FileUploadMenuProps = {
   onFilesSelected: (files: File[]) => void;
