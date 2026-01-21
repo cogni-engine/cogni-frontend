@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import type { Notification } from '@/types/notification';
+import type { Notification } from '@/features/notifications/domain/notification';
 
 interface NotificationItemProps {
   notification: Notification;

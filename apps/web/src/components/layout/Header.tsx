@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
-import { useNotifications } from '@/hooks/useNotifications';
+import { useNotifications } from '@/features/notifications/hooks/useNotifications';
 import { createClient } from '@/lib/supabase/browserClient';
 import type { User } from '@supabase/supabase-js';
 import { UserMenu } from '@/components/layout/UserMenu';
@@ -83,6 +83,8 @@ export default function Header() {
   };
 
   // Get notifications hook
+  // Note: userId is still needed for fetchUnreadCount (old Supabase API)
+  // fetchPastDueNotifications now uses JWT-based backend endpoint
   const userId = user?.id ?? null;
   const {
     notifications: pastDueNotifications,
@@ -182,13 +184,14 @@ export default function Header() {
 
   const handleNotificationProcessed = async () => {
     // Refresh notifications and unread count after processing
+    await fetchPastDueNotifications();
     if (userId) {
       await fetchUnreadCount();
     }
   };
 
   return (
-    <header className='fixed top-0 left-0 right-0 z-100 py-3'>
+    <header className='fixed top-0 left-0 right-0 z-110 py-3'>
       <div className='w-full md:max-w-7xl md:mx-auto px-4 md:px-6'>
         <div className='flex items-center justify-between'>
           {/* Left Side - Thread Controls + Logo */}
