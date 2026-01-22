@@ -94,7 +94,7 @@ export function ShepherdProvider({ children, tours }: ShepherdProviderProps) {
           enabled: false,
         },
         classes: 'shepherd-theme-custom ',
-        scrollTo: { behavior: 'smooth', block: 'center' },
+        scrollTo: false,
         floatingUIOptions: {
           middleware: [
             offset({ mainAxis: 10, crossAxis: 0 }), // Use offset() function, not plain object
@@ -165,7 +165,7 @@ export function ShepherdProvider({ children, tours }: ShepherdProviderProps) {
           enabled: false,
         },
         classes: 'shepherd-theme-custom',
-        scrollTo: { behavior: 'smooth', block: 'center' },
+        scrollTo: false,
         floatingUIOptions: {
           middleware: [offset({ mainAxis: 10, crossAxis: 0 })],
         },
