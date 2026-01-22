@@ -45,6 +45,7 @@ export function useTutorialStep(config: TutorialStepConfig) {
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const observerRef = useRef<MutationObserver | null>(null);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const hasShownRef = useRef(false); // Track if step has been shown to prevent re-showing
 
   useEffect(() => {
     // Clear any pending timers and observers
@@ -60,6 +61,9 @@ export function useTutorialStep(config: TutorialStepConfig) {
       clearInterval(intervalRef.current);
       intervalRef.current = null;
     }
+    
+    // Reset the shown flag when dependencies change
+    hasShownRef.current = false;
 
     // Check if we should show this step
     const showWhenStates = Array.isArray(config.showWhenState)
@@ -178,6 +182,11 @@ export function useTutorialStep(config: TutorialStepConfig) {
         };
 
         const tryShowStep = () => {
+          // Prevent showing the step multiple times (fixes focus loss in tutorial workspace)
+          if (hasShownRef.current) {
+            return;
+          }
+
           // Check timeout
           if (Date.now() - startTime > maxWaitTime) {
             console.warn(
@@ -190,6 +199,8 @@ export function useTutorialStep(config: TutorialStepConfig) {
           const element = document.querySelector(config.selector);
           if (element) {
             console.log(`[useTutorialStep] Showing step ${config.id}`);
+            // Set flag BEFORE calling showStep to prevent race conditions
+            hasShownRef.current = true;
             showStep({
               id: config.id,
               text: config.text,
@@ -238,6 +249,8 @@ export function useTutorialStep(config: TutorialStepConfig) {
         clearInterval(intervalRef.current);
         intervalRef.current = null;
       }
+      // Reset flag on cleanup
+      hasShownRef.current = false;
     };
   }, [tutorialState, pathname, shepherdIsActive, config, showStep, cancelTour]);
 }
