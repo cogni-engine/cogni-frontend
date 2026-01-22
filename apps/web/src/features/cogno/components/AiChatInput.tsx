@@ -6,10 +6,12 @@ import {
   useRef,
   useState,
 } from 'react';
-import TiptapChatInput, { TiptapChatInputRef } from './TiptapChatInput';
-import FileUploadMenu from './FileUploadMenu';
-import FileUploadPreview from './FileUploadPreview';
-import { uploadAIChatFile } from '@/lib/api/aiChatFilesApi';
+import TiptapChatInput, {
+  TiptapChatInputRef,
+} from '../../../components/chat-input/TiptapChatInput';
+import FileUploadMenu from '../../../components/chat-input/FileUploadMenu';
+import FileUploadPreview from '../../../components/chat-input/FileUploadPreview';
+import { uploadAIChatFile } from '../api/aiChatFilesApi';
 import { type UploadedFile } from '@/lib/api/workspaceFilesApi';
 import type { WorkspaceMember } from '@/types/workspace';
 import type { Note } from '@/types/note';

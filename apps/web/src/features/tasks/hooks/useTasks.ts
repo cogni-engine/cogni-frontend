@@ -6,7 +6,7 @@ import {
   createTask as apiCreateTask,
   updateTask as apiUpdateTask,
   deleteTask as apiDeleteTask,
-} from '@/lib/api/tasksApi';
+} from '@/features/tasks/apis/tasksApi';
 import type { Task, TaskCreate, TaskUpdate } from '@/types/task';
 
 export interface UseTasksReturn {

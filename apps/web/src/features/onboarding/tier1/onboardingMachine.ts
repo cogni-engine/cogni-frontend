@@ -2,7 +2,7 @@ import { setup, assign, fromPromise } from 'xstate';
 import type { OnboardingContext, OnboardingEvent } from '../types';
 import { OnboardingService } from '../services/onboardingService';
 import { createBrowserClient } from '@supabase/ssr';
-import { generateFirstNote } from '@/lib/api/onboardingApi';
+import { generateFirstNote } from '@/features/onboarding/services/generateFirstNote';
 
 /**
  * XState Machine for Onboarding Flow

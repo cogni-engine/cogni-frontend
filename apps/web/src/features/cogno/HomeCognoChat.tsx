@@ -2,7 +2,7 @@
 
 import { useRef, useCallback, useMemo } from 'react';
 import ChatContainer from './components/ChatContainer';
-import AiChatInput from '@/components/chat-input/AiChatInput';
+import AiChatInput from '@/features/cogno/components/AiChatInput';
 import { useChat } from './hooks/useChat';
 import { useIsInputActive } from '@/stores/useGlobalUIStore';
 import { useAIChatMentions } from './hooks/useAIChatMentions';

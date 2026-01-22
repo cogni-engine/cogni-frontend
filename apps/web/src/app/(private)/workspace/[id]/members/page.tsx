@@ -5,7 +5,7 @@ import { useState, useCallback } from 'react';
 import MemberList from '@/features/workspace/components/MemberList';
 import { useWorkspaceInvitations } from '@/features/workspace/hooks/useWorkspaceInvitations';
 import { useWorkspaceMembers } from '@/hooks/useWorkspace';
-import { generateInvitationLink } from '@/lib/api/invitationsApi';
+import { generateInvitationLink } from '@/features/workspace/api/invitationsApi';
 import { Plus, X, Mail, Link, Copy } from 'lucide-react';
 import GlassCard from '@/components/glass-design/GlassCard';
 import GlassButton from '@/components/glass-design/GlassButton';

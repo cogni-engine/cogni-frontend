@@ -5,7 +5,7 @@ import { useState, useEffect } from 'react';
 import {
   getInvitationByToken,
   acceptInvitation,
-} from '@/lib/api/invitationsApi';
+} from '@/features/workspace/api/invitationsApi';
 import { checkWorkspaceMembership } from '@/lib/api/workspaceApi';
 import { createClient } from '@/lib/supabase/browserClient';
 import { setCookie, clearPendingInviteToken, COOKIE_KEYS } from '@cogni/utils';

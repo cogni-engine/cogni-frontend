@@ -7,7 +7,7 @@ import {
   cancelInvitation,
   disableInviteLink,
   generateInvitationLink,
-} from '@/lib/api/invitationsApi';
+} from '@/features/workspace/api/invitationsApi';
 import type {
   WorkspaceInvitation,
   WorkspaceInviteLink,
