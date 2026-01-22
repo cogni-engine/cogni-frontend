@@ -5,6 +5,7 @@ import {
 } from '@/lib/api/profileUtils';
 import type { Workspace, WorkspaceMember } from '@/types/workspace';
 import { generateAvatarBlob } from '@/features/users/utils/avatarGenerator';
+import { getCurrentUserId } from '../cookies';
 
 const supabase = createClient();
 const WORKSPACE_ICON_BUCKET = 'workspace_icon';
@@ -24,11 +25,9 @@ function extractStoragePathFromUrl(url: string): string | null {
 
 export async function getWorkspaces(): Promise<Workspace[]> {
   // Get current user
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const userId = getCurrentUserId();
 
-  if (!user) {
+  if (!userId) {
     throw new Error('User not authenticated');
   }
 
@@ -36,7 +35,7 @@ export async function getWorkspaces(): Promise<Workspace[]> {
   const { data: memberData, error: memberError } = await supabase
     .from('workspace_member')
     .select('workspace_id, id, last_read_message_id')
-    .eq('user_id', user.id);
+    .eq('user_id', userId);
 
   if (memberError) throw memberError;
 
@@ -45,7 +44,6 @@ export async function getWorkspaces(): Promise<Workspace[]> {
     return [];
   }
 
-  // Get workspaces for those IDs, excluding personal workspaces
   type WorkspaceMembershipRow = {
     workspace_id: number;
     id: number;
@@ -54,105 +52,107 @@ export async function getWorkspaces(): Promise<Workspace[]> {
 
   const membershipRows = (memberData ?? []) as WorkspaceMembershipRow[];
   const workspaceIds = membershipRows.map(m => m.workspace_id);
-  const { data, error } = await supabase
-    .from('workspace')
-    .select('*')
-    .in('id', workspaceIds)
-    .eq('type', 'group')
-    .order('workspace_messages_updated_at', {
-      ascending: false,
-      nullsFirst: false,
-    });
 
-  if (error) throw error;
+  // Fetch all data in parallel instead of sequentially per workspace
+  const [
+    workspacesResult,
+    allMessagesResult,
+    allMembersResult,
+    latestMessagesResult,
+  ] = await Promise.all([
+    // 1. Get workspaces
+    supabase
+      .from('workspace')
+      .select('*')
+      .in('id', workspaceIds)
+      .eq('type', 'group')
+      .order('workspace_messages_updated_at', {
+        ascending: false,
+        nullsFirst: false,
+      }),
 
-  if (!data || data.length === 0) {
+    // 2. Get all messages for unread count calculation
+    supabase
+      .from('workspace_messages')
+      .select('id, workspace_id, workspace_member_id')
+      .in('workspace_id', workspaceIds),
+
+    // 3. Get member counts for all workspaces at once
+    supabase
+      .from('workspace_member')
+      .select('workspace_id')
+      .in('workspace_id', workspaceIds),
+
+    // 4. Get latest message for each workspace (one per workspace)
+    supabase
+      .from('workspace_messages')
+      .select('workspace_id, text, created_at')
+      .in('workspace_id', workspaceIds)
+      .order('created_at', { ascending: false }),
+  ]);
+
+  if (workspacesResult.error) throw workspacesResult.error;
+
+  if (!workspacesResult.data || workspacesResult.data.length === 0) {
     return [];
   }
 
+  // Create lookup maps
   const membershipMap = new Map<number, WorkspaceMembershipRow>();
   for (const membership of membershipRows) {
     membershipMap.set(membership.workspace_id, membership);
   }
 
-  const workspacesWithCounts = await Promise.all(
-    data.map(async workspace => {
-      const membership = membershipMap.get(workspace.id);
+  // Calculate unread counts per workspace
+  const unreadCountMap = new Map<number, number>();
+  if (allMessagesResult.data) {
+    for (const message of allMessagesResult.data) {
+      const membership = membershipMap.get(message.workspace_id);
+      if (!membership) continue;
 
-      if (!membership) {
-        return {
-          ...workspace,
-          unread_count: 0,
-          member_count: 0,
-        } as Workspace;
+      // Check if message should be counted as unread
+      const isFromOtherMember =
+        membership.id != null && message.workspace_member_id !== membership.id;
+      const isAfterLastRead =
+        membership.last_read_message_id != null
+          ? message.id > membership.last_read_message_id
+          : true;
+
+      if (isFromOtherMember && isAfterLastRead) {
+        const currentCount = unreadCountMap.get(message.workspace_id) || 0;
+        unreadCountMap.set(message.workspace_id, currentCount + 1);
       }
+    }
+  }
 
-      let query = supabase
-        .from('workspace_messages')
-        .select('id', { count: 'exact', head: true })
-        .eq('workspace_id', workspace.id);
+  // Calculate member counts per workspace
+  const memberCountMap = new Map<number, number>();
+  if (allMembersResult.data) {
+    for (const member of allMembersResult.data) {
+      const count = memberCountMap.get(member.workspace_id) || 0;
+      memberCountMap.set(member.workspace_id, count + 1);
+    }
+  }
 
-      if (membership.id != null) {
-        query = query.neq('workspace_member_id', membership.id);
+  // Get latest message per workspace (first occurrence due to order by created_at desc)
+  const latestMessageMap = new Map<number, string>();
+  const seenWorkspaces = new Set<number>();
+  if (latestMessagesResult.data) {
+    for (const msg of latestMessagesResult.data) {
+      if (!seenWorkspaces.has(msg.workspace_id)) {
+        latestMessageMap.set(msg.workspace_id, msg.text);
+        seenWorkspaces.add(msg.workspace_id);
       }
+    }
+  }
 
-      if (membership.last_read_message_id != null) {
-        query = query.gt('id', membership.last_read_message_id);
-      }
-
-      const { count, error: countError } = await query;
-
-      if (countError) {
-        console.warn(
-          'Failed to fetch unread message count for workspace',
-          workspace.id,
-          countError
-        );
-
-        // Continue to fetch member count even if unread count fails
-      }
-
-      // Fetch member count
-      const { count: memberCount, error: memberCountError } = await supabase
-        .from('workspace_member')
-        .select('id', { count: 'exact', head: true })
-        .eq('workspace_id', workspace.id);
-
-      if (memberCountError) {
-        console.warn(
-          'Failed to fetch member count for workspace',
-          workspace.id,
-          memberCountError
-        );
-      }
-
-      // Fetch latest message text
-      const { data: latestMessage, error: latestMessageError } = await supabase
-        .from('workspace_messages')
-        .select('text')
-        .eq('workspace_id', workspace.id)
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .maybeSingle();
-
-      if (latestMessageError) {
-        console.warn(
-          'Failed to fetch latest message for workspace',
-          workspace.id,
-          latestMessageError
-        );
-      }
-
-      return {
-        ...workspace,
-        unread_count: countError ? 0 : (count ?? 0),
-        member_count: memberCountError ? 0 : (memberCount ?? 0),
-        latest_message_text: latestMessage?.text ?? null,
-      } as Workspace;
-    })
-  );
-
-  return workspacesWithCounts;
+  // Assemble final workspace objects
+  return workspacesResult.data.map(workspace => ({
+    ...workspace,
+    unread_count: unreadCountMap.get(workspace.id) || 0,
+    member_count: memberCountMap.get(workspace.id) || 0,
+    latest_message_text: latestMessageMap.get(workspace.id) || null,
+  }));
 }
 
 export async function getPersonalWorkspace(): Promise<Workspace | null> {
