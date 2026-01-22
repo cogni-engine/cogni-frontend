@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/browserClient';
 import type { Note } from '@/types/note';
+import { getCurrentUserId } from '@/lib/cookies';
 
 const supabase = createClient();
 
@@ -30,7 +31,14 @@ export async function getNotes(
     .from('notes')
     .select(
       `
-      *,
+      id,
+      created_at,
+      updated_at,
+      title,
+      text,
+      workspace_id,
+      deleted_at,
+      note_folder_id,
       workspace_member_note(
         workspace_member_note_role,
         workspace_member:workspace_member_id(
@@ -53,24 +61,26 @@ export async function getNotes(
   if (error) throw error;
 
   // Transform the nested structure to match our types
-  return (data || []).map(note => ({
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return (data || []).map((note: any) => ({
     ...note,
     workspace_member_note: (note.workspace_member_note || []).map(
-      (assignment: { workspace_member?: { user_profiles?: unknown } }) => ({
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (assignment: any) => ({
         ...assignment,
-        workspace_member: assignment.workspace_member
+        workspace_member: assignment.workspace_member?.[0]
           ? {
-              ...assignment.workspace_member,
+              ...assignment.workspace_member[0],
               user_profiles: Array.isArray(
-                assignment.workspace_member.user_profiles
+                assignment.workspace_member[0].user_profiles
               )
-                ? assignment.workspace_member.user_profiles[0]
-                : assignment.workspace_member.user_profiles,
+                ? assignment.workspace_member[0].user_profiles[0]
+                : assignment.workspace_member[0].user_profiles,
             }
           : undefined,
       })
     ),
-  }));
+  })) as Note[];
 }
 
 /**
@@ -79,7 +89,9 @@ export async function getNotes(
 export async function getNote(id: number): Promise<Note | null> {
   const { data, error } = await supabase
     .from('notes')
-    .select('*')
+    .select(
+      'id, created_at, updated_at, title, text, workspace_id, deleted_at, note_folder_id'
+    )
     .eq('id', id)
     .single();
 
@@ -208,7 +220,7 @@ export async function duplicateNote(id: number): Promise<Note> {
   // First, get the note to duplicate
   const { data: originalNote, error: fetchError } = await supabase
     .from('notes')
-    .select('*')
+    .select('id, title, text, workspace_id, note_folder_id')
     .eq('id', id)
     .single();
 
@@ -263,8 +275,15 @@ export async function searchNotes(
     .from('notes')
     .select(
       `
-      *,
-      workspace:workspace_id(*),
+      id,
+      created_at,
+      updated_at,
+      title,
+      text,
+      workspace_id,
+      deleted_at,
+      note_folder_id,
+      workspace:workspace_id(id, title, type, created_at, icon_url),
       workspace_member_note(
         workspace_member_note_role,
         workspace_member:workspace_member_id(
@@ -282,41 +301,44 @@ export async function searchNotes(
   if (error) throw error;
 
   // Transform the nested structure to match our types
-  return (data || []).map(note => ({
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return (data || []).map((note: any) => ({
     ...note,
+    workspace: Array.isArray(note.workspace)
+      ? note.workspace[0]
+      : note.workspace,
     workspace_member_note: (note.workspace_member_note || []).map(
-      (assignment: { workspace_member?: { user_profiles?: unknown } }) => ({
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (assignment: any) => ({
         ...assignment,
-        workspace_member: assignment.workspace_member
+        workspace_member: assignment.workspace_member?.[0]
           ? {
-              ...assignment.workspace_member,
+              ...assignment.workspace_member[0],
               user_profiles: Array.isArray(
-                assignment.workspace_member.user_profiles
+                assignment.workspace_member[0].user_profiles
               )
-                ? assignment.workspace_member.user_profiles[0]
-                : assignment.workspace_member.user_profiles,
+                ? assignment.workspace_member[0].user_profiles[0]
+                : assignment.workspace_member[0].user_profiles,
             }
           : undefined,
       })
     ),
-  }));
+  })) as Note[];
 }
 
 /**
  * Get notes where current user is assigned as assigner or assignee
  */
 export async function getUserAssignedNotes(): Promise<Note[]> {
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const userId = getCurrentUserId();
 
-  if (!user) throw new Error('Not authenticated');
+  if (!userId) throw new Error('Not authenticated');
 
   // 1. Get all workspace_member records for current user
   const { data: members, error: memberError } = await supabase
     .from('workspace_member')
     .select('id')
-    .eq('user_id', user.id);
+    .eq('user_id', userId);
 
   if (memberError) throw memberError;
   if (!members || members.length === 0) return [];
@@ -339,8 +361,15 @@ export async function getUserAssignedNotes(): Promise<Note[]> {
     .from('notes')
     .select(
       `
-      *,
-      workspace:workspace_id(*),
+      id,
+      created_at,
+      updated_at,
+      title,
+      text,
+      workspace_id,
+      deleted_at,
+      note_folder_id,
+      workspace:workspace_id(id, title, type, created_at, icon_url),
       workspace_member_note(
         workspace_member_note_role,
         workspace_member:workspace_member_id(
@@ -357,24 +386,29 @@ export async function getUserAssignedNotes(): Promise<Note[]> {
   if (error) throw error;
 
   // Transform the nested structure to match our types
-  return (data || []).map(note => ({
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return (data || []).map((note: any) => ({
     ...note,
+    workspace: Array.isArray(note.workspace)
+      ? note.workspace[0]
+      : note.workspace,
     workspace_member_note: (note.workspace_member_note || []).map(
-      (assignment: { workspace_member?: { user_profiles?: unknown } }) => ({
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (assignment: any) => ({
         ...assignment,
-        workspace_member: assignment.workspace_member
+        workspace_member: assignment.workspace_member?.[0]
           ? {
-              ...assignment.workspace_member,
+              ...assignment.workspace_member[0],
               user_profiles: Array.isArray(
-                assignment.workspace_member.user_profiles
+                assignment.workspace_member[0].user_profiles
               )
-                ? assignment.workspace_member.user_profiles[0]
-                : assignment.workspace_member.user_profiles,
+                ? assignment.workspace_member[0].user_profiles[0]
+                : assignment.workspace_member[0].user_profiles,
             }
           : undefined,
       })
     ),
-  }));
+  })) as Note[];
 }
 
 // Types for AI suggestions

@@ -5,7 +5,6 @@
 import * as React from 'react';
 import { LogOut, Settings, CheckSquare } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import type { User } from '@supabase/supabase-js';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import GlassButton from '@/components/glass-design/GlassButton';
@@ -14,9 +13,10 @@ import { useUserProfile } from '@/features/users/hooks/useUserProfile';
 import type { UserProfile } from '@/types/userProfile';
 import GlassCard from '@/components/glass-design/GlassCard';
 import { isInMobileWebView, notifyNativeLogout } from '@/lib/webview';
+import { createClient } from '@/lib/supabase/browserClient';
 
 type UserMenuProps = {
-  user: User | null;
+  userId: string | null;
 };
 
 function getInitials(profile?: UserProfile | null, email?: string | null) {
@@ -34,15 +34,31 @@ function getInitials(profile?: UserProfile | null, email?: string | null) {
   return 'ME';
 }
 
-export function UserMenu({ user }: UserMenuProps) {
+export function UserMenu({ userId }: UserMenuProps) {
   const router = useRouter();
   const [open, setOpen] = React.useState(false);
   const [isSigningOut, setIsSigningOut] = React.useState(false);
   const dropdownRef = React.useRef<HTMLDivElement>(null);
-  const userId = user?.id ?? null;
   const { profile } = useUserProfile({ userId });
 
-  const email = user?.email ?? 'Unknown user';
+  // Lazy load email only when needed (when dropdown opens)
+  const [email, setEmail] = React.useState<string>('Unknown user');
+
+  React.useEffect(() => {
+    if (open && userId && email === 'Unknown user') {
+      const fetchEmail = async () => {
+        const supabase = createClient();
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+        if (user?.email) {
+          setEmail(user.email);
+        }
+      };
+      fetchEmail();
+    }
+  }, [open, userId, email]);
+
   const avatarUrl = profile?.avatar_url ?? null;
   const initials = getInitials(profile, email);
 

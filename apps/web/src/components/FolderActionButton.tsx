@@ -4,25 +4,36 @@ import { useState, useEffect, useRef } from 'react';
 import { FolderIcon, Edit2, Trash2, Plus } from 'lucide-react';
 import GlassButton from '@/components/glass-design/GlassButton';
 import GlassCard from '@/components/glass-design/GlassCard';
-import type { NoteFolder } from '@/types/note';
+import { useNoteFolders } from '@/features/notes/hooks/useNoteFolders';
+import { useNotes } from '@/features/notes/hooks/useNotes';
 
 interface FolderActionButtonProps {
-  folders: NoteFolder[];
-  onUpdateFolder: (id: number, title: string) => Promise<NoteFolder>;
-  onDeleteFolder: (id: number) => Promise<void>;
-  onCreateFolder: (title: string) => Promise<NoteFolder>;
-  trashCount?: number;
-  onTrashClick?: () => void;
+  workspaceId: number;
 }
 
 export default function FolderActionButton({
-  folders,
-  onUpdateFolder,
-  onDeleteFolder,
-  onCreateFolder,
-  trashCount = 0,
-  onTrashClick,
+  workspaceId,
 }: FolderActionButtonProps) {
+  // Fetch folders and notes internally
+  const {
+    folders,
+    updateFolder,
+    deleteFolder,
+    createFolder: createFolderHook,
+    refetch: refetchFolders,
+  } = useNoteFolders({
+    workspaceId,
+    autoFetch: true,
+  });
+
+  const { notes } = useNotes({
+    workspaceId,
+    includeDeleted: true,
+    autoFetch: true,
+  });
+
+  // Calculate trash count
+  const trashCount = notes.filter(note => note.deleted_at).length;
   const [isOpen, setIsOpen] = useState(false);
   const [editingFolderId, setEditingFolderId] = useState<number | null>(null);
   const [editingFolderName, setEditingFolderName] = useState('');
@@ -58,7 +69,9 @@ export default function FolderActionButton({
     if (!editingFolderName.trim()) return;
 
     try {
-      await onUpdateFolder(folderId, editingFolderName.trim());
+      await updateFolder(folderId, editingFolderName.trim());
+      await refetchFolders();
+      window.dispatchEvent(new CustomEvent('folders-updated'));
       setEditingFolderId(null);
       setEditingFolderName('');
       setIsOpen(false);
@@ -71,7 +84,9 @@ export default function FolderActionButton({
     if (!newFolderName.trim()) return;
 
     try {
-      await onCreateFolder(newFolderName.trim());
+      await createFolderHook(newFolderName.trim());
+      await refetchFolders();
+      window.dispatchEvent(new CustomEvent('folders-updated'));
       setIsCreatingNew(false);
       setNewFolderName('');
       setIsOpen(false);
@@ -82,12 +97,19 @@ export default function FolderActionButton({
 
   const handleDeleteFolder = async (folderId: number) => {
     try {
-      await onDeleteFolder(folderId);
+      await deleteFolder(folderId);
+      await refetchFolders();
+      window.dispatchEvent(new CustomEvent('folders-updated'));
       setShowDeleteConfirm(null);
       setIsOpen(false);
     } catch (err) {
       console.error('Failed to delete folder:', err);
     }
+  };
+
+  const handleTrashClick = () => {
+    window.dispatchEvent(new CustomEvent('trash-folder-selected'));
+    setIsOpen(false);
   };
 
   const startEditing = (folderId: number, currentName: string) => {
@@ -170,7 +192,7 @@ export default function FolderActionButton({
             )}
 
             {/* Existing Folders */}
-            {folders.length === 0 && !isCreatingNew && !onTrashClick ? (
+            {folders.length === 0 && !isCreatingNew ? (
               <div className='px-3 py-2 text-sm text-gray-400 text-center'>
                 No folders
               </div>
@@ -241,33 +263,26 @@ export default function FolderActionButton({
                   </div>
                 ))}
 
-                {/* Trash Folder - Always show if onTrashClick is provided */}
-                {onTrashClick && (
-                  <>
-                    {folders.length > 0 && (
-                      <div className='h-px bg-white/10 my-2' />
-                    )}
-                    <button
-                      onClick={() => {
-                        onTrashClick();
-                        setIsOpen(false);
-                      }}
-                      className='w-full flex items-center p-2 hover:bg-white/5 rounded-xl transition-colors'
-                    >
-                      <div className='flex items-center gap-2 flex-1'>
-                        <div className='flex items-center justify-center w-6 h-6 rounded-lg bg-red-500/20'>
-                          <Trash2 className='w-3.5 h-3.5 text-red-400' />
-                        </div>
-                        <span className='text-sm text-white'>Trash</span>
-                        {trashCount > 0 && (
-                          <span className='text-xs text-gray-400'>
-                            ({trashCount})
-                          </span>
-                        )}
-                      </div>
-                    </button>
-                  </>
+                {/* Trash Folder - Always show */}
+                {folders.length > 0 && (
+                  <div className='h-px bg-white/10 my-2' />
                 )}
+                <button
+                  onClick={handleTrashClick}
+                  className='w-full flex items-center p-2 hover:bg-white/5 rounded-xl transition-colors'
+                >
+                  <div className='flex items-center gap-2 flex-1'>
+                    <div className='flex items-center justify-center w-6 h-6 rounded-lg bg-red-500/20'>
+                      <Trash2 className='w-3.5 h-3.5 text-red-400' />
+                    </div>
+                    <span className='text-sm text-white'>Trash</span>
+                    {trashCount > 0 && (
+                      <span className='text-xs text-gray-400'>
+                        ({trashCount})
+                      </span>
+                    )}
+                  </div>
+                </button>
               </>
             )}
           </div>
