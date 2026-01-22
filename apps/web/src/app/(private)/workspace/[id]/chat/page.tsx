@@ -293,6 +293,33 @@ export default function WorkspaceChatPage() {
     };
   }, [hasMoreMessages, loadMoreMessages, isLoadingMore]);
 
+  // Track visual viewport changes (mobile keyboard)
+  useEffect(() => {
+    if (typeof window === 'undefined' || !window.visualViewport) return;
+
+    const handleViewportResize = () => {
+      // Viewport resize handler (for potential future use)
+    };
+
+    const handleViewportScroll = () => {
+      // Viewport scroll handler (for potential future use)
+    };
+
+    window.visualViewport.addEventListener('resize', handleViewportResize);
+    window.visualViewport.addEventListener('scroll', handleViewportScroll);
+
+    return () => {
+      window.visualViewport?.removeEventListener(
+        'resize',
+        handleViewportResize
+      );
+      window.visualViewport?.removeEventListener(
+        'scroll',
+        handleViewportScroll
+      );
+    };
+  }, []);
+
   // No initial scroll needed - CSS column-reverse handles it automatically!
   // Removed useLayoutEffect and useEffect for initial scroll
 

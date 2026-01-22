@@ -123,8 +123,16 @@ if (typeof window !== 'undefined') {
     useGlobalUIStore.getState().setInputActive(isInput);
   };
 
-  document.addEventListener('focusin', checkIfInputActive);
-  document.addEventListener('focusout', checkIfInputActive);
+  const handleFocusIn = (event: Event) => {
+    checkIfInputActive();
+  };
+
+  const handleFocusOut = (event: Event) => {
+    checkIfInputActive();
+  };
+
+  document.addEventListener('focusin', handleFocusIn);
+  document.addEventListener('focusout', handleFocusOut);
 
   // Initial check
   checkIfInputActive();
