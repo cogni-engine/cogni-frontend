@@ -95,10 +95,18 @@ export function ShepherdProvider({ children, tours }: ShepherdProviderProps) {
         },
         classes: 'shepherd-theme-custom ',
         scrollTo: false,
+        canClickTarget: true, // Allow clicking on the target element
         floatingUIOptions: {
           middleware: [
             offset({ mainAxis: 10, crossAxis: 0 }), // Use offset() function, not plain object
           ],
+        },
+        // Prevent Shepherd from managing focus automatically
+        when: {
+          show() {
+            // Do not auto-focus on the shepherd tooltip
+            // This allows the input to maintain focus
+          },
         },
       },
     });
@@ -166,10 +174,18 @@ export function ShepherdProvider({ children, tours }: ShepherdProviderProps) {
         },
         classes: 'shepherd-theme-custom',
         scrollTo: false,
+        canClickTarget: true, // Allow clicking on the target element
         floatingUIOptions: {
           middleware: [offset({ mainAxis: 10, crossAxis: 0 })],
         },
         buttons: [], // No buttons by default
+        // Prevent Shepherd from managing focus automatically
+        when: {
+          show() {
+            // Do not auto-focus on the shepherd tooltip
+            // This allows the input to maintain focus
+          },
+        },
       },
     });
 
