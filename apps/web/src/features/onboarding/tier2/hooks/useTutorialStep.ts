@@ -61,7 +61,7 @@ export function useTutorialStep(config: TutorialStepConfig) {
       clearInterval(intervalRef.current);
       intervalRef.current = null;
     }
-    
+
     // Reset the shown flag when dependencies change
     hasShownRef.current = false;
 
