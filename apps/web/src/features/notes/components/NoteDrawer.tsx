@@ -106,13 +106,13 @@ export default function NoteDrawer({
 
   return (
     <Drawer open={isOpen} onOpenChange={open => !open && onClose()}>
-      <DrawerContent zIndex={110} maxHeight='80vh'>
+      <DrawerContent zIndex={160} maxHeight='80vh'>
         <DrawerHandle />
 
         {/* Header */}
         <DrawerHeader className='px-4 pb-2 pt-0'>
           <DrawerTitle className='truncate'>
-            {note ? getNoteTitle(note.text) : 'Note'}
+            {note?.title || 'Note'}
           </DrawerTitle>
           {note && (
             <button

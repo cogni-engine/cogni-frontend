@@ -4,6 +4,7 @@ export type NotificationReactionStatus =
   | 'None'
   | 'completed'
   | 'postponed'
+  | 'dismissed'
   | 'ignored'
   | 'rejected'
   | 'in_progress';
@@ -24,6 +25,15 @@ export interface Notification {
   reaction_text: string | null;
 }
 
+export interface TaskResult {
+  id: number;
+  task_id: number;
+  result_title: string;
+  result_text: string;
+  executed_at: string;
+  created_at: string;
+}
+
 export interface WorkspaceActivity {
   id: number;
   title: string;
@@ -36,4 +46,7 @@ export interface WorkspaceActivity {
   updated_at: string;
   due_date: string;
   created_at: string;
+  note_id?: number | null;
+  note_title?: string | null;
+  task_result?: TaskResult | null;
 }

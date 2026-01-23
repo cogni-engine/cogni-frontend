@@ -134,6 +134,8 @@ interface DrawerContentProps extends React.HTMLAttributes<HTMLDivElement> {
   zIndex?: number;
   /** Maximum height of the drawer. Defaults to '85vh' */
   maxHeight?: string;
+  /** Fixed height of the drawer. If provided, overrides maxHeight */
+  height?: string;
   /** Enable swipe-to-close gesture. Defaults to true */
   swipeToClose?: boolean;
   /** Swipe distance threshold to trigger close (in pixels). Defaults to 100 */
@@ -149,6 +151,7 @@ const DrawerContent = React.forwardRef<HTMLDivElement, DrawerContentProps>(
       children,
       zIndex = 100,
       maxHeight = '85vh',
+      height,
       swipeToClose = true,
       swipeThreshold = 100,
       velocityThreshold = 0.5,
@@ -219,7 +222,7 @@ const DrawerContent = React.forwardRef<HTMLDivElement, DrawerContentProps>(
           )}
           style={{
             zIndex,
-            maxHeight,
+            ...(height ? { height } : { maxHeight }),
             transform: `translateY(${dragOffset}px)`,
             transition: dragOffset === 0 ? 'transform 0.2s ease-out' : 'none',
           }}

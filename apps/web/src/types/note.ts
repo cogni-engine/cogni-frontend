@@ -11,6 +11,15 @@ export interface NoteAssignment {
   };
 }
 
+export interface TaskResult {
+  id: number;
+  task_id: number;
+  result_title: string;
+  result_text: string;
+  executed_at: string;
+  created_at: string;
+}
+
 export interface Note {
   id: number;
   created_at: string;
@@ -28,6 +37,7 @@ export interface Note {
     icon_url?: string | null;
   };
   workspace_member_note?: NoteAssignment[];
+  task_result?: TaskResult | null;
 }
 
 export interface NoteFolder {
