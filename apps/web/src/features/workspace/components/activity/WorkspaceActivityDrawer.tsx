@@ -78,7 +78,7 @@ export default function WorkspaceActivityDrawer({
 
   return (
     <Drawer open={open} onOpenChange={onOpenChange}>
-      <DrawerContent zIndex={150} maxHeight='85vh'>
+      <DrawerContent zIndex={150} height='85vh'>
         <DrawerHandle />
 
         <DrawerHeader className='px-6 pb-2 pt-0'>
@@ -93,9 +93,9 @@ export default function WorkspaceActivityDrawer({
                     <button
                       key={member.id}
                       onClick={() => toggleMemberSelection(member.id)}
-                      className={`relative transition-all ${
+                      className={`relative transition-all rounded-full ${
                         isSelected
-                          ? 'ring-2 ring-white/60 scale-110'
+                          ? 'scale-110'
                           : 'opacity-50 hover:opacity-100 hover:scale-105'
                       }`}
                       title={profile.name || 'Unknown'}
