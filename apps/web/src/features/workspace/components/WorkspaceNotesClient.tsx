@@ -1,7 +1,7 @@
 'use client';
 
 import { useParams } from 'next/navigation';
-import { useGlobalUI } from '@/contexts/GlobalUIContext';
+import { useIsInputActive } from '@/stores/useGlobalUIStore';
 import ScrollableView from '@/components/layout/ScrollableView';
 import { NotesPageHeader } from '@/features/notes/components/NotesPageHeader';
 import { NotesPageContent } from '@/features/notes/components/NotesPageContent';
@@ -10,7 +10,7 @@ import { NotesProvider } from '@/features/notes/NotesProvider';
 import { NoteActionsLayer } from '@/features/notes/components/NoteActionsLayer';
 
 function WorkspaceNotesContent() {
-  const { isInputActive } = useGlobalUI();
+  const isInputActive = useIsInputActive();
 
   return (
     <div className='flex flex-col h-full text-gray-100 relative overflow-hidden'>
