@@ -29,7 +29,7 @@ export default function ActivityTimeline({
   }
 
   return (
-    <div className='px-4 py-6'>
+    <div className='py-6'>
       {activities.map((activity, index) => (
         <ActivityItem
           key={activity.id}

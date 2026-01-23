@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { useShepherd } from '@/features/onboarding/tier2/shepherd/ShepherdProvider';
 import GlassButton from '@/components/glass-design/GlassButton';
 import GlassCard from '@/components/glass-design/GlassCard';
-import { X, Square, Zap, Code, Activity } from 'lucide-react';
+import { X, Square, Zap, Activity } from 'lucide-react';
 import { exampleTours } from '@/features/onboarding/tier2/shepherd/tours';
 import type { StepOptions } from '@/features/onboarding/tier2/shepherd/ShepherdProvider';
 import { useTutorial } from '@/features/onboarding/tier2/TutorialProvider';
