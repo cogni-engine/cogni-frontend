@@ -36,7 +36,7 @@ export default function ActivityTimeline({
   }
 
   return (
-    <div className='py-6'>
+    <div className='py-2'>
       {activities.map((activity, index) => (
         <ActivityItem
           key={activity.id}

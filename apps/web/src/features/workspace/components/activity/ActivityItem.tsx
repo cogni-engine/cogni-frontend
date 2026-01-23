@@ -16,6 +16,7 @@ import { getInitials } from '@/features/users/utils/avatar';
 import { useGlobalUIStore } from '@/stores/useGlobalUIStore';
 import { AIMessageView } from '@/features/cogno/components/AIMessageView';
 import { cn } from '@/lib/utils';
+import { CognoSvgIcon } from '@/components/icons/CognoSvgIcon';
 import type { WorkspaceActivity } from '@/types/notification';
 
 interface ActivityItemProps {
@@ -143,7 +144,10 @@ export default function ActivityItem({
       </div>
 
       {/* Right: Content */}
-      <div className='flex-1 pb-6'>
+      <button
+        onClick={onToggle}
+        className='flex-1 pb-6 text-left cursor-pointer'
+      >
         {/* Header: Avatar, Name, timestamp, and View Note button */}
         <div className='flex items-center justify-between mb-2'>
           <div className='flex items-center gap-2'>
@@ -164,6 +168,11 @@ export default function ActivityItem({
             </span>
           </div>
           <div className='flex items-center gap-2'>
+            {taskResult && (
+              <div title='Has results' className='text-white/80'>
+                <CognoSvgIcon className='w-3.5 h-3.5' />
+              </div>
+            )}
             <button
               onClick={e => {
                 e.stopPropagation();
@@ -189,20 +198,16 @@ export default function ActivityItem({
           </div>
         </div>
 
-        {/* Clickable section to expand/collapse */}
-        <button onClick={onToggle} className='w-full text-left'>
-          <div className='flex items-center justify-between mb-1'>
-            {/* Notification title */}
-            <p className='text-sm text-white/90 flex-1'>{activity.title}</p>
-            {/* Expand/Collapse chevron */}
-            <ChevronDown
-              className={cn(
-                'w-4 h-4 text-white/40 transition-transform duration-200',
-                isExpanded && 'transform rotate-180'
-              )}
-            />
-          </div>
-        </button>
+        {/* Notification title with chevron */}
+        <div className='flex items-center justify-between mb-1'>
+          <p className='text-sm text-white/90 flex-1'>{activity.title}</p>
+          <ChevronDown
+            className={cn(
+              'w-4 h-4 text-white/40 transition-transform duration-200',
+              isExpanded && 'transform rotate-180'
+            )}
+          />
+        </div>
 
         {/* Reaction text */}
         {activity.reaction_text && (
@@ -248,7 +253,7 @@ export default function ActivityItem({
 
               {/* Task Result */}
               {taskResult && (
-                <div>
+                <div className='bg-white/5 border border-white/10 rounded-md p-4'>
                   <div className='text-xs text-white/40 uppercase tracking-wide mb-1'>
                     Task Result
                   </div>
@@ -275,7 +280,7 @@ export default function ActivityItem({
             </div>
           </div>
         </div>
-      </div>
+      </button>
 
       {/* Full Screen Task Result Modal */}
       {mounted &&
@@ -306,7 +311,7 @@ export default function ActivityItem({
                   Task Result
                 </div>
                 <h2 className='font-semibold text-lg text-white'>
-                  {taskResult.result_title}
+                  {taskResult!.result_title}
                 </h2>
               </div>
               <button
@@ -325,7 +330,7 @@ export default function ActivityItem({
               )}
             >
               <div className='max-w-3xl mx-auto'>
-                <AIMessageView content={taskResult.result_text} />
+                <AIMessageView content={taskResult!.result_text} />
               </div>
             </div>
           </div>,

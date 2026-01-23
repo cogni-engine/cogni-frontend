@@ -82,39 +82,43 @@ export default function WorkspaceActivityDrawer({
         <DrawerHandle />
 
         <DrawerHeader className='px-6 pb-2 pt-0'>
-          <div className='flex items-center justify-between w-full'>
+          <div className='flex items-center justify-between w-full gap-2'>
             <DrawerTitle>Activity</DrawerTitle>
             {!membersLoading && members.length > 0 && (
-              <div className='flex items-center gap-2'>
-                {members.map(member => {
-                  const profile = getMemberProfile(member);
-                  const isSelected = selectedMemberIds.has(member.id);
-                  return (
-                    <button
-                      key={member.id}
-                      onClick={() => toggleMemberSelection(member.id)}
-                      className={`relative transition-all rounded-full ${
-                        isSelected
-                          ? 'scale-110'
-                          : 'opacity-50 hover:opacity-100 hover:scale-105'
-                      }`}
-                      title={profile.name || 'Unknown'}
-                    >
-                      <Avatar className='h-8 w-8 border border-white/20 bg-white/10'>
-                        {profile.avatar_url ? (
-                          <AvatarImage
-                            src={profile.avatar_url}
-                            alt={profile.name || 'Member'}
-                          />
-                        ) : (
-                          <AvatarFallback className='text-xs'>
-                            {getInitials(profile.name || 'U')}
-                          </AvatarFallback>
-                        )}
-                      </Avatar>
-                    </button>
-                  );
-                })}
+              <div className='relative max-w-3/4 sm:max-w-2/3 md:max-w-1/2 lg:max-w-1/3 min-w-0'>
+                <div className='overflow-x-auto w-full [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] mask-[linear-gradient(to_right,transparent_0%,black_12px,black_calc(100%-12px),transparent_100%)]'>
+                  <div className='flex items-center gap-2 min-w-max py-1 px-2'>
+                    {members.map((member, index) => {
+                      const profile = getMemberProfile(member);
+                      const isSelected = selectedMemberIds.has(member.id);
+                      return (
+                        <button
+                          key={`${member.id}-${index}`}
+                          onClick={() => toggleMemberSelection(member.id)}
+                          className={`relative transition-all rounded-full shrink-0 ${
+                            isSelected
+                              ? 'scale-110'
+                              : 'opacity-50 hover:opacity-70 hover:scale-105'
+                          }`}
+                          title={profile.name || 'Unknown'}
+                        >
+                          <Avatar className='h-8 w-8 border border-white/20 bg-white/10'>
+                            {profile.avatar_url ? (
+                              <AvatarImage
+                                src={profile.avatar_url}
+                                alt={profile.name || 'Member'}
+                              />
+                            ) : (
+                              <AvatarFallback className='text-xs'>
+                                {getInitials(profile.name || 'U')}
+                              </AvatarFallback>
+                            )}
+                          </Avatar>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
               </div>
             )}
           </div>
