@@ -26,6 +26,7 @@ interface NotificationProcessDrawerProps {
   onOpenChange: (open: boolean) => void;
   notifications: AINotification[];
   onNotificationProcessed?: () => void;
+  initialNotificationId?: number | null;
 }
 
 export default function NotificationProcessDrawer({
@@ -33,6 +34,7 @@ export default function NotificationProcessDrawer({
   onOpenChange,
   notifications,
   onNotificationProcessed,
+  initialNotificationId,
 }: NotificationProcessDrawerProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [showTextInputDrawer, setShowTextInputDrawer] = useState(false);
@@ -66,6 +68,18 @@ export default function NotificationProcessDrawer({
         result_text: currentNotification.task_result.result_text,
       }
     : null;
+
+  // Set initial index when notificationId is provided
+  useEffect(() => {
+    if (initialNotificationId && notifications.length > 0) {
+      const index = notifications.findIndex(
+        n => n.id === initialNotificationId
+      );
+      if (index !== -1) {
+        setCurrentIndex(index);
+      }
+    }
+  }, [initialNotificationId, notifications]);
 
   // 配列が更新された時のみインデックスを調整（最小限）
   useEffect(() => {

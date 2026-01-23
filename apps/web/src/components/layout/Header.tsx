@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { usePathname } from 'next/navigation';
 import { useNotifications } from '@/features/notifications/hooks/useNotifications';
 import { UserMenu } from '@/components/layout/UserMenu';
@@ -43,6 +43,9 @@ export default function Header() {
   // Notification drawer state
   const [isNotificationDrawerOpen, setIsNotificationDrawerOpen] =
     useState(false);
+  const [highlightedNotificationId, setHighlightedNotificationId] = useState<
+    number | null
+  >(null);
 
   // Initialize on mount
   useEffect(() => {
@@ -72,7 +75,7 @@ export default function Header() {
     dispatchHeaderEvent(HEADER_EVENTS.TOGGLE_THREAD_SIDEBAR);
   };
 
-  const handleToggleNotificationPanel = async () => {
+  const handleToggleNotificationPanel = useCallback(async () => {
     if (!userId) return;
 
     // Emit event for tutorial tracking
@@ -82,7 +85,33 @@ export default function Header() {
     // Fetch notifications and open drawer
     await fetchPastDueNotifications();
     setIsNotificationDrawerOpen(true);
-  };
+  }, [userId, fetchPastDueNotifications]);
+
+  // Listen for external toggle events (from mobile app)
+  useEffect(() => {
+    const handleToggleEvent = (event: Event) => {
+      const customEvent = event as CustomEvent<{ notificationId?: number }>;
+      const notificationId = customEvent.detail?.notificationId;
+
+      if (notificationId) {
+        setHighlightedNotificationId(notificationId);
+      }
+
+      handleToggleNotificationPanel();
+    };
+
+    window.addEventListener(
+      HEADER_EVENTS.TOGGLE_NOTIFICATION_PANEL,
+      handleToggleEvent
+    );
+
+    return () => {
+      window.removeEventListener(
+        HEADER_EVENTS.TOGGLE_NOTIFICATION_PANEL,
+        handleToggleEvent
+      );
+    };
+  }, [handleToggleNotificationPanel]);
 
   const handleNotificationProcessed = async () => {
     // Refresh notifications and unread count after processing
@@ -90,7 +119,29 @@ export default function Header() {
     if (userId) {
       await fetchUnreadCount();
     }
+    // Clear highlighted notification after processing
+    setHighlightedNotificationId(null);
   };
+
+  // Reorder notifications to show highlighted one first
+  const orderedNotifications = useMemo(() => {
+    if (!highlightedNotificationId || pastDueNotifications.length === 0) {
+      return pastDueNotifications;
+    }
+
+    const highlightedIndex = pastDueNotifications.findIndex(
+      n => n.id === highlightedNotificationId
+    );
+
+    if (highlightedIndex === -1) {
+      return pastDueNotifications;
+    }
+
+    // Move highlighted notification to the top
+    const reordered = [...pastDueNotifications];
+    const [highlighted] = reordered.splice(highlightedIndex, 1);
+    return [highlighted, ...reordered];
+  }, [pastDueNotifications, highlightedNotificationId]);
 
   return (
     <header className='fixed top-0 left-0 right-0 z-110 py-3'>
@@ -158,8 +209,9 @@ export default function Header() {
         <NotificationProcessDrawer
           open={isNotificationDrawerOpen}
           onOpenChange={setIsNotificationDrawerOpen}
-          notifications={pastDueNotifications}
+          notifications={orderedNotifications}
           onNotificationProcessed={handleNotificationProcessed}
+          initialNotificationId={highlightedNotificationId}
         />
       )}
     </header>

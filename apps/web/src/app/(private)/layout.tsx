@@ -111,16 +111,18 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
             notificationId: data.notificationId,
           });
 
-          // Navigate to /cogno if not already there
-          if (pathname !== '/cogno') {
-            router.push('/cogno');
+          // Navigate to /workspace if not already there
+          if (pathname !== '/workspace') {
+            router.push('/workspace');
           }
 
-          // Dispatch event to open notification panel after a short delay
-          // to ensure navigation completes
+          // Dispatch event to open notification panel with notificationId
+          // to ensure navigation completes first
           setTimeout(() => {
             window.dispatchEvent(
-              new CustomEvent('header:toggleNotificationPanel')
+              new CustomEvent('header:toggleNotificationPanel', {
+                detail: { notificationId: data.notificationId },
+              })
             );
           }, 100);
         }
