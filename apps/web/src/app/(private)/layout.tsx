@@ -111,20 +111,50 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
             notificationId: data.notificationId,
           });
 
-          // Navigate to /workspace if not already there
-          if (pathname !== '/workspace') {
-            router.push('/workspace');
-          }
+          const notificationId = data.notificationId;
 
-          // Dispatch event to open notification panel with notificationId
-          // to ensure navigation completes first
-          setTimeout(() => {
+          // Wait for Header to be ready before dispatching event
+          const waitForHeaderReady = () => {
+            return new Promise<void>(resolve => {
+              // If already on /workspace, Header should be ready
+              if (pathname === '/workspace') {
+                // Give Header a moment to set up listener
+                setTimeout(resolve, 200);
+                return;
+              }
+
+              // Navigate to /workspace first
+              router.push('/workspace');
+
+              // Wait for pathname to change, then wait for Header
+              let checkCount = 0;
+              const maxChecks = 20; // Max 1 second (20 * 50ms)
+              const checkReady = () => {
+                checkCount++;
+                // Check if we're now on /workspace
+                if (window.location.pathname === '/workspace') {
+                  // Header should be mounting now, wait for it to set up listener
+                  setTimeout(resolve, 300);
+                } else if (checkCount < maxChecks) {
+                  // Check again after a short delay
+                  setTimeout(checkReady, 50);
+                } else {
+                  // Timeout - resolve anyway to avoid infinite waiting
+                  console.warn('Timeout waiting for navigation to /workspace');
+                  setTimeout(resolve, 300);
+                }
+              };
+              checkReady();
+            });
+          };
+
+          waitForHeaderReady().then(() => {
             window.dispatchEvent(
               new CustomEvent('header:toggleNotificationPanel', {
-                detail: { notificationId: data.notificationId },
+                detail: { notificationId },
               })
             );
-          }, 100);
+          });
         }
       } catch (error) {
         // Ignore errors from unrelated postMessage events
