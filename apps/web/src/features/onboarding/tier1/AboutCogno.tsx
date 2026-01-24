@@ -11,10 +11,6 @@ interface AboutCognoAppProps {
 interface OnboardingSlideData {
   title: string;
   description: string;
-  phoneFrame: {
-    svg: string;
-    aspectRatio: number; // width / height ratio
-  };
   screenContent?: {
     screenshot?: string;
     alt?: string;
@@ -26,38 +22,26 @@ const onboardingSlides: OnboardingSlideData[] = [
     title: 'Cogni helps you work smarter',
     description:
       'Your AI-powered workspace for notes, tasks, and seamless collaboration',
-    phoneFrame: {
-      svg: '/iPhoneX.svg',
-      aspectRatio: 423 / 860, // iPhoneX.svg aspect ratio
-    },
     screenContent: {
-      // screenshot: '/screenshots/onboarding-1.png',
-      // alt: 'Cogni workspace preview',
+      screenshot: '/screenshots/IMG_0335-portrait.png',
+      alt: 'Cogni workspace preview',
     },
   },
   {
     title: 'Organize everything in one place',
     description: 'Keep your notes, tasks and team organized',
-    phoneFrame: {
-      svg: '/iPhoneX.svg',
-      aspectRatio: 423 / 860,
-    },
     screenContent: {
-      // screenshot: '/screenshots/onboarding-2.png',
-      // alt: 'Organization features preview',
+      screenshot: '/screenshots/IMG_0336-portrait.png',
+      alt: 'Organization features preview',
     },
   },
   {
     title: 'Collaborate with your team',
     description:
       'Work together seamlessly with real-time collaboration and AI assistance',
-    phoneFrame: {
-      svg: '/iPhoneX.svg',
-      aspectRatio: 423 / 860,
-    },
     screenContent: {
-      // screenshot: '/screenshots/onboarding-3.png',
-      // alt: 'Collaboration features preview',
+      screenshot: '/screenshots/IMG_0338-portrait.png',
+      alt: 'Collaboration features preview',
     },
   },
 ];
@@ -213,7 +197,7 @@ export function AboutCognoApp({
       {/* App Preview/Mockup - Swipeable Container */}
       <div
         ref={containerRef}
-        className='flex items-center justify-center w-full max-w-sm mx-auto overflow-hidden relative'
+        className='flex flex-1 items-center justify-center w-full max-w-sm mx-auto overflow-hidden relative'
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
@@ -224,7 +208,7 @@ export function AboutCognoApp({
         style={{ touchAction: 'pan-y' }}
       >
         <div
-          className='flex transition-transform duration-500 ease-out relative w-full'
+          className='flex  transition-transform duration-500 ease-out relative w-full'
           style={{
             transform: `translateX(calc(-${currentSlide * slideWidth}% + ${dragOffset}px))`,
             willChange: isDragging.current ? 'transform' : 'auto',
@@ -233,34 +217,34 @@ export function AboutCognoApp({
           {onboardingSlides.map((slideData, index) => (
             <div
               key={index}
-              className='shrink-0 h-full flex items-center justify-center'
-              style={{ width: `${slideWidth}%` }}
+              className='shrink-0 flex items-center justify-center overflow-hidden'
+              style={{ width: `${slideWidth}%`, height: '100%' }}
             >
               <div
-                className='relative transition-opacity duration-500 w-full h-full max-h-[60vh]'
+                className='relative transition-opacity duration-500 w-full h-full flex items-center justify-center overflow-hidden'
                 style={{
-                  aspectRatio: slideData.phoneFrame.aspectRatio,
                   opacity: Math.abs(index - currentSlide) > 1 ? 0.3 : 1,
                 }}
               >
-                <Image
-                  src={slideData.phoneFrame.svg}
-                  alt='iPhone X mockup'
-                  fill
-                  className='object-contain'
-                  priority={index === 0}
-                  sizes='(max-width: 768px) 64vw, 264px'
-                />
-                {slideData.screenContent?.screenshot && (
-                  <div className='absolute top-[5.5%] left-[5.4%] right-[5.4%] bottom-[2.8%] rounded-[2.5rem] overflow-hidden'>
+                {slideData.screenContent?.screenshot ? (
+                  <div className='relative w-full h-full flex items-center justify-center z-110'>
                     <Image
                       src={slideData.screenContent.screenshot}
                       alt={slideData.screenContent.alt || 'App preview'}
-                      fill
-                      className='object-cover'
+                      width={300}
+                      height={600}
+                      className='object-contain'
+                      style={{
+                        maxWidth: '100%',
+                        maxHeight: '60vh',
+                        width: 'auto',
+                        height: 'auto',
+                      }}
+                      sizes='(max-width: 640px) 90vw, (max-width: 1024px) 280px, 300px'
+                      priority={index === 0}
                     />
                   </div>
-                )}
+                ) : null}
               </div>
             </div>
           ))}
@@ -269,7 +253,7 @@ export function AboutCognoApp({
 
       {/* Content */}
       <div
-        className='text-center mt-4 px-4 w-full overflow-hidden relative shrink-0'
+        className='text-center px-4 w-full overflow-hidden relative shrink-0'
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
