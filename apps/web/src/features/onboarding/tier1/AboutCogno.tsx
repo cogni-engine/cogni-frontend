@@ -208,7 +208,7 @@ export function AboutCognoApp({
         style={{ touchAction: 'pan-y' }}
       >
         <div
-          className='flex  transition-transform duration-500 ease-out relative w-full'
+          className='flex transition-transform duration-500 ease-out relative w-full h-full'
           style={{
             transform: `translateX(calc(-${currentSlide * slideWidth}% + ${dragOffset}px))`,
             willChange: isDragging.current ? 'transform' : 'auto',
@@ -236,9 +236,8 @@ export function AboutCognoApp({
                       className='object-contain'
                       style={{
                         maxWidth: '100%',
-                        maxHeight: '60vh',
+                        height: '100%',
                         width: 'auto',
-                        height: 'auto',
                       }}
                       sizes='(max-width: 640px) 90vw, (max-width: 1024px) 280px, 300px'
                       priority={index === 0}
