@@ -12,7 +12,6 @@ import {
   Users as UsersIcon,
   Mail,
   Shield,
-  User,
   Edit,
   Info,
   ChevronDown,
@@ -692,7 +691,7 @@ export default function OrganizationsPage() {
                 </option>
               </select>
               <div className='mt-2 flex items-start gap-2 text-xs text-white/50'>
-                <Info className='h-3 w-3 mt-0.5 flex-shrink-0' />
+                <Info className='h-3 w-3 mt-0.5 shrink-0' />
                 <p>
                   Admins can invite and remove members. Owner role cannot be
                   assigned.

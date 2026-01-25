@@ -3,7 +3,7 @@
 import * as React from 'react';
 import { useRouter } from 'next/navigation';
 import { XCircle } from 'lucide-react';
-import GlassCard from '@/components/glass-card/GlassCard';
+import GlassCard from '@/components/glass-design/GlassCard';
 import { Button } from '@/components/ui/button';
 
 export default function CheckoutCancelPage() {

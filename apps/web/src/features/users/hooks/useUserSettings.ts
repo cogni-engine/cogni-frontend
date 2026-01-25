@@ -245,11 +245,9 @@ export function useUserSettings(): UseUserSettingsReturn {
   }, [enableAiSuggestion, profile, userId]);
 
   const deleteAccount = useCallback(async () => {
-    if (!userId) return;
-
     try {
       setIsDeleting(true);
-      await deleteUserAccount(userId);
+      await deleteUserAccount();
     } catch (error) {
       console.error('Failed to delete account', error);
       setIsDeleting(false);
@@ -257,7 +255,7 @@ export function useUserSettings(): UseUserSettingsReturn {
     }
     // Note: We don't set isDeleting to false here because the user will be signed out
     // and redirected, so the component will unmount
-  }, [userId]);
+  }, []);
 
   return {
     userId,

@@ -7,19 +7,33 @@ import {
   isValidElement,
   Fragment,
 } from 'react';
-import { ThreadProvider, useThreadContext } from '@/contexts/ThreadContext';
-import { HomeUIProvider, useHomeUI } from '@/contexts/HomeUIContext';
+import {
+  ThreadProvider,
+  useThreadContext,
+} from '@/features/cogno/contexts/ThreadContext';
+import { useHomeUIStore } from '@/stores/useHomeUIStore';
 import ThreadSidebar from '@/features/thread/ThreadSidebar';
-import { useThreads } from '@/hooks/useThreads';
+import { createThread } from '@/features/cogno/api/threadsApi';
 import { onHeaderEvent, HEADER_EVENTS } from '@/lib/headerEvents';
+import { getPersonalWorkspaceId } from '@/lib/cookies';
 
 function HomeLayoutContent({ children }: { children: ReactNode }) {
-  const { createThread } = useThreads();
-  const { setSelectedThreadId } = useThreadContext();
-  const { toggleThreadSidebar, toggleNotificationPanel } = useHomeUI();
+  const { setSelectedThreadId, refetchThreads } = useThreadContext();
+  const toggleThreadSidebar = useHomeUIStore(
+    state => state.toggleThreadSidebar
+  );
+  const toggleNotificationPanel = useHomeUIStore(
+    state => state.toggleNotificationPanel
+  );
 
   const handleCreateThread = async () => {
     try {
+      const workspaceId = getPersonalWorkspaceId();
+      if (!workspaceId) {
+        console.error('No workspace ID available');
+        return;
+      }
+
       const now = new Date();
       const dateTimeTitle = now.toLocaleString('en-US', {
         month: 'short',
@@ -30,10 +44,12 @@ function HomeLayoutContent({ children }: { children: ReactNode }) {
         hour12: true,
       });
 
-      const newThread = await createThread(dateTimeTitle);
+      const newThread = await createThread(workspaceId, dateTimeTitle);
       // Auto-select the newly created thread
       if (newThread && newThread.id) {
         setSelectedThreadId(newThread.id);
+        // Refetch threads to update the list
+        await refetchThreads();
       }
     } catch (error) {
       console.error('Failed to create thread:', error);
@@ -83,9 +99,7 @@ function HomeLayoutContent({ children }: { children: ReactNode }) {
 export default function HomeLayout({ children }: { children: ReactNode }) {
   return (
     <ThreadProvider>
-      <HomeUIProvider>
-        <HomeLayoutContent>{children}</HomeLayoutContent>
-      </HomeUIProvider>
+      <HomeLayoutContent>{children}</HomeLayoutContent>
     </ThreadProvider>
   );
 }

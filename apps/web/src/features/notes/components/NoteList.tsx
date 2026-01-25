@@ -3,7 +3,6 @@
 import Image from 'next/image';
 import { useRef, memo, useState } from 'react';
 
-import GlassCard from '@/components/glass-design/GlassCard';
 import type { NoteFolder } from '@/types/note';
 import type { FormattedNote } from '../NotesProvider';
 import { groupAndSortNotes } from '../lib/noteListHelpers';
@@ -174,7 +173,7 @@ export default function NoteList({
           onBack={onBackFromFolder}
         />
         <FlatList>
-          {folderNotes.map((note, index) => (
+          {folderNotes.map(note => (
             <NoteCard
               key={note.id}
               note={note}
@@ -219,7 +218,7 @@ export default function NoteList({
                 />
                 {!isCollapsed && (
                   <FlatList>
-                    {groups[group].map((note, index) => (
+                    {groups[group].map(note => (
                       <NoteCard
                         key={note.id}
                         note={note}
@@ -236,7 +235,7 @@ export default function NoteList({
                   {group}
                 </h3>
                 <FlatList>
-                  {groups[group].map((note, index) => (
+                  {groups[group].map(note => (
                     <NoteCard
                       key={note.id}
                       note={note}

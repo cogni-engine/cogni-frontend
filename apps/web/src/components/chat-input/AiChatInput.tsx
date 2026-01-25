@@ -9,7 +9,7 @@ import {
 import TiptapChatInput, { TiptapChatInputRef } from './TiptapChatInput';
 import FileUploadMenu from './FileUploadMenu';
 import FileUploadPreview from './FileUploadPreview';
-import { uploadAIChatFile } from '@/lib/api/aiChatFilesApi';
+import { uploadAIChatFile } from '@/features/cogno/api/aiChatFilesApi';
 import { type UploadedFile } from '@/lib/api/workspaceFilesApi';
 import type { WorkspaceMember } from '@/types/workspace';
 import type { Note } from '@/types/note';
@@ -167,7 +167,7 @@ const AiChatInput = forwardRef<AiChatInputRef, AiChatInputProps>(
                 return item.uploaded.id;
               }
 
-              const uploaded = await uploadAIChatFile(threadId, item.file);
+              const uploaded = await uploadAIChatFile(item.file);
               return uploaded.id;
             });
 
@@ -205,13 +205,7 @@ const AiChatInput = forwardRef<AiChatInputRef, AiChatInputProps>(
       <div className='relative z-100 rounded-t-3xl'>
         {/* File Upload Preview */}
         {threadId && uploadItems.length > 0 && (
-          <FileUploadPreview
-            files={uploadItems}
-            workspaceId={threadId}
-            onRemove={handleRemoveFile}
-            onUploadComplete={handleUploadComplete}
-            onUploadError={handleUploadError}
-          />
+          <FileUploadPreview files={uploadItems} onRemove={handleRemoveFile} />
         )}
         {/* Input UI */}
         <div className='px-4 md:px-6 py-2'>

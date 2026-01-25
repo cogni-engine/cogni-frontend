@@ -16,7 +16,6 @@ import {
   useManagedOrganizationsWithSubscriptions,
 } from './hooks/useOrganizations';
 import type { UserOrganizationData } from '@/lib/api/organizationApi';
-import { getOrganizationSubscriptionPlan } from './utils/subscriptionUtils';
 import {
   useCustomerPortal,
   useUpgradeToBusiness,
@@ -82,7 +81,6 @@ export default function SubscriptionClient() {
 
   // Derived state
   const isLoading = isLoadingOrg;
-  const isFreePlan = !currentOrgPlan || currentOrgPlan === 'free';
   const isProOrBusiness =
     currentOrgPlan === 'pro' || currentOrgPlan === 'business';
 
@@ -160,10 +158,10 @@ export default function SubscriptionClient() {
 
     return new Promise((resolve, reject) => {
       switchBillingMutation.mutate(userEmail, {
-        onSuccess: clientSecret => {
+        onSuccess: (clientSecret: string) => {
           resolve(clientSecret);
         },
-        onError: error => {
+        onError: (error: Error) => {
           reject(error);
         },
       });

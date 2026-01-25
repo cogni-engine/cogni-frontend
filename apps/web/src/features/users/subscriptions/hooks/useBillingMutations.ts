@@ -1,5 +1,4 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { useRouter } from 'next/navigation';
 import {
   createPortalSession,
   upgradeToBusiness,
@@ -13,8 +12,6 @@ import { organizationKeys } from './useOrganizations';
  * Mutation hook for creating Stripe Customer Portal session
  */
 export function useCustomerPortal() {
-  const queryClient = useQueryClient();
-
   return useMutation({
     mutationFn: ({
       organizationId,

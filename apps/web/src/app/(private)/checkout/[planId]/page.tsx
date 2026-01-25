@@ -8,7 +8,7 @@ import {
   EmbeddedCheckout,
 } from '@stripe/react-stripe-js';
 import { DEFAULT_PRICING_JA } from '@cogni/pricing/src/constants';
-import GlassCard from '@/components/glass-card/GlassCard';
+import GlassCard from '@/components/glass-design/GlassCard';
 import { ArrowLeft, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { createClient } from '@/lib/supabase/browserClient';
