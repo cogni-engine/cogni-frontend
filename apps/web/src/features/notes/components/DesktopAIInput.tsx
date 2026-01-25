@@ -1,6 +1,8 @@
 'use client';
 
 import { Sparkles, Loader2, ArrowUp, X } from 'lucide-react';
+import GlassCard from '@/components/glass-design/GlassCard';
+import GlassButton from '@/components/glass-design/GlassButton';
 
 interface DesktopAIInputProps {
   aiInstruction: string;
@@ -30,34 +32,30 @@ export function DesktopAIInput({
       data-shepherd-target='note-ai-input'
     >
       <div className='w-full max-w-4xl mx-auto'>
-        <div className='relative'>
-          <div className='w-full bg-white/2 backdrop-blur-sm rounded-4xl border border-black focus-within:shadow-[0_12px_40px_rgba(0,0,0,0.25),inset_0_1px_0_rgba(255,255,255,0.18)] transition-all duration-300 shadow-[0_8px_32px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.12)]'>
-            <div className='flex items-center gap-2 px-4'>
-              <Sparkles className='w-4 h-4 text-purple-400 shrink-0' />
-              <input
-                type='text'
-                value={aiInstruction}
-                onChange={e => onInstructionChange(e.target.value)}
-                onKeyDown={handleKeyDown}
-                placeholder='Ask AI to edit this note...'
-                className='flex-1 bg-transparent text-white text-base py-3.5 pr-[60px] focus:outline-none placeholder-white/40'
-                disabled={aiLoading}
-              />
-            </div>
-          </div>
-          {/* Send button */}
-          <button
+        <GlassCard className='flex items-center rounded-4xl px-4 py-3'>
+          <Sparkles className='mr-2 size-5 text-gray-400 shrink-0' />
+          <input
+            type='text'
+            value={aiInstruction}
+            onChange={e => onInstructionChange(e.target.value)}
+            onKeyDown={handleKeyDown}
+            placeholder='Ask AI to edit this note...'
+            className='flex-1 bg-transparent text-white text-base outline-none placeholder-white/50'
+            disabled={aiLoading}
+          />
+          <GlassButton
             onClick={onSuggest}
             disabled={aiLoading || !aiInstruction.trim()}
-            className='absolute right-2.5 top-1/2 transform -translate-y-1/2 w-10 h-10 rounded-full bg-white/10 backdrop-blur-xl border border-black text-white flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed hover:bg-white/15 hover:scale-102 transition-all duration-300 shadow-[0_8px_32px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.12)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.25),inset_0_1px_0_rgba(255,255,255,0.18)]'
+            className='ml-2'
+            aria-label='Send AI instruction'
           >
             {aiLoading ? (
               <Loader2 className='w-4 h-4 animate-spin' />
             ) : (
               <ArrowUp className='w-4 h-4' />
             )}
-          </button>
-        </div>
+          </GlassButton>
+        </GlassCard>
         {/* Error message */}
         {aiError && (
           <div className='mt-2 text-xs text-red-400 flex items-center gap-2 px-4'>

@@ -203,7 +203,7 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
       {showTopLevelChrome && <Header />}
 
       {/* Main Content - Full height, scrolls under transparent header and bottom nav */}
-      <main className='h-screen overflow-hidden relative'>
+      <main className='h-screen min-h-0 overflow-hidden relative flex flex-col'>
         {/* Top darkening gradient */}
         <div className='absolute top-0 left-0 right-0 h-32 bg-linear-to-b from-black via-black/50 to-transparent pointer-events-none z-50' />
 
