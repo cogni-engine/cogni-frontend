@@ -4,6 +4,7 @@ import { useState, useCallback, useRef } from 'react';
 import type { AIMessage } from '@/features/cogno/domain/chat';
 import type { ThreadId } from '../contexts/ThreadContext';
 import { createThread } from '../api/threadsApi';
+import { streamConversation } from '../api/sendMessageApi';
 import { getPersonalWorkspaceId } from '@/lib/cookies';
 import type { UploadedFile } from '@/lib/api/workspaceFilesApi';
 
@@ -19,7 +20,6 @@ export interface SendMessageOptions {
 export interface UseSendMessageOptions {
   threadId: ThreadId;
   messages: AIMessage[];
-  apiBaseUrl?: string;
   onMessageUpdate?: (messages: AIMessage[]) => void;
   onComplete?: () => void;
   onThreadCreated?: (threadId: number) => void;
@@ -28,7 +28,6 @@ export interface UseSendMessageOptions {
 export function useSendMessage({
   threadId,
   messages,
-  apiBaseUrl = '/api',
   onMessageUpdate,
   onComplete,
   onThreadCreated,
@@ -56,7 +55,6 @@ export function useSendMessage({
     }: SendMessageOptions) => {
       // Determine the actual thread ID to use
       let actualThreadId: number | null = null;
-      let isNewlyCreatedThread = false;
 
       if (threadId === 'new') {
         // Create a new thread first
@@ -72,9 +70,9 @@ export function useSendMessage({
 
           const newThread = await createThread(workspaceId, title);
           actualThreadId = newThread.id;
-          isNewlyCreatedThread = true;
-          // Don't call onThreadCreated here - wait until streaming completes
-          // to avoid useMessages refetching and wiping optimistic messages
+          // Call onThreadCreated immediately so we can pre-populate the cache
+          // useChat will handle preventing premature refetches
+          onThreadCreated?.(actualThreadId);
         } catch (err) {
           console.error('Failed to create thread:', err);
           return;
@@ -144,63 +142,28 @@ export function useSendMessage({
       onMessageUpdate?.(newMessages);
 
       try {
-        const url = `${apiBaseUrl}/cogno/conversations/stream`;
-        const requestBody = {
-          thread_id: actualThreadId,
-          messages: updatedMessages,
-          ...(mentionedMemberIds &&
-            mentionedMemberIds.length > 0 && {
-              mentioned_member_ids: mentionedMemberIds,
-            }),
-          ...(mentionedNoteIds &&
-            mentionedNoteIds.length > 0 && {
-              mentioned_note_ids: mentionedNoteIds,
-            }),
-          ...(notificationId && { notification_id: notificationId }),
-          ...(timerCompleted && { timer_completed: true }),
-        };
-
-        const response = await fetch(url, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(requestBody),
-          signal: abortController.signal,
-        });
-
-        if (!response.ok) {
-          const errorText = await response.text();
-          console.error('Failed to send message:', response.status, errorText);
-          throw new Error(`Failed to send message: ${response.status}`);
-        }
-
-        const reader = response.body?.getReader();
-        const decoder = new TextDecoder();
-
-        if (!reader) throw new Error('Response body is null');
-
         let accumulatedContent = '';
-        let buffer = '';
         let lastUpdateTime = 0;
         const UPDATE_THROTTLE = 50;
 
-        while (true) {
-          if (abortController.signal.aborted) break;
-
-          const { done, value } = await reader.read();
-          if (done) break;
-
-          const chunk = decoder.decode(value, { stream: true });
-          buffer += chunk;
-
-          const lines = buffer.split('\n');
-          buffer = lines.pop() || '';
-
-          for (const line of lines) {
-            if (line.startsWith('data: ')) {
-              const data = line.slice(6);
-              if (data === '[DONE]') continue;
-              const parsedData = JSON.parse(data);
-              accumulatedContent += parsedData.data;
+        await streamConversation(
+          {
+            thread_id: actualThreadId,
+            messages: updatedMessages,
+            ...(mentionedMemberIds &&
+              mentionedMemberIds.length > 0 && {
+                mentioned_member_ids: mentionedMemberIds,
+              }),
+            ...(mentionedNoteIds &&
+              mentionedNoteIds.length > 0 && {
+                mentioned_note_ids: mentionedNoteIds,
+              }),
+            ...(notificationId && { notification_id: notificationId }),
+            ...(timerCompleted && { timer_completed: true }),
+          },
+          {
+            onChunk: (content: string) => {
+              accumulatedContent += content;
 
               const now = Date.now();
               if (now - lastUpdateTime >= UPDATE_THROTTLE) {
@@ -213,59 +176,47 @@ export function useSendMessage({
                 );
                 lastUpdateTime = now;
               }
-            }
-          }
-        }
+            },
+            onComplete: () => {
+              // Final update
+              onMessageUpdate?.(
+                newMessages.map(msg =>
+                  msg.id === tempAIMsg.id
+                    ? { ...msg, content: accumulatedContent }
+                    : msg
+                )
+              );
 
-        // Final update
-        onMessageUpdate?.(
-          newMessages.map(msg =>
-            msg.id === tempAIMsg.id
-              ? { ...msg, content: accumulatedContent }
-              : msg
-          )
+              // onThreadCreated was already called when thread was created
+              // to allow pre-populating the cache
+
+              onComplete?.();
+            },
+            onError: (err: Error) => {
+              setError(err.message);
+              console.error('Error in sendMessage:', err);
+
+              // Remove temporary messages on error
+              onMessageUpdate?.(
+                messages.filter(
+                  msg => msg.id !== tempUserMsg?.id && msg.id !== tempAIMsg.id
+                )
+              );
+            },
+          },
+          abortController.signal
         );
-
-        if (abortController.signal.aborted) {
-          return;
-        }
-
-        // Notify about newly created thread after streaming completes
-        // This prevents useMessages from refetching and wiping optimistic messages
-        if (isNewlyCreatedThread && actualThreadId) {
-          onThreadCreated?.(actualThreadId);
-        }
-
-        onComplete?.();
       } catch (err) {
         if (err instanceof Error && err.name === 'AbortError') {
           return;
         }
-
-        const errorMessage =
-          err instanceof Error ? err.message : 'An error occurred';
-        setError(errorMessage);
-        console.error('Error in sendMessage:', err);
-
-        // Remove temporary messages on error
-        onMessageUpdate?.(
-          messages.filter(
-            msg => msg.id !== tempUserMsg?.id && msg.id !== tempAIMsg.id
-          )
-        );
+        // Error already handled by onError callback
       } finally {
         setIsLoading(false);
         abortControllerRef.current = null;
       }
     },
-    [
-      threadId,
-      messages,
-      apiBaseUrl,
-      onMessageUpdate,
-      onComplete,
-      onThreadCreated,
-    ]
+    [threadId, messages, onMessageUpdate, onComplete, onThreadCreated]
   );
 
   return {

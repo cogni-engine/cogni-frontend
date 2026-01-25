@@ -18,27 +18,6 @@ export async function getThreads(workspaceId: number): Promise<Thread[]> {
 }
 
 /**
- * Get a single thread by ID
- */
-export async function getThread(id: number): Promise<Thread | null> {
-  const { data, error } = await supabase
-    .from('threads')
-    .select('*')
-    .eq('id', id)
-    .single();
-
-  if (error) {
-    if (error.code === 'PGRST116') {
-      // Not found
-      return null;
-    }
-    throw error;
-  }
-
-  return data;
-}
-
-/**
  * Create a new thread
  */
 export async function createThread(

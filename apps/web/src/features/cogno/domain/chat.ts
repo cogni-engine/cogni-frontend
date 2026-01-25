@@ -24,8 +24,6 @@ export type AIMessage = {
   files?: MessageFile[];
 };
 
-export type InputMode = 'default' | 'expanded';
-
 export type SuggestionConfig = {
   suggestions: string[];
   inputPlaceholder?: string;
