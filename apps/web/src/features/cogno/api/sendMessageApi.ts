@@ -4,9 +4,17 @@ import type { AIMessage } from '@/features/cogno/domain/chat';
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000';
 
+// Backend message format (matches SimpleMessage in backend)
+export type BackendMessage = {
+  role: 'user' | 'assistant' | 'system';
+  content: string;
+  meta?: Record<string, unknown> | null;
+  file_ids?: number[];
+};
+
 export interface StreamConversationRequest {
   thread_id: number;
-  messages: AIMessage[];
+  messages: BackendMessage[];
   mentioned_member_ids?: number[];
   mentioned_note_ids?: number[];
   notification_id?: number;

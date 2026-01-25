@@ -4,7 +4,7 @@ import { useState, useCallback, useRef } from 'react';
 import type { AIMessage } from '@/features/cogno/domain/chat';
 import type { ThreadId } from '../contexts/ThreadContext';
 import { createThread } from '../api/threadsApi';
-import { streamConversation } from '../api/sendMessageApi';
+import { streamConversation, type BackendMessage } from '../api/sendMessageApi';
 import { getPersonalWorkspaceId } from '@/lib/cookies';
 import type { UploadedFile } from '@/lib/api/workspaceFilesApi';
 
@@ -146,10 +146,32 @@ export function useSendMessage({
         let lastUpdateTime = 0;
         const UPDATE_THROTTLE = 50;
 
+        // Transform messages for backend: extract file_ids from files array
+        const messagesForBackend: BackendMessage[] = updatedMessages.map(
+          msg => {
+            const baseMsg: BackendMessage = {
+              role: msg.role,
+              content: msg.content,
+            };
+
+            // Add meta if present
+            if (msg.meta) {
+              baseMsg.meta = msg.meta;
+            }
+
+            // Extract file_ids from files array if present
+            if (msg.files && msg.files.length > 0) {
+              baseMsg.file_ids = msg.files.map(f => f.id);
+            }
+
+            return baseMsg;
+          }
+        );
+
         await streamConversation(
           {
             thread_id: actualThreadId,
-            messages: updatedMessages,
+            messages: messagesForBackend,
             ...(mentionedMemberIds &&
               mentionedMemberIds.length > 0 && {
                 mentioned_member_ids: mentionedMemberIds,
