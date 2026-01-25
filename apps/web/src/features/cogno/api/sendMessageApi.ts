@@ -1,4 +1,5 @@
 import type { AIMessage } from '@/features/cogno/domain/chat';
+import { createClient } from '@/lib/supabase/browserClient';
 
 // Backend API base URL - defaults to localhost:8000 for development
 const API_BASE_URL =
@@ -43,12 +44,25 @@ export async function streamConversation(
 ): Promise<void> {
   const url = `${API_BASE_URL}/api/cogno/conversations/stream`;
 
+  // Get Supabase session to extract JWT token
+  const supabase = createClient();
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+
+  if (!session) {
+    throw new Error('Not authenticated');
+  }
+
   try {
     const response = await fetch(url, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${session.access_token}`,
+      },
       body: JSON.stringify(request),
-      credentials: 'include', // Send cookies with the request
+      credentials: 'include', // Still include credentials for other cookies if needed
       signal,
     });
 
