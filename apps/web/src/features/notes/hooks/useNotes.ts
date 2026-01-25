@@ -6,7 +6,6 @@ import type { Note, NoteWithParsed } from '@/types/note';
 import {
   getNotes,
   createNote,
-  updateNote,
   deleteNote,
   softDeleteNote,
   restoreNote,
@@ -57,11 +56,6 @@ interface UseNotesReturn {
     title: string,
     content: string,
     folderId?: number | null
-  ) => Promise<NoteWithParsed>;
-  updateNote: (
-    id: number,
-    title: string,
-    content: string
   ) => Promise<NoteWithParsed>;
   deleteNote: (id: number) => Promise<void>;
   softDeleteNote: (id: number) => Promise<NoteWithParsed>;
@@ -170,23 +164,6 @@ export function useNotes(options: UseNotesOptions = {}): UseNotesReturn {
     [workspaceId, mutateNotes]
   );
 
-  const updateExistingNote = useCallback(
-    async (id: number, title: string, content: string) => {
-      const updatedNote = await updateNote(id, title, content);
-      const parsedNote = parseNote(updatedNote);
-
-      // Optimistically update the cache
-      mutateNotes(
-        current =>
-          current?.map(note => (note.id === id ? parsedNote : note)) ?? [],
-        false
-      );
-
-      return parsedNote;
-    },
-    [mutateNotes]
-  );
-
   const deleteExistingNote = useCallback(
     async (id: number) => {
       await deleteNote(id);
@@ -271,7 +248,6 @@ export function useNotes(options: UseNotesOptions = {}): UseNotesReturn {
     refetch,
     searchNotes: searchNotesQuery,
     createNote: createNewNote,
-    updateNote: updateExistingNote,
     deleteNote: deleteExistingNote,
     softDeleteNote: softDeleteExistingNote,
     restoreNote: restoreExistingNote,

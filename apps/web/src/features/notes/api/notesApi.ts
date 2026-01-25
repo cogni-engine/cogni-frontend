@@ -5,20 +5,6 @@ import { getCurrentUserId } from '@/lib/cookies';
 const supabase = createClient();
 
 /**
- * Parse note text into title and content
- * @deprecated Title is now stored as a separate field in the database
- */
-export function parseNoteText(text: string): {
-  title: string;
-  content: string;
-} {
-  const lines = text.split('\n');
-  const title = lines[0] || 'Untitled';
-  const content = lines.slice(1).join('\n');
-  return { title, content };
-}
-
-/**
  * Get all notes for a specific workspace with assignments
  * @param workspaceId - The workspace ID
  * @param includeDeleted - Include soft-deleted notes (default: true)
@@ -123,29 +109,6 @@ export async function createNote(
       text: content,
       note_folder_id: folderId,
     })
-    .select()
-    .single();
-
-  if (error) throw error;
-  return data;
-}
-
-/**
- * Update an existing note
- */
-export async function updateNote(
-  id: number,
-  title: string,
-  content: string
-): Promise<Note> {
-  const { data, error } = await supabase
-    .from('notes')
-    .update({
-      title,
-      text: content,
-      updated_at: new Date().toISOString(),
-    })
-    .eq('id', id)
     .select()
     .single();
 
