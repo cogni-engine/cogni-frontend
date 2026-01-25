@@ -113,7 +113,7 @@ export default function Header() {
     };
   }, [handleToggleNotificationPanel]);
 
-  const handleNotificationProcessed = async () => {
+  const handleNotificationProcessed = useCallback(async () => {
     // Refresh notifications and unread count after processing
     await fetchPastDueNotifications();
     if (userId) {
@@ -121,7 +121,7 @@ export default function Header() {
     }
     // Clear highlighted notification after processing
     setHighlightedNotificationId(null);
-  };
+  }, [fetchPastDueNotifications, userId, fetchUnreadCount]);
 
   // Reorder notifications to show highlighted one first
   const orderedNotifications = useMemo(() => {
