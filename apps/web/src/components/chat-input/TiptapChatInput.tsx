@@ -88,7 +88,7 @@ const TiptapChatInput = forwardRef<TiptapChatInputRef, TiptapChatInputProps>(
         editorProps: {
           attributes: {
             class:
-              'w-full bg-transparent text-white px-5 py-3.5 pr-[90px] focus:outline-none resize-none overflow-y-auto chat-input-editor',
+              'w-full bg-transparent text-white px-5 py-3.5 pr-[50px] focus:outline-none resize-none overflow-y-auto chat-input-editor',
             style:
               'max-height: 140px; touch-action: manipulation; -webkit-user-select: text; user-select: text;', // ~7 lines, prevent double-tap zoom on mobile, ensure text selection works
             'data-placeholder': placeholder,
@@ -407,14 +407,14 @@ const TiptapChatInput = forwardRef<TiptapChatInputRef, TiptapChatInputProps>(
           <EditorContent editor={editor} />
         </div>
         {/* マイクボタン - 送信ボタンの左 */}
-        <div className='absolute right-[50px] bottom-1.5 z-10'>
+        {/* <div className='absolute right-[50px] bottom-1.5 z-10'>
           <VoiceInputButton
             onTranscriptChange={handleVoiceTranscript}
             currentText={editor.getText()}
             disabled={isLoading}
             className='w-11 h-11 rounded-full bg-transparent border-0 text-white hover:scale-102 transition-all duration-300'
           />
-        </div>
+        </div> */}
 
         {/* 送信ボタン / 停止ボタン */}
         <button
