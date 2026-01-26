@@ -26,7 +26,10 @@ export function useNotifications(userId?: string) {
       console.log('[useNotifications] Fetched notifications:', {
         count: data.length,
         ids: data.map(n => n.id),
-        hasTaskResult: data.map(n => ({ id: n.id, hasResult: !!n.task_result })),
+        hasTaskResult: data.map(n => ({
+          id: n.id,
+          hasResult: !!n.task_result,
+        })),
       });
       setNotifications(data);
     } catch (err) {

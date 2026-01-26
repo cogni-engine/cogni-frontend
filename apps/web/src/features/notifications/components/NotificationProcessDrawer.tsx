@@ -144,7 +144,10 @@ export default function NotificationProcessDrawer({
 
       // 通知を再取得（配列が更新される）- awaitで完了を待つ
       await onNotificationProcessed?.();
-      console.log('[NotificationDrawer] After refetch, notifications count:', notifications.length);
+      console.log(
+        '[NotificationDrawer] After refetch, notifications count:',
+        notifications.length
+      );
 
       // Note: drawer closing is handled by useEffect when notifications.length becomes 0
     } catch (error) {
@@ -170,30 +173,33 @@ export default function NotificationProcessDrawer({
 
   // Auto-resize textarea and update drawer height
   const maxRows = 10;
-  const adjustTextareaHeight = useCallback(
-    (el: HTMLTextAreaElement | null) => {
-      if (!el) return;
+  const adjustTextareaHeight = useCallback((el: HTMLTextAreaElement | null) => {
+    if (!el) return;
 
-      // Store initial height on first call
-      if (initialTextareaHeightRef.current === null) {
-        initialTextareaHeightRef.current = el.offsetHeight;
-      }
+    // Store initial height on first call
+    if (initialTextareaHeightRef.current === null) {
+      initialTextareaHeightRef.current = el.offsetHeight;
+    }
 
-      el.style.height = 'auto';
-      const computed = window.getComputedStyle(el);
-      const lineHeight = parseFloat(computed.lineHeight || '24');
-      const minHeight = initialTextareaHeightRef.current;
-      const maxHeight = lineHeight * maxRows;
-      const nextHeight = Math.max(minHeight, Math.min(el.scrollHeight, maxHeight));
-      el.style.height = `${nextHeight}px`;
-      el.style.overflowY = el.scrollHeight > maxHeight ? 'auto' : 'hidden';
+    el.style.height = 'auto';
+    const computed = window.getComputedStyle(el);
+    const lineHeight = parseFloat(computed.lineHeight || '24');
+    const minHeight = initialTextareaHeightRef.current;
+    const maxHeight = lineHeight * maxRows;
+    const nextHeight = Math.max(
+      minHeight,
+      Math.min(el.scrollHeight, maxHeight)
+    );
+    el.style.height = `${nextHeight}px`;
+    el.style.overflowY = el.scrollHeight > maxHeight ? 'auto' : 'hidden';
 
-      // Update extra height for drawer (difference from initial height)
-      const extraHeight = Math.max(0, nextHeight - initialTextareaHeightRef.current);
-      setNoteInputExtraHeight(extraHeight);
-    },
-    []
-  );
+    // Update extra height for drawer (difference from initial height)
+    const extraHeight = Math.max(
+      0,
+      nextHeight - initialTextareaHeightRef.current
+    );
+    setNoteInputExtraHeight(extraHeight);
+  }, []);
 
   const handleNoteTextChange = useCallback(
     (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -350,7 +356,10 @@ export default function NotificationProcessDrawer({
           )}
 
           {/* Scrollable Body with Slide Transition */}
-          <DrawerBody className='overflow-x-hidden p-0' style={{ flex: 'none' }}>
+          <DrawerBody
+            className='overflow-x-hidden p-0'
+            style={{ flex: 'none' }}
+          >
             <div
               className={cn(
                 'flex transition-transform duration-200 ease-out',
@@ -424,8 +433,8 @@ export default function NotificationProcessDrawer({
                             <ChevronRight
                               className={cn(
                                 'w-4 h-4 text-white/50 shrink-0 transition-transform duration-200',
-                                expandedNoteId === currentNotification.note.id &&
-                                  'rotate-90'
+                                expandedNoteId ===
+                                  currentNotification.note.id && 'rotate-90'
                               )}
                             />
                             <span className='text-sm text-white/90 truncate'>
