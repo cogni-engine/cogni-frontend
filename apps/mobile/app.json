@@ -41,11 +41,7 @@
           "NSAllowsLocalNetworking": true
         },
         "ITSAppUsesNonExemptEncryption": false,
-        "UIKeyboardAppearance": "Dark",
-        "NSCameraUsageDescription": "Cogno uses the camera to take photos that you can share in group chats or send to the Cogno AI.",
-        "NSPhotoLibraryUsageDescription": "Cogno uses your photo library to let you select images to share in group chats or send to the Cogno AI.",
-        "NSPhotoLibraryAddUsageDescription": "Cogno saves images from group chats or the Cogno AI to your photo library."
-
+        "UIKeyboardAppearance": "Dark"
       }
     },
     "android": {
