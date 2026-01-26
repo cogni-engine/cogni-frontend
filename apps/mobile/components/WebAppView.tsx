@@ -258,7 +258,7 @@ export default function WebAppView({ url = 'https://app.cogno.studio', session }
 
       // Launch image picker (library only, no camera)
       const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: options?.mediaTypes || ['images'],
+        mediaTypes: (options?.mediaTypes?.[0] as ImagePicker.MediaTypeOptions) || ImagePicker.MediaTypeOptions.Images,
         allowsEditing: options?.allowsEditing ?? false,
         quality: options?.quality ?? 0.8,
         base64: true, // Get base64 data to send to web
@@ -330,7 +330,7 @@ export default function WebAppView({ url = 'https://app.cogno.studio', session }
 
       // Launch camera
       const result = await ImagePicker.launchCameraAsync({
-        mediaTypes: options?.mediaTypes || ['images'],
+        mediaTypes: (options?.mediaTypes?.[0] as ImagePicker.MediaTypeOptions) || ImagePicker.MediaTypeOptions.Images,
         allowsEditing: options?.allowsEditing ?? false,
         quality: options?.quality ?? 0.8,
         base64: true, // Get base64 data to send to web
