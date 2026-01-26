@@ -110,7 +110,7 @@ export default function WorkspacePage() {
 
       {/* Bottom Search Bar and Create Button */}
       <div
-        className={`fixed left-0 right-0 z-50 px-4 md:px-6 py-4 transition-all duration-300 ${
+        className={`fixed left-0 right-0 z-51 px-4 md:px-6 py-4 transition-all duration-300 ${
           isInputActive ? 'bottom-0 md:bottom-[72px]' : 'bottom-[72px]'
         }`}
       >
