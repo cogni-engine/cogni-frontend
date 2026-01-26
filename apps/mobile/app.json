@@ -15,27 +15,11 @@
       "usesAppleSignIn": true,
       "backgroundColor": "#000000",
       "infoPlist": {
-        "CFBundleDevelopmentRegion": "en",
-        "CFBundleLocalizations": [
-          "en",
-          "ja"
-        ],
-        "NSCameraUsageDescription": {
-          "en": "We use the camera to take photos you can share in group chats or with Cogni AI.",
-          "ja": "写真を撮影して、グループチャットやCogni AIに共有するためにカメラを使用します。"
-        },
-        "NSPhotoLibraryUsageDescription": {
-          "en": "We access your photo library so you can choose images to send in group chats or to Cogni AI.",
-          "ja": "グループチャットやCogni AIに送信する画像を選択するために写真ライブラリへアクセスします。"
-        },
-        "NSPhotoLibraryAddUsageDescription": {
-          "en": "We save images from group chats or Cogni to your photo library when you choose to save them.",
-          "ja": "グループチャットやCogniから受信した画像を保存するために写真ライブラリへの追加アクセスを使用します。"
-        },
-        "NSMicrophoneUsageDescription": {
-          "en": "We use the microphone for voice messages and voice input features.",
-          "ja": "音声メッセージの送信や音声入力機能のためにマイクを使用します。"
-        },
+        "CFBundleAllowMixedLocalizations": true,
+        "NSCameraUsageDescription": "We use the camera to take photos you can share in group chats or with Cogni AI.",
+        "NSPhotoLibraryUsageDescription": "We access your photo library so you can choose images to send in group chats or to Cogni AI.",
+        "NSPhotoLibraryAddUsageDescription": "We save images from group chats or Cogni to your photo library when you choose to save them.",
+        "NSMicrophoneUsageDescription": "We use the microphone for voice messages and voice input features.",
         "NSAppTransportSecurity": {
           "NSAllowsArbitraryLoads": true,
           "NSAllowsLocalNetworking": true
@@ -66,6 +50,9 @@
     "web": {
       "output": "static",
       "favicon": "./assets/images/favicon.png"
+    },
+    "locales": {
+      "ja": "./locales/ja.json"
     },
     "plugins": [
       "expo-router",
