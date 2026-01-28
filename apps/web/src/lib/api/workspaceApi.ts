@@ -234,60 +234,59 @@ export async function createWorkspace(
     throw new Error('User not authenticated');
   }
 
-  // Try to create workspace directly (bypassing RPC function)
-  // This will work if RLS policies allow it
-  const { data: workspace, error: workspaceError } = await supabase
-    .from('workspace')
-    .insert({
-      title,
-      type: 'group', // Explicitly set type to avoid NOT NULL constraint violation
-    })
-    .select()
-    .single();
+  // Use RPC function to create workspace (bypasses RLS)
+  const { data: rpcData, error: rpcError } = await supabase.rpc(
+    'create_workspace_with_member',
+    {
+      p_title: title,
+    }
+  );
 
-  if (workspaceError) {
-    console.error('Failed to create workspace:', workspaceError);
+  if (rpcError) {
+    console.error('Failed to create workspace via RPC:', rpcError);
     
-    // If RLS blocks direct insert, fall back to error message
-    if (workspaceError.code === '42501') {
+    // If RPC fails with NOT NULL constraint error, try to handle it
+    if (rpcError.code === '23502') {
+      // RPC function didn't set type, but workspace might have been created
+      // Try to find the workspace and update it
       throw new Error(
-        'Workspace creation failed: Row-level security policy prevents direct workspace creation. ' +
+        'Workspace creation failed: The database function needs to be updated. ' +
         'Please update the create_workspace_with_member function in Supabase to set type=\'group\' in the INSERT statement.'
       );
     }
     
     throw new Error(
-      workspaceError.message ||
-      `Workspace creation failed: ${workspaceError.code || 'Unknown error'}`
+      rpcError.message ||
+      `Workspace creation failed: ${rpcError.code || 'Unknown error'}`
     );
   }
 
-  if (!workspace?.id) {
-    throw new Error('Failed to create workspace: No workspace ID returned');
+  if (!rpcData || rpcData.length === 0 || !rpcData[0]?.workspace_id) {
+    throw new Error('Failed to create workspace: No workspace ID returned from RPC');
   }
 
-  const workspaceId = workspace.id;
+  const workspaceId = rpcData[0].workspace_id;
 
-  // Add current user as owner of the workspace
-  const { error: memberError } = await supabase
-    .from('workspace_member')
-    .insert({
-      workspace_id: workspaceId,
-      user_id: user.id,
-      role: 'owner',
-    });
+  // Fetch the created workspace
+  const { data: workspace, error: fetchError } = await supabase
+    .from('workspace')
+    .select('*')
+    .eq('id', workspaceId)
+    .single();
 
-  if (memberError) {
-    console.error('Failed to add user as workspace member:', memberError);
-    // Try to clean up the workspace if member insertion fails
-    try {
-      await supabase.from('workspace').delete().eq('id', workspaceId);
-    } catch (cleanupError) {
-      console.error('Failed to cleanup workspace after member insertion failure:', cleanupError);
-    }
+  if (fetchError || !workspace) {
     throw new Error(
-      `Failed to add user as workspace member: ${memberError.message}`
+      `Failed to fetch created workspace: ${fetchError?.message || 'Workspace not found'}`
     );
+  }
+
+  // If type is null, update it (RPC function might not set it)
+  if (!workspace.type) {
+    console.warn('Workspace type is null, updating to "group"');
+    const updatedWorkspace = await updateWorkspace(workspaceId, { type: 'group' });
+    if (updatedWorkspace) {
+      workspace.type = updatedWorkspace.type;
+    }
   }
 
   // Generate and upload default workspace icon
@@ -493,14 +492,79 @@ export async function getAllWorkspaceMembersForUser(): Promise<
   const members = (data ?? []) as SupabaseWorkspaceMember[];
 
   // Deduplicate by user_id (a user might be in multiple workspaces)
-  const uniqueMembersMap = new Map<number, WorkspaceMember>();
+  const uniqueMembersMap = new Map<string, WorkspaceMember>();
 
   members.forEach(member => {
-    const normalized = normalizeWorkspaceMember(member);
-    if (!uniqueMembersMap.has(member.id)) {
-      uniqueMembersMap.set(member.id, normalized);
+    if (member.user_id) {
+      const normalized = normalizeWorkspaceMember(member);
+      if (!uniqueMembersMap.has(member.user_id)) {
+        uniqueMembersMap.set(member.user_id, normalized);
+      }
     }
   });
 
   return Array.from(uniqueMembersMap.values());
+}
+
+/**
+ * Add multiple members to a workspace
+ * @param workspaceId The workspace ID
+ * @param userIds Array of user IDs to add
+ * @returns Array of created workspace member IDs
+ */
+export async function addWorkspaceMembers(
+  workspaceId: number,
+  userIds: string[]
+): Promise<number[]> {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    throw new Error('User not authenticated');
+  }
+
+  if (userIds.length === 0) {
+    return [];
+  }
+
+  // Check which users are already members
+  const { data: existingMembers, error: checkError } = await supabase
+    .from('workspace_member')
+    .select('user_id')
+    .eq('workspace_id', workspaceId)
+    .in('user_id', userIds);
+
+  if (checkError) {
+    throw checkError;
+  }
+
+  const existingUserIds = new Set(
+    (existingMembers || []).map(m => m.user_id).filter(Boolean) as string[]
+  );
+
+  // Filter out users who are already members
+  const newUserIds = userIds.filter(id => !existingUserIds.has(id));
+
+  if (newUserIds.length === 0) {
+    return [];
+  }
+
+  // Insert new members
+  const { data: insertedMembers, error: insertError } = await supabase
+    .from('workspace_member')
+    .insert(
+      newUserIds.map(userId => ({
+        workspace_id: workspaceId,
+        user_id: userId,
+        role: 'member',
+      }))
+    )
+    .select('id');
+
+  if (insertError) {
+    throw insertError;
+  }
+
+  return (insertedMembers || []).map(m => m.id);
 }

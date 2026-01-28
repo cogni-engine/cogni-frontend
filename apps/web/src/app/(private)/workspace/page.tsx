@@ -44,7 +44,7 @@ export default function WorkspacePage() {
     id: number | null;
     title: string;
     iconFile: File | null;
-  }) => {
+  }): Promise<number | void> => {
     if (id) {
       const updates: Partial<Pick<Workspace, 'title' | 'icon_url'>> = {
         title,
@@ -61,10 +61,20 @@ export default function WorkspacePage() {
 
     const workspace = await create(title);
 
-    if (iconFile && workspace?.id) {
+    console.log('WorkspacePage: create returned workspace:', workspace);
+
+    if (!workspace?.id) {
+      throw new Error('Failed to create workspace: No workspace ID returned');
+    }
+
+    if (iconFile) {
       const { iconUrl } = await uploadWorkspaceIcon(workspace.id, iconFile);
       await update(workspace.id, { icon_url: iconUrl });
     }
+
+    console.log('WorkspacePage: Returning workspaceId:', workspace.id);
+    // Return workspace ID for navigation
+    return workspace.id;
   };
 
   if (error) {

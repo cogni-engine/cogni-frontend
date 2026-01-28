@@ -9,6 +9,7 @@ import {
   useRef,
   useState,
 } from 'react';
+import { useRouter } from 'next/navigation';
 import type { Area } from 'react-easy-crop';
 import type { Workspace } from '@/types/workspace';
 import { Plus, Sparkles } from 'lucide-react';
@@ -38,7 +39,7 @@ interface WorkspaceFormProps {
     id: number | null;
     title: string;
     iconFile: File | null;
-  }) => Promise<void>;
+  }) => Promise<number | void>;
   onEditComplete?: () => void;
   isLoading?: boolean;
 }
@@ -49,6 +50,7 @@ export default function WorkspaceForm({
   onEditComplete,
   isLoading,
 }: WorkspaceFormProps) {
+  const router = useRouter();
   const [open, setOpen] = useState(false);
   const [title, setTitle] = useState(() => workspace?.title ?? '');
   const [error, setError] = useState<string | null>(null);
@@ -267,12 +269,28 @@ export default function WorkspaceForm({
 
       setIsSubmitting(true);
       try {
-        await onSubmit({
+        const workspaceId = await onSubmit({
           id: workspace?.id ?? null,
           title: trimmedTitle,
           iconFile,
         });
-        handleDialogOpenChange(false);
+
+        console.log('WorkspaceForm: onSubmit returned workspaceId:', workspaceId);
+        console.log('WorkspaceForm: workspace:', workspace);
+        console.log('WorkspaceForm: isNewWorkspace:', !workspace);
+
+        // If creating a new workspace, navigate to members page
+        if (!workspace && workspaceId && typeof workspaceId === 'number') {
+          console.log('WorkspaceForm: Navigating to members page with workspaceId:', workspaceId);
+          // Navigate first, then close dialog
+          router.push(`/workspace/${workspaceId}/members?invite=true`);
+          // Close dialog after navigation
+          setTimeout(() => {
+            handleDialogOpenChange(false);
+          }, 100);
+        } else {
+          handleDialogOpenChange(false);
+        }
       } catch (err) {
         console.error('Failed to save workspace', err);
         setError(
@@ -420,12 +438,28 @@ export default function WorkspaceForm({
                 }
                 setIsSubmitting(true);
                 try {
-                  await onSubmit({
+                  const workspaceId = await onSubmit({
                     id: workspace?.id ?? null,
                     title: trimmedTitle,
                     iconFile,
                   });
-                  handleDialogOpenChange(false);
+
+                  console.log('WorkspaceForm (button): onSubmit returned workspaceId:', workspaceId);
+                  console.log('WorkspaceForm (button): workspace:', workspace);
+                  console.log('WorkspaceForm (button): isNewWorkspace:', !workspace);
+
+                  // If creating a new workspace, navigate to members page
+                  if (!workspace && workspaceId && typeof workspaceId === 'number') {
+                    console.log('WorkspaceForm (button): Navigating to members page with workspaceId:', workspaceId);
+                    // Navigate first, then close dialog
+                    router.push(`/workspace/${workspaceId}/members?invite=true`);
+                    // Close dialog after navigation
+                    setTimeout(() => {
+                      handleDialogOpenChange(false);
+                    }, 100);
+                  } else {
+                    handleDialogOpenChange(false);
+                  }
                 } catch (err) {
                   console.error('Failed to save workspace', err);
                   console.error('Error type:', typeof err);

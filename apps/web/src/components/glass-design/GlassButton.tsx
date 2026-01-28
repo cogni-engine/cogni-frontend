@@ -18,6 +18,7 @@ const GlassButton = React.forwardRef<HTMLButtonElement, GlassButtonProps>(
         border border-black/10
         rounded-full
         p-2
+        text-black
       
         transition-all
         duration-200
