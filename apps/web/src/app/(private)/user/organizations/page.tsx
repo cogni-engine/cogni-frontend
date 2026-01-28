@@ -320,15 +320,6 @@ export default function OrganizationsPage() {
     );
   }
 
-  // Debug: Log role information
-  console.log('🔍 Current Org Data:', {
-    orgId: currentOrg.organization.id,
-    orgName: currentOrg.organization.name,
-    memberRoleId: currentOrg.organization_member.role_id,
-    organizationRole: currentOrg.organization_role,
-    computedRole: currentOrg.role,
-  });
-
   const isOwner = currentOrg.role === 'owner';
   const isAdmin = currentOrg.role === 'admin' || isOwner;
 

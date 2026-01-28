@@ -2,8 +2,8 @@
 
 import React, { createContext, useContext, ReactNode } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { getOrganizations } from '@/features/users/subscriptions/api/billingApi';
-import { useUserId } from '@/features/users/subscriptions/hooks/useOrganizations';
+import { getOrganizations } from '@/features/organizations/api/billingApi';
+import { useUserId } from '@/features/organizations/hooks/useOrganizations';
 import type { UserOrganizationData } from '@/lib/api/organizationApi';
 
 type SubscriptionContextType = {
