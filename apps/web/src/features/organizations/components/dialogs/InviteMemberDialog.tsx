@@ -11,6 +11,7 @@ import {
 import GlassButton from '@/components/glass-design/GlassButton';
 import { UserPlus, Loader2, Mail, Info } from 'lucide-react';
 import { useCreateInvitation } from '../../hooks/useOrganizationInvitations';
+import { RoleSelector } from '../RoleSelector';
 
 interface InviteMemberDialogProps {
   open: boolean;
@@ -100,34 +101,18 @@ export function InviteMemberDialog({
               </div>
             </div>
 
-            <div className='space-y-2'>
-              <label
-                htmlFor='invite-role'
-                className='text-sm font-medium text-white/80'
-              >
-                Role
-              </label>
-              <select
-                id='invite-role'
-                value={inviteRoleId}
-                onChange={e => setInviteRoleId(Number(e.target.value))}
-                className='w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white focus:outline-none focus:border-white/20 transition-all'
-                disabled={createInvitation.isPending}
-              >
-                <option value={3} className='bg-gray-900'>
-                  Member - Basic access
-                </option>
-                <option value={2} className='bg-gray-900'>
-                  Admin - Can manage members and invitations
-                </option>
-              </select>
-              <div className='flex items-start gap-2 text-xs text-white/50 mt-2'>
-                <Info className='h-3 w-3 mt-0.5 shrink-0' />
-                <p>
-                  Admins can invite and remove members. Owner role cannot be
-                  assigned.
-                </p>
-              </div>
+            <RoleSelector
+              value={inviteRoleId}
+              onChange={setInviteRoleId}
+              disabled={createInvitation.isPending}
+              label='Role'
+            />
+            <div className='flex items-start gap-2 text-xs text-white/50'>
+              <Info className='h-3 w-3 mt-0.5 shrink-0' />
+              <p>
+                Admins can invite and remove members. Owner role cannot be
+                assigned.
+              </p>
             </div>
           </form>
         </DrawerBody>

@@ -1,7 +1,7 @@
 'use client';
 
 import * as React from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { loadStripe } from '@stripe/stripe-js';
 import {
   EmbeddedCheckoutProvider,
@@ -24,6 +24,7 @@ const API_BASE_URL =
 export default function CheckoutPage() {
   const params = useParams();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const planId = params.planId as string;
   const [isLoading, setIsLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
@@ -99,7 +100,10 @@ export default function CheckoutPage() {
 
       // Add seat count for business plan
       if (planId === 'business') {
-        requestBody.seatCount = 1;
+        // Get seat count from URL parameter or default to 1
+        const seatsParam = searchParams.get('seats');
+        requestBody.seatCount = seatsParam ? parseInt(seatsParam, 10) : 1;
+        console.log('💺 Business plan seat count:', requestBody.seatCount);
       }
 
       // Call unified FastAPI endpoint
@@ -132,7 +136,7 @@ export default function CheckoutPage() {
       );
       throw err;
     }
-  }, [planId]);
+  }, [planId, searchParams]);
 
   const options = React.useMemo(
     () => ({

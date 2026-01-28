@@ -13,6 +13,7 @@ import { Button } from '@/components/ui/button';
 import { PricingCard, type PricingPlan } from '@cogni/pricing';
 import { DEFAULT_PRICING_JA } from '@cogni/pricing/src/constants';
 import { getSubscriptionPlanFromJWT } from '@/lib/jwtUtils';
+import { BusinessSeatSelectionDialog } from '@/features/organizations/components/dialogs/BusinessSeatSelectionDialog';
 
 type PricingModalProps = {
   open: boolean;
@@ -25,6 +26,7 @@ export function PricingModal({ open, onOpenChange }: PricingModalProps) {
     null
   );
   const [isLoading, setIsLoading] = React.useState(true);
+  const [showSeatSelection, setShowSeatSelection] = React.useState(false);
 
   React.useEffect(() => {
     if (open) {
@@ -46,71 +48,81 @@ export function PricingModal({ open, onOpenChange }: PricingModalProps) {
       // Redirect to subscription management page
       router.push('/user/subscription');
       onOpenChange(false);
+    } else if (planId === 'business') {
+      // Show seat selection dialog for business plan
+      setShowSeatSelection(true);
     } else {
-      // Navigate to checkout page for the selected plan
+      // Navigate to checkout page for other plans
       router.push(`/checkout/${planId}`);
       onOpenChange(false);
     }
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className='max-w-full max-h-[80vh] overflow-y-auto z-110'>
-        <DialogHeader>
-          <DialogTitle className='text-3xl text-center mb-2'>
-            {DEFAULT_PRICING_JA.title}
-          </DialogTitle>
-          <DialogDescription className='text-center text-base'>
-            {DEFAULT_PRICING_JA.description}
-          </DialogDescription>
-        </DialogHeader>
+    <>
+      <Dialog open={open} onOpenChange={onOpenChange}>
+        <DialogContent className='max-w-full max-h-[80vh] overflow-y-auto z-110'>
+          <DialogHeader>
+            <DialogTitle className='text-3xl text-center mb-2'>
+              {DEFAULT_PRICING_JA.title}
+            </DialogTitle>
+            <DialogDescription className='text-center text-base'>
+              {DEFAULT_PRICING_JA.description}
+            </DialogDescription>
+          </DialogHeader>
 
-        <div className='grid gap-6 md:grid-cols-3 mt-6'>
-          {plansToShow.map(plan => {
-            const isCurrentPlan = plan.id === subscriptionPlan;
-            return (
-              <div key={plan.id} className='relative'>
-                {isCurrentPlan && (
-                  <div className='absolute -top-3 left-1/2 transform -translate-x-1/2 z-10'>
-                    <span className='bg-purple-500 text-white text-xs font-semibold px-3 py-1 rounded-full'>
-                      Current Plan
-                    </span>
-                  </div>
-                )}
-                <PricingCard
-                  plan={plan}
-                  bestValueLabel={DEFAULT_PRICING_JA.bestValueLabel}
-                  className={`border-white/20 ${
-                    isCurrentPlan ? 'ring-2 ring-purple-500' : ''
-                  }`}
-                  featureClassName='gap-2'
-                  priceClassName='text-5xl'
-                  renderButton={(plan: PricingPlan) => (
-                    <Button
-                      variant={plan.isBestValue ? 'default' : 'outline'}
-                      className={`w-full rounded-full ${
-                        plan.isBestValue
-                          ? 'bg-purple-500 hover:bg-purple-600 text-white border-transparent'
-                          : 'bg-white border-white/20 hover:bg-white/80 text-black'
-                      }`}
-                      onClick={() => handleButtonClick(plan.id)}
-                      disabled={isLoading || isCurrentPlan}
-                    >
-                      {isLoading
-                        ? 'Loading...'
-                        : isProOrBusiness
-                          ? 'サブスクリプションを管理'
-                          : isCurrentPlan
-                            ? '現在のプラン'
-                            : 'アップグレード'}
-                    </Button>
+          <div className='grid gap-6 md:grid-cols-3 mt-6'>
+            {plansToShow.map(plan => {
+              const isCurrentPlan = plan.id === subscriptionPlan;
+              return (
+                <div key={plan.id} className='relative'>
+                  {isCurrentPlan && (
+                    <div className='absolute -top-3 left-1/2 transform -translate-x-1/2 z-10'>
+                      <span className='bg-purple-500 text-white text-xs font-semibold px-3 py-1 rounded-full'>
+                        Current Plan
+                      </span>
+                    </div>
                   )}
-                />
-              </div>
-            );
-          })}
-        </div>
-      </DialogContent>
-    </Dialog>
+                  <PricingCard
+                    plan={plan}
+                    bestValueLabel={DEFAULT_PRICING_JA.bestValueLabel}
+                    className={`border-white/20 ${
+                      isCurrentPlan ? 'ring-2 ring-purple-500' : ''
+                    }`}
+                    featureClassName='gap-2'
+                    priceClassName='text-5xl'
+                    renderButton={(plan: PricingPlan) => (
+                      <Button
+                        variant={plan.isBestValue ? 'default' : 'outline'}
+                        className={`w-full rounded-full ${
+                          plan.isBestValue
+                            ? 'bg-purple-500 hover:bg-purple-600 text-white border-transparent'
+                            : 'bg-white border-white/20 hover:bg-white/80 text-black'
+                        }`}
+                        onClick={() => handleButtonClick(plan.id)}
+                        disabled={isLoading || isCurrentPlan}
+                      >
+                        {isLoading
+                          ? 'Loading...'
+                          : isProOrBusiness
+                            ? 'サブスクリプションを管理'
+                            : isCurrentPlan
+                              ? '現在のプラン'
+                              : 'アップグレード'}
+                      </Button>
+                    )}
+                  />
+                </div>
+              );
+            })}
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <BusinessSeatSelectionDialog
+        open={showSeatSelection}
+        onOpenChange={setShowSeatSelection}
+      />
+    </>
   );
 }

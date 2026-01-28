@@ -5,6 +5,7 @@ export interface Member {
   email: string;
   role_id: number;
   role_name: string;
+  avatar_url?: string | null;
 }
 
 export interface MemberWithActions extends Member {

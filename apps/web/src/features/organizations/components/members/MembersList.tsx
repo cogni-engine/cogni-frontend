@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Plus } from 'lucide-react';
+import { Plus, Users as UsersIcon } from 'lucide-react';
 import GlassButton from '@/components/glass-design/GlassButton';
 import { MemberCard } from './MemberCard';
 import type { Member } from '../../types/members';
@@ -12,6 +12,8 @@ interface MembersListProps {
   onUpdateRole: (member: Member) => void;
   onRemove: (member: Member) => void;
   onInvite: () => void;
+  activeMemberCount: number;
+  totalSeats: number;
 }
 
 export function MembersList({
@@ -21,11 +23,24 @@ export function MembersList({
   onUpdateRole,
   onRemove,
   onInvite,
+  activeMemberCount,
+  totalSeats,
 }: MembersListProps) {
   return (
-    <div className='mt-6'>
+    <div className='mt-8'>
       <div className='flex items-center justify-between mb-4'>
-        <h3 className='text-lg font-semibold text-white'>Members</h3>
+        <div className='flex items-center gap-3'>
+          <h3 className='text-lg font-semibold text-white'>Members</h3>
+          <div className='flex items-center gap-3 text-sm text-white/60'>
+            <span className='flex items-center gap-1.5'>
+              <UsersIcon className='h-4 w-4' />
+              {activeMemberCount} members
+            </span>
+            {totalSeats > 0 && (
+              <span className='text-white/40'>• {totalSeats} seats</span>
+            )}
+          </div>
+        </div>
         {permissions.isAdmin && (
           <GlassButton
             onClick={onInvite}

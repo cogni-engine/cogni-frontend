@@ -11,7 +11,6 @@ import type { OrganizationInvitation } from '@/lib/api/organizationInvitationsAp
 
 // Feature imports
 import { OrganizationSelector } from '@/features/organizations/components/OrganizationSelector';
-import { OrganizationInfoCard } from '@/features/organizations/components/OrganizationInfoCard';
 import { MembersList } from '@/features/organizations/components/members/MembersList';
 import { PendingInvitationsList } from '@/features/organizations/components/members/PendingInvitationsList';
 import { InviteMemberDialog } from '@/features/organizations/components/dialogs/InviteMemberDialog';
@@ -197,35 +196,15 @@ export default function OrganizationsPage() {
 
   return (
     <div className='h-full overflow-y-auto px-4 md:px-6'>
-      <div className='max-w-7xl mx-auto py-6'>
-        {/* Header */}
-        <div className='mb-6 flex items-center justify-start gap-2 relative z-101'>
-          <GlassButton
-            onClick={() => router.push('/')}
-            size='icon'
-            className='size-12 text-white/60 hover:text-white'
-          >
-            <ArrowLeft className='h-5 w-5' />
-          </GlassButton>
-
-          <div className='flex items-center justify-between flex-1'>
-            <h1 className='text-3xl font-bold text-white mb-2'>
-              Organizations
-            </h1>
-            {/* Organization Selector */}
-            <OrganizationSelector
-              organizations={organizations}
-              currentOrg={currentOrg}
-              onOrganizationChange={handleOrganizationChange}
-            />
-          </div>
+      <div className='max-w-7xl mx-auto py-16'>
+        <div className='mb-6 flex items-center justify-between relative z-101'>
+          {/* Organization Selector */}
+          <OrganizationSelector
+            organizations={organizations}
+            currentOrg={currentOrg}
+            onOrganizationChange={handleOrganizationChange}
+          />
         </div>
-
-        {/* Organization Info */}
-        <OrganizationInfoCard
-          organization={currentOrg}
-          isOwner={permissions.isOwner}
-        />
 
         {/* Members List */}
         <MembersList
@@ -241,6 +220,8 @@ export default function OrganizationsPage() {
             setMemberToRemove(member);
             setShowRemoveDialog(true);
           }}
+          activeMemberCount={currentOrg.organization.active_member_count}
+          totalSeats={currentOrg.organization.seat_count}
         />
 
         {/* Pending Invitations */}

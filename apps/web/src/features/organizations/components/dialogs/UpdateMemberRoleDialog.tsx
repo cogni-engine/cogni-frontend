@@ -11,6 +11,7 @@ import {
 import GlassButton from '@/components/glass-design/GlassButton';
 import { Shield, Loader2, Info } from 'lucide-react';
 import { useUpdateMemberRole } from '../../hooks/useOrganizationMembers';
+import { RoleSelector } from '../RoleSelector';
 import type { Member } from '../../types/members';
 import { getMemberDisplayName } from '../../utils/memberUtils';
 
@@ -87,43 +88,28 @@ export function UpdateMemberRoleDialog({
                   </p>
                 </div>
 
-                <div className='space-y-2'>
-                  <label
-                    htmlFor='new-role'
-                    className='text-sm font-medium text-white/80'
-                  >
-                    New Role
-                  </label>
-                  <select
-                    id='new-role'
+                <div className='space-y-4'>
+                  <RoleSelector
                     value={newRoleId}
-                    onChange={e => setNewRoleId(Number(e.target.value))}
-                    className='w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white focus:outline-none focus:border-white/20 transition-all'
+                    onChange={setNewRoleId}
                     disabled={updateMemberRole.isPending}
-                    autoFocus
-                  >
-                    <option value={3} className='bg-gray-900'>
-                      Member - Basic access
-                    </option>
-                    <option value={2} className='bg-gray-900'>
-                      Admin - Can manage members and invitations
-                    </option>
-                  </select>
+                    label='New Role'
+                  />
 
-                  <div className='mt-3 p-3 bg-blue-500/10 border border-blue-500/30 rounded-xl'>
+                  <div className='p-4 bg-blue-500/10 border border-blue-500/30 rounded-xl'>
                     <div className='flex items-start gap-2 text-xs text-blue-200'>
                       <Info className='h-4 w-4 mt-0.5 shrink-0' />
-                      <div className='space-y-1'>
-                        <p className='font-medium'>Role Permissions:</p>
+                      <div className='space-y-1.5'>
+                        <p className='font-medium text-sm'>Role Permissions:</p>
                         {newRoleId === 2 ? (
-                          <ul className='list-disc list-inside space-y-0.5 text-blue-200/80'>
+                          <ul className='list-disc list-inside space-y-1 text-blue-200/80'>
                             <li>Invite new members</li>
                             <li>Remove members (except owners)</li>
                             <li>Change member roles</li>
                             <li>View all organization data</li>
                           </ul>
                         ) : (
-                          <ul className='list-disc list-inside space-y-0.5 text-blue-200/80'>
+                          <ul className='list-disc list-inside space-y-1 text-blue-200/80'>
                             <li>View organization members</li>
                             <li>Access organization resources</li>
                             <li>Basic member privileges</li>
