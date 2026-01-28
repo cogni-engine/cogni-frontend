@@ -18,7 +18,7 @@ const GlassButton = React.forwardRef<HTMLButtonElement, GlassButtonProps>(
         border border-black/10
         rounded-full
         p-2
-        text-black
+        !text-white
       
         transition-all
         duration-200
@@ -40,9 +40,11 @@ const GlassButton = React.forwardRef<HTMLButtonElement, GlassButtonProps>(
         focus-visible:ring-offset-2
         focus-visible:ring-offset-transparent
       
-        disabled:opacity-40
+        disabled:bg-white/2
+        disabled:border-white/5
         disabled:pointer-events-none
         disabled:shadow-none
+        disabled:cursor-not-allowed
         `,
         className
       )}

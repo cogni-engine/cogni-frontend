@@ -295,8 +295,8 @@ export default function WorkspaceMembersPage() {
             />
           </div>
 
-          {/* Action Buttons - Fixed at bottom, outside scroll */}
-          <div className='flex-shrink-0 px-4 pb-4 pt-3 border-t border-white/10 flex gap-3 bg-[#0a0a0a]'>
+          {/* Action Buttons - Fixed at bottom, above global bottom gradient */}
+          <div className='flex-shrink-0 px-4 pb-4 pt-3 border-t border-white/10 flex gap-3 bg-[#0a0a0a] relative z-60'>
             <GlassButton
               type='button'
               onClick={() => {
@@ -315,7 +315,7 @@ export default function WorkspaceMembersPage() {
               type='button'
               onClick={handleAddExistingMembers}
               disabled={selectedUserIds.length === 0 || isAddingMembers}
-              className='flex-1 opacity-100 disabled:opacity-40'
+              className='flex-1'
             >
               <span className='font-medium text-white text-sm'>
                 {isAddingMembers
