@@ -244,25 +244,27 @@ export async function createWorkspace(
 
   if (rpcError) {
     console.error('Failed to create workspace via RPC:', rpcError);
-    
+
     // If RPC fails with NOT NULL constraint error, try to handle it
     if (rpcError.code === '23502') {
       // RPC function didn't set type, but workspace might have been created
       // Try to find the workspace and update it
       throw new Error(
         'Workspace creation failed: The database function needs to be updated. ' +
-        'Please update the create_workspace_with_member function in Supabase to set type=\'group\' in the INSERT statement.'
+          "Please update the create_workspace_with_member function in Supabase to set type='group' in the INSERT statement."
       );
     }
-    
+
     throw new Error(
       rpcError.message ||
-      `Workspace creation failed: ${rpcError.code || 'Unknown error'}`
+        `Workspace creation failed: ${rpcError.code || 'Unknown error'}`
     );
   }
 
   if (!rpcData || rpcData.length === 0 || !rpcData[0]?.workspace_id) {
-    throw new Error('Failed to create workspace: No workspace ID returned from RPC');
+    throw new Error(
+      'Failed to create workspace: No workspace ID returned from RPC'
+    );
   }
 
   const workspaceId = rpcData[0].workspace_id;
@@ -283,7 +285,9 @@ export async function createWorkspace(
   // If type is null, update it (RPC function might not set it)
   if (!workspace.type) {
     console.warn('Workspace type is null, updating to "group"');
-    const updatedWorkspace = await updateWorkspace(workspaceId, { type: 'group' });
+    const updatedWorkspace = await updateWorkspace(workspaceId, {
+      type: 'group',
+    });
     if (updatedWorkspace) {
       workspace.type = updatedWorkspace.type;
     }

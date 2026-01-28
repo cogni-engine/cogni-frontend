@@ -98,11 +98,7 @@ export default function WorkspaceMembersPage() {
     try {
       await addWorkspaceMembers(workspaceId, selectedUserIds);
       await mutate(`/workspaces/${workspaceId}/members`);
-      window.history.replaceState(
-        {},
-        '',
-        `/workspace/${workspaceId}/members`
-      );
+      window.history.replaceState({}, '', `/workspace/${workspaceId}/members`);
       setSelectedUserIds([]);
     } catch (error) {
       console.error('Failed to add members:', error);
@@ -183,9 +179,7 @@ export default function WorkspaceMembersPage() {
         <div className='flex flex-col h-full relative overflow-hidden'>
           {/* Header - Moved down to avoid overlap with back button */}
           <div className='flex-shrink-0 px-4 pt-20 pb-2'>
-            <h2 className='text-xl font-semibold text-white'>
-              Invite Members
-            </h2>
+            <h2 className='text-xl font-semibold text-white'>Invite Members</h2>
           </div>
 
           {/* Invitation Buttons - Fixed at top */}

@@ -275,13 +275,19 @@ export default function WorkspaceForm({
           iconFile,
         });
 
-        console.log('WorkspaceForm: onSubmit returned workspaceId:', workspaceId);
+        console.log(
+          'WorkspaceForm: onSubmit returned workspaceId:',
+          workspaceId
+        );
         console.log('WorkspaceForm: workspace:', workspace);
         console.log('WorkspaceForm: isNewWorkspace:', !workspace);
 
         // If creating a new workspace, navigate to members page
         if (!workspace && workspaceId && typeof workspaceId === 'number') {
-          console.log('WorkspaceForm: Navigating to members page with workspaceId:', workspaceId);
+          console.log(
+            'WorkspaceForm: Navigating to members page with workspaceId:',
+            workspaceId
+          );
           // Navigate first, then close dialog
           router.push(`/workspace/${workspaceId}/members?invite=true`);
           // Close dialog after navigation
@@ -444,15 +450,30 @@ export default function WorkspaceForm({
                     iconFile,
                   });
 
-                  console.log('WorkspaceForm (button): onSubmit returned workspaceId:', workspaceId);
+                  console.log(
+                    'WorkspaceForm (button): onSubmit returned workspaceId:',
+                    workspaceId
+                  );
                   console.log('WorkspaceForm (button): workspace:', workspace);
-                  console.log('WorkspaceForm (button): isNewWorkspace:', !workspace);
+                  console.log(
+                    'WorkspaceForm (button): isNewWorkspace:',
+                    !workspace
+                  );
 
                   // If creating a new workspace, navigate to members page
-                  if (!workspace && workspaceId && typeof workspaceId === 'number') {
-                    console.log('WorkspaceForm (button): Navigating to members page with workspaceId:', workspaceId);
+                  if (
+                    !workspace &&
+                    workspaceId &&
+                    typeof workspaceId === 'number'
+                  ) {
+                    console.log(
+                      'WorkspaceForm (button): Navigating to members page with workspaceId:',
+                      workspaceId
+                    );
                     // Navigate first, then close dialog
-                    router.push(`/workspace/${workspaceId}/members?invite=true`);
+                    router.push(
+                      `/workspace/${workspaceId}/members?invite=true`
+                    );
                     // Close dialog after navigation
                     setTimeout(() => {
                       handleDialogOpenChange(false);
@@ -464,18 +485,26 @@ export default function WorkspaceForm({
                   console.error('Failed to save workspace', err);
                   console.error('Error type:', typeof err);
                   console.error('Error object:', err);
-                  
+
                   let errorMessage = 'Failed to save workspace';
-                  
+
                   if (err instanceof Error) {
                     errorMessage = err.message || errorMessage;
                   } else if (typeof err === 'object' && err !== null) {
                     // Supabase error structure: { message, details, hint, code }
-                    const supabaseError = err as { message?: string; details?: string; hint?: string; code?: string };
+                    const supabaseError = err as {
+                      message?: string;
+                      details?: string;
+                      hint?: string;
+                      code?: string;
+                    };
                     if (supabaseError.message) {
                       errorMessage = supabaseError.message;
                     }
-                    if (supabaseError.details && !errorMessage.includes(supabaseError.details)) {
+                    if (
+                      supabaseError.details &&
+                      !errorMessage.includes(supabaseError.details)
+                    ) {
                       errorMessage += `: ${supabaseError.details}`;
                     }
                     console.error('Error code:', supabaseError.code);
@@ -483,7 +512,7 @@ export default function WorkspaceForm({
                   } else {
                     errorMessage = String(err);
                   }
-                  
+
                   setError(errorMessage);
                 } finally {
                   setIsSubmitting(false);

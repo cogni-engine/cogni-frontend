@@ -65,8 +65,7 @@ export default function MemberSelectionStep({
 
     if (query) {
       filtered = filtered.filter(member => {
-        const name =
-          member.user_profile?.name?.toLowerCase() || '';
+        const name = member.user_profile?.name?.toLowerCase() || '';
         return name.includes(query);
       });
     }
@@ -110,8 +109,7 @@ export default function MemberSelectionStep({
           <div className='flex flex-wrap gap-3'>
             {selectedMembers.map(member => {
               if (!member.user_id || !member.user_profile) return null;
-              const displayName =
-                member.user_profile.name || 'Unknown User';
+              const displayName = member.user_profile.name || 'Unknown User';
 
               return (
                 <div
@@ -138,7 +136,9 @@ export default function MemberSelectionStep({
                     </Avatar>
                     <button
                       type='button'
-                      onClick={() => handleRemoveSelectedMember(member.user_id!)}
+                      onClick={() =>
+                        handleRemoveSelectedMember(member.user_id!)
+                      }
                       className='absolute -top-1 -right-1 w-6 h-6 rounded-full bg-red-500 hover:bg-red-600 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-lg'
                       title='Remove'
                     >
@@ -184,8 +184,7 @@ export default function MemberSelectionStep({
             if (!member.user_id || !member.user_profile) return null;
 
             const isSelected = selectedUserIds.includes(member.user_id);
-            const displayName =
-              member.user_profile.name || 'Unknown User';
+            const displayName = member.user_profile.name || 'Unknown User';
 
             return (
               <button
