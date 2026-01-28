@@ -13,7 +13,7 @@ function PersonalNotesContent() {
   const isInputActive = useIsInputActive();
 
   return (
-    <div className='flex flex-col h-full text-gray-100 relative overflow-hidden'>
+    <div className='flex flex-col h-full min-h-0 text-gray-100 relative overflow-hidden'>
       <NotesPageHeader />
       <ScrollableView className='pt-20 pb-36'>
         <NotesPageContent />

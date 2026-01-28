@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { MicIcon, SearchIcon } from 'lucide-react';
+import { SearchIcon } from 'lucide-react';
 
 import GlassCard from '@/components/glass-design/GlassCard';
 import { cn } from '@/lib/utils';
@@ -28,7 +28,7 @@ const SearchBar = React.forwardRef<HTMLInputElement, SearchBarProps>(
         )}
         {...inputProps}
       />
-      <MicIcon className='ml-2 size-5 text-gray-400' />
+      {/* <MicIcon className='ml-2 size-5 text-gray-400' /> */}
     </GlassCard>
   )
 );

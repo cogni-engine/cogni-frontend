@@ -2,7 +2,14 @@
 
 import { useState, useMemo, createElement } from 'react';
 import { Editor } from '@tiptap/react';
-import { Sparkles, Loader2, ArrowUp, X, ChevronDown } from 'lucide-react';
+import {
+  Sparkles,
+  Loader2,
+  ArrowUp,
+  X,
+  ChevronDown,
+  ChevronLeft,
+} from 'lucide-react';
 import {
   ToolbarExternalActions,
   ExpandedGroupId,
@@ -85,7 +92,11 @@ export function MobileFloatingToolbar({
   };
 
   const handleAIButtonClick = () => {
-    setShowAIInput(!showAIInput);
+    setShowAIInput(true);
+  };
+
+  const handleCloseAIInput = () => {
+    setShowAIInput(false);
   };
 
   if (!editor) return null;
@@ -165,27 +176,29 @@ export function MobileFloatingToolbar({
         }}
       >
         <div className='mx-[8px] mb-[11px]'>
-          {/* AI Input Overlay - When AI button is clicked */}
-          {showAIInput && isEditorFocused && (
-            <GlassCard
-              className='pointer-events-auto p-2 rounded-3xl mb-2'
-              data-shepherd-target='note-ai-input'
-            >
-              <div className='flex items-center gap-2 pl-2'>
-                <Sparkles className='w-4 h-4 text-purple-400 shrink-0' />
+          <GlassCard
+            className='pointer-events-auto p-2 rounded-full'
+            data-shepherd-target={
+              !isEditorFocused || showAIInput ? 'note-ai-input' : 'note-toolbar'
+            }
+          >
+            {!isEditorFocused ? (
+              // AI Input Mode (when keyboard is not shown)
+              <div className='flex items-center px-2'>
+                <Sparkles className='mr-2 size-5 text-gray-400 shrink-0' />
                 <input
                   type='text'
                   value={aiInstruction}
                   onChange={e => onInstructionChange(e.target.value)}
                   onKeyDown={handleKeyDown}
                   placeholder='Ask AI to edit this note...'
-                  className='flex-1 bg-transparent text-white py-2 focus:outline-none placeholder-white/40 text-base'
+                  className='flex-1 bg-transparent text-white text-base outline-none placeholder-white/50'
                   disabled={aiLoading}
-                  autoFocus
                 />
                 <GlassButton
                   onClick={onSuggest}
                   disabled={aiLoading || !aiInstruction.trim()}
+                  className='ml-2'
                   aria-label='Send AI instruction'
                 >
                   {aiLoading ? (
@@ -194,38 +207,35 @@ export function MobileFloatingToolbar({
                     <ArrowUp className='w-4 h-4' />
                   )}
                 </GlassButton>
-                <GlassButton
-                  onClick={() => setShowAIInput(false)}
-                  aria-label='Close AI input'
-                >
-                  <X className='w-4 h-4' />
-                </GlassButton>
               </div>
-            </GlassCard>
-          )}
-
-          <GlassCard
-            className='pointer-events-auto p-2 rounded-full'
-            data-shepherd-target={
-              !isEditorFocused ? 'note-ai-input' : 'note-toolbar'
-            }
-          >
-            {!isEditorFocused ? (
-              // AI Input Mode (when keyboard is not shown)
-              <div className='flex items-center gap-2 pl-2'>
-                <Sparkles className='w-4 h-4 text-purple-400 shrink-0' />
+            ) : showAIInput ? (
+              // AI Input Mode (when keyboard is shown and AI button clicked)
+              <div className='flex items-center px-2'>
+                <ToolbarButton
+                  onClick={handleCloseAIInput}
+                  isActive={false}
+                  disabled={false}
+                  icon={createElement(ChevronLeft, {
+                    className: 'w-5 h-5',
+                  })}
+                  title='Back to toolbar'
+                  variant='minimal'
+                />
+                <div className='w-px h-6 bg-white/20 shrink-0 mx-1' />
+                <Sparkles className='mr-2 size-5 text-gray-400 shrink-0' />
                 <input
                   type='text'
                   value={aiInstruction}
                   onChange={e => onInstructionChange(e.target.value)}
                   onKeyDown={handleKeyDown}
-                  placeholder='Ask AI to edit this note...'
-                  className='flex-1 bg-transparent text-white py-2 focus:outline-none placeholder-white/40 text-base'
+                  placeholder='Ask AI to edit...'
+                  className='flex-1 bg-transparent text-white text-base outline-none placeholder-white/50 min-w-0'
                   disabled={aiLoading}
                 />
                 <GlassButton
                   onClick={onSuggest}
                   disabled={aiLoading || !aiInstruction.trim()}
+                  className='ml-2'
                   aria-label='Send AI instruction'
                 >
                   {aiLoading ? (
@@ -236,17 +246,16 @@ export function MobileFloatingToolbar({
                 </GlassButton>
               </div>
             ) : (
-              // Three-Section Toolbar Mode (when keyboard is shown)
+              // Toolbar Mode (when keyboard is shown)
               <div className='flex items-center'>
                 {/* LEFT: AI Button (Fixed) */}
                 <div className='shrink-0'>
                   <ToolbarButton
                     onClick={handleAIButtonClick}
-                    isActive={showAIInput}
+                    isActive={false}
                     disabled={false}
                     icon={createElement(Sparkles, {
-                      className:
-                        'w-5 h-5 text-purple-400 hover:text-purple-300 transition-colors',
+                      className: 'w-5 h-5 text-gray-400',
                     })}
                     title='AI Assistant'
                     variant='minimal'

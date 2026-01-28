@@ -4,38 +4,18 @@ import type { Thread } from '@/features/cogno/domain/thread';
 const supabase = createClient();
 
 /**
- * Get all threads for a specific workspace
+ * Get the most recent 30 threads for a specific workspace
  */
 export async function getThreads(workspaceId: number): Promise<Thread[]> {
   const { data, error } = await supabase
     .from('threads')
     .select('*')
     .eq('workspace_id', workspaceId)
-    .order('updated_at', { ascending: false });
+    .order('updated_at', { ascending: false })
+    .limit(30);
 
   if (error) throw error;
   return data || [];
-}
-
-/**
- * Get a single thread by ID
- */
-export async function getThread(id: number): Promise<Thread | null> {
-  const { data, error } = await supabase
-    .from('threads')
-    .select('*')
-    .eq('id', id)
-    .single();
-
-  if (error) {
-    if (error.code === 'PGRST116') {
-      // Not found
-      return null;
-    }
-    throw error;
-  }
-
-  return data;
 }
 
 /**

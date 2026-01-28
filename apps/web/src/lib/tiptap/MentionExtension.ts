@@ -79,6 +79,10 @@ export const CustomMention = Mention.extend({
     return `@${node.attrs.label}`;
   },
 
+  renderMarkdown(node) {
+    return `[@ id="${node.attrs?.id}" label="${node.attrs?.label}" workspaceMemberId="${node.attrs?.workspaceMemberId}"]`;
+  },
+
   addKeyboardShortcuts() {
     return {
       Backspace: () =>
