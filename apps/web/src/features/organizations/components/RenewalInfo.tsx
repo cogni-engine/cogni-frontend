@@ -16,17 +16,26 @@ export function RenewalInfo({ organization }: RenewalInfoProps) {
   const isCancelled = organization.cancel_at_period_end;
 
   return (
-    <div className='mb-6 p-4 bg-white/5 rounded-lg border border-white/10'>
-      <p className='text-sm text-white/60 mb-1'>
-        {isCancelled ? 'Access until' : 'Renews on'}
-      </p>
-      <p className='text-base font-medium text-white'>
-        {renewalDate.toLocaleDateString('en-US', {
-          year: 'numeric',
-          month: 'long',
-          day: 'numeric',
-        })}
-      </p>
+    <div className='py-4 border-b border-white/10'>
+      <div className='flex items-center justify-between'>
+        <div>
+          <div className='text-base text-white font-medium'>
+            {isCancelled ? 'Access until' : 'Next billing date'}
+          </div>
+          <div className='text-sm text-white/60 mt-1'>
+            {isCancelled
+              ? 'Your subscription will end on this date'
+              : 'Your subscription will renew on this date'}
+          </div>
+        </div>
+        <div className='text-base text-white font-medium'>
+          {renewalDate.toLocaleDateString('en-US', {
+            month: 'short',
+            day: 'numeric',
+            year: 'numeric',
+          })}
+        </div>
+      </div>
     </div>
   );
 }

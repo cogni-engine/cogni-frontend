@@ -2,7 +2,6 @@
 
 import { useState, useMemo, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -10,7 +9,7 @@ import {
   DropdownMenuRadioItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { ArrowLeft, ChevronDown } from 'lucide-react';
+import { ChevronDown } from 'lucide-react';
 import {
   useUserId,
   useManagedOrganizationsWithSubscriptions,
@@ -181,59 +180,55 @@ export default function SubscriptionClient() {
   }
 
   return (
-    <div className='h-full overflow-y-auto pt-20 pb-24 px-4 md:px-6'>
-      <div className='max-w-7xl mx-auto py-8'>
-        <div className='mb-6'>
-          <Button
-            variant='ghost'
-            onClick={() => router.push('/')}
-            className='text-white/60 hover:text-white mb-4'
-          >
-            <ArrowLeft className='h-4 w-4 mr-2' />
-            Back
-          </Button>
-          <h1 className='text-3xl font-bold text-white mb-2'>
-            Subscription Management
-          </h1>
-        </div>
-
+    <div className='h-full overflow-y-auto pt-20 pb-24'>
+      <div className='max-w-3xl mx-auto px-4 md:px-6'>
         {/* Organization Selector - Show if multiple organizations */}
         {managedOrgs && managedOrgs.length > 1 && currentOrg && (
-          <div className='mt-8 mb-4'>
-            <label className='text-sm font-medium text-white/60 mb-2 block'>
-              Select Organization
-            </label>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant='outline'
-                  className='w-full md:w-auto justify-between text-left font-normal'
+          <div className='mb-8'>
+            <h2 className='text-xl font-bold text-white mb-6'>Organization</h2>
+            <button
+              onClick={() => {
+                const trigger = document.querySelector(
+                  '[data-radix-dropdown-trigger]'
+                ) as HTMLElement;
+                trigger?.click();
+              }}
+              className='w-full py-4 flex items-center justify-between border-b border-white/10 hover:bg-white/5 transition-colors'
+            >
+              <div className='text-left'>
+                <div className='text-base text-white font-medium'>
+                  {currentOrg.organization.name}
+                </div>
+                <div className='text-sm text-white/60 mt-1'>
+                  Role: {currentOrg.role}
+                </div>
+              </div>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <div data-radix-dropdown-trigger>
+                    <ChevronDown className='h-5 w-5 text-white/40' />
+                  </div>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent
+                  className='w-[--radix-dropdown-menu-trigger-width]'
+                  align='start'
                 >
-                  <span>
-                    {currentOrg.organization.name} ({currentOrg.role})
-                  </span>
-                  <ChevronDown className='ml-2 h-4 w-4 opacity-50' />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent
-                className='w-[--radix-dropdown-menu-trigger-width]'
-                align='start'
-              >
-                <DropdownMenuRadioGroup
-                  value={String(selectedOrgId || '')}
-                  onValueChange={value => setSelectedOrgId(Number(value))}
-                >
-                  {managedOrgs.map((org: UserOrganizationData) => (
-                    <DropdownMenuRadioItem
-                      key={org.organization.id}
-                      value={String(org.organization.id)}
-                    >
-                      {org.organization.name} ({org.role})
-                    </DropdownMenuRadioItem>
-                  ))}
-                </DropdownMenuRadioGroup>
-              </DropdownMenuContent>
-            </DropdownMenu>
+                  <DropdownMenuRadioGroup
+                    value={String(selectedOrgId || '')}
+                    onValueChange={value => setSelectedOrgId(Number(value))}
+                  >
+                    {managedOrgs.map((org: UserOrganizationData) => (
+                      <DropdownMenuRadioItem
+                        key={org.organization.id}
+                        value={String(org.organization.id)}
+                      >
+                        {org.organization.name} ({org.role})
+                      </DropdownMenuRadioItem>
+                    ))}
+                  </DropdownMenuRadioGroup>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </button>
           </div>
         )}
 
@@ -249,23 +244,17 @@ export default function SubscriptionClient() {
           />
         )}
 
-        {currentOrg && (
-          <div className='p-4 mt-6 bg-zinc-900 rounded-md text-xs'>
-            <div className='mb-2 font-semibold text-white/70'>
-              Organization Debug Info
-            </div>
-            <pre className='whitespace-pre-wrap text-white/60 overflow-auto'>
-              {JSON.stringify(currentOrg, null, 2)}
-            </pre>
-          </div>
-        )}
-
         {/* Pricing Cards Grid - Hide for business plan */}
         {currentOrgPlan && currentOrgPlan === 'free' && (
-          <PricingCardsGrid
-            subscriptionPlan={currentOrgPlan ?? null}
-            onPlanClick={handlePlanClick}
-          />
+          <div className='mb-8'>
+            <h2 className='text-xl font-bold text-white mb-6'>
+              Available Plans
+            </h2>
+            <PricingCardsGrid
+              subscriptionPlan={currentOrgPlan ?? null}
+              onPlanClick={handlePlanClick}
+            />
+          </div>
         )}
 
         {/* Error Display */}

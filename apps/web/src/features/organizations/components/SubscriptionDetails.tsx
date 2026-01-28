@@ -24,44 +24,53 @@ export function SubscriptionDetails({
   isOpeningPortal,
 }: SubscriptionDetailsProps) {
   return (
-    <div className='mt-8 p-6 bg-white/5 rounded-lg border border-white/10'>
+    <div className='mb-8'>
       {/* Payment Status Banner - Shows warnings for past_due, canceled, restricted */}
       <PaymentStatusBanner organization={currentOrg.organization} />
 
-      {/* Plan and Organization Info */}
-      <SubscriptionInfoBadges
-        subscriptionPlan={subscriptionPlan}
-        currentOrg={currentOrg}
-      />
-
-      {/* Organization Name */}
-      <div className='mb-6 p-4 bg-white/5 rounded-lg border border-white/10'>
-        <p className='text-sm text-white/60 mb-1'>Organization</p>
-        <p className='text-base font-medium text-white'>
-          {currentOrg.organization.name}
-        </p>
+      {/* Current Plan Section */}
+      <div className='mb-8'>
+        {/* Plan Info */}
+        <SubscriptionInfoBadges
+          subscriptionPlan={subscriptionPlan}
+          currentOrg={currentOrg}
+        />
       </div>
 
-      {/* Seat Usage Meter - Only for Business plan */}
+      {/* Seat Usage Section - Only for Business plan */}
       {subscriptionPlan === 'business' && (
-        <SeatUsageMeter organization={currentOrg.organization} />
+        <div className='mb-8'>
+          <h2 className='text-xl font-bold text-white'>Seat Usage</h2>
+          <SeatUsageMeter organization={currentOrg.organization} />
+        </div>
       )}
 
-      {/* Renewal/Cancellation Info */}
-      <RenewalInfo organization={currentOrg.organization} />
+      {/* Billing Information Section */}
+      <div className='mb-8'>
+        <h2 className='text-xl font-bold text-white mb-6'>
+          Billing Information
+        </h2>
+        {/* Renewal/Cancellation Info */}
+        <RenewalInfo organization={currentOrg.organization} />
+        {/* Cancellation Warning */}
+        <CancellationWarning organization={currentOrg.organization} />
+      </div>
 
-      {/* Cancellation Warning */}
-      <CancellationWarning organization={currentOrg.organization} />
-
-      {/* Action Buttons */}
-      <SubscriptionActions
-        subscriptionPlan={subscriptionPlan}
-        currentOrg={currentOrg}
-        onManageBilling={onManageBilling}
-        onUpgrade={onUpgrade}
-        onUpdateSeats={onUpdateSeats}
-        isOpeningPortal={isOpeningPortal}
-      />
+      {/* Manage Subscription Section */}
+      <div className='mb-8'>
+        <h2 className='text-xl font-bold text-white mb-6'>
+          Manage Subscription
+        </h2>
+        {/* Action Buttons */}
+        <SubscriptionActions
+          subscriptionPlan={subscriptionPlan}
+          currentOrg={currentOrg}
+          onManageBilling={onManageBilling}
+          onUpgrade={onUpgrade}
+          onUpdateSeats={onUpdateSeats}
+          isOpeningPortal={isOpeningPortal}
+        />
+      </div>
     </div>
   );
 }

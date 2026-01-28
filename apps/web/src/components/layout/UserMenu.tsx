@@ -137,7 +137,7 @@ export function UserMenu({ user }: UserMenuProps) {
             sideOffset={12}
             className='w-60 z-110 p-0 border-0 bg-transparent shadow-none'
           >
-            <GlassCard className='rounded-lg p-1'>
+            <GlassCard className='rounded-3xl p-1'>
               <DropdownMenuLabel className='flex flex-col gap-1'>
                 <span className='text-sm font-semibold'>
                   {profile?.name || initials}
@@ -165,7 +165,6 @@ export function UserMenu({ user }: UserMenuProps) {
                 <CheckSquare className='h-4 w-4' />
                 <span>My Tasks</span>
               </DropdownMenuItem>
-              <DropdownMenuSeparator />
               <DropdownMenuItem
                 onSelect={event => {
                   event.preventDefault();
@@ -176,21 +175,22 @@ export function UserMenu({ user }: UserMenuProps) {
                 <Building2 className='h-4 w-4' />
                 <span>Organizations</span>
               </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem
-                onSelect={event => {
-                  event.preventDefault();
-                  handleSelectSubscriptions();
-                }}
-                className={`flex items-center gap-2 ${
-                  isProOrBusiness ? '' : 'text-blue-400 hover:text-blue-300'
-                }`}
-              >
-                <ArrowUpCircle className='h-4 w-4' />
-                <span>
-                  {isProOrBusiness ? 'Subscriptions' : 'Upgrade Plan'}
-                </span>
-              </DropdownMenuItem>
+              {!isInMobileWebView() && (
+                <DropdownMenuItem
+                  onSelect={event => {
+                    event.preventDefault();
+                    handleSelectSubscriptions();
+                  }}
+                  className={`flex items-center gap-2 ${
+                    isProOrBusiness ? '' : 'text-blue-400 hover:text-blue-300'
+                  }`}
+                >
+                  <ArrowUpCircle className='h-4 w-4' />
+                  <span>
+                    {isProOrBusiness ? 'Subscriptions' : 'Upgrade Plan'}
+                  </span>
+                </DropdownMenuItem>
+              )}
               <DropdownMenuSeparator />
               <DropdownMenuItem
                 onSelect={event => {
