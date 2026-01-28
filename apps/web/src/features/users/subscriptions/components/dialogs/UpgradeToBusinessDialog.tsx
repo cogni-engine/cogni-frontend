@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
@@ -8,7 +7,11 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import GlassButton from '@/components/glass-design/GlassButton';
+import GlassCard from '@/components/glass-design/GlassCard';
+import GlassInput from '@/components/glass-design/GlassInput';
 import { Loader2 } from 'lucide-react';
+import { cn } from '@/lib/utils';
 import type { UserOrganizationData } from '@/lib/api/organizationApi';
 
 type UpgradeToBusinessDialogProps = {
@@ -44,12 +47,20 @@ export function UpgradeToBusinessDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className='bg-gray-900 border-white/10 text-white'>
-        <DialogHeader>
-          <DialogTitle>Upgrade to Business Plan</DialogTitle>
-          <DialogDescription className='text-white/60'>
+      <DialogContent
+        className={cn(
+          'bg-white/4 backdrop-blur-xl border border-white/10 text-white rounded-3xl',
+          'shadow-[0_8px_32px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.12)]',
+          'p-8 max-w-lg'
+        )}
+      >
+        <DialogHeader className='space-y-3'>
+          <DialogTitle className='text-2xl font-semibold text-white'>
+            Upgrade to Business Plan
+          </DialogTitle>
+          <DialogDescription className='text-white/70 text-base leading-relaxed'>
             Upgrading to Business plan will:
-            <ul className='list-disc list-inside mt-2 space-y-1'>
+            <ul className='list-disc list-inside mt-3 space-y-2 text-sm'>
               <li>Unlock team collaboration features</li>
               <li>Allow you to invite multiple team members</li>
               <li>Automatically adjust billing based on team size</li>
@@ -58,47 +69,61 @@ export function UpgradeToBusinessDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <div className='space-y-4 py-4'>
-          <div className='space-y-2'>
-            <label className='text-sm font-medium text-white'>
+        <div className='space-y-6 py-6'>
+          <div className='space-y-3'>
+            <label className='text-sm font-medium text-white/90 block'>
               Number of seats
             </label>
-            <input
+            <GlassInput
               type='number'
               min={currentOrg?.organization.active_member_count || 1}
               value={upgradeSeats}
               onChange={e =>
                 setUpgradeSeats(Math.max(1, parseInt(e.target.value) || 1))
               }
-              className='w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500'
               disabled={isUpgrading}
+              className='w-full'
             />
-            <p className='text-xs text-white/40'>
+            <p className='text-xs text-white/50'>
               Minimum: {currentOrg?.organization.active_member_count || 1}{' '}
               (current members)
             </p>
           </div>
 
-          <div className='p-3 bg-white/5 rounded-lg border border-white/10'>
-            <p className='text-sm text-white/80'>
-              <span className='font-medium'>Monthly cost:</span> $
-              {(15 * upgradeSeats).toFixed(2)} ($15 × {upgradeSeats} seats)
+          <GlassCard className='p-4 rounded-xl'>
+            <p className='text-sm text-white/90'>
+              <span className='font-semibold text-white'>Monthly cost:</span>{' '}
+              <span className='text-purple-400 font-medium'>
+                ${(15 * upgradeSeats).toFixed(2)}
+              </span>{' '}
+              <span className='text-white/60'>
+                ($15 × {upgradeSeats} {upgradeSeats === 1 ? 'seat' : 'seats'})
+              </span>
             </p>
-          </div>
+          </GlassCard>
         </div>
 
-        <DialogFooter>
-          <Button
+        <DialogFooter className='gap-3 sm:gap-2'>
+          <GlassButton
             variant='outline'
             onClick={() => onOpenChange(false)}
             disabled={isUpgrading}
+            className='rounded-xl px-6 py-2.5'
           >
             Cancel
-          </Button>
-          <Button
+          </GlassButton>
+          <GlassButton
             onClick={handleUpgrade}
             disabled={isUpgrading}
-            className='bg-purple-500 hover:bg-purple-600'
+            className={cn(
+              'rounded-xl px-6 py-2.5',
+              'bg-gradient-to-r from-purple-500 to-purple-600',
+              'hover:from-purple-600 hover:to-purple-700',
+              'border-purple-400/30',
+              'shadow-[0_4px_16px_rgba(139,92,246,0.3)]',
+              'hover:shadow-[0_6px_20px_rgba(139,92,246,0.4)]',
+              'text-white font-medium'
+            )}
           >
             {isUpgrading ? (
               <>
@@ -106,9 +131,9 @@ export function UpgradeToBusinessDialog({
                 Upgrading...
               </>
             ) : (
-              `Upgrade with ${upgradeSeats} seats`
+              `Upgrade with ${upgradeSeats} ${upgradeSeats === 1 ? 'seat' : 'seats'}`
             )}
-          </Button>
+          </GlassButton>
         </DialogFooter>
       </DialogContent>
     </Dialog>

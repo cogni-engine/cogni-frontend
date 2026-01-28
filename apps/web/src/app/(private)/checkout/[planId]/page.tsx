@@ -164,7 +164,7 @@ export default function CheckoutPage() {
             <h1 className='text-2xl font-semibold text-white'>Error</h1>
             <p className='text-white/60'>{error || 'Plan not found'}</p>
             <Button
-              onClick={() => router.push('/home')}
+              onClick={() => router.push('/workspace')}
               variant='outline'
               className='w-full'
             >
@@ -199,23 +199,6 @@ export default function CheckoutPage() {
                       Complete Your Purchase
                     </h1>
                     <p className='text-white/60'>Upgrade to {plan.name} plan</p>
-                  </div>
-
-                  <div className='rounded-lg border border-white/10 bg-white/5 p-4'>
-                    <div className='space-y-2'>
-                      <div className='flex justify-between items-center'>
-                        <p className='text-white font-semibold'>{plan.name}</p>
-                        <p className='text-2xl font-bold text-white'>
-                          {plan.price}
-                          <span className='text-sm font-normal text-white/60 ml-1'>
-                            {plan.priceNote}
-                          </span>
-                        </p>
-                      </div>
-                      <p className='text-sm text-white/60'>
-                        {plan.description}
-                      </p>
-                    </div>
                   </div>
                 </div>
               </GlassCard>

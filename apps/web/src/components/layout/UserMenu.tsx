@@ -28,7 +28,8 @@ import type { UserProfile } from '@/types/userProfile';
 import GlassCard from '@/components/glass-design/GlassCard';
 import { isInMobileWebView, notifyNativeLogout } from '@/lib/webview';
 import { PricingModal } from '@/components/PricingModal';
-import { getSubscriptionPlanFromJWT } from '@/lib/jwtUtils';
+import { useSubscription } from '@/providers/SubscriptionProvider';
+
 import type { User } from '@supabase/supabase-js';
 
 type UserMenuProps = {
@@ -55,25 +56,13 @@ export function UserMenu({ user }: UserMenuProps) {
   const [open, setOpen] = React.useState(false);
   const [isSigningOut, setIsSigningOut] = React.useState(false);
   const [isPricingModalOpen, setIsPricingModalOpen] = React.useState(false);
-  const [subscriptionPlan, setSubscriptionPlan] = React.useState<string | null>(
-    null
-  );
+  const { planType } = useSubscription();
   const userId = user?.id ?? null;
   const { profile } = useUserProfile({ userId });
 
-  // Get subscription plan from JWT
-  React.useEffect(() => {
-    if (user) {
-      getSubscriptionPlanFromJWT().then(plan => {
-        setSubscriptionPlan(plan);
-      });
-    }
-  }, [user]);
+  const isProOrBusiness = planType === 'pro' || planType === 'business';
 
-  const isProOrBusiness =
-    subscriptionPlan === 'pro' || subscriptionPlan === 'business';
-
-  console.log('subscriptionPlan', subscriptionPlan);
+  console.log('planType', planType);
 
   const email = user?.email ?? 'Unknown user';
   const avatarUrl = profile?.avatar_url ?? null;

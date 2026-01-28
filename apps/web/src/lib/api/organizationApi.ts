@@ -21,6 +21,14 @@ export type Organization = {
   current_period_end: string | null;
   created_at: string;
   plan_type: 'free' | 'pro' | 'business';
+  status:
+    | 'free'
+    | 'trialing'
+    | 'active'
+    | 'past_due'
+    | 'canceled'
+    | 'restricted'
+    | null;
 };
 
 export type OrganizationMemberRole = {

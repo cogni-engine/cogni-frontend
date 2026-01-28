@@ -20,6 +20,8 @@ export type Organization = {
   cancel_at_period_end: boolean | null;
   current_period_end: string | null;
   created_at: string;
+  status: 'active' | 'past_due' | 'grace_period' | 'restricted';
+  plan_type: 'free' | 'pro' | 'business';
 };
 
 export type OrganizationMemberRole = {

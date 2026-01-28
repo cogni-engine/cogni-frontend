@@ -27,7 +27,7 @@ export function SubscriptionInfoBadges({
 
       {/* Role Badge */}
       <div className='flex items-start gap-3'>
-        <div className='p-2 bg-blue-500/20 rounded-lg'>
+        {/* <div className='p-2 bg-blue-500/20 rounded-lg'>
           <Users className='h-5 w-5 text-blue-400' />
         </div>
         <div>
@@ -38,7 +38,7 @@ export function SubscriptionInfoBadges({
               : currentOrg.role.charAt(0).toUpperCase() +
                 currentOrg.role.slice(1)}
           </p>
-        </div>
+        </div> */}
       </div>
     </div>
   );

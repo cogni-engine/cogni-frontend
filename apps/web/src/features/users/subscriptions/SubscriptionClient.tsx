@@ -249,8 +249,19 @@ export default function SubscriptionClient() {
           />
         )}
 
+        {currentOrg && (
+          <div className='p-4 mt-6 bg-zinc-900 rounded-md text-xs'>
+            <div className='mb-2 font-semibold text-white/70'>
+              Organization Debug Info
+            </div>
+            <pre className='whitespace-pre-wrap text-white/60 overflow-auto'>
+              {JSON.stringify(currentOrg, null, 2)}
+            </pre>
+          </div>
+        )}
+
         {/* Pricing Cards Grid - Hide for business plan */}
-        {currentOrgPlan && currentOrgPlan !== 'business' && (
+        {currentOrgPlan && currentOrgPlan === 'free' && (
           <PricingCardsGrid
             subscriptionPlan={currentOrgPlan ?? null}
             onPlanClick={handlePlanClick}

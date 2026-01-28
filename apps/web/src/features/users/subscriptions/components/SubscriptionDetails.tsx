@@ -4,6 +4,7 @@ import { SeatUsageMeter } from './SeatUsageMeter';
 import { RenewalInfo } from './RenewalInfo';
 import { CancellationWarning } from './CancellationWarning';
 import { SubscriptionActions } from './SubscriptionActions';
+import { PaymentStatusBanner } from './PaymentStatusBanner';
 
 type SubscriptionDetailsProps = {
   subscriptionPlan: string | null;
@@ -24,9 +25,8 @@ export function SubscriptionDetails({
 }: SubscriptionDetailsProps) {
   return (
     <div className='mt-8 p-6 bg-white/5 rounded-lg border border-white/10'>
-      <h2 className='text-xl font-semibold text-white mb-6'>
-        Subscription Details
-      </h2>
+      {/* Payment Status Banner - Shows warnings for past_due, canceled, restricted */}
+      <PaymentStatusBanner organization={currentOrg.organization} />
 
       {/* Plan and Organization Info */}
       <SubscriptionInfoBadges

@@ -30,7 +30,7 @@ export default function CheckoutCancelPage() {
 
           <div className='flex flex-col gap-3 pt-4'>
             <Button
-              onClick={() => router.push('/home')}
+              onClick={() => router.push('/workspace')}
               className='w-full rounded-full bg-purple-500 hover:bg-purple-600 text-white border-transparent'
             >
               Return to Home

@@ -42,6 +42,7 @@ import {
   updateMemberRole,
   type OrganizationInvitation,
 } from '@/lib/api/organizationInvitationsApi';
+import GlassButton from '@/components/glass-design/GlassButton';
 
 export default function OrganizationsPage() {
   const router = useRouter();
@@ -304,14 +305,14 @@ export default function OrganizationsPage() {
     return (
       <div className='h-full overflow-y-auto pt-20 pb-24 px-4 md:px-6'>
         <div className='max-w-7xl mx-auto py-8'>
-          <Button
-            variant='ghost'
+          <GlassButton
             onClick={() => router.push('/')}
-            className='text-white/60 hover:text-white mb-4'
+            title='Go back'
+            size='icon'
+            className='size-12 text-white/60 hover:text-white z-100'
           >
-            <ArrowLeft className='h-4 w-4 mr-2' />
-            Back
-          </Button>
+            <ArrowLeft className='h-5 w-5' />
+          </GlassButton>
           <h1 className='text-3xl font-bold text-white mb-2'>Organizations</h1>
           <p className='text-white/60'>No organizations found.</p>
         </div>
@@ -350,17 +351,16 @@ export default function OrganizationsPage() {
   const canInvite = availableSeats > 0;
 
   return (
-    <div className='h-full overflow-y-auto pt-20 pb-24 px-4 md:px-6'>
+    <div className='h-full overflow-y-auto px-4 md:px-6'>
       <div className='max-w-7xl mx-auto py-8'>
         <div className='mb-6'>
-          <Button
-            variant='ghost'
+          <GlassButton
             onClick={() => router.push('/')}
-            className='text-white/60 hover:text-white mb-4'
+            size='icon'
+            className='size-12 text-white/60 hover:text-white'
           >
-            <ArrowLeft className='h-4 w-4 mr-2' />
-            Back
-          </Button>
+            <ArrowLeft className='h-5 w-5' />
+          </GlassButton>
 
           <div className='flex items-center justify-between'>
             <div>
@@ -843,7 +843,7 @@ export default function OrganizationsPage() {
 
                 <div className='mt-3 p-3 bg-blue-500/10 border border-blue-500/30 rounded-lg'>
                   <div className='flex items-start gap-2 text-xs text-blue-200'>
-                    <Info className='h-4 w-4 mt-0.5 flex-shrink-0' />
+                    <Info className='h-4 w-4 mt-0.5 shrink-0' />
                     <div className='space-y-1'>
                       <p className='font-medium'>Role Permissions:</p>
                       {newRoleId === 2 ? (

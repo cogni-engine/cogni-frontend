@@ -177,6 +177,55 @@ export async function updateSeats(
 }
 
 /**
+ * Get billing summary for an organization
+ */
+export async function getBillingSummary(organizationId: number): Promise<{
+  plan_type: 'free' | 'pro' | 'business';
+  status:
+    | 'free'
+    | 'trialing'
+    | 'active'
+    | 'past_due'
+    | 'canceled'
+    | 'restricted';
+  trial_end: string | null;
+  current_period_end: string | null;
+  cancel_at_period_end: boolean;
+  seat_count: number;
+  active_member_count: number;
+  is_read_only: boolean;
+  can_invite_members: boolean;
+}> {
+  const supabase = createClient();
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+
+  if (!session) {
+    throw new Error('No active session found');
+  }
+
+  const response = await fetch(
+    `${API_BASE_URL}/api/billing/summary?organization_id=${organizationId}`,
+    {
+      method: 'GET',
+      headers: {
+        Authorization: `Bearer ${session.access_token}`,
+        'Content-Type': 'application/json',
+      },
+    }
+  );
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(data.detail || 'Failed to fetch billing summary');
+  }
+
+  return data;
+}
+
+/**
  * Switch to team billing (create new Business organization)
  */
 export async function switchToTeamBilling(userEmail: string): Promise<string> {

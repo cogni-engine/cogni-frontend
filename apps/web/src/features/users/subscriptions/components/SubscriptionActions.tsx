@@ -27,6 +27,7 @@ export function SubscriptionActions({
           variant='outline'
           disabled={isOpeningPortal}
           className='bg-blue-500/10 border-blue-500/50 text-blue-300 hover:bg-blue-500/20 hover:text-blue-200'
+          data-manage-billing
         >
           {isOpeningPortal ? (
             <>
