@@ -226,44 +226,85 @@ export async function createWorkspace(
   title: string
   // type: 'group' | 'personal' = 'group'
 ): Promise<Workspace> {
-  // Call the database function that creates workspace and adds user as member
-  const { data, error } = await supabase.rpc('create_workspace_with_member', {
-    p_title: title,
-    // p_type: type
-  });
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
-  if (error) throw error;
-
-  // Fetch the created workspace to return it with full details
-  if (data && data.length > 0 && data[0].workspace_id) {
-    const workspaceId = data[0].workspace_id;
-
-    const { data: workspace, error: fetchError } = await supabase
-      .from('workspace')
-      .select('*')
-      .eq('id', workspaceId)
-      .single();
-
-    if (fetchError) throw fetchError;
-
-    // Generate and upload default workspace icon
-    try {
-      const iconBlob = await generateAvatarBlob(title, {
-        style: 'cosmic',
-        includeInitials: false,
-      });
-
-      const { iconUrl } = await uploadWorkspaceIcon(workspaceId, iconBlob);
-
-      // Update workspace with icon URL
-      return await updateWorkspace(workspaceId, { icon_url: iconUrl });
-    } catch (iconError) {
-      console.warn('Failed to generate default workspace icon:', iconError);
-      return workspace; // Return workspace without icon if generation fails
-    }
+  if (!user) {
+    throw new Error('User not authenticated');
   }
 
-  throw new Error('Failed to create workspace');
+  // Try to create workspace directly (bypassing RPC function)
+  // This will work if RLS policies allow it
+  const { data: workspace, error: workspaceError } = await supabase
+    .from('workspace')
+    .insert({
+      title,
+      type: 'group', // Explicitly set type to avoid NOT NULL constraint violation
+    })
+    .select()
+    .single();
+
+  if (workspaceError) {
+    console.error('Failed to create workspace:', workspaceError);
+    
+    // If RLS blocks direct insert, fall back to error message
+    if (workspaceError.code === '42501') {
+      throw new Error(
+        'Workspace creation failed: Row-level security policy prevents direct workspace creation. ' +
+        'Please update the create_workspace_with_member function in Supabase to set type=\'group\' in the INSERT statement.'
+      );
+    }
+    
+    throw new Error(
+      workspaceError.message ||
+      `Workspace creation failed: ${workspaceError.code || 'Unknown error'}`
+    );
+  }
+
+  if (!workspace?.id) {
+    throw new Error('Failed to create workspace: No workspace ID returned');
+  }
+
+  const workspaceId = workspace.id;
+
+  // Add current user as owner of the workspace
+  const { error: memberError } = await supabase
+    .from('workspace_member')
+    .insert({
+      workspace_id: workspaceId,
+      user_id: user.id,
+      role: 'owner',
+    });
+
+  if (memberError) {
+    console.error('Failed to add user as workspace member:', memberError);
+    // Try to clean up the workspace if member insertion fails
+    try {
+      await supabase.from('workspace').delete().eq('id', workspaceId);
+    } catch (cleanupError) {
+      console.error('Failed to cleanup workspace after member insertion failure:', cleanupError);
+    }
+    throw new Error(
+      `Failed to add user as workspace member: ${memberError.message}`
+    );
+  }
+
+  // Generate and upload default workspace icon
+  try {
+    const iconBlob = await generateAvatarBlob(title, {
+      style: 'cosmic',
+      includeInitials: false,
+    });
+
+    const { iconUrl } = await uploadWorkspaceIcon(workspaceId, iconBlob);
+
+    // Update workspace with icon URL
+    return await updateWorkspace(workspaceId, { icon_url: iconUrl });
+  } catch (iconError) {
+    console.warn('Failed to generate default workspace icon:', iconError);
+    return workspace; // Return workspace without icon if generation fails
+  }
 }
 
 export async function updateWorkspace(

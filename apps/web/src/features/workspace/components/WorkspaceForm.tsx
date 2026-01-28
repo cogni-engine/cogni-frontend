@@ -428,11 +428,29 @@ export default function WorkspaceForm({
                   handleDialogOpenChange(false);
                 } catch (err) {
                   console.error('Failed to save workspace', err);
-                  setError(
-                    err instanceof Error
-                      ? err.message
-                      : 'Failed to save workspace'
-                  );
+                  console.error('Error type:', typeof err);
+                  console.error('Error object:', err);
+                  
+                  let errorMessage = 'Failed to save workspace';
+                  
+                  if (err instanceof Error) {
+                    errorMessage = err.message || errorMessage;
+                  } else if (typeof err === 'object' && err !== null) {
+                    // Supabase error structure: { message, details, hint, code }
+                    const supabaseError = err as { message?: string; details?: string; hint?: string; code?: string };
+                    if (supabaseError.message) {
+                      errorMessage = supabaseError.message;
+                    }
+                    if (supabaseError.details && !errorMessage.includes(supabaseError.details)) {
+                      errorMessage += `: ${supabaseError.details}`;
+                    }
+                    console.error('Error code:', supabaseError.code);
+                    console.error('Error hint:', supabaseError.hint);
+                  } else {
+                    errorMessage = String(err);
+                  }
+                  
+                  setError(errorMessage);
                 } finally {
                   setIsSubmitting(false);
                 }
