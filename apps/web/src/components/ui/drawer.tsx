@@ -16,6 +16,7 @@ interface DrawerContextValue {
   dragOffset: number;
   setDragOffset: (offset: number) => void;
   drawerRef: React.RefObject<HTMLDivElement | null>;
+  scrollableRef: React.RefObject<HTMLDivElement | null>;
 }
 
 const DrawerContext = createContext<DrawerContextValue | undefined>(undefined);
@@ -58,6 +59,7 @@ function Drawer({ children, open, onOpenChange }: DrawerProps) {
   const setDrawerOpen = useGlobalUIStore(state => state.setDrawerOpen);
   const [dragOffset, setDragOffset] = useState(0);
   const drawerRef = useRef<HTMLDivElement>(null);
+  const scrollableRef = useRef<HTMLDivElement>(null);
 
   // Handle body scroll lock and global UI state
   useEffect(() => {
@@ -89,6 +91,7 @@ function Drawer({ children, open, onOpenChange }: DrawerProps) {
         dragOffset,
         setDragOffset,
         drawerRef,
+        scrollableRef,
       }}
     >
       {children}
@@ -159,8 +162,11 @@ const DrawerContent = React.forwardRef<HTMLDivElement, DrawerContentProps>(
     },
     ref
   ) => {
-    const { onClose, dragOffset, setDragOffset, drawerRef } =
+    const { onClose, dragOffset, setDragOffset, drawerRef, scrollableRef } =
       useDrawerContext();
+
+    // Track if we should allow swipe (only when scrollable content is at top)
+    const isDraggingRef = useRef(false);
 
     // Merge refs
     const mergedRef = React.useMemo(() => {
@@ -179,12 +185,36 @@ const DrawerContent = React.forwardRef<HTMLDivElement, DrawerContentProps>(
 
     // Swipe-to-close gesture
     const bind = useDrag(
-      ({ last, movement: [, my], velocity: [, vy], direction: [, dy] }) => {
+      ({
+        first,
+        last,
+        movement: [, my],
+        velocity: [, vy],
+        direction: [, dy],
+        cancel,
+      }) => {
         if (!swipeToClose) return;
+
+        // On drag start, check if scrollable content is at top
+        if (first) {
+          const scrollableEl = scrollableRef?.current;
+          const isAtTop = !scrollableEl || scrollableEl.scrollTop <= 0;
+
+          // Only allow swipe if content is at top
+          if (!isAtTop) {
+            cancel();
+            return;
+          }
+          isDraggingRef.current = true;
+        }
+
+        // Only process if we're in a valid drag state
+        if (!isDraggingRef.current) return;
 
         // Only allow downward swipes
         if (my > 0) {
           if (last) {
+            isDraggingRef.current = false;
             // Close if swiped down past threshold or fast swipe down
             if (my > swipeThreshold || (vy > velocityThreshold && dy > 0)) {
               onClose();
@@ -197,6 +227,8 @@ const DrawerContent = React.forwardRef<HTMLDivElement, DrawerContentProps>(
             // Update drag offset during the drag
             setDragOffset(my);
           }
+        } else if (last) {
+          isDraggingRef.current = false;
         }
       },
       {
@@ -310,9 +342,26 @@ type DrawerBodyProps = React.HTMLAttributes<HTMLDivElement>;
 
 const DrawerBody = React.forwardRef<HTMLDivElement, DrawerBodyProps>(
   ({ className, ...props }, ref) => {
+    const { scrollableRef } = useDrawerContext();
+
+    // Merge refs
+    const mergedRef = React.useMemo(() => {
+      return (node: HTMLDivElement | null) => {
+        if (typeof ref === 'function') {
+          ref(node);
+        } else if (ref) {
+          ref.current = node;
+        }
+        if (scrollableRef) {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          (scrollableRef as any).current = node;
+        }
+      };
+    }, [ref, scrollableRef]);
+
     return (
       <div
-        ref={ref}
+        ref={mergedRef}
         className={cn('flex-1 overflow-y-auto p-4', className)}
         {...props}
       />

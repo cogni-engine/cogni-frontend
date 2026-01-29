@@ -1,7 +1,12 @@
 import type { NoteFolder } from '@/types/note';
 import type { FormattedNote } from '../NotesProvider';
 
-type GroupedNotes = Record<string, FormattedNote[]>;
+export type GroupedNotes = Record<string, FormattedNote[]>;
+
+export type WorkspaceGroupInfo = {
+  notes: FormattedNote[];
+  iconUrl?: string | null;
+};
 
 // Time group labels
 const TIME_GROUPS = {
@@ -134,12 +139,17 @@ export function sortTimeGroupKeys(keys: string[]): string[] {
 /**
  * Groups notes by folder
  * Always shows all folders, even if they have no notes
+ * Separates workspace notes into their own groups
  */
 export function groupNotesByFolder(
   notes: FormattedNote[],
   folders: NoteFolder[]
-): GroupedNotes {
-  const grouped: GroupedNotes = {};
+): {
+  groups: GroupedNotes;
+  workspaceGroups: Record<string, WorkspaceGroupInfo>;
+} {
+  const groups: GroupedNotes = {};
+  const workspaceGroups: Record<string, WorkspaceGroupInfo> = {};
 
   // Sort folders alphabetically by title
   const sortedFolders = [...folders].sort((a, b) =>
@@ -148,25 +158,40 @@ export function groupNotesByFolder(
 
   // Initialize groups for each folder (always show all folders)
   sortedFolders.forEach(folder => {
-    grouped[folder.title] = [];
+    groups[folder.title] = [];
   });
 
   // Add "Notes" group for notes without folder
-  grouped['Notes'] = [];
+  groups['Notes'] = [];
 
   // Group notes
   notes.forEach(note => {
-    if (!note.note_folder_id) {
-      grouped['Notes'].push(note);
+    if (note.isGroupNote && note.workspace?.title) {
+      // Workspace note -> workspace group
+      const wsTitle = note.workspace.title;
+      if (!workspaceGroups[wsTitle]) {
+        workspaceGroups[wsTitle] = {
+          notes: [],
+          iconUrl: note.workspace.icon_url,
+        };
+      }
+      workspaceGroups[wsTitle].notes.push(note);
+    } else if (!note.note_folder_id) {
+      // Personal note without folder -> "Notes"
+      groups['Notes'].push(note);
     } else {
+      // Personal note with folder
       const folder = folders.find(f => f.id === note.note_folder_id);
-      if (folder && grouped[folder.title]) {
-        grouped[folder.title].push(note);
+      if (folder && groups[folder.title]) {
+        groups[folder.title].push(note);
+      } else {
+        // Note has a folder from another workspace - show in "Notes" group
+        groups['Notes'].push(note);
       }
     }
   });
 
-  return grouped;
+  return { groups, workspaceGroups };
 }
 
 /**
@@ -187,16 +212,22 @@ export function groupAndSortNotes(
   notes: FormattedNote[],
   groupBy: 'time' | 'folder',
   folders: NoteFolder[] = []
-): { groups: GroupedNotes; sortedKeys: string[] } {
-  const groups =
-    groupBy === 'folder'
-      ? groupNotesByFolder(notes, folders)
-      : groupNotesByTime(notes);
+): {
+  groups: GroupedNotes;
+  sortedKeys: string[];
+  workspaceGroups: Record<string, WorkspaceGroupInfo>;
+  sortedWorkspaceKeys: string[];
+} {
+  if (groupBy === 'folder') {
+    const { groups, workspaceGroups } = groupNotesByFolder(notes, folders);
+    const sortedKeys = sortFolderGroupKeys(Object.keys(groups));
+    const sortedWorkspaceKeys = Object.keys(workspaceGroups).sort((a, b) =>
+      a.localeCompare(b, 'ja')
+    );
+    return { groups, sortedKeys, workspaceGroups, sortedWorkspaceKeys };
+  }
 
-  const sortedKeys =
-    groupBy === 'folder'
-      ? sortFolderGroupKeys(Object.keys(groups))
-      : sortTimeGroupKeys(Object.keys(groups));
-
-  return { groups, sortedKeys };
+  const groups = groupNotesByTime(notes);
+  const sortedKeys = sortTimeGroupKeys(Object.keys(groups));
+  return { groups, sortedKeys, workspaceGroups: {}, sortedWorkspaceKeys: [] };
 }

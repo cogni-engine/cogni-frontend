@@ -14,12 +14,14 @@ import {
 export function useNotifications(userId?: string) {
   const [notifications, setNotifications] = useState<AINotification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [isLoadingNotifications, setIsLoadingNotifications] = useState(false);
 
   /**
    * Fetch past due notifications using new SQLAlchemy-based endpoint
    * Includes task_result data and intelligent deduplication
    */
   const fetchPastDueNotifications = useCallback(async () => {
+    setIsLoadingNotifications(true);
     try {
       // Use new backend endpoint (no userId needed - uses JWT)
       const data = await getPastDueNotifications();
@@ -34,6 +36,8 @@ export function useNotifications(userId?: string) {
       setNotifications(data);
     } catch (err) {
       console.error('Failed to fetch past due notifications:', err);
+    } finally {
+      setIsLoadingNotifications(false);
     }
   }, []); // No userId dependency - JWT handles auth
 
@@ -54,6 +58,7 @@ export function useNotifications(userId?: string) {
   return {
     notifications,
     unreadCount,
+    isLoadingNotifications,
     fetchPastDueNotifications,
     fetchUnreadCount,
   };

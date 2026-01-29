@@ -3,7 +3,6 @@
 import Image from 'next/image';
 import { useRef, memo, useState } from 'react';
 
-import GlassCard from '@/components/glass-design/GlassCard';
 import type { NoteFolder } from '@/types/note';
 import type { FormattedNote } from '../NotesProvider';
 import { groupAndSortNotes } from '../lib/noteListHelpers';
@@ -18,15 +17,20 @@ type NoteListProps = {
   folders?: NoteFolder[];
   selectedFolder?: 'trash' | number | null;
   onBackFromFolder?: () => void;
+  onDeleteAll?: () => void;
 };
 function NoteCardComponent({
   note,
   onNoteClick,
   onContextMenu,
+  showWorkspaceBadge = true,
+  inRecentlyDeleted = false,
 }: {
   note: FormattedNote;
   onNoteClick?: (id: string) => void;
   onContextMenu?: (e: React.MouseEvent, id: string, isDeleted: boolean) => void;
+  showWorkspaceBadge?: boolean;
+  inRecentlyDeleted?: boolean;
 }) {
   const touchTimerRef = useRef<NodeJS.Timeout | null>(null);
   const touchStartRef = useRef<{ x: number; y: number } | null>(null);
@@ -73,7 +77,7 @@ function NoteCardComponent({
   };
 
   const handleClick = () => {
-    if (!isDeleted && onNoteClick) {
+    if (onNoteClick) {
       onNoteClick(note.id);
     }
   };
@@ -86,7 +90,7 @@ function NoteCardComponent({
 
   return (
     <FlatListItem
-      className={isDeleted ? 'opacity-60' : ''}
+      className={isDeleted && !inRecentlyDeleted ? 'opacity-60' : ''}
       onClick={handleClick}
       onContextMenu={handleContextMenuEvent}
       onTouchStart={handleTouchStart}
@@ -108,7 +112,7 @@ function NoteCardComponent({
             </p>
           </div>
         </div>
-        {note.isGroupNote && note.workspace?.title && (
+        {showWorkspaceBadge && note.isGroupNote && note.workspace?.title && (
           <div className='flex items-center gap-1.5 shrink-0'>
             {note.workspace.icon_url ? (
               <Image
@@ -143,8 +147,10 @@ export default function NoteList({
   folders = [],
   selectedFolder = null,
   onBackFromFolder,
+  onDeleteAll,
 }: NoteListProps) {
-  const { groups, sortedKeys } = groupAndSortNotes(notes, groupBy, folders);
+  const { groups, sortedKeys, workspaceGroups, sortedWorkspaceKeys } =
+    groupAndSortNotes(notes, groupBy, folders);
   const [collapsedFolders, setCollapsedFolders] = useState<Set<string>>(
     new Set()
   );
@@ -152,10 +158,12 @@ export default function NoteList({
   // Determine folder name for selected folder
   const selectedFolderName =
     selectedFolder === 'trash'
-      ? 'Trash'
+      ? 'Recently Deleted'
       : selectedFolder !== null
         ? folders.find(f => f.id === selectedFolder)?.title || ''
         : null;
+
+  const isRecentlyDeleted = selectedFolder === 'trash';
 
   // If a folder is selected, show only that folder
   if (selectedFolder !== null && groupBy === 'folder') {
@@ -166,26 +174,37 @@ export default function NoteList({
 
     return (
       <div className='flex flex-col gap-6'>
-        <FolderGroupHeader
-          folderName={folderName}
-          isCollapsed={false}
-          onToggle={() => {}}
-          showBackButton={true}
-          onBack={onBackFromFolder}
-        />
+        <div className='flex items-center justify-between'>
+          <FolderGroupHeader
+            folderName={folderName}
+            isCollapsed={false}
+            onToggle={() => {}}
+            showBackButton={true}
+            onBack={onBackFromFolder}
+          />
+          {isRecentlyDeleted && folderNotes.length > 0 && onDeleteAll && (
+            <button
+              onClick={onDeleteAll}
+              className='text-sm text-gray-400 hover:text-white px-5 transition-colors'
+            >
+              Delete All
+            </button>
+          )}
+        </div>
         <FlatList>
-          {folderNotes.map((note, index) => (
+          {folderNotes.map(note => (
             <NoteCard
               key={note.id}
               note={note}
               onNoteClick={onNoteClick}
               onContextMenu={onContextMenu}
+              inRecentlyDeleted={isRecentlyDeleted}
             />
           ))}
           {folderNotes.length === 0 && (
             <div className='text-center py-12 text-gray-400'>
-              {selectedFolder === 'trash'
-                ? 'Trash is empty'
+              {isRecentlyDeleted
+                ? 'No recently deleted notes'
                 : 'No notes in this folder'}
             </div>
           )}
@@ -194,8 +213,21 @@ export default function NoteList({
     );
   }
 
+  const toggleCollapse = (key: string) => {
+    setCollapsedFolders(prev => {
+      const next = new Set(prev);
+      if (next.has(key)) {
+        next.delete(key);
+      } else {
+        next.add(key);
+      }
+      return next;
+    });
+  };
+
   return (
     <div className='flex flex-col gap-6'>
+      {/* Folder groups (Personal notes) */}
       {sortedKeys.map(group => {
         const isCollapsed = collapsedFolders.has(group);
         return (
@@ -205,21 +237,11 @@ export default function NoteList({
                 <FolderGroupHeader
                   folderName={group}
                   isCollapsed={isCollapsed}
-                  onToggle={() => {
-                    setCollapsedFolders(prev => {
-                      const next = new Set(prev);
-                      if (next.has(group)) {
-                        next.delete(group);
-                      } else {
-                        next.add(group);
-                      }
-                      return next;
-                    });
-                  }}
+                  onToggle={() => toggleCollapse(group)}
                 />
                 {!isCollapsed && (
                   <FlatList>
-                    {groups[group].map((note, index) => (
+                    {groups[group].map(note => (
                       <NoteCard
                         key={note.id}
                         note={note}
@@ -236,7 +258,7 @@ export default function NoteList({
                   {group}
                 </h3>
                 <FlatList>
-                  {groups[group].map((note, index) => (
+                  {groups[group].map(note => (
                     <NoteCard
                       key={note.id}
                       note={note}
@@ -250,6 +272,36 @@ export default function NoteList({
           </div>
         );
       })}
+
+      {/* Workspace groups (notes from other workspaces) */}
+      {groupBy === 'folder' &&
+        sortedWorkspaceKeys.map(wsName => {
+          const wsInfo = workspaceGroups[wsName];
+          const isCollapsed = collapsedFolders.has(`ws:${wsName}`);
+          return (
+            <div key={`ws:${wsName}`}>
+              <FolderGroupHeader
+                folderName={wsName}
+                iconUrl={wsInfo.iconUrl}
+                isCollapsed={isCollapsed}
+                onToggle={() => toggleCollapse(`ws:${wsName}`)}
+              />
+              {!isCollapsed && (
+                <FlatList>
+                  {wsInfo.notes.map(note => (
+                    <NoteCard
+                      key={note.id}
+                      note={note}
+                      onNoteClick={onNoteClick}
+                      onContextMenu={onContextMenu}
+                      showWorkspaceBadge={false}
+                    />
+                  ))}
+                </FlatList>
+              )}
+            </div>
+          );
+        })}
     </div>
   );
 }

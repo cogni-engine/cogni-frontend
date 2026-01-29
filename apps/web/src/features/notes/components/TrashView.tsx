@@ -21,7 +21,9 @@ export function TrashView({
     return (
       <div className='text-center py-12'>
         <Trash2 className='w-12 h-12 text-gray-600 mx-auto mb-3' />
-        <h3 className='text-lg font-medium text-white mb-2'>Trash is empty</h3>
+        <h3 className='text-lg font-medium text-white mb-2'>
+          No recently deleted notes
+        </h3>
         <p className='text-gray-400'>Deleted notes will appear here</p>
       </div>
     );
@@ -29,16 +31,16 @@ export function TrashView({
 
   return (
     <div>
-      <div className='flex items-center justify-between mb-3 px-1'>
+      <div className='flex items-center justify-between mb-3 px-5'>
         <h3 className='text-sm font-medium text-gray-400'>
           {deletedNotes.length} deleted note
           {deletedNotes.length !== 1 ? 's' : ''}
         </h3>
         <button
           onClick={onEmptyTrash}
-          className='text-xs text-red-400 hover:text-red-300 px-3 py-1.5 rounded-lg hover:bg-red-500/10 transition-all duration-200 font-medium'
+          className='text-xs text-gray-400 hover:text-white px-3 py-1.5 rounded-lg hover:bg-white/10 transition-all duration-200 font-medium'
         >
-          Empty Trash
+          Delete All
         </button>
       </div>
       <NoteList

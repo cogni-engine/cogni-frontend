@@ -36,6 +36,7 @@ export default function Header() {
 
   const {
     notifications: pastDueNotifications,
+    isLoadingNotifications,
     fetchPastDueNotifications,
     fetchUnreadCount,
   } = useNotifications(userId || undefined);
@@ -75,16 +76,18 @@ export default function Header() {
     dispatchHeaderEvent(HEADER_EVENTS.TOGGLE_THREAD_SIDEBAR);
   };
 
-  const handleToggleNotificationPanel = useCallback(async () => {
+  const handleToggleNotificationPanel = useCallback(() => {
     if (!userId) return;
 
     // Emit event for tutorial tracking
     const eventBus = getAppEventBus();
     eventBus.emit({ type: 'NOTIFICATION_BELL_CLICKED' });
 
-    // Fetch notifications and open drawer
-    await fetchPastDueNotifications();
+    // Open drawer immediately for instant feedback
     setIsNotificationDrawerOpen(true);
+
+    // Fetch notifications in background
+    fetchPastDueNotifications();
   }, [userId, fetchPastDueNotifications]);
 
   // Listen for external toggle events (from mobile app)
@@ -212,6 +215,7 @@ export default function Header() {
           notifications={orderedNotifications}
           onNotificationProcessed={handleNotificationProcessed}
           initialNotificationId={highlightedNotificationId}
+          isLoading={isLoadingNotifications}
         />
       )}
     </header>

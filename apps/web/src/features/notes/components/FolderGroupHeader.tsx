@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import { ChevronRight, ChevronDown, ChevronLeft } from 'lucide-react';
 
 interface FolderGroupHeaderProps {
@@ -8,6 +9,7 @@ interface FolderGroupHeaderProps {
   onToggle: () => void;
   showBackButton?: boolean;
   onBack?: () => void;
+  iconUrl?: string | null;
 }
 
 export function FolderGroupHeader({
@@ -16,9 +18,10 @@ export function FolderGroupHeader({
   onToggle,
   showBackButton = false,
   onBack,
+  iconUrl,
 }: FolderGroupHeaderProps) {
   return (
-    <div className='flex items-center justify-between mb-3 px-3 select-none'>
+    <div className='flex items-center justify-between mb-3 px-5 select-none'>
       <div className='flex items-center gap-2 flex-1'>
         {showBackButton && onBack && (
           <button
@@ -37,7 +40,23 @@ export function FolderGroupHeader({
           onClick={onToggle}
           aria-label={isCollapsed ? 'Expand folder' : 'Collapse folder'}
         >
-          <h3 className='text-lg font-medium text-white'>{folderName}</h3>
+          <div className='flex items-center gap-2'>
+            {iconUrl !== undefined &&
+              (iconUrl ? (
+                <Image
+                  src={iconUrl}
+                  alt={folderName}
+                  width={20}
+                  height={20}
+                  className='w-5 h-5 rounded-md object-cover'
+                />
+              ) : (
+                <div className='w-5 h-5 rounded-md bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-[10px] text-white/90 font-bold'>
+                  {folderName.charAt(0).toUpperCase()}
+                </div>
+              ))}
+            <h3 className='text-lg font-medium text-white'>{folderName}</h3>
+          </div>
           <div className='text-gray-400 hover:text-white transition-colors pointer-events-none'>
             {isCollapsed ? (
               <ChevronRight className='w-4 h-4' />
