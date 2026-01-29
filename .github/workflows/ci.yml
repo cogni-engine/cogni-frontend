@@ -77,7 +77,7 @@ jobs:
         run: pnpm --filter web format:check
 
       - name: Build workspace packages
-        run: pnpm --filter "@cogni/web" --filter "@cogni/api" --filter "@cogni/types" --filter "@cogni/utils" build
+        run: pnpm --filter "@cogni/web" --filter "@cogni/api" --filter "@cogni/types" --filter "@cogni/utils" --filter "@cogni/pricing" build
 
       - name: Type check (web only)
         run: pnpm --filter web type-check

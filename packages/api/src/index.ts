@@ -10,6 +10,7 @@ export {
   signOut,
   getCurrentUser,
   getSession,
+  refreshSession,
 } from './supabase/auth';
 
 // Export workspace functions

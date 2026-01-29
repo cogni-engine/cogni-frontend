@@ -25,6 +25,7 @@ import { ShepherdProvider } from '@/features/onboarding/tier2/shepherd/ShepherdP
 import { exampleTours } from '@/features/onboarding/tier2/shepherd/tours';
 import { TutorialProvider } from '@/features/onboarding/tier2/TutorialProvider';
 import { TutorialStepManager } from '@/features/onboarding/tier2/components/TutorialStepManager';
+import { SubscriptionProvider } from '@/providers/SubscriptionProvider';
 
 function LayoutContent({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -175,7 +176,9 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
     pathname === '/workspace' ||
     pathname === '/personal' ||
     pathname === '/user/settings' ||
-    pathname === '/user/tasks';
+    pathname === '/user/tasks' ||
+    pathname === '/user/subscription' ||
+    pathname === '/user/organizations';
 
   // モバイル判定（768px以下）
   // TODO: これって本当に必要？？？
@@ -194,8 +197,18 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
 
   // モバイルかつ入力中の場合のみフッターを非表示、デスクトップでは常に表示
   // Also hide footer when drawer is open
+  // Hide footer on user settings, organizations, and subscription pages
+  const isUserSettingsPage =
+    pathname === '/user/settings' ||
+    pathname === '/user/subscription' ||
+    pathname === '/user/organizations' ||
+    pathname === '/user/tasks';
+
   const shouldShowFooter =
-    showTopLevelChrome && (!isMobile || !isInputActive) && !isDrawerOpen;
+    showTopLevelChrome &&
+    (!isMobile || !isInputActive) &&
+    !isDrawerOpen &&
+    !isUserSettingsPage;
 
   return (
     <div className='relative h-screen bg-black px-2'>
@@ -246,11 +259,13 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   return (
-    <TutorialProvider>
-      <ShepherdProvider tours={exampleTours}>
-        <TutorialStepManager />
-        <LayoutContent>{children}</LayoutContent>
-      </ShepherdProvider>
-    </TutorialProvider>
+    <SubscriptionProvider>
+      <TutorialProvider>
+        <ShepherdProvider tours={exampleTours}>
+          <TutorialStepManager />
+          <LayoutContent>{children}</LayoutContent>
+        </ShepherdProvider>
+      </TutorialProvider>
+    </SubscriptionProvider>
   );
 }

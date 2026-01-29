@@ -3,6 +3,7 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { usePathname } from 'next/navigation';
 import { useNotifications } from '@/features/notifications/hooks/useNotifications';
+import { useUser } from '@/hooks/useUser';
 import { UserMenu } from '@/components/layout/UserMenu';
 import { BellIcon, TextAlignStart } from 'lucide-react';
 import {
@@ -12,7 +13,7 @@ import {
 } from '@/lib/headerEvents';
 import FolderActionButton from '@/components/FolderActionButton';
 import GlassButton from '@/components/glass-design/GlassButton';
-import { getPersonalWorkspaceId, getCurrentUserId } from '@/lib/cookies';
+import { getPersonalWorkspaceId } from '@/lib/cookies';
 import NotificationProcessDrawer from '@/features/notifications/components/NotificationProcessDrawer';
 import { getAppEventBus } from '@/lib/events/appEventBus';
 
@@ -26,16 +27,22 @@ export default function Header() {
     '/personal': 'Personal',
     '/user/settings': 'User Settings',
     '/user/tasks': 'My Tasks',
+    '/user/organizations': 'Organizations',
+    '/user/subscription': 'Subscriptions',
   };
   const pageTitle = pageTitleMap[pathname] ?? null;
   const [isMounted, setIsMounted] = useState(false);
-  const userId = getCurrentUserId();
+
+  // Get user using SWR hook
+  const { user, isLoading: isLoadingUser, error: userError } = useUser();
+  const userId = user?.id ?? null;
 
   // Get personal workspace ID for notes page
   const personalWorkspaceId = isNotesPage ? getPersonalWorkspaceId() : null;
 
   const {
     notifications: pastDueNotifications,
+    unreadCount,
     isLoadingNotifications,
     fetchPastDueNotifications,
     fetchUnreadCount,
@@ -47,30 +54,29 @@ export default function Header() {
   const [highlightedNotificationId, setHighlightedNotificationId] = useState<
     number | null
   >(null);
-
   // Initialize on mount
   useEffect(() => {
     setIsMounted(true);
   }, []);
 
-  // Fetch unread notifications when user detected
+  // Fetch unread notifications when user is loaded and available
   useEffect(() => {
-    if (!userId) return;
+    if (isLoadingUser || !userId) return;
     fetchUnreadCount();
-  }, [userId, fetchUnreadCount]);
+  }, [userId, isLoadingUser, fetchUnreadCount]);
 
   useEffect(() => {
     const unsubscribe = onHeaderEvent(
       HEADER_EVENTS.REFRESH_NOTIFICATION_COUNT,
       () => {
-        if (userId) {
+        if (userId && !isLoadingUser) {
           fetchUnreadCount();
         }
       }
     );
 
     return unsubscribe;
-  }, [userId, fetchUnreadCount]);
+  }, [userId, isLoadingUser, fetchUnreadCount]);
 
   const handleToggleThreadSidebar = () => {
     dispatchHeaderEvent(HEADER_EVENTS.TOGGLE_THREAD_SIDEBAR);
@@ -197,9 +203,25 @@ export default function Header() {
                   data-shepherd-target='notification-bell'
                 >
                   <BellIcon className='w-5 h-5 text-white' />
+                  {unreadCount > 0 && (
+                    <span className='absolute -top-1 -right-1 h-2 w-2 rounded-full bg-red-500 border border-black/50' />
+                  )}
                 </GlassButton>
               )}
-            {isMounted && <UserMenu userId={userId} />}
+            {isMounted && (
+              <>
+                {isLoadingUser ? (
+                  <div className='h-12 w-12 rounded-full border border-white/10 bg-white/5 animate-pulse' />
+                ) : userError ? (
+                  <div
+                    className='h-12 w-12 rounded-full border border-red-500/50 bg-red-500/10'
+                    title='Error loading user'
+                  />
+                ) : (
+                  <UserMenu user={user ?? null} />
+                )}
+              </>
+            )}
           </div>
         </div>
       </div>

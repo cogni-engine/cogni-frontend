@@ -15,6 +15,7 @@
     "prepare": "husky"
   },
   "dependencies": {
+    "@cogni/pricing": "workspace:*",
     "lucide-react": "^0.545.0",
     "@prisma/client": "^6.0.0",
     "@supabase/ssr": "^0.5.2",

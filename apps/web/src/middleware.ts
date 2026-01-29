@@ -28,6 +28,7 @@ export async function middleware(request: NextRequest) {
     '/workspace',
     '/personal',
     '/user',
+    '/checkout',
   ];
   const publicRoutes = ['/invite', '/mobile-auth', '/mobile-auth-required']; // Allow mobile auth routes
   const authRoutes = ['/login', '/register'];

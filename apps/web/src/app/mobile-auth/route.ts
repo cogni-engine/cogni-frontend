@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
+import { logJWTIssuance } from '@/lib/jwtServerUtils';
 
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
@@ -86,6 +87,11 @@ export async function GET(request: NextRequest) {
     access_token,
     refresh_token,
   });
+
+  // Log new JWT issuance from mobile auth route
+  if (data?.session?.access_token) {
+    logJWTIssuance(data.session.access_token, 'MOBILE_AUTH_ROUTE');
+  }
 
   if (error || !data.user) {
     return new NextResponse(

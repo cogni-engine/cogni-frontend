@@ -88,3 +88,5 @@ export async function deleteThread(id: number): Promise<void> {
   if (error) throw error;
 }
 
+
+
