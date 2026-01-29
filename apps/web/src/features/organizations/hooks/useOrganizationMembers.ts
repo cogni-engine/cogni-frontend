@@ -16,7 +16,9 @@ export const memberKeys = {
 /**
  * Hook to fetch organization members
  */
-export function useOrganizationMembers(organizationId: number | null | undefined) {
+export function useOrganizationMembers(
+  organizationId: number | null | undefined
+) {
   return useQuery({
     queryKey: memberKeys.list(organizationId || 0),
     queryFn: () => {

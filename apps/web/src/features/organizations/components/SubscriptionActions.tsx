@@ -1,4 +1,10 @@
-import { ChevronRight, CreditCard, Loader2, ArrowUpCircle, Users } from 'lucide-react';
+import {
+  ChevronRight,
+  CreditCard,
+  Loader2,
+  ArrowUpCircle,
+  Users,
+} from 'lucide-react';
 import type { UserOrganizationData } from '@/lib/api/organizationApi';
 
 type SubscriptionActionsProps = {
@@ -47,7 +53,7 @@ export function SubscriptionActions({
           )}
         </button>
       )}
-      
+
       {subscriptionPlan === 'pro' && (
         <button
           onClick={onUpgrade}
@@ -67,7 +73,7 @@ export function SubscriptionActions({
           <ChevronRight className='h-5 w-5 text-white/40' />
         </button>
       )}
-      
+
       {subscriptionPlan === 'business' && (
         <button
           onClick={onUpdateSeats}

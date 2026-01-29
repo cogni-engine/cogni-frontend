@@ -9,7 +9,8 @@ export function calculateSeatUsage(
   totalSeats: number
 ): SeatUsage {
   const usedSeats = activeMemberCount + pendingInvitationsCount;
-  const availableSeats = totalSeats > 0 ? Math.max(0, totalSeats - usedSeats) : 0;
+  const availableSeats =
+    totalSeats > 0 ? Math.max(0, totalSeats - usedSeats) : 0;
 
   return {
     activeMemberCount,
