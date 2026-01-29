@@ -63,22 +63,6 @@ export default function NoteDrawer({
     }
   }, [isOpen, noteId]);
 
-  // Parse note title from markdown content
-  const getNoteTitle = (text: string) => {
-    if (!text || !text.trim()) {
-      return 'Untitled Note';
-    }
-    const lines = text.split('\n');
-    // Find the first non-empty line
-    const firstLine = lines.find(line => line.trim().length > 0);
-    if (firstLine) {
-      // Remove markdown heading symbols if present
-      const title = firstLine.replace(/^#{1,6}\s+/, '').trim();
-      return title || 'Untitled Note';
-    }
-    return 'Untitled Note';
-  };
-
   // Get note content without the first line (title)
   const getNoteContent = (text: string) => {
     if (!text || !text.trim()) {

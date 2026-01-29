@@ -4,7 +4,7 @@ import { useParams } from 'next/navigation';
 import { useState, useCallback } from 'react';
 import MemberList from '@/features/workspace/components/MemberList';
 import { useWorkspaceInvitations } from '@/features/workspace/hooks/useWorkspaceInvitations';
-import { useWorkspaceMembers } from '@/hooks/useWorkspace';
+import { useWorkspaceContext } from '@/features/workspace/contexts/WorkspaceContext';
 import { generateInvitationLink } from '@/features/workspace/api/invitationsApi';
 import { Plus, X, Mail, Link, Copy } from 'lucide-react';
 import GlassCard from '@/components/glass-design/GlassCard';
@@ -39,11 +39,7 @@ export default function WorkspaceMembersPage() {
     disableInviteLinkById,
   } = useWorkspaceInvitations(workspaceId);
 
-  const {
-    members,
-    isLoading: membersLoading,
-    error: membersError,
-  } = useWorkspaceMembers(workspaceId);
+  const { members, membersLoading, membersError } = useWorkspaceContext();
 
   const handleCreateInvitation = useCallback(async () => {
     if (invitationType === 'email' && !inviteEmail.trim()) return;

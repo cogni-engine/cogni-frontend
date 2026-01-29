@@ -3,7 +3,8 @@
 import Image from 'next/image';
 import { useParams, useRouter } from 'next/navigation';
 import { useState, useRef, memo, useMemo, useEffect } from 'react';
-import { useNotes, useNoteFolders } from '@cogni/api';
+import { useNotes } from '@/features/notes/hooks/useNotes';
+import { useNoteFolders } from '@/features/notes/hooks/useNoteFolders';
 import { formatDate } from '@/features/notes/lib/noteHelpers';
 import type { NoteWithParsed } from '@cogni/types';
 import { PenSquare, FolderOpen } from 'lucide-react';

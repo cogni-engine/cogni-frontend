@@ -1,9 +1,6 @@
 'use client';
 
 import * as React from 'react';
-import { useRouter } from 'next/navigation';
-import { ArrowLeft } from 'lucide-react';
-import GlassButton from '@/components/glass-design/GlassButton';
 import { createClient } from '@/lib/supabase/browserClient';
 import { getUserOrganizationsData } from '@/lib/api/organizationApi';
 import type { UserOrganizationData } from '@/lib/api/organizationApi';
@@ -23,7 +20,6 @@ import { useCancelInvitation } from '@/features/organizations/hooks/useOrganizat
 import type { Member } from '@/features/organizations/types/members';
 
 export default function OrganizationsPage() {
-  const router = useRouter();
   const [isLoading, setIsLoading] = React.useState(true);
   const [organizations, setOrganizations] = React.useState<
     UserOrganizationData[]
