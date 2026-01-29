@@ -368,9 +368,11 @@ export default function WorkspaceNotesPage() {
   const NoteCardComponent = ({
     note,
     isDeleted = false,
+    inRecentlyDeleted = false,
   }: {
     note: NoteWithParsed;
     isDeleted?: boolean;
+    inRecentlyDeleted?: boolean;
   }) => {
     const touchTimerRef = useRef<NodeJS.Timeout | null>(null);
     const touchStartRef = useRef<{ x: number; y: number } | null>(null);
@@ -424,9 +426,9 @@ export default function WorkspaceNotesPage() {
           tutorialNoteId === note.id ? 'tutorial-note' : undefined
         }
         className={`group relative rounded-[20px] px-5 py-[8px] cursor-pointer select-none border-0 shadow-none hover:shadow-none bg-transparent! backdrop-blur-none ${
-          isDeleted ? 'opacity-60' : ''
+          isDeleted && !inRecentlyDeleted ? 'opacity-60' : ''
         }`}
-        onClick={() => !isDeleted && handleNoteClick(note.id)}
+        onClick={() => handleNoteClick(note.id)}
         onContextMenu={e => handleContextMenu(e, note.id, isDeleted)}
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
@@ -461,7 +463,7 @@ export default function WorkspaceNotesPage() {
                     .map((assignment, index) => (
                       <div
                         key={assignment.workspace_member?.id || `temp-${index}`}
-                        className='w-6 h-6 rounded-full bg-linear-to-br from-blue-500 to-purple-500 border-2 border-gray-900 flex items-center justify-center text-white text-xs font-medium'
+                        className='w-6 h-6 rounded-full bg-white/20 border-2 border-gray-900 flex items-center justify-center text-white text-xs font-medium'
                         title={
                           assignment.workspace_member?.user_profiles?.name ||
                           'Unknown'
@@ -575,19 +577,29 @@ export default function WorkspaceNotesPage() {
             <p className='text-gray-400'>{`No notes match "${searchQuery}"`}</p>
           </div>
         ) : selectedFolder !== null ? (
-          // Show selected folder or trash
+          // Show selected folder or Recently Deleted
           <div className='flex flex-col gap-6'>
-            <FolderGroupHeader
-              folderName={
-                selectedFolder === 'trash'
-                  ? 'Trash'
-                  : folders.find(f => f.id === selectedFolder)?.title || ''
-              }
-              isCollapsed={false}
-              onToggle={() => {}}
-              showBackButton={true}
-              onBack={() => setSelectedFolder(null)}
-            />
+            <div className='flex items-center justify-between'>
+              <FolderGroupHeader
+                folderName={
+                  selectedFolder === 'trash'
+                    ? 'Recently Deleted'
+                    : folders.find(f => f.id === selectedFolder)?.title || ''
+                }
+                isCollapsed={false}
+                onToggle={() => {}}
+                showBackButton={true}
+                onBack={() => setSelectedFolder(null)}
+              />
+              {selectedFolder === 'trash' && deletedNotes.length > 0 && (
+                <button
+                  onClick={() => setShowEmptyTrashConfirm(true)}
+                  className='text-xs text-gray-400 hover:text-white px-3 py-1.5 rounded-lg hover:bg-white/10 transition-all duration-200 font-medium mr-5'
+                >
+                  Delete All
+                </button>
+              )}
+            </div>
             <div className='flex flex-col'>
               {(selectedFolder === 'trash'
                 ? deletedNotes
@@ -598,7 +610,11 @@ export default function WorkspaceNotesPage() {
                   : []
               ).map((note, index, arr) => (
                 <div key={note.id}>
-                  <NoteCard note={note} />
+                  <NoteCard
+                    note={note}
+                    isDeleted={selectedFolder === 'trash'}
+                    inRecentlyDeleted={selectedFolder === 'trash'}
+                  />
                   {index < arr.length - 1 && (
                     <div className='border-b border-white/10' />
                   )}
@@ -614,7 +630,7 @@ export default function WorkspaceNotesPage() {
               ).length === 0 && (
                 <div className='text-center py-12 text-gray-400'>
                   {selectedFolder === 'trash'
-                    ? 'Trash is empty'
+                    ? 'No recently deleted notes'
                     : 'No notes in this folder'}
                 </div>
               )}
@@ -664,7 +680,7 @@ export default function WorkspaceNotesPage() {
       </ScrollableView>
 
       {/* Bottom Search Bar and Create Button - sits at bottom with transparent nav above */}
-      <div className='fixed left-0 right-0 bottom-0 z-50 px-4 md:px-8 py-4'>
+      <div className='fixed left-0 right-0 bottom-0 z-51 px-4 md:px-8 py-4'>
         <div className='relative flex items-center gap-2 max-w-7xl mx-auto'>
           <SearchBar
             placeholder='Search notes...'
@@ -779,18 +795,18 @@ export default function WorkspaceNotesPage() {
         </div>
       )}
 
-      {/* Empty Trash Confirmation Modal */}
+      {/* Delete All Confirmation Modal */}
       {showEmptyTrashConfirm && (
         <div className='fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4'>
           <GlassCard className='p-6 max-w-sm w-full rounded-2xl'>
             <h3 className='text-lg font-semibold text-white mb-2'>
-              Empty Trash
+              Delete All Notes
             </h3>
             <p className='text-gray-400 mb-6 text-sm leading-relaxed'>
-              Are you sure you want to permanently delete all{' '}
-              {deletedNotes.length} note
-              {deletedNotes.length !== 1 ? 's' : ''} in the trash? This action
-              cannot be undone.
+              Are you sure you want to permanently delete {deletedNotes.length}{' '}
+              note
+              {deletedNotes.length !== 1 ? 's' : ''}? This action cannot be
+              undone.
             </p>
             <div className='flex gap-3'>
               <button
@@ -803,7 +819,7 @@ export default function WorkspaceNotesPage() {
                 onClick={handleEmptyTrash}
                 className='flex-1 px-4 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-all duration-200 font-medium shadow-lg shadow-red-500/20'
               >
-                Empty Trash
+                Delete All
               </button>
             </div>
           </GlassCard>

@@ -30,6 +30,10 @@ export interface AINotification {
   created_at: string;
   updated_at: string;
   task_result: TaskResult | null;
+  note: {
+    id: number;
+    title: string | null;
+  } | null;
 }
 
 export interface CompleteNotificationResponse {

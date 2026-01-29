@@ -92,10 +92,11 @@ export default function CollaborativeNoteEditor({
   notesRef.current = workspaceNotes.filter(n => n.id !== id);
 
   // Use assignment hook
-  const { assigneeIds, toggleAssignee } = useNoteAssignments({
-    isGroupNote,
-    noteId: note?.id,
-  });
+  const { assigneeIds, toggleAssignee, selectAllAssignees } =
+    useNoteAssignments({
+      isGroupNote,
+      noteId: note?.id,
+    });
 
   // Ref for debounced title save
   const titleSaveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -606,6 +607,7 @@ export default function CollaborativeNoteEditor({
         members={members}
         assigneeIds={assigneeIds}
         onToggleAssignee={toggleAssignee}
+        onSelectAllAssignees={() => selectAllAssignees(members.map(m => m.id))}
       />
 
       <div className='hidden md:block'>

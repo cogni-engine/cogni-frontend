@@ -39,6 +39,31 @@ function TiptapRenderer({
   onNoteMentionClick,
   onFileMentionClick,
 }: TiptapRendererProps) {
+  // Preprocess markdown to convert [# ...] and [@ ...] mentions to HTML
+  const processedContent = useMemo(() => {
+    if (contentType !== 'markdown' || !content) return content;
+
+    let processed = content;
+
+    // Convert note mentions: [# id="..." label="..." noteId="..."] to HTML
+    processed = processed.replace(
+      /\[#\s+id="([^"]*)"\s+label="([^"]*)"(?:\s+noteId="([^"]*)")?\]/g,
+      (match, id, label, noteId) => {
+        return `<span class="note-mention" data-type="noteMention" data-id="${id}" data-label="${label}" ${noteId ? `data-note-id="${noteId}"` : ''}>#${label}</span>`;
+      }
+    );
+
+    // Convert member mentions: [@ id="..." label="..." workspaceMemberId="..."] to HTML
+    processed = processed.replace(
+      /\[@\s+id="([^"]*)"\s+label="([^"]*)"(?:\s+workspaceMemberId="([^"]*)")?\]/g,
+      (match, id, label, workspaceMemberId) => {
+        return `<span class="mention" data-type="mention" data-id="${id}" data-label="${label}" ${workspaceMemberId ? `data-workspace-member-id="${workspaceMemberId}"` : ''}>@${label}</span>`;
+      }
+    );
+
+    return processed;
+  }, [content, contentType]);
+
   const extensions = useTiptapExtensions({
     mode: 'readonly',
     enableMemberMentions,
@@ -104,7 +129,7 @@ function TiptapRenderer({
     immediatelyRender: true,
     shouldRerenderOnTransaction: true,
     extensions,
-    content: content || '',
+    content: processedContent || '',
     contentType: contentType,
     editable: false,
     editorProps,
@@ -112,12 +137,12 @@ function TiptapRenderer({
 
   // Update editor content when content prop changes (for streaming)
   useEffect(() => {
-    if (!editor || content === undefined) return;
+    if (!editor || processedContent === undefined) return;
 
     // Get current content as markdown to compare
     const currentContent =
       contentType === 'markdown' ? editor.getMarkdown() : editor.getText();
-    const newContent = content || '';
+    const newContent = processedContent || '';
 
     // Only update if content has actually changed
     if (currentContent !== newContent) {
@@ -127,7 +152,7 @@ function TiptapRenderer({
         editor.commands.setContent(newContent, { contentType });
       });
     }
-  }, [editor, content, contentType]);
+  }, [editor, processedContent, contentType]);
 
   if (!editor) {
     return null;

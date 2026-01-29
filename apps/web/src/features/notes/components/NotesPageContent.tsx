@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { NotesView } from './NotesView';
 import { NotesListSkeleton } from './NotesListSkeleton';
+import { EmptyTrashModal } from './EmptyTrashModal';
 import { useNotesContext } from '../NotesProvider';
 import { useNoteActions } from './NoteActionsLayer';
 import { useRouter } from 'next/navigation';
@@ -16,6 +17,7 @@ export function NotesPageContent() {
     createNote,
     folders,
     searchQuery,
+    emptyTrash,
   } = useNotesContext();
 
   const { openContextMenu } = useNoteActions();
@@ -23,6 +25,7 @@ export function NotesPageContent() {
   const [selectedFolder, setSelectedFolder] = useState<'trash' | number | null>(
     null
   );
+  const [showDeleteAllConfirm, setShowDeleteAllConfirm] = useState(false);
 
   const handleNoteClick = (id: string) => {
     router.push(`/notes/${id}`);
@@ -30,6 +33,15 @@ export function NotesPageContent() {
 
   const handleBackFromFolder = () => {
     setSelectedFolder(null);
+  };
+
+  const handleDeleteAll = () => {
+    setShowDeleteAllConfirm(true);
+  };
+
+  const handleConfirmDeleteAll = async () => {
+    await emptyTrash();
+    setShowDeleteAllConfirm(false);
   };
 
   // Listen for trash click event from Header
@@ -68,15 +80,24 @@ export function NotesPageContent() {
         : formattedActiveNotes;
 
   return (
-    <NotesView
-      notes={notesToShow}
-      folders={folders}
-      searchQuery={searchQuery}
-      onNoteClick={handleNoteClick}
-      onContextMenu={openContextMenu}
-      onCreateNote={() => createNote('Untitled', '')}
-      selectedFolder={selectedFolder}
-      onBackFromFolder={handleBackFromFolder}
-    />
+    <>
+      <NotesView
+        notes={notesToShow}
+        folders={folders}
+        searchQuery={searchQuery}
+        onNoteClick={handleNoteClick}
+        onContextMenu={openContextMenu}
+        onCreateNote={() => createNote('Untitled', '')}
+        selectedFolder={selectedFolder}
+        onBackFromFolder={handleBackFromFolder}
+        onDeleteAll={handleDeleteAll}
+      />
+      <EmptyTrashModal
+        isOpen={showDeleteAllConfirm}
+        noteCount={formattedDeletedNotes.length}
+        onClose={() => setShowDeleteAllConfirm(false)}
+        onConfirm={handleConfirmDeleteAll}
+      />
+    </>
   );
 }

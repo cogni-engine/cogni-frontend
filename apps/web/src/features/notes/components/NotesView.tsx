@@ -15,6 +15,7 @@ type NotesViewProps = {
   onCreateNote: () => void;
   selectedFolder?: 'trash' | number | null;
   onBackFromFolder?: () => void;
+  onDeleteAll?: () => void;
 };
 
 export function NotesView({
@@ -26,6 +27,7 @@ export function NotesView({
   onCreateNote,
   selectedFolder = null,
   onBackFromFolder,
+  onDeleteAll,
 }: NotesViewProps) {
   // Check if there are any notes at all (across all folders)
   const hasAnyNotes = notes.length > 0 || folders.length > 0;
@@ -68,6 +70,7 @@ export function NotesView({
       folders={folders}
       selectedFolder={selectedFolder}
       onBackFromFolder={onBackFromFolder}
+      onDeleteAll={onDeleteAll}
     />
   );
 }

@@ -1,4 +1,7 @@
+import Image from 'next/image';
+import { Check } from 'lucide-react';
 import { WorkspaceMember } from '@/types/workspace';
+import GlassCard from '@/components/glass-design/GlassCard';
 
 interface AssignmentDropdownProps {
   isOpen: boolean;
@@ -6,6 +9,7 @@ interface AssignmentDropdownProps {
   members: WorkspaceMember[];
   assigneeIds: number[];
   onToggleAssignee: (memberId: number) => void;
+  onSelectAll?: () => void;
 }
 
 export function AssignmentDropdown({
@@ -14,62 +18,81 @@ export function AssignmentDropdown({
   members,
   assigneeIds,
   onToggleAssignee,
+  onSelectAll,
 }: AssignmentDropdownProps) {
   if (!isOpen) return null;
+
+  const allSelected =
+    members.length > 0 && assigneeIds.length === members.length;
 
   return (
     <>
       {/* Backdrop */}
       <div className='fixed inset-0 z-30' onClick={onClose} />
       {/* Dropdown menu */}
-      <div className='absolute right-0 top-full mt-2 w-64 bg-white/10 backdrop-blur-xl border border-black rounded-[20px] shadow-[0_8px_32px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.12)] z-40 overflow-hidden'>
-        <div className='px-4 py-3 border-b border-black'>
-          <div className='text-sm font-medium text-white'>Assignees</div>
-        </div>
-        <div className='max-h-64 overflow-y-auto'>
-          {members.length === 0 ? (
-            <div className='px-4 py-3 text-sm text-gray-400'>
-              メンバーがいません
-            </div>
-          ) : (
-            members.map(member => (
+      <GlassCard className='absolute right-0 top-full mt-2 w-64 rounded-3xl z-40'>
+        <div className='p-2'>
+          <div className='px-3 py-2 text-sm font-medium text-white'>
+            Assignee
+          </div>
+          <div className='h-px bg-white/10 mb-2' />
+
+          {/* Select All option */}
+          {members.length > 0 && onSelectAll && (
+            <>
               <button
-                key={member.id}
                 type='button'
-                onClick={() => onToggleAssignee(member.id)}
-                className='w-full px-4 py-2.5 text-left text-sm hover:bg-white/10 transition-colors flex items-center gap-3'
+                onClick={onSelectAll}
+                className='w-full p-2 text-left text-sm hover:bg-white/5 rounded-xl transition-colors flex items-center justify-between'
               >
-                <div
-                  className={`w-5 h-5 border-2 rounded flex items-center justify-center shrink-0 ${
-                    assigneeIds.includes(member.id)
-                      ? 'bg-blue-500 border-blue-500'
-                      : 'border-gray-600'
-                  }`}
-                >
-                  {assigneeIds.includes(member.id) && (
-                    <svg
-                      className='w-3.5 h-3.5 text-white'
-                      fill='none'
-                      stroke='currentColor'
-                      viewBox='0 0 24 24'
-                    >
-                      <path
-                        strokeLinecap='round'
-                        strokeLinejoin='round'
-                        strokeWidth={3}
-                        d='M5 13l4 4L19 7'
-                      />
-                    </svg>
-                  )}
-                </div>
-                <span className='text-gray-300'>
-                  {member.user_profile?.name || 'Unknown'}
-                </span>
+                <span className='text-white'>Select All</span>
+                {allSelected && <Check className='w-4 h-4 text-white' />}
               </button>
-            ))
+              <div className='h-px bg-white/10 my-2' />
+            </>
           )}
+
+          <div className='max-h-64 overflow-y-auto'>
+            {members.length === 0 ? (
+              <div className='px-3 py-2 text-sm text-gray-400'>No members</div>
+            ) : (
+              members.map(member => {
+                const isSelected = assigneeIds.includes(member.id);
+                return (
+                  <button
+                    key={member.id}
+                    type='button'
+                    onClick={() => onToggleAssignee(member.id)}
+                    className='w-full p-2 text-left text-sm hover:bg-white/5 rounded-xl transition-colors flex items-center justify-between'
+                  >
+                    <div className='flex items-center gap-3'>
+                      {member.user_profile?.avatar_url ? (
+                        <Image
+                          src={member.user_profile.avatar_url}
+                          alt={member.user_profile?.name || 'User'}
+                          width={24}
+                          height={24}
+                          className='w-6 h-6 rounded-full object-cover'
+                        />
+                      ) : (
+                        <div className='w-6 h-6 rounded-full bg-white/20 flex items-center justify-center text-xs text-white font-medium'>
+                          {(member.user_profile?.name || '?')
+                            .charAt(0)
+                            .toUpperCase()}
+                        </div>
+                      )}
+                      <span className='text-white'>
+                        {member.user_profile?.name || 'Unknown'}
+                      </span>
+                    </div>
+                    {isSelected && <Check className='w-4 h-4 text-white' />}
+                  </button>
+                );
+              })
+            )}
+          </div>
         </div>
-      </div>
+      </GlassCard>
     </>
   );
 }

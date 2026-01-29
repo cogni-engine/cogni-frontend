@@ -43,6 +43,7 @@ export function NoteActionsLayer({ children }: { children: ReactNode }) {
   const {
     notes,
     deletedNotes,
+    formattedActiveNotes,
     softDeleteNote,
     deleteNote,
     restoreNote,
@@ -152,39 +153,47 @@ export function NoteActionsLayer({ children }: { children: ReactNode }) {
     >
       {children}
 
-      {contextMenu && (
-        <NoteContextMenu
-          x={contextMenu.x}
-          y={contextMenu.y}
-          onClose={() => setContextMenu(null)}
-          isDeleted={contextMenu.isDeleted}
-          onSoftDelete={
-            !contextMenu.isDeleted
-              ? () => handleSoftDelete(contextMenu.noteId)
-              : undefined
-          }
-          onHardDelete={
-            contextMenu.isDeleted
-              ? () => setShowHardDeleteConfirm(contextMenu.noteId)
-              : undefined
-          }
-          onDuplicate={
-            !contextMenu.isDeleted
-              ? () => handleDuplicate(contextMenu.noteId)
-              : undefined
-          }
-          onRestore={
-            contextMenu.isDeleted
-              ? () => handleRestore(contextMenu.noteId)
-              : undefined
-          }
-          onMove={
-            !contextMenu.isDeleted
-              ? () => handleOpenMoveDrawer(contextMenu.noteId)
-              : undefined
-          }
-        />
-      )}
+      {contextMenu &&
+        (() => {
+          const targetNote = formattedActiveNotes.find(
+            n => n.id === contextMenu.noteId
+          );
+          const isGroupNote = targetNote?.isGroupNote ?? false;
+
+          return (
+            <NoteContextMenu
+              x={contextMenu.x}
+              y={contextMenu.y}
+              onClose={() => setContextMenu(null)}
+              isDeleted={contextMenu.isDeleted}
+              onSoftDelete={
+                !contextMenu.isDeleted
+                  ? () => handleSoftDelete(contextMenu.noteId)
+                  : undefined
+              }
+              onHardDelete={
+                contextMenu.isDeleted
+                  ? () => setShowHardDeleteConfirm(contextMenu.noteId)
+                  : undefined
+              }
+              onDuplicate={
+                !contextMenu.isDeleted
+                  ? () => handleDuplicate(contextMenu.noteId)
+                  : undefined
+              }
+              onRestore={
+                contextMenu.isDeleted
+                  ? () => handleRestore(contextMenu.noteId)
+                  : undefined
+              }
+              onMove={
+                !contextMenu.isDeleted && !isGroupNote
+                  ? () => handleOpenMoveDrawer(contextMenu.noteId)
+                  : undefined
+              }
+            />
+          );
+        })()}
 
       <MoveFolderDrawer
         isOpen={showMoveDrawer}

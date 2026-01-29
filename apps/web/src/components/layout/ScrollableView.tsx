@@ -10,7 +10,7 @@ const ScrollableView = forwardRef<
   return (
     <div
       ref={ref}
-      className={`relative z-10 flex-1 overflow-y-auto ${className}`}
+      className={`relative z-10 flex-1 min-h-0 overflow-y-auto ${className}`}
       style={{
         willChange: 'scroll-position',
         transform: 'translateZ(0)',

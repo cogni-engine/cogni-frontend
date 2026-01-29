@@ -82,9 +82,20 @@ export function useNoteAssignments({
     }
   };
 
+  const selectAllAssignees = (memberIds: number[]) => {
+    // If all are selected, deselect all. Otherwise, select all.
+    const allSelected = memberIds.every(id => assigneeIds.includes(id));
+    if (allSelected) {
+      setAssigneeIds([]);
+    } else {
+      setAssigneeIds(memberIds);
+    }
+  };
+
   return {
     assigneeIds,
     toggleAssignee,
+    selectAllAssignees,
     savingAssignment,
   };
 }
