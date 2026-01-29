@@ -167,33 +167,44 @@ export default function WorkspaceLayout({
       {/* Navigation Tabs - Absolutely Positioned */}
       {(currentView === 'chat' || currentView === 'notes') && (
         <div className='absolute w-full top-17 left-1/2 -translate-x-1/2 z-50 px-2 md:px-6 pointer-events-none'>
-          <GlassCard className='flex w-full divide-x divide-white/10 overflow-hidden rounded-3xl border backdrop-blur-md shadow-[0_8px_32px_rgba(0,0,0,0.15)] pointer-events-auto'>
-            <button
-              onClick={() => handleViewChange('chat')}
-              className={`flex flex-1 items-center justify-center gap-2 px-8 py-2.5 text-sm font-medium transition-all duration-300 ${
-                currentView === 'chat'
-                  ? 'text-white bg-white/10'
-                  : 'text-gray-400 hover:text-white bg-black/10'
-              }`}
-              aria-current={currentView === 'chat' ? 'page' : undefined}
-              data-shepherd-target='workspace-chat-button'
-            >
-              <MessageSquare className='w-4 h-4' />
-              Chat
-            </button>
-            <button
-              onClick={() => handleViewChange('notes')}
-              className={`flex flex-1 items-center justify-center gap-2 px-8 py-2.5 text-sm font-medium transition-all duration-300 ${
-                currentView === 'notes'
-                  ? 'text-white bg-white/10'
-                  : 'text-gray-400 hover:text-white bg-black/10'
-              }`}
-              aria-current={currentView === 'notes' ? 'page' : undefined}
-              data-shepherd-target='workspace-notes-button'
-            >
-              <FileText className='w-4 h-4' />
-              Notes
-            </button>
+          <GlassCard className='overflow-hidden rounded-3xl border backdrop-blur-md shadow-[0_8px_32px_rgba(0,0,0,0.15)] pointer-events-auto'>
+            <div className='relative flex items-center p-1'>
+              {/* Sliding background indicator */}
+              <div
+                className='absolute h-[calc(100%-8px)] rounded-2xl bg-white/10 backdrop-blur-sm transition-all duration-500 ease-out'
+                style={{
+                  width: 'calc(50% - 6px)',
+                  left: currentView === 'chat' ? '4px' : 'calc(50% + 2px)',
+                }}
+              />
+
+              <button
+                onClick={() => handleViewChange('chat')}
+                className={`relative z-10 flex flex-1 items-center justify-center gap-2 px-8 py-2 text-sm font-medium transition-colors duration-300 ${
+                  currentView === 'chat'
+                    ? 'text-white'
+                    : 'text-gray-400 hover:text-white'
+                }`}
+                aria-current={currentView === 'chat' ? 'page' : undefined}
+                data-shepherd-target='workspace-chat-button'
+              >
+                <MessageSquare className='w-4 h-4' />
+                Chat
+              </button>
+              <button
+                onClick={() => handleViewChange('notes')}
+                className={`relative z-10 flex flex-1 items-center justify-center gap-2 px-8 py-2 text-sm font-medium transition-colors duration-300 ${
+                  currentView === 'notes'
+                    ? 'text-white'
+                    : 'text-gray-400 hover:text-white'
+                }`}
+                aria-current={currentView === 'notes' ? 'page' : undefined}
+                data-shepherd-target='workspace-notes-button'
+              >
+                <FileText className='w-4 h-4' />
+                Note
+              </button>
+            </div>
           </GlassCard>
         </div>
       )}

@@ -144,8 +144,13 @@ export default function ActivityItem({
       </div>
 
       {/* Right: Content */}
-      <button
+      <div
         onClick={onToggle}
+        onKeyDown={e => {
+          if (e.key === 'Enter' || e.key === ' ') onToggle();
+        }}
+        role='button'
+        tabIndex={0}
         className='flex-1 pb-6 text-left cursor-pointer'
       >
         {/* Header: Avatar, Name, timestamp, and View Note button */}
@@ -280,7 +285,7 @@ export default function ActivityItem({
             </div>
           </div>
         </div>
-      </button>
+      </div>
 
       {/* Full Screen Task Result Modal */}
       {mounted &&

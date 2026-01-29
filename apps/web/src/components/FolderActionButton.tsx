@@ -263,7 +263,7 @@ export default function FolderActionButton({
                   </div>
                 ))}
 
-                {/* Trash Folder - Always show */}
+                {/* Recently Deleted - Always show */}
                 {folders.length > 0 && (
                   <div className='h-px bg-white/10 my-2' />
                 )}
@@ -272,10 +272,8 @@ export default function FolderActionButton({
                   className='w-full flex items-center p-2 hover:bg-white/5 rounded-xl transition-colors'
                 >
                   <div className='flex items-center gap-2 flex-1'>
-                    <div className='flex items-center justify-center w-6 h-6 rounded-lg bg-red-500/20'>
-                      <Trash2 className='w-3.5 h-3.5 text-red-400' />
-                    </div>
-                    <span className='text-sm text-white'>Trash</span>
+                    <Trash2 className='w-4 h-4 text-white' />
+                    <span className='text-sm text-white'>Recently Deleted</span>
                     {trashCount > 0 && (
                       <span className='text-xs text-gray-400'>
                         ({trashCount})

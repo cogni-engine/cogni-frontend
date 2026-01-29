@@ -140,7 +140,7 @@ export default function FolderDropdown({
   const getSelectedLabel = () => {
     if (selectedFolder === 'all') return 'All Notes';
     if (selectedFolder === 'notes') return 'Notes';
-    if (selectedFolder === 'trash') return 'Trash';
+    if (selectedFolder === 'trash') return 'Recently Deleted';
     const folder = folders.find(f => f.id === selectedFolder);
     return folder?.title || 'Select Folder';
   };
@@ -151,7 +151,7 @@ export default function FolderDropdown({
     if (selectedFolder === 'notes')
       return <FolderIcon className='w-4 h-4 text-blue-400' />;
     if (selectedFolder === 'trash')
-      return <Trash2 className='w-4 h-4 text-red-400' />;
+      return <Trash2 className='w-4 h-4 text-gray-400' />;
     return <FolderIcon className='w-4 h-4 text-yellow-400' />;
   };
 
@@ -383,7 +383,7 @@ export default function FolderDropdown({
 
             <div className='h-px bg-white/10 my-3' />
 
-            {/* Trash */}
+            {/* Recently Deleted */}
             <button
               onClick={() => {
                 onFolderSelect('trash');
@@ -401,10 +401,12 @@ export default function FolderDropdown({
                       : 'bg-white/5 group-hover:bg-white/10'
                   }`}
                 >
-                  <Trash2 className='w-5 h-5 text-red-400' />
+                  <Trash2 className='w-5 h-5 text-gray-400' />
                 </div>
                 <div className='flex flex-col items-start'>
-                  <span className='text-sm font-medium text-white'>Trash</span>
+                  <span className='text-sm font-medium text-white'>
+                    Recently Deleted
+                  </span>
                   <span className='text-xs text-gray-400'>
                     {noteCounts.trash} notes
                   </span>

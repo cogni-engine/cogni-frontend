@@ -36,6 +36,7 @@ interface NotificationProcessDrawerProps {
   notifications: AINotification[];
   onNotificationProcessed?: () => void;
   initialNotificationId?: number | null;
+  isLoading?: boolean;
 }
 
 export default function NotificationProcessDrawer({
@@ -44,6 +45,7 @@ export default function NotificationProcessDrawer({
   notifications,
   onNotificationProcessed,
   initialNotificationId,
+  isLoading = false,
 }: NotificationProcessDrawerProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [drawerMode, setDrawerMode] = useState<'notification' | 'note-input'>(
@@ -374,7 +376,11 @@ export default function NotificationProcessDrawer({
                   isSlideOut && 'opacity-0'
                 )}
               >
-                {notifications.length === 0 ? (
+                {isLoading ? (
+                  <div className='flex items-center justify-center py-12'>
+                    <Loader2 className='w-8 h-8 text-white/40 animate-spin' />
+                  </div>
+                ) : notifications.length === 0 ? (
                   <div className='flex items-center justify-center py-12'>
                     <p className='text-white/60 text-center'>
                       No notifications
@@ -446,7 +452,7 @@ export default function NotificationProcessDrawer({
 
                         {/* Expanded Note Content */}
                         {expandedNoteId === currentNotification.note.id && (
-                          <div className='mt-4 pl-6 max-h-[40vh] overflow-y-auto'>
+                          <div className='mt-4 max-h-[40vh] overflow-y-auto'>
                             {isLoadingNote ? (
                               <div className='flex items-center justify-center py-4'>
                                 <Loader2 className='w-5 h-5 text-white/40 animate-spin' />
