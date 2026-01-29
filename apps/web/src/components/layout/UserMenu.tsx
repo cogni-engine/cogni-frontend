@@ -62,8 +62,6 @@ export function UserMenu({ user }: UserMenuProps) {
 
   const isProOrBusiness = planType === 'pro' || planType === 'business';
 
-  console.log('planType', planType);
-
   const email = user?.email ?? 'Unknown user';
   const avatarUrl = profile?.avatar_url ?? null;
   const initials = getInitials(profile, email);

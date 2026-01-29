@@ -10,10 +10,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { ChevronDown } from 'lucide-react';
-import {
-  useUserId,
-  useManagedOrganizationsWithSubscriptions,
-} from './hooks/useOrganizations';
+import { useSubscription } from '@/providers/SubscriptionProvider';
 import type { UserOrganizationData } from '@/lib/api/organizationApi';
 import {
   useCustomerPortal,
@@ -37,10 +34,19 @@ export default function SubscriptionClient() {
   const [showUpdateSeatsDialog, setShowUpdateSeatsDialog] = useState(false);
   const [selectedOrgId, setSelectedOrgId] = useState<number | null>(null);
 
-  // React Query hooks
-  const { data: userId } = useUserId();
-  const { data: managedOrgs, isLoading: isLoadingOrg } =
-    useManagedOrganizationsWithSubscriptions(userId ?? undefined);
+  // Use SubscriptionProvider
+  const {
+    organizations,
+    isLoading: isLoadingOrg,
+    planType,
+  } = useSubscription();
+
+  // Filter to only managed organizations (owner/admin)
+  const managedOrgs = useMemo(() => {
+    return organizations.filter(
+      org => org.role === 'owner' || org.role === 'admin'
+    );
+  }, [organizations]);
 
   // Select current organization
   const currentOrg = useMemo(() => {
@@ -61,6 +67,7 @@ export default function SubscriptionClient() {
 
   // Compute subscription plan from current organization
   const currentOrgPlan = currentOrg?.organization.plan_type;
+  console.log('currentOrgPlan', currentOrgPlan);
 
   // Set selected org ID when currentOrg changes
   useEffect(() => {
@@ -244,14 +251,14 @@ export default function SubscriptionClient() {
           />
         )}
 
-        {/* Pricing Cards Grid - Hide for business plan */}
-        {currentOrgPlan && currentOrgPlan === 'free' && (
+        {/* Pricing Cards Grid - Only show if user's overall plan is free */}
+        {planType !== 'business' && (
           <div className='mb-8'>
             <h2 className='text-xl font-bold text-white mb-6'>
               Available Plans
             </h2>
             <PricingCardsGrid
-              subscriptionPlan={currentOrgPlan ?? null}
+              subscriptionPlan={planType}
               onPlanClick={handlePlanClick}
             />
           </div>

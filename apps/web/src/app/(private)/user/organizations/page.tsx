@@ -179,14 +179,6 @@ export default function OrganizationsPage() {
     return (
       <div className='h-full overflow-y-auto pt-20 pb-24 px-4 md:px-6'>
         <div className='max-w-7xl mx-auto py-8'>
-          <GlassButton
-            onClick={() => router.push('/')}
-            title='Go back'
-            size='icon'
-            className='size-12 text-white/60 hover:text-white z-100'
-          >
-            <ArrowLeft className='h-5 w-5' />
-          </GlassButton>
           <h1 className='text-3xl font-bold text-white mb-2'>Organizations</h1>
           <p className='text-white/60'>No organizations found.</p>
         </div>
