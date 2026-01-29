@@ -4,7 +4,7 @@ import { ArrowUpRight } from 'lucide-react';
 import Link from 'next/link';
 import { PricingCard as BasePricingCard } from '@cogni/pricing';
 import type { PricingPlan } from '@cogni/pricing';
-import { useLanguage } from '../../context/language-context';
+import { useLanguage } from '../../../context/language-context';
 
 type PricingCardProps = PricingPlan;
 
