@@ -62,8 +62,7 @@ export {
   getFolderNoteCounts,
 } from './folders';
 
-// Export note hooks
-export { useNotes } from './hooks/useNotes';
+
 export { useNoteFolders } from './hooks/useNoteFolders';
 export { useNoteEditor } from './hooks/useNoteEditor';
 
