@@ -10,7 +10,6 @@ type NotesViewProps = {
   notes: FormattedNote[];
   folders: NoteFolder[];
   searchQuery: string;
-  onNoteClick: (id: string) => void;
   onContextMenu: (e: React.MouseEvent, id: string, isDeleted: boolean) => void;
   onCreateNote: () => void;
   selectedFolder?: 'trash' | number | null;
@@ -22,7 +21,6 @@ export function NotesView({
   notes,
   folders,
   searchQuery,
-  onNoteClick,
   onContextMenu,
   onCreateNote,
   selectedFolder = null,
@@ -64,7 +62,6 @@ export function NotesView({
   return (
     <NoteList
       notes={notes}
-      onNoteClick={onNoteClick}
       onContextMenu={onContextMenu}
       groupBy='folder'
       folders={folders}

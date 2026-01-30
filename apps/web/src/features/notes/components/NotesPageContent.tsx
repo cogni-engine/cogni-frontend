@@ -6,7 +6,6 @@ import { NotesListSkeleton } from './NotesListSkeleton';
 import { EmptyTrashModal } from './EmptyTrashModal';
 import { useNotesContext } from '../NotesProvider';
 import { useNoteActions } from './NoteActionsLayer';
-import { useRouter } from 'next/navigation';
 
 export function NotesPageContent() {
   const {
@@ -21,15 +20,10 @@ export function NotesPageContent() {
   } = useNotesContext();
 
   const { openContextMenu } = useNoteActions();
-  const router = useRouter();
   const [selectedFolder, setSelectedFolder] = useState<'trash' | number | null>(
     null
   );
   const [showDeleteAllConfirm, setShowDeleteAllConfirm] = useState(false);
-
-  const handleNoteClick = (id: string) => {
-    router.push(`/notes/${id}`);
-  };
 
   const handleBackFromFolder = () => {
     setSelectedFolder(null);
@@ -85,7 +79,6 @@ export function NotesPageContent() {
         notes={notesToShow}
         folders={folders}
         searchQuery={searchQuery}
-        onNoteClick={handleNoteClick}
         onContextMenu={openContextMenu}
         onCreateNote={() => createNote('Untitled', '')}
         selectedFolder={selectedFolder}
