@@ -11,6 +11,7 @@ import {
   uploadUserAvatar,
 } from '@/lib/api/userProfilesApi';
 import { createClient } from '@/lib/supabase/browserClient';
+import { useUserProfileStore } from '@/stores/useUserProfileStore';
 import type { UserProfile } from '@/types/userProfile';
 
 import type { StatusMessage } from '../utils/avatar';
@@ -63,6 +64,9 @@ export function useUserSettings(): UseUserSettingsReturn {
 
   const [isDeleting, setIsDeleting] = useState(false);
 
+  // Get store update function
+  const updateStoreProfile = useUserProfileStore(state => state.updateProfile);
+
   useEffect(() => {
     const loadInitialData = async () => {
       try {
@@ -111,6 +115,8 @@ export function useUserSettings(): UseUserSettingsReturn {
       setSavingName(true);
       const updated = await updateUserProfile(userId, { name });
       setProfile(updated);
+      // Sync with global store
+      updateStoreProfile({ name });
       setNameStatus({
         type: 'success',
         message: 'Name updated successfully.',
@@ -124,7 +130,7 @@ export function useUserSettings(): UseUserSettingsReturn {
     } finally {
       setSavingName(false);
     }
-  }, [name, profile, userId]);
+  }, [name, profile, userId, updateStoreProfile]);
 
   const updateAvatar = useCallback(
     async (file: File, previousAvatarUrl?: string) => {
@@ -142,6 +148,8 @@ export function useUserSettings(): UseUserSettingsReturn {
           avatar_url: avatarUrl,
         });
         setProfile(updated);
+        // Sync with global store
+        updateStoreProfile({ avatar_url: avatarUrl });
         setAvatarStatus({
           type: 'success',
           message: 'Avatar updated successfully.',
@@ -157,7 +165,7 @@ export function useUserSettings(): UseUserSettingsReturn {
         setSavingAvatar(false);
       }
     },
-    [profile, userId]
+    [profile, userId, updateStoreProfile]
   );
 
   const removeAvatar = useCallback(async () => {
@@ -167,6 +175,8 @@ export function useUserSettings(): UseUserSettingsReturn {
       setRemovingAvatar(true);
       const updated = await removeUserAvatar(userId, profile.avatar_url);
       setProfile(updated);
+      // Sync with global store
+      updateStoreProfile({ avatar_url: null });
       setAvatarStatus({ type: 'success', message: 'Avatar removed.' });
     } catch (error) {
       console.error('Failed to remove avatar', error);
@@ -178,7 +188,7 @@ export function useUserSettings(): UseUserSettingsReturn {
     } finally {
       setRemovingAvatar(false);
     }
-  }, [profile?.avatar_url, userId]);
+  }, [profile?.avatar_url, userId, updateStoreProfile]);
 
   const generateAvatar = useCallback(async () => {
     if (!userId || !profile) return;
@@ -207,6 +217,8 @@ export function useUserSettings(): UseUserSettingsReturn {
       });
 
       setProfile(updated);
+      // Sync with global store
+      updateStoreProfile({ avatar_url: avatarUrl });
       setGenerationCounter(prev => prev + 1);
       setAvatarStatus({
         type: 'success',
@@ -221,7 +233,7 @@ export function useUserSettings(): UseUserSettingsReturn {
     } finally {
       setGeneratingAvatar(false);
     }
-  }, [generationCounter, profile, userId, userEmail]);
+  }, [generationCounter, profile, userId, userEmail, updateStoreProfile]);
 
   const toggleAiSuggestion = useCallback(async () => {
     if (!userId || !profile) return;
@@ -234,6 +246,8 @@ export function useUserSettings(): UseUserSettingsReturn {
         enable_ai_suggestion: newValue,
       });
       setProfile(updated);
+      // Sync with global store
+      updateStoreProfile({ enable_ai_suggestion: newValue });
       setEnableAiSuggestion(newValue);
     } catch (error) {
       console.error('Failed to update AI suggestion setting', error);
@@ -242,7 +256,7 @@ export function useUserSettings(): UseUserSettingsReturn {
     } finally {
       setSavingAiSuggestion(false);
     }
-  }, [enableAiSuggestion, profile, userId]);
+  }, [enableAiSuggestion, profile, userId, updateStoreProfile]);
 
   const deleteAccount = useCallback(async () => {
     try {

@@ -9,6 +9,7 @@ import {
   useNoteDrawer,
   useFileDrawer,
 } from '@/stores/useGlobalUIStore';
+import { useUserProfileStore } from '@/stores/useUserProfileStore';
 import { createClient } from '@/lib/supabase/browserClient';
 import {
   setCurrentUserId,
@@ -44,6 +45,12 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
   } = useFileDrawer();
   const [isMobile, setIsMobile] = useState(false);
   const supabase = createClient();
+  const initializeUserProfile = useUserProfileStore(state => state.initialize);
+
+  // Initialize user profile store
+  useEffect(() => {
+    initializeUserProfile();
+  }, [initializeUserProfile]);
 
   // Setup user session after OAuth login
   useEffect(() => {

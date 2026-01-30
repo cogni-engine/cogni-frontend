@@ -23,7 +23,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { signOut } from '@cogni/api';
-import { useUserProfile } from '@/features/users/hooks/useUserProfile';
+import { useUserProfile } from '@/stores/useUserProfileStore';
 import type { UserProfile } from '@/types/userProfile';
 import GlassCard from '@/components/glass-design/GlassCard';
 import { isInMobileWebView, notifyNativeLogout } from '@/lib/webview';
@@ -57,8 +57,7 @@ export function UserMenu({ user }: UserMenuProps) {
   const [isSigningOut, setIsSigningOut] = React.useState(false);
   const [isPricingModalOpen, setIsPricingModalOpen] = React.useState(false);
   const { planType } = useSubscription();
-  const userId = user?.id ?? null;
-  const { profile } = useUserProfile({ userId });
+  const profile = useUserProfile();
 
   const isProOrBusiness = planType === 'pro' || planType === 'business';
 
@@ -101,6 +100,13 @@ export function UserMenu({ user }: UserMenuProps) {
       }
 
       await signOut();
+
+      // Reset user profile store on logout
+      const { useUserProfileStore } = await import(
+        '@/stores/useUserProfileStore'
+      );
+      useUserProfileStore.getState().reset();
+
       router.push('/login');
     } catch (error) {
       console.error('Failed to sign out', error);

@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useEffect, useState, useRef, useCallback } from 'react';
+import { useEffect, useState, useRef, useCallback, useMemo } from 'react';
 import {
   useNotes,
   useNoteAssignments,
@@ -26,12 +26,16 @@ import {
   getAISuggestions,
 } from '@/features/notes/api/notesApi';
 import { yDocToAnnotatedMarkdown } from '@/lib/ydoc/yDocToMarkdown';
-import { createClient } from '@/lib/supabase/browserClient';
 import type { Note } from '@/types/note';
 import { Check, X } from 'lucide-react';
 import GlassCard from '@/components/glass-design/GlassCard';
 import GlassButton from '@/components/glass-design/GlassButton';
 import { useAppEvents } from '@/hooks/useAppEvents';
+import {
+  useUserId,
+  useUserEmail,
+  useUserProfile,
+} from '@/stores/useUserProfileStore';
 
 export default function CollaborativeNoteEditor({
   noteId,
@@ -48,13 +52,21 @@ export default function CollaborativeNoteEditor({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // User info state
-  const [userInfo, setUserInfo] = useState<{
-    name: string;
-    color: string;
-    id: string;
-  } | null>(null);
+  // Get user info from global store
+  const userId = useUserId();
+  const userEmail = useUserEmail();
+  const profile = useUserProfile();
 
+  // Derive userInfo for collaborative editor
+  const userInfo = useMemo(() => {
+    if (!userId) return null;
+
+    return {
+      id: userId,
+      name: profile?.name || userEmail?.split('@')[0] || 'Anonymous',
+      color: generateUserColor(userId),
+    };
+  }, [userId, profile?.name, userEmail]);
   // Check if this is a group workspace note (not personal)
   const personalWorkspaceId = getPersonalWorkspaceId();
   const isGroupNote = note?.workspace_id !== personalWorkspaceId;
@@ -172,33 +184,6 @@ export default function CollaborativeNoteEditor({
         clearTimeout(titleSaveTimeoutRef.current);
       }
     };
-  }, []);
-
-  // Fetch user info for collaboration
-  useEffect(() => {
-    async function fetchUserInfo() {
-      const supabase = createClient();
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-
-      if (user) {
-        // Try to get user profile name
-        const { data: profile } = await supabase
-          .from('user_profiles')
-          .select('name')
-          .eq('id', user.id)
-          .single();
-
-        setUserInfo({
-          id: user.id,
-          name: profile?.name || user.email?.split('@')[0] || 'Anonymous',
-          color: generateUserColor(user.id),
-        });
-      }
-    }
-
-    fetchUserInfo();
   }, []);
 
   // Initialize collaborative editor
