@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState, useRef, useCallback, useMemo } from 'react';
 import {
   useNotes,
+  useNote,
   useNoteAssignments,
   useEditorImageUpload,
   useDiffSuggestion,
@@ -21,12 +22,10 @@ import { DesktopAIInput } from './components/DesktopAIInput';
 import { EditorStyles } from './lib/editorStyles';
 import { CollaborativeEditorStyles } from './lib/collaborativeEditorStyles';
 import {
-  getNote,
   updateNoteTitle,
   getAISuggestions,
 } from '@/features/notes/api/notesApi';
 import { yDocToAnnotatedMarkdown } from '@/lib/ydoc/yDocToMarkdown';
-import type { Note } from '@/types/note';
 import { Check, X } from 'lucide-react';
 import GlassCard from '@/components/glass-design/GlassCard';
 import GlassButton from '@/components/glass-design/GlassButton';
@@ -46,11 +45,14 @@ export default function CollaborativeNoteEditor({
   const id = parseInt(noteId, 10);
   const isValidId = !isNaN(id);
 
-  // Note data state
-  const [note, setNote] = useState<Note | null>(null);
+  // Use SWR hook for cached note data
+  const { note, loading, error } = useNote({
+    noteId: isValidId ? id : null,
+    initialData: null,
+  });
+
+  // Local state for editable title (controlled input)
   const [title, setTitle] = useState('');
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
   // Get user info from global store
   const userId = useUserId();
@@ -110,49 +112,15 @@ export default function CollaborativeNoteEditor({
       noteId: note?.id,
     });
 
+  // Initialize title from note data
+  useEffect(() => {
+    if (note?.title) {
+      setTitle(note.title);
+    }
+  }, [note?.title]);
+
   // Ref for debounced title save
   const titleSaveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-
-  // Fetch note data
-  useEffect(() => {
-    if (!isValidId) {
-      setLoading(false);
-      return;
-    }
-
-    async function fetchNote() {
-      try {
-        setLoading(true);
-        setError(null);
-        const data = await getNote(id);
-        if (data) {
-          setNote(data);
-          // Use title column if available, otherwise fallback to parsing from text
-          if (data.title) {
-            setTitle(data.title);
-          } else {
-            // Fallback for legacy notes without title column
-            const lines = data.text?.split('\n') || [];
-            const firstLine = lines.find(
-              (line: string) => line.trim().length > 0
-            );
-            const noteTitle =
-              firstLine?.replace(/^#{1,6}\s+/, '').trim() || 'Untitled';
-            setTitle(noteTitle);
-          }
-        } else {
-          setError('Note not found');
-        }
-      } catch (err) {
-        console.error('Error fetching note:', err);
-        setError('Failed to load note');
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    fetchNote();
-  }, [id, isValidId]);
 
   // Handle title change - debounced save to database
   const handleTitleChange = useCallback(

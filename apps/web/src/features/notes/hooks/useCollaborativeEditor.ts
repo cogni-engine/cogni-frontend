@@ -71,12 +71,33 @@ export function useCollaborativeEditor({
     return new Y.Doc();
   }, [noteId]);
 
-  // Get Supabase access token for authentication
+  // Get Supabase access token for authentication with auto-refresh
   const getToken = useCallback(async (): Promise<string> => {
     const supabase = createClient();
-    const {
+
+    // Get current session
+    let {
       data: { session },
     } = await supabase.auth.getSession();
+
+    // Check if token is expired or about to expire (within 5 minutes)
+    if (session?.expires_at) {
+      const expiresAt = session.expires_at * 1000; // Convert to ms
+      const now = Date.now();
+      const fiveMinutes = 5 * 60 * 1000;
+
+      if (now >= expiresAt - fiveMinutes) {
+        console.log('🔄 Token expiring soon, refreshing session...');
+        try {
+          const { data } = await supabase.auth.refreshSession();
+          session = data.session;
+          console.log('✅ Session refreshed successfully');
+        } catch (error) {
+          console.error('❌ Failed to refresh session:', error);
+          throw new Error('Failed to refresh authentication token');
+        }
+      }
+    }
 
     if (!session?.access_token) {
       throw new Error('No access token available');
@@ -97,6 +118,9 @@ export function useCollaborativeEditor({
       name: `note:${noteId}`,
       document: ydoc,
       token: getToken,
+      connect: true, // Ensure auto-connect is enabled
+      forceSyncInterval: 10000, // Force sync every 10 seconds to detect issues early
+
       onConnect: () => {
         console.log('🔌 Connected to Hocuspocus');
         setIsConnected(true);

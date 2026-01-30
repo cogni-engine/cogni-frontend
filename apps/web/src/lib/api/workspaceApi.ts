@@ -401,16 +401,6 @@ export async function checkWorkspaceMembership(
 export async function getWorkspaceMembers(
   workspaceId: number
 ): Promise<WorkspaceMember[]> {
-  console.log('🔍 getWorkspaceMembers called with workspaceId:', workspaceId);
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    throw new Error('User not authenticated');
-  }
-
   // Fetch workspace members with their user profiles and agent profiles
   const { data, error } = await supabase
     .from('workspace_member')

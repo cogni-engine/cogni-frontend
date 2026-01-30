@@ -1,7 +1,7 @@
 'use client';
 
-import { useCallback } from 'react';
-import useSWR from 'swr';
+import { useCallback, useEffect } from 'react';
+import useSWR, { mutate as globalMutate } from 'swr';
 import type { Note, NoteWithParsed } from '@/types/note';
 import {
   getNotes,
@@ -15,6 +15,7 @@ import {
   getUserAssignedNotes,
 } from '@/features/notes/api/notesApi';
 import { parseNote } from '../lib/noteHelpers';
+import { noteKey } from './useNote';
 
 // SWR Keys
 const notesKey = (workspaceId: number, includeDeleted: boolean) =>
@@ -125,6 +126,20 @@ export function useNotes(options: UseNotesOptions = {}): UseNotesReturn {
       revalidateOnReconnect: false,
     }
   );
+
+  // Populate individual note caches when list loads
+  useEffect(() => {
+    if (notes && notes.length > 0) {
+      // Populate each note's individual cache for instant navigation
+      notes.forEach(note => {
+        globalMutate(
+          noteKey(note.id),
+          note,
+          { revalidate: false } // Don't trigger revalidation
+        );
+      });
+    }
+  }, [notes]);
 
   const refetch = useCallback(async () => {
     await mutateNotes();
