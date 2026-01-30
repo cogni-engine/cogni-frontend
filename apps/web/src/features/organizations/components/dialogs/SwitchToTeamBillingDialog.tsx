@@ -87,7 +87,7 @@ export function SwitchToTeamBillingDialog({
             <Button
               onClick={handleSwitch}
               disabled={isSwitching}
-              className='bg-purple-500 hover:bg-purple-600'
+              className='bg-blue-500 hover:bg-blue-600'
             >
               {isSwitching ? (
                 <>

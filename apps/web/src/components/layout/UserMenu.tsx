@@ -27,7 +27,6 @@ import { useUserProfile } from '@/features/users/hooks/useUserProfile';
 import type { UserProfile } from '@/types/userProfile';
 import GlassCard from '@/components/glass-design/GlassCard';
 import { isInMobileWebView, notifyNativeLogout } from '@/lib/webview';
-import { PricingModal } from '@/components/PricingModal';
 import { useSubscription } from '@/providers/SubscriptionProvider';
 
 import type { User } from '@supabase/supabase-js';
@@ -55,7 +54,6 @@ export function UserMenu({ user }: UserMenuProps) {
   const router = useRouter();
   const [open, setOpen] = React.useState(false);
   const [isSigningOut, setIsSigningOut] = React.useState(false);
-  const [isPricingModalOpen, setIsPricingModalOpen] = React.useState(false);
   const { planType } = useSubscription();
   const userId = user?.id ?? null;
   const { profile } = useUserProfile({ userId });
@@ -83,12 +81,8 @@ export function UserMenu({ user }: UserMenuProps) {
 
   const handleSelectSubscriptions = React.useCallback(() => {
     setOpen(false);
-    if (isProOrBusiness) {
-      router.push('/user/subscription');
-    } else {
-      setIsPricingModalOpen(true);
-    }
-  }, [isProOrBusiness, router]);
+    router.push('/user/subscription');
+  }, [router]);
 
   const handleSignOut = React.useCallback(async () => {
     setIsSigningOut(true);
@@ -206,11 +200,6 @@ export function UserMenu({ user }: UserMenuProps) {
           </DropdownMenuContent>
         </div>
       </DropdownMenu>
-
-      <PricingModal
-        open={isPricingModalOpen}
-        onOpenChange={setIsPricingModalOpen}
-      />
     </>
   );
 }

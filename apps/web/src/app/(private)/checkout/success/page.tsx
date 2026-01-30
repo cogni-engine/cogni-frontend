@@ -33,7 +33,7 @@ function CheckoutSuccessContent() {
               <p className='text-xl font-semibold text-white capitalize'>
                 {subscriptionPlan}
               </p>
-              <Sparkles className='h-5 w-5 text-purple-400' />
+              <Sparkles className='h-5 w-5 text-blue-400' />
             </div>
           </div>
         )}

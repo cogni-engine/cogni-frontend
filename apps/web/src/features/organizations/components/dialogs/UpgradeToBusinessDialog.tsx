@@ -93,7 +93,7 @@ export function UpgradeToBusinessDialog({
           <GlassCard className='p-4 rounded-xl'>
             <p className='text-sm text-white/90'>
               <span className='font-semibold text-white'>Monthly cost:</span>{' '}
-              <span className='text-purple-400 font-medium'>
+              <span className='text-blue-400 font-medium'>
                 ${(15 * upgradeSeats).toFixed(2)}
               </span>{' '}
               <span className='text-white/60'>
@@ -117,11 +117,11 @@ export function UpgradeToBusinessDialog({
             disabled={isUpgrading}
             className={cn(
               'rounded-xl px-6 py-2.5',
-              'bg-gradient-to-r from-purple-500 to-purple-600',
-              'hover:from-purple-600 hover:to-purple-700',
-              'border-purple-400/30',
-              'shadow-[0_4px_16px_rgba(139,92,246,0.3)]',
-              'hover:shadow-[0_6px_20px_rgba(139,92,246,0.4)]',
+              'bg-gradient-to-r from-blue-500 to-blue-600',
+              'hover:from-blue-600 hover:to-blue-700',
+              'border-blue-400/30',
+              'shadow-[0_4px_16px_rgba(59,130,246,0.3)]',
+              'hover:shadow-[0_6px_20px_rgba(59,130,246,0.4)]',
               'text-white font-medium'
             )}
           >

@@ -158,8 +158,8 @@ export default function MoveFolderDrawer({
           {/* Show "All Notes" as disabled/info - not a move target */}
           <div className='w-full mb-2 p-3 bg-white/5 rounded-lg opacity-50 cursor-not-allowed'>
             <div className='flex items-center gap-3'>
-              <div className='w-10 h-10 rounded-lg bg-purple-500/20 flex items-center justify-center'>
-                <FolderOpen className='w-5 h-5 text-purple-400' />
+              <div className='w-10 h-10 rounded-lg bg-blue-500/20 flex items-center justify-center'>
+                <FolderOpen className='w-5 h-5 text-blue-400' />
               </div>
               <div className='text-left'>
                 <div className='font-medium text-white'>All Notes</div>

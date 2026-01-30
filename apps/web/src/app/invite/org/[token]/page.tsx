@@ -59,11 +59,11 @@ export default function AcceptOrganizationInvitePage() {
   }, [token, router]);
 
   return (
-    <div className='min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-black flex items-center justify-center p-4'>
+    <div className='min-h-screen bg-gradient-to-br from-blue-900 via-blue-900 to-black flex items-center justify-center p-4'>
       <div className='bg-white/10 backdrop-blur-lg border border-white/20 rounded-2xl p-8 max-w-md w-full shadow-2xl'>
         {status === 'checking' && (
           <div className='text-center space-y-4'>
-            <Loader2 className='h-16 w-16 text-purple-400 animate-spin mx-auto' />
+            <Loader2 className='h-16 w-16 text-blue-400 animate-spin mx-auto' />
             <div>
               <h2 className='text-2xl font-bold text-white mb-2'>
                 Checking Invitation
@@ -94,7 +94,7 @@ export default function AcceptOrganizationInvitePage() {
               </h2>
               <p className='text-white/90'>
                 You&apos;ve successfully joined{' '}
-                <span className='font-semibold text-purple-300'>
+                <span className='font-semibold text-blue-300'>
                   {organizationName}
                 </span>
               </p>
@@ -103,13 +103,13 @@ export default function AcceptOrganizationInvitePage() {
               </p>
             </div>
             <div className='flex items-center justify-center gap-2 mt-6'>
-              <div className='h-2 w-2 bg-purple-400 rounded-full animate-bounce' />
+              <div className='h-2 w-2 bg-blue-400 rounded-full animate-bounce' />
               <div
-                className='h-2 w-2 bg-purple-400 rounded-full animate-bounce'
+                className='h-2 w-2 bg-blue-400 rounded-full animate-bounce'
                 style={{ animationDelay: '0.1s' }}
               />
               <div
-                className='h-2 w-2 bg-purple-400 rounded-full animate-bounce'
+                className='h-2 w-2 bg-blue-400 rounded-full animate-bounce'
                 style={{ animationDelay: '0.2s' }}
               />
             </div>
@@ -132,7 +132,7 @@ export default function AcceptOrganizationInvitePage() {
             </div>
             <button
               onClick={() => router.push('/user/organizations')}
-              className='mt-6 px-6 py-3 bg-purple-500 hover:bg-purple-600 rounded-lg text-white font-medium transition-colors w-full'
+              className='mt-6 px-6 py-3 bg-blue-500 hover:bg-blue-600 rounded-lg text-white font-medium transition-colors w-full'
             >
               Go to Organizations
             </button>

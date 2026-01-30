@@ -1,7 +1,17 @@
 'use client';
 
 import * as React from 'react';
-import { Check, X } from 'lucide-react';
+import {
+  Sparkles,
+  MessageSquare,
+  Image as ImageIcon,
+  Brain,
+  Settings,
+  Users,
+  Video,
+  Code,
+  Check,
+} from 'lucide-react';
 import type { PricingPlan } from './types';
 
 type PricingCardProps = {
@@ -25,6 +35,29 @@ type PricingCardProps = {
    * Optional className for the price text (defaults to 'text-4xl')
    */
   priceClassName?: string;
+  /**
+   * Show "Current Plan" badge
+   */
+  showCurrentPlanBadge?: boolean;
+  /**
+   * Show "Recommended" badge
+   */
+  showRecommendedBadge?: boolean;
+};
+
+// Icon mapping for features
+const getFeatureIcon = (index: number) => {
+  const icons = [
+    Sparkles,
+    MessageSquare,
+    ImageIcon,
+    Brain,
+    Settings,
+    Users,
+    Video,
+    Code,
+  ];
+  return icons[index % icons.length];
 };
 
 export function PricingCard({
@@ -34,61 +67,74 @@ export function PricingCard({
   className = '',
   featureClassName = '',
   priceClassName = 'text-4xl',
+  showCurrentPlanBadge = false,
+  showRecommendedBadge = false,
 }: PricingCardProps) {
   const { id, name, description, price, priceNote, isBestValue, features } =
     plan;
 
   return (
     <div
-      className={`relative flex h-full flex-col rounded-3xl border border-white/10 bg-black/40 p-6 transition-all ${className}`}
+      className={`relative flex h-full flex-col rounded-2xl border border-white/10 bg-white/5 backdrop-blur-sm p-6 transition-all ${className}`}
     >
-      {/* Header section - fixed height */}
-      <div className='mb-4' style={{ height: '80px' }}>
+      {/* Badges - top right corner */}
+      {(showCurrentPlanBadge || showRecommendedBadge) && (
+        <div className='absolute -top-3 right-4 z-10'>
+          {showCurrentPlanBadge && (
+            <span className='bg-blue-800 text-white text-xs font-semibold px-3 py-1 rounded-full'>
+              ご利用中のプラン
+            </span>
+          )}
+          {showRecommendedBadge && (
+            <span className='bg-blue-800 text-white text-xs font-semibold px-3 py-1 rounded-full'>
+              推奨
+            </span>
+          )}
+        </div>
+      )}
+
+      {/* Header section */}
+      <div className='mb-4'>
         <h3 className='mb-2 text-2xl font-semibold text-white'>{name}</h3>
-        <p className='text-sm text-slate-300' style={{ height: '48px' }}>
-          {description}
-        </p>
+        <p className='text-sm text-white/70 leading-relaxed'>{description}</p>
       </div>
 
-      {/* Price section - fixed height */}
-      <div className='mb-6 flex items-end' style={{ height: '60px' }}>
+      {/* Price section */}
+      <div className='mb-6'>
         {price && (
           <div className='flex items-baseline gap-2'>
-            <span className={`font-bold text-white ${priceClassName}`}>{price}</span>
+            <span className={`font-bold text-white ${priceClassName}`}>
+              {price}
+            </span>
             {priceNote && (
-              <span className='text-lg text-slate-400'>{priceNote}</span>
+              <span className='text-base text-white/60'>{priceNote}</span>
             )}
           </div>
         )}
       </div>
 
-      {/* Button section - fixed height */}
+      {/* Button section */}
       {renderButton && (
-        <div className='mb-6 flex items-center' style={{ minHeight: '48px' }}>
-          {renderButton(plan)}
-        </div>
+        <div className='mb-6'>{renderButton(plan)}</div>
       )}
 
-      {/* Features section - grows to fill space */}
-      <div className='flex-1' style={{ minHeight: '200px' }}>
-        <div className='space-y-6'>
-          {features.map((feature, index) => (
-            <div key={index} className={`flex items-start gap-3 ${featureClassName}`}>
-              {feature.included ? (
-                <Check className='mt-0.5 h-5 w-5 flex-shrink-0 text-white' />
-              ) : (
-                <X className='mt-0.5 h-5 w-5 flex-shrink-0 text-slate-500' />
-              )}
-              <span
-                className={`text-sm leading-relaxed ${
-                  feature.included ? 'text-slate-200' : 'text-slate-500'
-                }`}
-              >
+      {/* Features section */}
+      <div className='flex-1 space-y-4'>
+        {features.map((feature, index) => {
+          if (!feature.included) return null;
+          const IconComponent = getFeatureIcon(index);
+          return (
+            <div
+              key={index}
+              className={`flex items-start gap-3 ${featureClassName}`}
+            >
+              <IconComponent className='mt-0.5 h-5 w-5 flex-shrink-0 text-white/80' />
+              <span className='text-sm leading-relaxed text-white/80'>
                 {feature.label}
               </span>
             </div>
-          ))}
-        </div>
+          );
+        })}
       </div>
     </div>
   );

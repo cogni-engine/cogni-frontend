@@ -86,7 +86,7 @@ export function CheckoutForm({
         <Button
           type='submit'
           disabled={!stripe || !elements || isLoading}
-          className='w-full rounded-full bg-purple-500 hover:bg-purple-600 text-white border-transparent'
+          className='w-full rounded-full bg-blue-500 hover:bg-blue-600 text-white border-transparent'
         >
           {isLoading ? (
             <>
