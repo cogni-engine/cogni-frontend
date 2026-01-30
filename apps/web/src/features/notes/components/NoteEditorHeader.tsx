@@ -16,6 +16,7 @@ interface NoteEditorHeaderProps {
   members: WorkspaceMember[];
   assigneeIds: number[];
   onToggleAssignee: (memberId: number) => void;
+  onSelectAllAssignees?: () => void;
 }
 
 export function NoteEditorHeader({
@@ -29,7 +30,10 @@ export function NoteEditorHeader({
   members,
   assigneeIds,
   onToggleAssignee,
+  onSelectAllAssignees,
 }: NoteEditorHeaderProps) {
+  const hasAssignees = assigneeIds.length > 0;
+
   return (
     <header className='flex items-center gap-3 px-2 md:px-6 py-4 relative z-100'>
       {/* 戻るボタン - 丸く浮き出る */}
@@ -48,15 +52,17 @@ export function NoteEditorHeader({
         <div className='relative shrink-0'>
           <GlassButton
             onClick={onToggleAssignmentDropdown}
-            className='size-12'
+            className={hasAssignees ? 'h-12 px-4 rounded-full' : 'size-12'}
             title='Assignees'
           >
-            <Users className='w-5 h-5' />
-            {assigneeIds.length > 0 && (
-              <span className='absolute -top-1 -right-1 bg-blue-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-medium'>
-                {assigneeIds.length}
-              </span>
-            )}
+            <div className='flex items-center gap-2'>
+              <Users className='w-5 h-5' />
+              {hasAssignees && (
+                <span className='text-sm font-medium text-white'>
+                  {assigneeIds.length}
+                </span>
+              )}
+            </div>
           </GlassButton>
 
           <AssignmentDropdown
@@ -65,6 +71,7 @@ export function NoteEditorHeader({
             members={members}
             assigneeIds={assigneeIds}
             onToggleAssignee={onToggleAssignee}
+            onSelectAll={onSelectAllAssignees}
           />
         </div>
       )}

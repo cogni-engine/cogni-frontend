@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { signIn, signUp, signOut, signInWithGoogle, signInWithApple } from '../supabase/auth';
+import { signIn, signUp, signOut, signInWithGoogle, signInWithApple, refreshSession } from '../supabase/auth';
 import { getPersonalWorkspace } from '../workspace';
 import {
   setCookie,
@@ -166,12 +166,29 @@ export function useAuth() {
     }
   };
 
+  const handleRefreshSession = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const session = await refreshSession();
+      console.log('Session refreshed successfully');
+      return session;
+    } catch (e) {
+      const errorMessage = e instanceof Error ? e.message : 'An error occurred during session refresh';
+      setError(errorMessage);
+      throw e;
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return {
     handleSignUp,
     handleSignIn,
     handleSignInWithGoogle,
     handleSignInWithApple,
     handleSignOut,
+    handleRefreshSession,
     loading,
     error,
   };

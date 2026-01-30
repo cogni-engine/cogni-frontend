@@ -17,7 +17,18 @@ export type Organization = {
   stripe_subscription_item_id: string | null;
   seat_count: number;
   active_member_count: number;
+  cancel_at_period_end: boolean | null;
+  current_period_end: string | null;
   created_at: string;
+  plan_type: 'free' | 'pro' | 'business';
+  status:
+    | 'free'
+    | 'trialing'
+    | 'active'
+    | 'past_due'
+    | 'canceled'
+    | 'restricted'
+    | null;
 };
 
 export type OrganizationMemberRole = {
@@ -30,6 +41,7 @@ export type UserOrganizationData = {
   organization_member: OrganizationMember;
   organization: Organization;
   organization_role: OrganizationMemberRole | null;
+  role: string; // Computed from organization_role.name, defaults to 'member'
 };
 
 export type UserOrganizationsData = UserOrganizationData[];
@@ -43,13 +55,15 @@ export async function getUserOrganizationsData(
 ): Promise<UserOrganizationsData> {
   const supabase = createClient();
 
-  // Fetch all organization_members for the user
+  // Fetch all organization_members for the user with joined organizations
   const { data: orgMembers, error: memberError } = await supabase
     .from('organization_members')
-    .select('*')
+    .select('*, organizations:organization_id(*)')
     .eq('user_id', userId)
     .eq('status', 'active')
     .order('created_at', { ascending: false });
+
+  console.log('orgMembers with join', orgMembers);
 
   if (memberError) {
     console.error('Error fetching organization members:', memberError);
@@ -60,49 +74,56 @@ export async function getUserOrganizationsData(
     return [];
   }
 
-  // Fetch all organizations and roles in parallel
-  const organizationIds = orgMembers.map(m => m.organization_id);
+  // Fetch all roles in parallel
   const roleIds = orgMembers
     .map(m => m.role_id)
     .filter((id): id is number => id !== null);
 
-  // Fetch all organizations
-  const { data: organizations, error: orgError } = await supabase
-    .from('organizations')
-    .select('*')
-    .in('id', organizationIds);
-
-  if (orgError) {
-    console.error('Error fetching organizations:', orgError);
-    return [];
-  }
-
   // Fetch all roles if any exist
   let roles: OrganizationMemberRole[] = [];
   if (roleIds.length > 0) {
+    console.log('🔍 Fetching roles for role_ids:', roleIds);
     const { data: rolesData, error: rolesError } = await supabase
       .from('organization_member_roles')
       .select('*')
       .in('id', roleIds);
 
     if (rolesError) {
-      console.error('Error fetching organization roles:', rolesError);
+      console.error('❌ Error fetching organization roles:', rolesError);
     } else {
       roles = (rolesData || []) as OrganizationMemberRole[];
+      console.log('✅ Fetched roles:', roles);
+
+      if (roles.length === 0) {
+        console.warn(
+          '⚠️ No roles found! The organization_member_roles table may be empty.'
+        );
+        console.warn(
+          '⚠️ Run the CREATE_ORGANIZATION_ROLES.sql script to create roles.'
+        );
+      }
     }
   }
 
-  // Create maps for quick lookup
-  const orgMap = new Map(
-    (organizations || []).map(org => [org.id, org as Organization])
-  );
+  // Create map for role lookup
   const roleMap = new Map(roles.map(role => [role.id, role]));
 
-  // Combine the data
+  // Combine the data using joined organizations
   const result: UserOrganizationsData = orgMembers
     .map(member => {
-      const org = orgMap.get(member.organization_id);
-      if (!org) return null;
+      // Access the joined organization data
+      // Supabase returns it as an object (not array) for foreign key relationships
+      const org = (member as any).organizations as Organization | null;
+
+      if (!org) {
+        console.warn(
+          'Organization is null for member:',
+          member.id,
+          'organization_id:',
+          member.organization_id
+        );
+        return null;
+      }
 
       const role = member.role_id ? roleMap.get(member.role_id) || null : null;
 
@@ -110,6 +131,7 @@ export async function getUserOrganizationsData(
         organization_member: member as OrganizationMember,
         organization: org,
         organization_role: role,
+        role: role?.name?.toLowerCase() || 'member', // Default to 'member' if no role
       };
     })
     .filter((item): item is UserOrganizationData => item !== null);
@@ -118,11 +140,17 @@ export async function getUserOrganizationsData(
 }
 
 /**
- * Get the primary organization (first/most recent) for a user (client-side)
+ * Get the primary organization where user is an owner (client-side)
+ * Falls back to first organization if no owner organization found
  */
 export async function getPrimaryUserOrganizationData(
   userId: string
 ): Promise<UserOrganizationData | null> {
   const allOrgs = await getUserOrganizationsData(userId);
-  return allOrgs.length > 0 ? allOrgs[0] : null;
+
+  // First, try to find an organization where user is owner
+  const ownerOrg = allOrgs.find(org => org.role === 'owner');
+
+  // Return owner org if found, otherwise return first org, or null if no orgs
+  return ownerOrg || (allOrgs.length > 0 ? allOrgs[0] : null);
 }

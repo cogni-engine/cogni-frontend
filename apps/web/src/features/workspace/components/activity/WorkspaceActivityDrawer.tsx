@@ -11,7 +11,7 @@ import {
 } from '@/components/ui/drawer';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { useWorkspaceActivity } from '../../hooks/useWorkspaceActivity';
-import { useWorkspaceMembers } from '@/hooks/useWorkspace';
+import { useWorkspaceContext } from '../../contexts/WorkspaceContext';
 import { getInitials } from '@/features/users/utils/avatar';
 import ActivityTimeline from './ActivityTimeline';
 import type { WorkspaceMember } from '@/types/workspace';
@@ -29,8 +29,7 @@ export default function WorkspaceActivityDrawer({
 }: WorkspaceActivityDrawerProps) {
   const { activities, loading, fetchActivities } =
     useWorkspaceActivity(workspaceId);
-  const { members, isLoading: membersLoading } =
-    useWorkspaceMembers(workspaceId);
+  const { members, membersLoading } = useWorkspaceContext();
   const [selectedMemberIds, setSelectedMemberIds] = useState<Set<number>>(
     new Set()
   );

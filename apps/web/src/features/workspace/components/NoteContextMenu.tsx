@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { Copy, Trash2, RotateCcw, Trash, FolderInput } from 'lucide-react';
+import GlassCard from '@/components/glass-design/GlassCard';
 
 interface NoteContextMenuProps {
   x: number;
@@ -79,9 +80,9 @@ export default function NoteContextMenu({
   };
 
   return (
-    <div
+    <GlassCard
       ref={menuRef}
-      className='fixed z-50 bg-white/8 backdrop-blur-xl border border-black rounded-2xl shadow-[0_8px_32px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.12)] py-2 px-2 min-w-[180px] overflow-hidden'
+      className='fixed z-50 rounded-3xl p-2 min-w-[180px]'
       style={{
         left: `${position.x}px`,
         top: `${position.y}px`,
@@ -93,20 +94,20 @@ export default function NoteContextMenu({
           {onRestore && (
             <button
               onClick={() => handleAction(onRestore)}
-              className='w-full px-3 py-2.5 text-left text-sm text-white hover:bg-white/10 flex items-center gap-3 transition-all duration-200 rounded-lg mb-1'
+              className='w-full p-2 text-left text-sm text-white hover:bg-white/5 flex items-center gap-2 transition-colors rounded-xl mb-1'
             >
-              <RotateCcw className='w-4 h-4 text-blue-400' />
-              <span className='font-medium'>Restore</span>
+              <RotateCcw className='w-4 h-4 text-white' />
+              <span>Restore</span>
             </button>
           )}
           {/* Hard delete option for deleted notes */}
           {onHardDelete && (
             <button
               onClick={() => handleAction(onHardDelete)}
-              className='w-full px-3 py-2.5 text-left text-sm text-red-400 hover:bg-red-500/10 flex items-center gap-3 transition-all duration-200 rounded-lg'
+              className='w-full p-2 text-left text-sm text-white hover:bg-white/5 flex items-center gap-2 transition-colors rounded-xl'
             >
-              <Trash className='w-4 h-4' />
-              <span className='font-medium'>Delete Permanently</span>
+              <Trash className='w-4 h-4 text-white' />
+              <span>Delete Permanently</span>
             </button>
           )}
         </>
@@ -116,20 +117,20 @@ export default function NoteContextMenu({
           {onDuplicate && (
             <button
               onClick={() => handleAction(onDuplicate)}
-              className='w-full px-3 py-2.5 text-left text-sm text-white hover:bg-white/10 flex items-center gap-3 transition-all duration-200 rounded-lg mb-1'
+              className='w-full p-2 text-left text-sm text-white hover:bg-white/5 flex items-center gap-2 transition-colors rounded-xl mb-1'
             >
-              <Copy className='w-4 h-4 text-blue-400' />
-              <span className='font-medium'>Duplicate</span>
+              <Copy className='w-4 h-4 text-white' />
+              <span>Duplicate</span>
             </button>
           )}
           {/* Move to Folder option */}
           {onMove && (
             <button
               onClick={() => handleAction(onMove)}
-              className='w-full px-3 py-2.5 text-left text-sm text-white hover:bg-white/10 flex items-center gap-3 transition-all duration-200 rounded-lg mb-1'
+              className='w-full p-2 text-left text-sm text-white hover:bg-white/5 flex items-center gap-2 transition-colors rounded-xl mb-1'
             >
-              <FolderInput className='w-4 h-4 text-yellow-400' />
-              <span className='font-medium'>Move to Folder</span>
+              <FolderInput className='w-4 h-4 text-white' />
+              <span>Move to Folder</span>
             </button>
           )}
           {/* Soft delete option for active notes */}
@@ -138,15 +139,15 @@ export default function NoteContextMenu({
               <div className='h-px bg-white/10 my-2' />
               <button
                 onClick={() => handleAction(onSoftDelete)}
-                className='w-full px-3 py-2.5 text-left text-sm text-red-400 hover:bg-red-500/10 flex items-center gap-3 transition-all duration-200 rounded-lg'
+                className='w-full p-2 text-left text-sm text-white hover:bg-white/5 flex items-center gap-2 transition-colors rounded-xl'
               >
-                <Trash2 className='w-4 h-4' />
-                <span className='font-medium'>Move to Trash</span>
+                <Trash2 className='w-4 h-4 text-white' />
+                <span>Delete</span>
               </button>
             </>
           )}
         </>
       )}
-    </div>
+    </GlassCard>
   );
 }

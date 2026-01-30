@@ -6,7 +6,7 @@ import { useSWRConfig } from 'swr';
 import MemberList from '@/features/workspace/components/MemberList';
 import MemberSelectionStep from '@/features/workspace/components/MemberSelectionStep';
 import { useWorkspaceInvitations } from '@/features/workspace/hooks/useWorkspaceInvitations';
-import { useWorkspaceMembers } from '@/hooks/useWorkspace';
+import { useWorkspaceContext } from '@/features/workspace/contexts/WorkspaceContext';
 import { generateInvitationLink } from '@/features/workspace/api/invitationsApi';
 import { addWorkspaceMembers } from '@/lib/api/workspaceApi';
 import { Plus, X, Mail, Link, Copy, Check } from 'lucide-react';
@@ -39,11 +39,7 @@ export default function WorkspaceMembersPage() {
     disableInviteLinkById,
   } = useWorkspaceInvitations(workspaceId);
 
-  const {
-    members,
-    isLoading: membersLoading,
-    error: membersError,
-  } = useWorkspaceMembers(workspaceId);
+  const { members, membersLoading, membersError } = useWorkspaceContext();
 
   const handleSendEmailInvite = useCallback(async () => {
     if (!inviteEmail.trim()) return;

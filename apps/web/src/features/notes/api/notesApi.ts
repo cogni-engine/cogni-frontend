@@ -350,7 +350,7 @@ export async function getUserAssignedNotes(): Promise<Note[]> {
 
   // Transform the nested structure to match our types
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return (data || []).map((note: any) => ({
+  const result = (data || []).map((note: any) => ({
     ...note,
     workspace: Array.isArray(note.workspace)
       ? note.workspace[0]
@@ -372,6 +372,8 @@ export async function getUserAssignedNotes(): Promise<Note[]> {
       })
     ),
   })) as Note[];
+
+  return result;
 }
 
 // Types for AI suggestions

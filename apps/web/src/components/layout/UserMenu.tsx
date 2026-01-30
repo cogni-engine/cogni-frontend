@@ -3,20 +3,37 @@
 // TODO: this needs to be moved to a feature
 
 import * as React from 'react';
-import { LogOut, Settings, CheckSquare } from 'lucide-react';
+import {
+  ArrowUpCircle,
+  Building2,
+  LogOut,
+  Settings,
+  CheckSquare,
+} from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import GlassButton from '@/components/glass-design/GlassButton';
+import { Button } from '@/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { signOut } from '@cogni/api';
 import { useUserProfile } from '@/features/users/hooks/useUserProfile';
 import type { UserProfile } from '@/types/userProfile';
 import GlassCard from '@/components/glass-design/GlassCard';
 import { isInMobileWebView, notifyNativeLogout } from '@/lib/webview';
-import { createClient } from '@/lib/supabase/browserClient';
+import { PricingModal } from '@/components/PricingModal';
+import { useSubscription } from '@/providers/SubscriptionProvider';
+
+import type { User } from '@supabase/supabase-js';
 
 type UserMenuProps = {
-  userId: string | null;
+  user: User | null;
 };
 
 function getInitials(profile?: UserProfile | null, email?: string | null) {
@@ -34,51 +51,20 @@ function getInitials(profile?: UserProfile | null, email?: string | null) {
   return 'ME';
 }
 
-export function UserMenu({ userId }: UserMenuProps) {
+export function UserMenu({ user }: UserMenuProps) {
   const router = useRouter();
   const [open, setOpen] = React.useState(false);
   const [isSigningOut, setIsSigningOut] = React.useState(false);
-  const dropdownRef = React.useRef<HTMLDivElement>(null);
+  const [isPricingModalOpen, setIsPricingModalOpen] = React.useState(false);
+  const { planType } = useSubscription();
+  const userId = user?.id ?? null;
   const { profile } = useUserProfile({ userId });
 
-  // Lazy load email only when needed (when dropdown opens)
-  const [email, setEmail] = React.useState<string>('Unknown user');
+  const isProOrBusiness = planType === 'pro' || planType === 'business';
 
-  React.useEffect(() => {
-    if (open && userId && email === 'Unknown user') {
-      const fetchEmail = async () => {
-        const supabase = createClient();
-        const {
-          data: { user },
-        } = await supabase.auth.getUser();
-        if (user?.email) {
-          setEmail(user.email);
-        }
-      };
-      fetchEmail();
-    }
-  }, [open, userId, email]);
-
+  const email = user?.email ?? 'Unknown user';
   const avatarUrl = profile?.avatar_url ?? null;
   const initials = getInitials(profile, email);
-
-  // Close dropdown when clicking outside
-  React.useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(event.target as Node)
-      ) {
-        setOpen(false);
-      }
-    };
-
-    if (open) {
-      document.addEventListener('mousedown', handleClickOutside);
-      return () =>
-        document.removeEventListener('mousedown', handleClickOutside);
-    }
-  }, [open]);
 
   const handleSelectSettings = React.useCallback(() => {
     setOpen(false);
@@ -89,6 +75,20 @@ export function UserMenu({ userId }: UserMenuProps) {
     setOpen(false);
     router.push('/user/tasks');
   }, [router]);
+
+  const handleSelectOrganizations = React.useCallback(() => {
+    setOpen(false);
+    router.push('/user/organizations');
+  }, [router]);
+
+  const handleSelectSubscriptions = React.useCallback(() => {
+    setOpen(false);
+    if (isProOrBusiness) {
+      router.push('/user/subscription');
+    } else {
+      setIsPricingModalOpen(true);
+    }
+  }, [isProOrBusiness, router]);
 
   const handleSignOut = React.useCallback(async () => {
     setIsSigningOut(true);
@@ -111,62 +111,106 @@ export function UserMenu({ userId }: UserMenuProps) {
   }, [router]);
 
   return (
-    <div className='relative' ref={dropdownRef}>
-      <GlassButton
-        onClick={() => setOpen(!open)}
-        title='User menu'
-        size='icon'
-        className='size-12'
-      >
-        <Avatar className='h-11 w-11'>
-          {avatarUrl ? (
-            <AvatarImage src={avatarUrl} alt={profile?.name || email} />
-          ) : (
-            <AvatarFallback>{initials}</AvatarFallback>
-          )}
-        </Avatar>
-      </GlassButton>
+    <>
+      <DropdownMenu open={open} onOpenChange={setOpen} modal={false}>
+        <div className='relative'>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant='ghost'
+              size='icon'
+              className='h-10 w-10 rounded-full border border-white/10 bg-white/5 text-white hover:bg-white/15'
+              aria-label='Open user menu'
+            >
+              <Avatar className='h-9 w-9'>
+                {avatarUrl ? (
+                  <AvatarImage src={avatarUrl} alt={profile?.name || email} />
+                ) : (
+                  <AvatarFallback>{initials}</AvatarFallback>
+                )}
+              </Avatar>
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent
+            align='end'
+            sideOffset={12}
+            className='w-60 z-110 p-0 border-0 bg-transparent shadow-none'
+          >
+            <GlassCard className='rounded-3xl p-1'>
+              <DropdownMenuLabel className='flex flex-col gap-1'>
+                <span className='text-sm font-semibold'>
+                  {profile?.name || initials}
+                </span>
+                <span className='text-xs text-white/60'>{email}</span>
+              </DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                onSelect={event => {
+                  event.preventDefault();
+                  handleSelectSettings();
+                }}
+                className='flex items-center gap-2'
+              >
+                <Settings className='h-4 w-4' />
+                <span>User Settings</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onSelect={event => {
+                  event.preventDefault();
+                  handleSelectTasks();
+                }}
+                className='flex items-center gap-2'
+              >
+                <CheckSquare className='h-4 w-4' />
+                <span>My Tasks</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onSelect={event => {
+                  event.preventDefault();
+                  handleSelectOrganizations();
+                }}
+                className='flex items-center gap-2'
+              >
+                <Building2 className='h-4 w-4' />
+                <span>Organizations</span>
+              </DropdownMenuItem>
+              {!isInMobileWebView() && (
+                <DropdownMenuItem
+                  onSelect={event => {
+                    event.preventDefault();
+                    handleSelectSubscriptions();
+                  }}
+                  className={`flex items-center gap-2 ${
+                    isProOrBusiness ? '' : 'text-blue-400 hover:text-blue-300'
+                  }`}
+                >
+                  <ArrowUpCircle className='h-4 w-4' />
+                  <span>
+                    {isProOrBusiness ? 'Subscriptions' : 'Upgrade Plan'}
+                  </span>
+                </DropdownMenuItem>
+              )}
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                onSelect={event => {
+                  event.preventDefault();
+                  if (!isSigningOut) {
+                    handleSignOut();
+                  }
+                }}
+                className='flex items-center gap-2 text-red-300 hover:text-red-200'
+              >
+                <LogOut className='h-4 w-4' />
+                <span>{isSigningOut ? 'Signing out…' : 'Log out'}</span>
+              </DropdownMenuItem>
+            </GlassCard>
+          </DropdownMenuContent>
+        </div>
+      </DropdownMenu>
 
-      {/* Dropdown Menu */}
-      {open && (
-        <GlassCard className='absolute right-0 mt-2 w-60 rounded-3xl z-110'>
-          <div className='p-1'>
-            <div className='flex flex-col gap-1 px-3 py-2 mb-1'>
-              <span className='text-sm font-semibold'>
-                {profile?.name || initials}
-              </span>
-              <span className='text-xs text-white/60'>{email}</span>
-            </div>
-            <div className='h-px bg-white/10 my-1' />
-            <button
-              onClick={handleSelectSettings}
-              className='w-full flex items-center gap-2 px-3 py-2 hover:bg-white/5 rounded-xl transition-colors text-sm text-white/80 hover:text-white'
-            >
-              <Settings className='h-4 w-4' />
-              <span>User settings</span>
-            </button>
-            <button
-              onClick={handleSelectTasks}
-              className='w-full flex items-center gap-2 px-3 py-2 hover:bg-white/5 rounded-xl transition-colors text-sm text-white/80 hover:text-white'
-            >
-              <CheckSquare className='h-4 w-4' />
-              <span>My Tasks</span>
-            </button>
-            <div className='h-px bg-white/10 my-1' />
-            <button
-              onClick={() => {
-                if (!isSigningOut) {
-                  handleSignOut();
-                }
-              }}
-              className='w-full flex items-center gap-2 px-3 py-2 hover:bg-white/5 rounded-md transition-colors text-sm text-red-300 hover:text-red-200'
-            >
-              <LogOut className='h-4 w-4' />
-              <span>{isSigningOut ? 'Signing out…' : 'Log out'}</span>
-            </button>
-          </div>
-        </GlassCard>
-      )}
-    </div>
+      <PricingModal
+        open={isPricingModalOpen}
+        onOpenChange={setIsPricingModalOpen}
+      />
+    </>
   );
 }

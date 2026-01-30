@@ -13,8 +13,7 @@ import { ChatInput, type ChatInputRef } from '@/components/chat-input';
 import GlassButton from '@/components/glass-design/GlassButton';
 import WorkspaceMessageList from '@/features/workspace/components/WorkspaceMessageList';
 import { ChevronDown } from 'lucide-react';
-import { useWorkspaceMembers } from '@/hooks/useWorkspace';
-import { useNotes } from '@cogni/api';
+import { useWorkspaceContext } from '@/features/workspace/contexts/WorkspaceContext';
 import ScrollableView from '@/components/layout/ScrollableView';
 import { useAppEvents } from '@/hooks/useAppEvents';
 import { getCurrentUserId } from '@cogni/utils';
@@ -51,8 +50,11 @@ export default function WorkspaceChatPage() {
   const chatInputRef = useRef<ChatInputRef>(null);
   const sendingMessageRef = useRef(false);
 
-  // Fetch workspace members for mentions (fetch first so we can pass to chat hook)
-  const { members } = useWorkspaceMembers(workspaceId);
+  // Get workspace members and notes from context
+  const { members, notes: contextNotes } = useWorkspaceContext();
+
+  // Defer notes to not block message rendering
+  const workspaceNotes = useDeferredValue(contextNotes);
 
   const {
     messages,
@@ -68,14 +70,6 @@ export default function WorkspaceChatPage() {
 
   // App events - decoupled from any specific features
   const appEvents = useAppEvents();
-
-  // Fetch workspace notes - deferred to not block message rendering
-  const { notes: rawNotes } = useNotes({
-    workspaceId: workspaceId,
-    includeDeleted: false,
-    autoFetch: !isLoading,
-  });
-  const workspaceNotes = useDeferredValue(rawNotes);
 
   // Scroll to bottom function
   // Note: With column-reverse, bottom is at scrollTop = 0

@@ -14,6 +14,9 @@ importers:
 
   apps/home:
     dependencies:
+      '@cogni/pricing':
+        specifier: workspace:*
+        version: link:../../packages/pricing
       '@prisma/client':
         specifier: ^6.0.0
         version: 6.19.0(prisma@6.19.0(typescript@5.9.3))(typescript@5.9.3)
@@ -274,6 +277,9 @@ importers:
       '@cogni/api':
         specifier: workspace:*
         version: link:../../packages/api
+      '@cogni/pricing':
+        specifier: workspace:*
+        version: link:../../packages/pricing
       '@cogni/types':
         specifier: workspace:*
         version: link:../../packages/types
@@ -307,12 +313,21 @@ importers:
       '@radix-ui/react-tooltip':
         specifier: ^1.1.3
         version: 1.2.8(@types/react-dom@19.2.2(@types/react@19.2.2))(@types/react@19.2.2)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+      '@stripe/react-stripe-js':
+        specifier: ^2.4.0
+        version: 2.9.0(@stripe/stripe-js@2.4.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+      '@stripe/stripe-js':
+        specifier: ^2.4.0
+        version: 2.4.0
       '@supabase/ssr':
         specifier: ^0.7.0
         version: 0.7.0(@supabase/supabase-js@2.81.0)
       '@supabase/supabase-js':
         specifier: ^2.58.0
         version: 2.81.0
+      '@tanstack/react-query':
+        specifier: ^5.90.20
+        version: 5.90.20(react@19.1.0)
       '@tiptap/core':
         specifier: ^3.13.0
         version: 3.13.0(@tiptap/pm@3.13.0)
@@ -421,6 +436,9 @@ importers:
       shepherd.js:
         specifier: ^14.5.1
         version: 14.5.1
+      stripe:
+        specifier: ^20.0.0
+        version: 20.0.0(@types/node@20.19.24)
       swr:
         specifier: ^2.3.6
         version: 2.3.6(react@19.1.0)
@@ -536,6 +554,22 @@ importers:
         version: 19.1.17
       typescript:
         specifier: ^5
+        version: 5.9.3
+
+  packages/pricing:
+    dependencies:
+      lucide-react:
+        specifier: '*'
+        version: 0.545.0(react@19.1.0)
+      react:
+        specifier: '*'
+        version: 19.1.0
+    devDependencies:
+      '@types/react':
+        specifier: '*'
+        version: 19.1.17
+      typescript:
+        specifier: '*'
         version: 5.9.3
 
   packages/types:
@@ -2248,6 +2282,16 @@ packages:
   '@standard-schema/spec@1.0.0':
     resolution: {integrity: sha512-m2bOd0f2RT9k8QJx1JN85cZYyH1RqFBdlwtkSlf4tBDYLCiiZnv1fIIwacK6cqwXavOydf0NPToMQgpKq+dVlA==}
 
+  '@stripe/react-stripe-js@2.9.0':
+    resolution: {integrity: sha512-+/j2g6qKAKuWSurhgRMfdlIdKM+nVVJCy/wl0US2Ccodlqx0WqfIIBhUkeONkCG+V/b+bZzcj4QVa3E/rXtT4Q==}
+    peerDependencies:
+      '@stripe/stripe-js': ^1.44.1 || ^2.0.0 || ^3.0.0 || ^4.0.0
+      react: ^16.8.0 || ^17.0.0 || ^18.0.0
+      react-dom: ^16.8.0 || ^17.0.0 || ^18.0.0
+
+  '@stripe/stripe-js@2.4.0':
+    resolution: {integrity: sha512-WFkQx1mbs2b5+7looI9IV1BLa3bIApuN3ehp9FP58xGg7KL9hCHDECgW3BwO9l9L+xBPVAD7Yjn1EhGe6EDTeA==}
+
   '@supabase/auth-js@2.81.0':
     resolution: {integrity: sha512-mWyRPO+XUo19MHNBFg5qdH8cMIyxRNj9HXhwkwToxDHYRZWru96hWZFCVb7trOrTpPVe4TgLer2yy3KMvYBMPw==}
     engines: {node: '>=20.0.0'}
@@ -2372,6 +2416,14 @@ packages:
 
   '@tailwindcss/postcss@4.1.17':
     resolution: {integrity: sha512-+nKl9N9mN5uJ+M7dBOOCzINw94MPstNR/GtIhz1fpZysxL/4a+No64jCBD6CPN+bIHWFx3KWuu8XJRrj/572Dw==}
+
+  '@tanstack/query-core@5.90.20':
+    resolution: {integrity: sha512-OMD2HLpNouXEfZJWcKeVKUgQ5n+n3A2JFmBaScpNDUqSrQSjiveC7dKMe53uJUg1nDG16ttFPz2xfilz6i2uVg==}
+
+  '@tanstack/react-query@5.90.20':
+    resolution: {integrity: sha512-vXBxa+qeyveVO7OA0jX1z+DeyCA4JKnThKv411jd5SORpBKgkcVnYKCiBgECvADvniBX7tobwBmg01qq9JmMJw==}
+    peerDependencies:
+      react: ^18 || ^19
 
   '@tiptap/core@3.13.0':
     resolution: {integrity: sha512-iUelgiTMgPVMpY5ZqASUpk8mC8HuR9FWKaDzK27w9oWip9tuB54Z8mePTxNcQaSPb6ErzEaC8x8egrRt7OsdGQ==}
@@ -5800,6 +5852,10 @@ packages:
     resolution: {integrity: sha512-Uu7ii+FQy4Qf82G4xu7ShHhjhGahEpCWc3x8UavY3CTcWV+ufmmCtwkr7ZKsX42jdL0kr1B5FKUeqJvAn51jzQ==}
     hasBin: true
 
+  qs@6.14.1:
+    resolution: {integrity: sha512-4EK3+xJl8Ts67nLYNwqw/dsFVnCf+qR7RgXSK9jEEm9unao3njwMDdmsdvoKBKHzxd7tCYz5e5M+SnMjdtXGQQ==}
+    engines: {node: '>=0.6'}
+
   query-string@7.1.3:
     resolution: {integrity: sha512-hh2WYhq4fi8+b+/2Kg9CEge4fDPvHS534aOOvOZeQ3+Vf2mCFsaFBYj0i+iXcAq6I9Vzp5fjMFBlONvayDC1qg==}
     engines: {node: '>=6'}
@@ -6399,6 +6455,15 @@ packages:
   strip-json-comments@3.1.1:
     resolution: {integrity: sha512-6fPc+R4ihwqP6N/aIv2f1gMH8lOVtWQHoqC4yK6oSDVVocumAsfCqjkXnqiYMhmMwS/mEHLp7Vehlt3ql6lEig==}
     engines: {node: '>=8'}
+
+  stripe@20.0.0:
+    resolution: {integrity: sha512-EaZeWpbJOCcDytdjKSwdrL5BxzbDGNueiCfHjHXlPdBQvLqoxl6AAivC35SPzTmVXJb5duXQlXFGS45H0+e6Gg==}
+    engines: {node: '>=16'}
+    peerDependencies:
+      '@types/node': '>=16'
+    peerDependenciesMeta:
+      '@types/node':
+        optional: true
 
   structured-headers@0.4.1:
     resolution: {integrity: sha512-0MP/Cxx5SzeeZ10p/bZI0S6MpgD+yxAhi1BOQ34jgnMXsCq3j1t6tQnZu+KdlL7dvJTLT3g9xN8tl10TqgFMcg==}
@@ -9321,6 +9386,15 @@ snapshots:
 
   '@standard-schema/spec@1.0.0': {}
 
+  '@stripe/react-stripe-js@2.9.0(@stripe/stripe-js@2.4.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)':
+    dependencies:
+      '@stripe/stripe-js': 2.4.0
+      prop-types: 15.8.1
+      react: 19.1.0
+      react-dom: 19.1.0(react@19.1.0)
+
+  '@stripe/stripe-js@2.4.0': {}
+
   '@supabase/auth-js@2.81.0':
     dependencies:
       tslib: 2.8.1
@@ -9441,6 +9515,13 @@ snapshots:
       '@tailwindcss/oxide': 4.1.17
       postcss: 8.5.6
       tailwindcss: 4.1.17
+
+  '@tanstack/query-core@5.90.20': {}
+
+  '@tanstack/react-query@5.90.20(react@19.1.0)':
+    dependencies:
+      '@tanstack/query-core': 5.90.20
+      react: 19.1.0
 
   '@tiptap/core@3.13.0(@tiptap/pm@3.13.0)':
     dependencies:
@@ -13625,6 +13706,10 @@ snapshots:
 
   qrcode-terminal@0.11.0: {}
 
+  qs@6.14.1:
+    dependencies:
+      side-channel: 1.1.0
+
   query-string@7.1.3:
     dependencies:
       decode-uri-component: 0.2.2
@@ -14408,6 +14493,12 @@ snapshots:
   strip-json-comments@2.0.1: {}
 
   strip-json-comments@3.1.1: {}
+
+  stripe@20.0.0(@types/node@20.19.24):
+    dependencies:
+      qs: 6.14.1
+    optionalDependencies:
+      '@types/node': 20.19.24
 
   structured-headers@0.4.1: {}
 

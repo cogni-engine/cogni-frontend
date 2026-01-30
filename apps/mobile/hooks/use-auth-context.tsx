@@ -17,3 +17,5 @@ export const AuthContext = createContext<AuthData>({
 
 export const useAuthContext = () => useContext(AuthContext);
 
+
+
