@@ -1,7 +1,6 @@
 'use client';
 
-import { useState, useCallback, useEffect, useRef, useMemo } from 'react';
-import { useRouter, useSearchParams, usePathname } from 'next/navigation';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import {
   ChevronsRight,
   Check,
@@ -32,26 +31,22 @@ import { TiptapRenderer } from '@/components/tiptap/TiptapRenderer';
 import { cn } from '@/lib/utils';
 
 interface NotificationProcessDrawerProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
   notifications: AINotification[];
   onNotificationProcessed?: () => void;
+  initialNotificationId?: number | null;
   isLoading?: boolean;
 }
 
 export default function NotificationProcessDrawer({
+  open,
+  onOpenChange,
   notifications,
   onNotificationProcessed,
+  initialNotificationId,
   isLoading = false,
 }: NotificationProcessDrawerProps) {
-  const router = useRouter();
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
-
-  // Derive open state from query params
-  const open = searchParams.get('notification') === 'open';
-  const initialNotificationId = searchParams.get('notificationId')
-    ? parseInt(searchParams.get('notificationId')!)
-    : null;
-
   const [currentIndex, setCurrentIndex] = useState(0);
   const [drawerMode, setDrawerMode] = useState<'notification' | 'note-input'>(
     'notification'
@@ -61,6 +56,7 @@ export default function NotificationProcessDrawer({
   const [showFullScreenResult, setShowFullScreenResult] = useState(false);
   const [isAnimatingIn, setIsAnimatingIn] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [copied, setCopied] = useState(false);
   const [expandedNoteId, setExpandedNoteId] = useState<number | null>(null);
   const [noteContent, setNoteContent] = useState<string | null>(null);
   const [isLoadingNote, setIsLoadingNote] = useState(false);
@@ -73,44 +69,6 @@ export default function NotificationProcessDrawer({
   const FADE_ANIMATION_DURATION = 150; // ms
 
   const currentNotification = notifications[currentIndex];
-
-  // Function to update query params
-  const updateQueryParams = useCallback(
-    (params: {
-      notification?: string | null;
-      notificationId?: string | null;
-    }) => {
-      const current = new URLSearchParams(Array.from(searchParams.entries()));
-
-      // Handle notification param - null or empty string means delete
-      if ('notification' in params) {
-        if (params.notification) {
-          current.set('notification', params.notification);
-        } else {
-          current.delete('notification');
-        }
-      }
-
-      // Handle notificationId param - null or empty string means delete
-      if ('notificationId' in params) {
-        if (params.notificationId) {
-          current.set('notificationId', params.notificationId);
-        } else {
-          current.delete('notificationId');
-        }
-      }
-
-      const search = current.toString();
-      const query = search ? `?${search}` : '';
-      router.push(`${pathname}${query}`, { scroll: false });
-    },
-    [router, pathname, searchParams]
-  );
-
-  // Function to close the drawer by updating query params
-  const closeDrawer = useCallback(() => {
-    updateQueryParams({ notification: null, notificationId: null });
-  }, [updateQueryParams]);
 
   useEffect(() => {
     setMounted(true);
@@ -129,16 +87,12 @@ export default function NotificationProcessDrawer({
   }, [showFullScreenResult]);
 
   // Task result is now included in the notification response from the new endpoint
-  const taskResult = useMemo(
-    () =>
-      currentNotification?.task_result
-        ? {
-            result_title: currentNotification.task_result.result_title,
-            result_text: currentNotification.task_result.result_text,
-          }
-        : null,
-    [currentNotification]
-  );
+  const taskResult = currentNotification?.task_result
+    ? {
+        result_title: currentNotification.task_result.result_title,
+        result_text: currentNotification.task_result.result_text,
+      }
+    : null;
 
   // Set initial index when notificationId is provided
   useEffect(() => {
@@ -156,11 +110,11 @@ export default function NotificationProcessDrawer({
   useEffect(() => {
     if (notifications.length === 0) {
       setCurrentIndex(0);
-      closeDrawer();
+      onOpenChange(false);
     } else if (currentIndex >= notifications.length) {
       setCurrentIndex(notifications.length - 1);
     }
-  }, [notifications.length, currentIndex, closeDrawer]);
+  }, [notifications.length, currentIndex, onOpenChange]);
 
   // Reset note expansion state when switching notifications
   useEffect(() => {
@@ -313,6 +267,8 @@ export default function NotificationProcessDrawer({
     if (!taskResult) return;
     const textToCopy = `${taskResult.result_title}\n\n${taskResult.result_text}`;
     await navigator.clipboard.writeText(textToCopy);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1500);
   }, [taskResult]);
 
   const handleShare = useCallback(async () => {
@@ -370,10 +326,10 @@ export default function NotificationProcessDrawer({
         setNoteContent(null);
         setIsSlideOut(false);
         resetTextareaHeight();
-        closeDrawer();
       }
+      onOpenChange(open);
     },
-    [closeDrawer, resetTextareaHeight]
+    [onOpenChange, resetTextareaHeight]
   );
 
   return (
@@ -416,7 +372,7 @@ export default function NotificationProcessDrawer({
               {/* Notification Content (left side 50%) */}
               <div
                 className={cn(
-                  'w-1/2 shrink-0 px-6 py-4 transition-opacity duration-150',
+                  'w-1/2 flex-shrink-0 px-6 py-4 transition-opacity duration-150',
                   isSlideOut && 'opacity-0'
                 )}
               >
@@ -439,14 +395,14 @@ export default function NotificationProcessDrawer({
                         className={cn(
                           'w-full flex items-center gap-4',
                           'px-5 py-4 rounded-2xl',
-                          'border border-white/10 bg-white/3',
-                          'hover:bg-white/6 hover:border-white/20',
+                          'border border-white/10 bg-white/[0.03]',
+                          'hover:bg-white/[0.06] hover:border-white/20',
                           'transition-all duration-200',
                           'text-left group'
                         )}
                       >
                         {/* Document Icon */}
-                        <div className='w-10 h-10 rounded-xl bg-white/8 flex items-center justify-center shrink-0'>
+                        <div className='w-10 h-10 rounded-xl bg-white/[0.08] flex items-center justify-center shrink-0'>
                           <FileText className='w-5 h-5 text-white/60' />
                         </div>
                         {/* Title */}
@@ -520,7 +476,7 @@ export default function NotificationProcessDrawer({
               {/* Note Input (right side 50%) */}
               <div
                 className={cn(
-                  'w-1/2 shrink-0 px-6 py-4 transition-opacity duration-150',
+                  'w-1/2 flex-shrink-0 px-6 py-4 transition-opacity duration-150',
                   isSlideOut && 'opacity-0'
                 )}
               >
@@ -532,7 +488,7 @@ export default function NotificationProcessDrawer({
                   rows={4}
                   className={cn(
                     'w-full px-5 py-4',
-                    'bg-white/3 rounded-2xl',
+                    'bg-white/[0.03] rounded-2xl',
                     'border border-white/5',
                     'text-white placeholder-white/25',
                     'focus:outline-none focus:border-white/10',

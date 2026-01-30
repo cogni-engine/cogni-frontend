@@ -80,13 +80,6 @@ export function buildWebViewUrlWithNotification(
       url.searchParams.set('messageId', data.messageId.toString());
       url.searchParams.set('action', 'navigate_to_message');
     }
-  } else if (data.type === 'ai_notification') {
-    // Navigate to workspace with notification drawer open
-    url.pathname = '/workspace';
-    url.searchParams.set('notification', 'open');
-    if (data.notificationId) {
-      url.searchParams.set('notificationId', data.notificationId.toString());
-    }
   }
 
   return url.toString();
