@@ -11,6 +11,8 @@ export {
   getCurrentUser,
   getSession,
   refreshSession,
+  resetPasswordForEmail,
+  updatePassword,
 } from './supabase/auth';
 
 // Export workspace functions

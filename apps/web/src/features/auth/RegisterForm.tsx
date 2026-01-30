@@ -27,35 +27,68 @@ export default function RegisterForm() {
   };
 
   // Show email verification message after signup
-  if (submitted) {
+  if (submitted || true) {
     return (
-      <div className='w-full max-w-2xl rounded-3xl p-8 shadow-2xl backdrop-blur-sm'>
-        <div className='flex flex-col items-center mb-8'>
-          <Image
-            src='/favicon.svg'
-            alt='Cogno'
-            width={40}
-            height={40}
-            className='rounded-xl mb-6'
-          />
-          <h1 className='text-2xl font-semibold text-center'>
-            Check your email
+      <div className='fixed inset-0 flex items-center justify-center px-4'>
+        <div className='w-full max-w-[500px] md:w-[500px] rounded-3xl md:border border-white/10 p-6 md:p-12 shadow-2xl backdrop-blur-sm'>
+          {/* Logo */}
+          <div className='flex justify-center mb-8'>
+            <Image
+              src='/favicon.jpg'
+              alt='Cogno'
+              width={72}
+              height={72}
+              className='rounded-xl'
+            />
+          </div>
+
+          {/* Heading */}
+          <h1 className='text-3xl md:text-4xl font-bold text-white text-center mb-6 md:mb-8'>
+            Verify your email
           </h1>
-        </div>
-        <div className='space-y-4'>
-          <div className='bg-blue-500/10 border border-blue-500/20 rounded-lg p-4'>
-            <p className='text-gray-300'>
-              We&apos;ve sent a verification link to{' '}
-              <strong className='text-white'>{email}</strong>
+
+          {/* Message */}
+          <div className='space-y-6 mb-8'>
+            <p className='text-gray-300 text-base md:text-lg text-center leading-relaxed px-4'>
+              Please verify your email address by clicking the link sent to{' '}
+              <strong className='text-white font-semibold'>{email}</strong>
             </p>
-            <p className='text-gray-400 text-sm mt-2'>
-              Click the link in the email to verify your account and complete
-              registration.
+
+            {/* Resend Button */}
+            <div className='flex justify-center pt-4 px-4'>
+              <button
+                type='button'
+                onClick={() => {
+                  // Handle resend logic here
+                }}
+                className='w-full max-w-md px-4 py-3 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20 transition-all text-white font-medium text-base md:text-lg'
+              >
+                Resend Verification Email
+              </button>
+            </div>
+          </div>
+
+          {/* Support */}
+          <div className='pt-8 border-t border-white/10'>
+            <p className='text-gray-400 text-center text-sm'>
+              Questions? Email us at{' '}
+              <a
+                href='mailto:support@cogno.ai'
+                className='text-blue-400 hover:text-blue-300 transition-colors'
+              >
+                support@cogno.ai
+              </a>
             </p>
           </div>
-          <p className='text-gray-400 text-sm text-center'>
-            Didn&apos;t receive an email? Check your spam folder.
-          </p>
+
+          {/* Footer */}
+          <div className='mt-6 pt-8 border-t border-white/10'>
+            <p className='text-gray-500 text-center text-sm'>
+              Thanks,
+              <br />
+              <span className='font-medium text-gray-400'>Cogno Team</span>
+            </p>
+          </div>
         </div>
       </div>
     );
