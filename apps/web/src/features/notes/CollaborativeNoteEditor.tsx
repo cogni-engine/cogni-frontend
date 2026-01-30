@@ -18,6 +18,7 @@ import { TaskListChain } from './types';
 import { NoteEditorHeader } from './components/NoteEditorHeader';
 import { NoteEditorToolbar } from './components/NoteEditorToolbar';
 import { MobileFloatingToolbar } from './components/tool-bar/MobileFloatingToolbar';
+import { NoteEditorSkeleton } from './components/NoteEditorSkeleton';
 import { DesktopAIInput } from './components/DesktopAIInput';
 import { EditorStyles } from './lib/editorStyles';
 import { CollaborativeEditorStyles } from './lib/collaborativeEditorStyles';
@@ -496,11 +497,7 @@ export default function CollaborativeNoteEditor({
 
   // phase 1 loading
   if (loading) {
-    return (
-      <div className='flex flex-col h-full bg-linear-to-br from-slate-950 via-black to-slate-950 text-gray-100 items-center justify-center'>
-        <div className='animate-spin rounded-full h-12 w-12 border-b-2 border-white'></div>
-      </div>
-    );
+    return <NoteEditorSkeleton />;
   }
 
   if (error) {
@@ -539,11 +536,7 @@ export default function CollaborativeNoteEditor({
 
   // Show loading state while connecting (phase 2)
   if (!editor) {
-    return (
-      <div className='flex flex-col h-full bg-linear-to-br from-slate-950 via-black to-slate-950 text-gray-100 items-center justify-center'>
-        <div className='animate-spin rounded-full h-12 w-12 border-b-2 border-white'></div>
-      </div>
-    );
+    return <NoteEditorSkeleton />;
   }
 
   return (
