@@ -151,13 +151,9 @@ export function groupNotesByFolder(
   const groups: GroupedNotes = {};
   const workspaceGroups: Record<string, WorkspaceGroupInfo> = {};
 
-  // Sort folders alphabetically by title
-  const sortedFolders = [...folders].sort((a, b) =>
-    a.title.localeCompare(b.title, 'ja')
-  );
-
-  // Initialize groups for each folder (always show all folders)
-  sortedFolders.forEach(folder => {
+  // Folders are already sorted in the provider, no need to re-sort
+  // This improves memoization stability
+  folders.forEach(folder => {
     groups[folder.title] = [];
   });
 

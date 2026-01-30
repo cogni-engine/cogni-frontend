@@ -1,5 +1,6 @@
 'use client';
 
+import { memo } from 'react';
 import { PenSquare } from 'lucide-react';
 import GlassButton from '@/components/glass-design/GlassButton';
 import NoteList from './NoteList';
@@ -17,7 +18,7 @@ type NotesViewProps = {
   onDeleteAll?: () => void;
 };
 
-export function NotesView({
+export const NotesView = memo(function NotesView({
   notes,
   folders,
   searchQuery,
@@ -70,4 +71,4 @@ export function NotesView({
       onDeleteAll={onDeleteAll}
     />
   );
-}
+});

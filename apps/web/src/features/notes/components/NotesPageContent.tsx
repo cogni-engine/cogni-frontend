@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { NotesView } from './NotesView';
 import { NotesListSkeleton } from './NotesListSkeleton';
 import { EmptyTrashModal } from './EmptyTrashModal';
@@ -10,6 +10,7 @@ import { useNoteActions } from './NoteActionsLayer';
 export function NotesPageContent() {
   const {
     loading,
+    foldersLoading,
     error,
     formattedActiveNotes,
     formattedDeletedNotes,
@@ -25,18 +26,22 @@ export function NotesPageContent() {
   );
   const [showDeleteAllConfirm, setShowDeleteAllConfirm] = useState(false);
 
-  const handleBackFromFolder = () => {
+  const handleBackFromFolder = useCallback(() => {
     setSelectedFolder(null);
-  };
+  }, []);
 
-  const handleDeleteAll = () => {
+  const handleDeleteAll = useCallback(() => {
     setShowDeleteAllConfirm(true);
-  };
+  }, []);
 
-  const handleConfirmDeleteAll = async () => {
+  const handleConfirmDeleteAll = useCallback(async () => {
     await emptyTrash();
     setShowDeleteAllConfirm(false);
-  };
+  }, [emptyTrash]);
+
+  const handleCreateNote = useCallback(() => {
+    createNote('Untitled', '');
+  }, [createNote]);
 
   // Listen for trash click event from Header
   useEffect(() => {
@@ -49,7 +54,23 @@ export function NotesPageContent() {
     };
   }, []);
 
-  if (loading) {
+  // Determine which notes to show based on selected folder (before early returns)
+  const notesToShow = useMemo(() => {
+    if (selectedFolder === 'trash') {
+      return formattedDeletedNotes;
+    }
+    if (selectedFolder !== null) {
+      return formattedActiveNotes.filter(
+        note =>
+          typeof selectedFolder === 'number' &&
+          note.note_folder_id === selectedFolder
+      );
+    }
+    return formattedActiveNotes;
+  }, [selectedFolder, formattedActiveNotes, formattedDeletedNotes]);
+
+  // Wait for both notes and folders to load to prevent visible re-organization
+  if (loading || foldersLoading) {
     return <NotesListSkeleton />;
   }
 
@@ -61,18 +82,6 @@ export function NotesPageContent() {
     );
   }
 
-  // Determine which notes to show based on selected folder
-  const notesToShow =
-    selectedFolder === 'trash'
-      ? formattedDeletedNotes
-      : selectedFolder !== null
-        ? formattedActiveNotes.filter(
-            note =>
-              typeof selectedFolder === 'number' &&
-              note.note_folder_id === selectedFolder
-          )
-        : formattedActiveNotes;
-
   return (
     <>
       <NotesView
@@ -80,7 +89,7 @@ export function NotesPageContent() {
         folders={folders}
         searchQuery={searchQuery}
         onContextMenu={openContextMenu}
-        onCreateNote={() => createNote('Untitled', '')}
+        onCreateNote={handleCreateNote}
         selectedFolder={selectedFolder}
         onBackFromFolder={handleBackFromFolder}
         onDeleteAll={handleDeleteAll}

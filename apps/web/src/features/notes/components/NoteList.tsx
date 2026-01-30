@@ -2,7 +2,7 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { useRef, memo, useState } from 'react';
+import { useRef, memo, useState, useMemo } from 'react';
 
 import type { NoteFolder } from '@/types/note';
 import type { FormattedNote } from '../NotesProvider';
@@ -132,7 +132,7 @@ function NoteCardComponent({
 
 const NoteCard = memo(NoteCardComponent);
 
-export default function NoteList({
+const NoteList = memo(function NoteList({
   notes,
   onContextMenu,
   groupBy = 'folder',
@@ -141,8 +141,11 @@ export default function NoteList({
   onBackFromFolder,
   onDeleteAll,
 }: NoteListProps) {
-  const { groups, sortedKeys, workspaceGroups, sortedWorkspaceKeys } =
-    groupAndSortNotes(notes, groupBy, folders);
+  const { groups, sortedKeys, workspaceGroups, sortedWorkspaceKeys } = useMemo(
+    () => groupAndSortNotes(notes, groupBy, folders),
+    [notes, groupBy, folders]
+  );
+
   const [collapsedFolders, setCollapsedFolders] = useState<Set<string>>(
     new Set()
   );
@@ -292,4 +295,6 @@ export default function NoteList({
         })}
     </div>
   );
-}
+});
+
+export default NoteList;
