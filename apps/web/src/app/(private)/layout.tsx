@@ -1,5 +1,5 @@
 'use client';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import Header from '@/components/layout/Header';
 import BottomNav from '@/components/layout/BottomNav';
@@ -179,7 +179,11 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
   return (
     <div className='relative h-screen bg-black px-2'>
       {/* Header - Absolutely Positioned, Transparent */}
-      {showTopLevelChrome && <Header />}
+      {showTopLevelChrome && (
+        <Suspense fallback={<div className='h-[72px]' />}>
+          <Header />
+        </Suspense>
+      )}
 
       {/* Main Content - Full height, scrolls under transparent header and bottom nav */}
       <main className='h-screen min-h-0 overflow-hidden relative flex flex-col'>
