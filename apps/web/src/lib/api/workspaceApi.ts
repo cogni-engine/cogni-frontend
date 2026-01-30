@@ -226,44 +226,88 @@ export async function createWorkspace(
   title: string
   // type: 'group' | 'personal' = 'group'
 ): Promise<Workspace> {
-  // Call the database function that creates workspace and adds user as member
-  const { data, error } = await supabase.rpc('create_workspace_with_member', {
-    p_title: title,
-    // p_type: type
-  });
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
-  if (error) throw error;
+  if (!user) {
+    throw new Error('User not authenticated');
+  }
 
-  // Fetch the created workspace to return it with full details
-  if (data && data.length > 0 && data[0].workspace_id) {
-    const workspaceId = data[0].workspace_id;
+  // Use RPC function to create workspace (bypasses RLS)
+  const { data: rpcData, error: rpcError } = await supabase.rpc(
+    'create_workspace_with_member',
+    {
+      p_title: title,
+    }
+  );
 
-    const { data: workspace, error: fetchError } = await supabase
-      .from('workspace')
-      .select('*')
-      .eq('id', workspaceId)
-      .single();
+  if (rpcError) {
+    console.error('Failed to create workspace via RPC:', rpcError);
 
-    if (fetchError) throw fetchError;
+    // If RPC fails with NOT NULL constraint error, try to handle it
+    if (rpcError.code === '23502') {
+      // RPC function didn't set type, but workspace might have been created
+      // Try to find the workspace and update it
+      throw new Error(
+        'Workspace creation failed: The database function needs to be updated. ' +
+          "Please update the create_workspace_with_member function in Supabase to set type='group' in the INSERT statement."
+      );
+    }
 
-    // Generate and upload default workspace icon
-    try {
-      const iconBlob = await generateAvatarBlob(title, {
-        style: 'cosmic',
-        includeInitials: false,
-      });
+    throw new Error(
+      rpcError.message ||
+        `Workspace creation failed: ${rpcError.code || 'Unknown error'}`
+    );
+  }
 
-      const { iconUrl } = await uploadWorkspaceIcon(workspaceId, iconBlob);
+  if (!rpcData || rpcData.length === 0 || !rpcData[0]?.workspace_id) {
+    throw new Error(
+      'Failed to create workspace: No workspace ID returned from RPC'
+    );
+  }
 
-      // Update workspace with icon URL
-      return await updateWorkspace(workspaceId, { icon_url: iconUrl });
-    } catch (iconError) {
-      console.warn('Failed to generate default workspace icon:', iconError);
-      return workspace; // Return workspace without icon if generation fails
+  const workspaceId = rpcData[0].workspace_id;
+
+  // Fetch the created workspace
+  const { data: workspace, error: fetchError } = await supabase
+    .from('workspace')
+    .select('*')
+    .eq('id', workspaceId)
+    .single();
+
+  if (fetchError || !workspace) {
+    throw new Error(
+      `Failed to fetch created workspace: ${fetchError?.message || 'Workspace not found'}`
+    );
+  }
+
+  // If type is null, update it (RPC function might not set it)
+  if (!workspace.type) {
+    console.warn('Workspace type is null, updating to "group"');
+    const updatedWorkspace = await updateWorkspace(workspaceId, {
+      type: 'group',
+    });
+    if (updatedWorkspace) {
+      workspace.type = updatedWorkspace.type;
     }
   }
 
-  throw new Error('Failed to create workspace');
+  // Generate and upload default workspace icon
+  try {
+    const iconBlob = await generateAvatarBlob(title, {
+      style: 'cosmic',
+      includeInitials: false,
+    });
+
+    const { iconUrl } = await uploadWorkspaceIcon(workspaceId, iconBlob);
+
+    // Update workspace with icon URL
+    return await updateWorkspace(workspaceId, { icon_url: iconUrl });
+  } catch (iconError) {
+    console.warn('Failed to generate default workspace icon:', iconError);
+    return workspace; // Return workspace without icon if generation fails
+  }
 }
 
 export async function updateWorkspace(
@@ -430,7 +474,7 @@ export async function getAllWorkspaceMembersForUser(): Promise<
 
   const workspaceIds = userMemberships.map(m => m.workspace_id);
 
-  // Fetch all workspace members from these workspaces
+  // Fetch all workspace members from these workspaces (exclude agents)
   const { data, error } = await supabase
     .from('workspace_member')
     .select(
@@ -440,11 +484,13 @@ export async function getAllWorkspaceMembersForUser(): Promise<
       user_id,
       workspace_id,
       role,
+      agent_id,
       user_profile:user_id(id, name, avatar_url)
     `
     )
     .in('workspace_id', workspaceIds)
     .neq('user_id', user.id) // Exclude current user
+    .is('agent_id', null) // Exclude agent users
     .order('created_at', { ascending: true });
 
   if (error) throw error;
@@ -452,14 +498,79 @@ export async function getAllWorkspaceMembersForUser(): Promise<
   const members = (data ?? []) as SupabaseWorkspaceMember[];
 
   // Deduplicate by user_id (a user might be in multiple workspaces)
-  const uniqueMembersMap = new Map<number, WorkspaceMember>();
+  const uniqueMembersMap = new Map<string, WorkspaceMember>();
 
   members.forEach(member => {
-    const normalized = normalizeWorkspaceMember(member);
-    if (!uniqueMembersMap.has(member.id)) {
-      uniqueMembersMap.set(member.id, normalized);
+    if (member.user_id) {
+      const normalized = normalizeWorkspaceMember(member);
+      if (!uniqueMembersMap.has(member.user_id)) {
+        uniqueMembersMap.set(member.user_id, normalized);
+      }
     }
   });
 
   return Array.from(uniqueMembersMap.values());
+}
+
+/**
+ * Add multiple members to a workspace
+ * @param workspaceId The workspace ID
+ * @param userIds Array of user IDs to add
+ * @returns Array of created workspace member IDs
+ */
+export async function addWorkspaceMembers(
+  workspaceId: number,
+  userIds: string[]
+): Promise<number[]> {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    throw new Error('User not authenticated');
+  }
+
+  if (userIds.length === 0) {
+    return [];
+  }
+
+  // Check which users are already members
+  const { data: existingMembers, error: checkError } = await supabase
+    .from('workspace_member')
+    .select('user_id')
+    .eq('workspace_id', workspaceId)
+    .in('user_id', userIds);
+
+  if (checkError) {
+    throw checkError;
+  }
+
+  const existingUserIds = new Set(
+    (existingMembers || []).map(m => m.user_id).filter(Boolean) as string[]
+  );
+
+  // Filter out users who are already members
+  const newUserIds = userIds.filter(id => !existingUserIds.has(id));
+
+  if (newUserIds.length === 0) {
+    return [];
+  }
+
+  // Insert new members
+  const { data: insertedMembers, error: insertError } = await supabase
+    .from('workspace_member')
+    .insert(
+      newUserIds.map(userId => ({
+        workspace_id: workspaceId,
+        user_id: userId,
+        role: 'member',
+      }))
+    )
+    .select('id');
+
+  if (insertError) {
+    throw insertError;
+  }
+
+  return (insertedMembers || []).map(m => m.id);
 }
