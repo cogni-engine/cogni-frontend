@@ -1,9 +1,9 @@
 'use client';
 
 import { useMemo, useState, useCallback, useRef } from 'react';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import Image from 'next/image';
 import { WorkspaceMember } from '@/types/workspace';
-import { User, Check, Mail, Link, X } from 'lucide-react';
+import { Check, X } from 'lucide-react';
 import SearchBar from '@/components/SearchBar';
 import { getAllWorkspaceMembersForUser } from '@/lib/api/workspaceApi';
 import useSWR from 'swr';
@@ -13,18 +13,12 @@ interface MemberSelectionStepProps {
   selectedUserIds: string[];
   onSelectionChange: (userIds: string[]) => void;
   excludeUserIds?: string[];
-  onInviteByEmail?: () => void;
-  onShareLink?: () => void;
-  hideInvitationButtons?: boolean;
 }
 
 export default function MemberSelectionStep({
   selectedUserIds,
   onSelectionChange,
   excludeUserIds = [],
-  onInviteByEmail,
-  onShareLink,
-  hideInvitationButtons = false,
 }: MemberSelectionStepProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -42,25 +36,26 @@ export default function MemberSelectionStep({
     }
   );
 
-  // Get selected members for display
+  // Get selected members for display (exclude agents)
   const selectedMembers = useMemo(() => {
     return allMembers.filter(
       member =>
         member.user_id &&
         selectedUserIds.includes(member.user_id) &&
-        member.user_profile
+        member.user_profile &&
+        !member.is_agent
     );
   }, [allMembers, selectedUserIds]);
 
-  // Filter members: exclude already selected, exclude existing members, and filter by search
+  // Filter members: exclude existing members, agents, and filter by search (keep selected members)
   const filteredMembers = useMemo(() => {
     const query = searchQuery.trim().toLowerCase();
     let filtered = allMembers.filter(
       member =>
         member.user_id &&
         !excludeUserIds.includes(member.user_id) &&
-        !selectedUserIds.includes(member.user_id) && // Exclude selected members
-        member.user_profile
+        member.user_profile &&
+        !member.is_agent // Exclude agent users
     );
 
     if (query) {
@@ -71,7 +66,7 @@ export default function MemberSelectionStep({
     }
 
     return filtered;
-  }, [allMembers, searchQuery, excludeUserIds, selectedUserIds]);
+  }, [allMembers, searchQuery, excludeUserIds]);
 
   const handleToggleMember = useCallback(
     (userId: string) => {
@@ -94,7 +89,7 @@ export default function MemberSelectionStep({
   return (
     <div className='flex flex-col flex-1 min-h-0 relative'>
       {/* Search Bar fixed at top */}
-      <div className='flex-shrink-0 pb-4 border-b border-white/10 mb-4'>
+      <div className='shrink-0 pb-4 border-b border-white/10 mb-4'>
         <SearchBar
           placeholder='Search members...'
           value={searchQuery}
@@ -104,9 +99,11 @@ export default function MemberSelectionStep({
 
       {/* Selected Members - Display below search */}
       {selectedMembers.length > 0 && (
-        <div className='flex-shrink-0 mb-4 pb-4 border-b border-white/10'>
-          <p className='text-sm text-gray-400 mb-3'>Selected members</p>
-          <div className='flex flex-wrap gap-3'>
+        <div className='shrink-0 mb-4 pb-4 border-b border-white/10'>
+          <p className='text-sm text-gray-400 mb-3'>
+            Selected ({selectedMembers.length})
+          </p>
+          <div className='flex flex-wrap gap-2.5'>
             {selectedMembers.map(member => {
               if (!member.user_id || !member.user_profile) return null;
               const displayName = member.user_profile.name || 'Unknown User';
@@ -117,35 +114,31 @@ export default function MemberSelectionStep({
                   className='flex flex-col items-center gap-1.5 group relative'
                 >
                   <div className='relative'>
-                    <Avatar className='h-14 w-14 border-2 border-white/20 group-hover:border-white/40 transition-colors'>
-                      {member.user_profile.avatar_url ? (
-                        <AvatarImage
-                          src={member.user_profile.avatar_url}
-                          alt={displayName}
-                        />
-                      ) : (
-                        <AvatarFallback className='bg-white/10'>
-                          {displayName
-                            .split(' ')
-                            .map(n => n[0])
-                            .join('')
-                            .toUpperCase()
-                            .slice(0, 2) || <User className='w-6 h-6' />}
-                        </AvatarFallback>
-                      )}
-                    </Avatar>
+                    {member.user_profile.avatar_url ? (
+                      <Image
+                        src={member.user_profile.avatar_url}
+                        alt={displayName}
+                        width={48}
+                        height={48}
+                        className='w-12 h-12 rounded-full object-cover border-2 border-white/20'
+                      />
+                    ) : (
+                      <div className='w-12 h-12 rounded-full bg-white/20 flex items-center justify-center text-sm text-white font-medium border-2 border-white/20'>
+                        {displayName.charAt(0).toUpperCase()}
+                      </div>
+                    )}
                     <button
                       type='button'
                       onClick={() =>
                         handleRemoveSelectedMember(member.user_id!)
                       }
-                      className='absolute -top-1 -right-1 w-6 h-6 rounded-full bg-red-500 hover:bg-red-600 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-lg'
+                      className='absolute -top-1 -right-1 w-5 h-5 rounded-full bg-red-500 hover:bg-red-600 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-lg'
                       title='Remove'
                     >
-                      <X className='w-3.5 h-3.5 text-white' />
+                      <X className='w-3 h-3 text-white' />
                     </button>
                   </div>
-                  <p className='text-white text-xs text-center max-w-[70px] truncate font-medium'>
+                  <p className='text-white text-xs text-center max-w-[60px] truncate font-medium'>
                     {displayName}
                   </p>
                 </div>
@@ -189,40 +182,27 @@ export default function MemberSelectionStep({
             return (
               <button
                 key={member.user_id}
+                type='button'
                 onClick={() => handleToggleMember(member.user_id!)}
-                className={`w-full flex items-center gap-3 p-3 rounded-lg transition-colors mb-2 ${
-                  isSelected
-                    ? 'bg-white/10 border border-white/20'
-                    : 'bg-white/5 hover:bg-white/10 border border-transparent'
-                }`}
+                className='w-full p-2 text-left text-sm hover:bg-white/5 rounded-xl transition-colors flex items-center justify-between'
               >
-                <Avatar className='h-10 w-10 border border-white/10'>
+                <div className='flex items-center gap-3'>
                   {member.user_profile.avatar_url ? (
-                    <AvatarImage
+                    <Image
                       src={member.user_profile.avatar_url}
                       alt={displayName}
+                      width={24}
+                      height={24}
+                      className='w-6 h-6 rounded-full object-cover'
                     />
                   ) : (
-                    <AvatarFallback>
-                      {displayName
-                        .split(' ')
-                        .map(n => n[0])
-                        .join('')
-                        .toUpperCase()
-                        .slice(0, 2) || <User className='w-5 h-5' />}
-                    </AvatarFallback>
+                    <div className='w-6 h-6 rounded-full bg-white/20 flex items-center justify-center text-xs text-white font-medium'>
+                      {displayName.charAt(0).toUpperCase()}
+                    </div>
                   )}
-                </Avatar>
-                <div className='flex-1 text-left'>
-                  <p className='text-white font-medium text-sm'>
-                    {displayName}
-                  </p>
+                  <span className='text-white'>{displayName}</span>
                 </div>
-                {isSelected && (
-                  <div className='p-1 rounded-full bg-white/20'>
-                    <Check className='w-4 h-4 text-white' />
-                  </div>
-                )}
+                {isSelected && <Check className='w-4 h-4 text-white' />}
               </button>
             );
           })}

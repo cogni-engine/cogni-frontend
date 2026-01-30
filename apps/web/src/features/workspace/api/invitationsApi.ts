@@ -245,13 +245,24 @@ export async function acceptInvitation(token: string): Promise<void> {
   // If not found in invitations, try workspace_invite_links
   const { data: inviteLink, error: linkError } = await supabase
     .from('workspace_invite_links')
-    .select('*, workspaces:workspace_id(organization_id)')
+    .select('*')
     .eq('token', token)
     .eq('status', 'active')
     .single();
 
   if (linkError || !inviteLink) {
     throw new Error('Invalid or expired invitation');
+  }
+
+  // Fetch workspace separately to get organization_id
+  const { data: workspace, error: workspaceError } = await supabase
+    .from('workspaces')
+    .select('organization_id')
+    .eq('id', parseInt(inviteLink.workspace_id))
+    .single();
+
+  if (workspaceError) {
+    console.warn('Failed to fetch workspace for seat sync:', workspaceError);
   }
 
   // Check if invite link is expired
@@ -290,8 +301,8 @@ export async function acceptInvitation(token: string): Promise<void> {
   if (memberError) throw memberError;
 
   // Sync organization seats with Stripe (for Business plan)
-  if (inviteLink.workspaces?.organization_id) {
-    await syncOrganizationSeats(inviteLink.workspaces.organization_id);
+  if (workspace?.organization_id) {
+    await syncOrganizationSeats(workspace.organization_id);
   }
 }
 

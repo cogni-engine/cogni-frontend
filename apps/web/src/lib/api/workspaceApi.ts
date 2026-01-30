@@ -474,7 +474,7 @@ export async function getAllWorkspaceMembersForUser(): Promise<
 
   const workspaceIds = userMemberships.map(m => m.workspace_id);
 
-  // Fetch all workspace members from these workspaces
+  // Fetch all workspace members from these workspaces (exclude agents)
   const { data, error } = await supabase
     .from('workspace_member')
     .select(
@@ -484,11 +484,13 @@ export async function getAllWorkspaceMembersForUser(): Promise<
       user_id,
       workspace_id,
       role,
+      agent_id,
       user_profile:user_id(id, name, avatar_url)
     `
     )
     .in('workspace_id', workspaceIds)
     .neq('user_id', user.id) // Exclude current user
+    .is('agent_id', null) // Exclude agent users
     .order('created_at', { ascending: true });
 
   if (error) throw error;
