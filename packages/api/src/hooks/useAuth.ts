@@ -1,7 +1,16 @@
 'use client';
 
 import { useState } from 'react';
-import { signIn, signUp, signOut, signInWithGoogle, signInWithApple, refreshSession } from '../supabase/auth';
+import { 
+  signIn, 
+  signUp, 
+  signOut, 
+  signInWithGoogle, 
+  signInWithApple, 
+  refreshSession,
+  resetPasswordForEmail,
+  updatePassword,
+} from '../supabase/auth';
 import { getPersonalWorkspace } from '../workspace';
 import {
   setCookie,
@@ -182,6 +191,38 @@ export function useAuth() {
     }
   };
 
+  const handleResetPassword = async (email: string) => {
+    setLoading(true);
+    setError(null);
+    try {
+      await resetPasswordForEmail(email, `${window.location.origin}/auth/reset-password`);
+      return { success: true };
+    } catch (e) {
+      setError(
+        e instanceof Error ? e.message : 'Failed to send reset email'
+      );
+      return { success: false };
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleUpdatePassword = async (newPassword: string) => {
+    setLoading(true);
+    setError(null);
+    try {
+      await updatePassword(newPassword);
+      return { success: true };
+    } catch (e) {
+      setError(
+        e instanceof Error ? e.message : 'Failed to update password'
+      );
+      return { success: false };
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return {
     handleSignUp,
     handleSignIn,
@@ -189,6 +230,8 @@ export function useAuth() {
     handleSignInWithApple,
     handleSignOut,
     handleRefreshSession,
+    handleResetPassword,
+    handleUpdatePassword,
     loading,
     error,
   };

@@ -20,6 +20,9 @@ export default function LoginForm() {
   } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
+  // Check for success message from password reset
+  const message = searchParams.get('message');
+  const showSuccessMessage = message === 'password-updated';
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -114,6 +117,12 @@ export default function LoginForm() {
       </div>
 
       <form onSubmit={onSubmit} className='flex flex-col gap-6'>
+        {showSuccessMessage && (
+          <div className='bg-green-500/10 border border-green-500/20 text-green-400 px-4 py-3 rounded-lg text-sm'>
+            Password updated successfully! Please sign in with your new
+            password.
+          </div>
+        )}
         <div>
           <input
             type='email'
@@ -206,6 +215,15 @@ export default function LoginForm() {
           </Link>
         </p>
       </div>
+      <p className='text-sm text-gray-400 text-center'>
+        Forgot password? You can reset it{' '}
+        <Link
+          href='/auth/forgot-password'
+          className='text-white hover:text-gray-300 transition-colors underline'
+        >
+          here
+        </Link>
+      </p>
     </div>
   );
 }

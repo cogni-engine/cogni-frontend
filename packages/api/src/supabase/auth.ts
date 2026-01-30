@@ -150,3 +150,38 @@ export async function refreshSession() {
   return session;
 }
 
+/**
+ * Send a password reset email
+ * @param email - The user's email address
+ * @param redirectTo - Optional URL to redirect to after password reset
+ */
+export async function resetPasswordForEmail(email: string, redirectTo?: string) {
+  const supabase = getClient();
+  
+  const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo:
+      redirectTo ||
+      (typeof window !== 'undefined'
+        ? `${window.location.origin}/auth/reset-password`
+        : undefined),
+  });
+  
+  if (error) throw error;
+  return data;
+}
+
+/**
+ * Update the user's password
+ * Call this after the user clicks the password reset link and is redirected back
+ * @param newPassword - The new password
+ */
+export async function updatePassword(newPassword: string) {
+  const supabase = getClient();
+  
+  const { data, error } = await supabase.auth.updateUser({
+    password: newPassword,
+  });
+  
+  if (error) throw error;
+  return data;
+}
