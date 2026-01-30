@@ -1,7 +1,8 @@
 'use client';
 
 import Image from 'next/image';
-import { useRef, memo, useState } from 'react';
+import Link from 'next/link';
+import { useRef, memo, useState, useMemo } from 'react';
 
 import type { NoteFolder } from '@/types/note';
 import type { FormattedNote } from '../NotesProvider';
@@ -11,7 +12,6 @@ import { FlatList, FlatListItem } from '@/components/FlatList';
 
 type NoteListProps = {
   notes: FormattedNote[];
-  onNoteClick?: (id: string) => void;
   onContextMenu?: (e: React.MouseEvent, id: string, isDeleted: boolean) => void;
   groupBy?: 'time' | 'folder';
   folders?: NoteFolder[];
@@ -21,13 +21,11 @@ type NoteListProps = {
 };
 function NoteCardComponent({
   note,
-  onNoteClick,
   onContextMenu,
   showWorkspaceBadge = true,
   inRecentlyDeleted = false,
 }: {
   note: FormattedNote;
-  onNoteClick?: (id: string) => void;
   onContextMenu?: (e: React.MouseEvent, id: string, isDeleted: boolean) => void;
   showWorkspaceBadge?: boolean;
   inRecentlyDeleted?: boolean;
@@ -76,12 +74,6 @@ function NoteCardComponent({
     touchStartRef.current = null;
   };
 
-  const handleClick = () => {
-    if (onNoteClick) {
-      onNoteClick(note.id);
-    }
-  };
-
   const handleContextMenuEvent = (e: React.MouseEvent) => {
     if (onContextMenu) {
       onContextMenu(e, note.id, isDeleted);
@@ -89,59 +81,59 @@ function NoteCardComponent({
   };
 
   return (
-    <FlatListItem
-      className={isDeleted && !inRecentlyDeleted ? 'opacity-60' : ''}
-      onClick={handleClick}
-      onContextMenu={handleContextMenuEvent}
-      onTouchStart={handleTouchStart}
-      onTouchMove={handleTouchMove}
-      onTouchEnd={handleTouchEnd}
-      onTouchCancel={handleTouchEnd}
-    >
-      <div className='flex justify-between items-start gap-3'>
-        <div className='flex-1 min-w-0'>
-          <h2 className='font-semibold text-white/90 text-[15px] leading-[1.4] line-clamp-2'>
-            {note.title}
-          </h2>
-          <div className='flex items-center gap-2 mt-0.5'>
-            <span className='text-[11px] text-gray-400 whitespace-nowrap'>
-              {note.date}
-            </span>
-            <p className='text-[13px] text-gray-400 leading-[1.6] line-clamp-1 flex-1 min-w-0'>
-              {note.preview || 'No content'}
-            </p>
+    <Link href={`/notes/${note.id}`} prefetch={true} className='block'>
+      <FlatListItem
+        className={isDeleted && !inRecentlyDeleted ? 'opacity-60' : ''}
+        onContextMenu={handleContextMenuEvent}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+        onTouchCancel={handleTouchEnd}
+      >
+        <div className='flex justify-between items-start gap-3'>
+          <div className='flex-1 min-w-0'>
+            <h2 className='font-semibold text-white/90 text-[15px] leading-[1.4] line-clamp-2'>
+              {note.title}
+            </h2>
+            <div className='flex items-center gap-2 mt-0.5'>
+              <span className='text-[11px] text-gray-400 whitespace-nowrap'>
+                {note.date}
+              </span>
+              <p className='text-[13px] text-gray-400 leading-[1.6] line-clamp-1 flex-1 min-w-0'>
+                {note.preview || 'No content'}
+              </p>
+            </div>
           </div>
+          {showWorkspaceBadge && note.isGroupNote && note.workspace?.title && (
+            <div className='flex items-center gap-1.5 shrink-0'>
+              {note.workspace.icon_url ? (
+                <Image
+                  src={note.workspace.icon_url}
+                  alt={note.workspace.title}
+                  width={16}
+                  height={16}
+                  className='w-4 h-4 rounded-md object-cover'
+                />
+              ) : (
+                <div className='w-4 h-4 rounded-md bg-linear-to-br from-purple-500 to-pink-500 flex items-center justify-center text-[8px] text-white/90 font-bold'>
+                  {note.workspace.title.charAt(0).toUpperCase()}
+                </div>
+              )}
+              <span className='text-[11px] text-white whitespace-nowrap'>
+                {note.workspace.title}
+              </span>
+            </div>
+          )}
         </div>
-        {showWorkspaceBadge && note.isGroupNote && note.workspace?.title && (
-          <div className='flex items-center gap-1.5 shrink-0'>
-            {note.workspace.icon_url ? (
-              <Image
-                src={note.workspace.icon_url}
-                alt={note.workspace.title}
-                width={16}
-                height={16}
-                className='w-4 h-4 rounded-md object-cover'
-              />
-            ) : (
-              <div className='w-4 h-4 rounded-md bg-linear-to-br from-purple-500 to-pink-500 flex items-center justify-center text-[8px] text-white/90 font-bold'>
-                {note.workspace.title.charAt(0).toUpperCase()}
-              </div>
-            )}
-            <span className='text-[11px] text-white whitespace-nowrap'>
-              {note.workspace.title}
-            </span>
-          </div>
-        )}
-      </div>
-    </FlatListItem>
+      </FlatListItem>
+    </Link>
   );
 }
 
 const NoteCard = memo(NoteCardComponent);
 
-export default function NoteList({
+const NoteList = memo(function NoteList({
   notes,
-  onNoteClick,
   onContextMenu,
   groupBy = 'folder',
   folders = [],
@@ -149,8 +141,11 @@ export default function NoteList({
   onBackFromFolder,
   onDeleteAll,
 }: NoteListProps) {
-  const { groups, sortedKeys, workspaceGroups, sortedWorkspaceKeys } =
-    groupAndSortNotes(notes, groupBy, folders);
+  const { groups, sortedKeys, workspaceGroups, sortedWorkspaceKeys } = useMemo(
+    () => groupAndSortNotes(notes, groupBy, folders),
+    [notes, groupBy, folders]
+  );
+
   const [collapsedFolders, setCollapsedFolders] = useState<Set<string>>(
     new Set()
   );
@@ -196,7 +191,6 @@ export default function NoteList({
             <NoteCard
               key={note.id}
               note={note}
-              onNoteClick={onNoteClick}
               onContextMenu={onContextMenu}
               inRecentlyDeleted={isRecentlyDeleted}
             />
@@ -245,7 +239,6 @@ export default function NoteList({
                       <NoteCard
                         key={note.id}
                         note={note}
-                        onNoteClick={onNoteClick}
                         onContextMenu={onContextMenu}
                       />
                     ))}
@@ -262,7 +255,6 @@ export default function NoteList({
                     <NoteCard
                       key={note.id}
                       note={note}
-                      onNoteClick={onNoteClick}
                       onContextMenu={onContextMenu}
                     />
                   ))}
@@ -292,7 +284,6 @@ export default function NoteList({
                     <NoteCard
                       key={note.id}
                       note={note}
-                      onNoteClick={onNoteClick}
                       onContextMenu={onContextMenu}
                       showWorkspaceBadge={false}
                     />
@@ -304,4 +295,6 @@ export default function NoteList({
         })}
     </div>
   );
-}
+});
+
+export default NoteList;

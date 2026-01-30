@@ -23,18 +23,12 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { signOut } from '@cogni/api';
-import { useUserProfile } from '@/stores/useUserProfileStore';
+import { useUserEmail, useUserProfile } from '@/stores/useUserProfileStore';
 import type { UserProfile } from '@/types/userProfile';
 import GlassCard from '@/components/glass-design/GlassCard';
 import { isInMobileWebView, notifyNativeLogout } from '@/lib/webview';
 import { PricingModal } from '@/components/PricingModal';
 import { useSubscription } from '@/providers/SubscriptionProvider';
-
-import type { User } from '@supabase/supabase-js';
-
-type UserMenuProps = {
-  user: User | null;
-};
 
 function getInitials(profile?: UserProfile | null, email?: string | null) {
   const name = profile?.name;
@@ -51,7 +45,7 @@ function getInitials(profile?: UserProfile | null, email?: string | null) {
   return 'ME';
 }
 
-export function UserMenu({ user }: UserMenuProps) {
+export function UserMenu() {
   const router = useRouter();
   const [open, setOpen] = React.useState(false);
   const [isSigningOut, setIsSigningOut] = React.useState(false);
@@ -61,7 +55,7 @@ export function UserMenu({ user }: UserMenuProps) {
 
   const isProOrBusiness = planType === 'pro' || planType === 'business';
 
-  const email = user?.email ?? 'Unknown user';
+  const email = useUserEmail();
   const avatarUrl = profile?.avatar_url ?? null;
   const initials = getInitials(profile, email);
 
@@ -129,7 +123,10 @@ export function UserMenu({ user }: UserMenuProps) {
             >
               <Avatar className='h-9 w-9'>
                 {avatarUrl ? (
-                  <AvatarImage src={avatarUrl} alt={profile?.name || email} />
+                  <AvatarImage
+                    src={avatarUrl}
+                    alt={(profile?.name || email) ?? ''}
+                  />
                 ) : (
                   <AvatarFallback>{initials}</AvatarFallback>
                 )}

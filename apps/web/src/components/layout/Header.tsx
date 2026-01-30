@@ -3,7 +3,6 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { usePathname } from 'next/navigation';
 import { useNotifications } from '@/features/notifications/hooks/useNotifications';
-import { useUser } from '@/hooks/useUser';
 import { UserMenu } from '@/components/layout/UserMenu';
 import { BellIcon, TextAlignStart } from 'lucide-react';
 import {
@@ -16,6 +15,7 @@ import GlassButton from '@/components/glass-design/GlassButton';
 import { getPersonalWorkspaceId } from '@/lib/cookies';
 import NotificationProcessDrawer from '@/features/notifications/components/NotificationProcessDrawer';
 import { getAppEventBus } from '@/lib/events/appEventBus';
+import { useUserId } from '@/stores/useUserProfileStore';
 
 export default function Header() {
   const pathname = usePathname();
@@ -33,9 +33,7 @@ export default function Header() {
   const pageTitle = pageTitleMap[pathname] ?? null;
   const [isMounted, setIsMounted] = useState(false);
 
-  // Get user using SWR hook
-  const { user, isLoading: isLoadingUser, error: userError } = useUser();
-  const userId = user?.id ?? null;
+  const userId = useUserId();
 
   // Get personal workspace ID for notes page
   const personalWorkspaceId = isNotesPage ? getPersonalWorkspaceId() : null;
@@ -61,22 +59,22 @@ export default function Header() {
 
   // Fetch unread notifications when user is loaded and available
   useEffect(() => {
-    if (isLoadingUser || !userId) return;
+    if (!userId) return;
     fetchUnreadCount();
-  }, [userId, isLoadingUser, fetchUnreadCount]);
+  }, [userId, fetchUnreadCount]);
 
   useEffect(() => {
     const unsubscribe = onHeaderEvent(
       HEADER_EVENTS.REFRESH_NOTIFICATION_COUNT,
       () => {
-        if (userId && !isLoadingUser) {
+        if (userId) {
           fetchUnreadCount();
         }
       }
     );
 
     return unsubscribe;
-  }, [userId, isLoadingUser, fetchUnreadCount]);
+  }, [userId, fetchUnreadCount]);
 
   const handleToggleThreadSidebar = () => {
     dispatchHeaderEvent(HEADER_EVENTS.TOGGLE_THREAD_SIDEBAR);
@@ -210,16 +208,7 @@ export default function Header() {
               )}
             {isMounted && (
               <>
-                {isLoadingUser ? (
-                  <div className='h-12 w-12 rounded-full border border-white/10 bg-white/5 animate-pulse' />
-                ) : userError ? (
-                  <div
-                    className='h-12 w-12 rounded-full border border-red-500/50 bg-red-500/10'
-                    title='Error loading user'
-                  />
-                ) : (
-                  <UserMenu user={user ?? null} />
-                )}
+                <UserMenu />
               </>
             )}
           </div>

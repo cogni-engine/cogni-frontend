@@ -4,6 +4,7 @@ import React, {
   useState,
   ReactNode,
   useMemo,
+  useCallback,
 } from 'react';
 import { useNoteFolders } from './hooks/useNoteFolders';
 import { NoteFolder, NoteWithParsed } from '@/types/note';
@@ -39,6 +40,7 @@ type NotesContextType = {
 
   // State
   loading: boolean;
+  foldersLoading: boolean;
   error: string | null;
   searchQuery: string;
   handleSearch: (query: string) => void;
@@ -76,6 +78,7 @@ export const NotesProvider = ({
 
   const {
     folders: rawFolders,
+    loading: foldersLoading,
     moveNote: moveNoteToFolder,
     createFolder,
     updateFolder,
@@ -115,24 +118,32 @@ export const NotesProvider = ({
   });
 
   // Combined refetch for notes and folders
-  const refetch = async () => {
+  const refetch = useCallback(async () => {
     await Promise.all([refetchNotes(), refetchFolders()]);
-  };
+  }, [refetchNotes, refetchFolders]);
 
   // Search handler that updates both state and triggers API search
-  const handleSearch = (query: string) => {
-    setSearchQuery(query);
-    searchNotes(query);
-  };
+  const handleSearch = useCallback(
+    (query: string) => {
+      setSearchQuery(query);
+      searchNotes(query);
+    },
+    [searchNotes]
+  );
 
   // Move note wrapper that refetches both notes and folders
-  const moveNote = async (noteId: number, folderId: number | null) => {
-    await moveNoteToFolder(noteId, folderId);
-    await refetchNotes();
-  };
+  const moveNote = useCallback(
+    async (noteId: number, folderId: number | null) => {
+      await moveNoteToFolder(noteId, folderId);
+      await refetchNotes();
+    },
+    [moveNoteToFolder, refetchNotes]
+  );
 
-  // Use folders directly without note counts
-  const folders = rawFolders;
+  // Memoize folders to ensure stable reference and consistent sorting
+  const folders = useMemo(() => {
+    return [...rawFolders].sort((a, b) => a.title.localeCompare(b.title, 'ja'));
+  }, [rawFolders]);
 
   // Always show all active notes (no folder filtering)
   const activeNotes = useMemo(() => {
@@ -159,9 +170,9 @@ export const NotesProvider = ({
     return notes.filter(note => note.deleted_at);
   }, [notes]);
 
-  const unfolderedNotes = notes.filter(
-    note => !note.deleted_at && !note.note_folder_id
-  );
+  const unfolderedNotes = useMemo(() => {
+    return notes.filter(note => !note.deleted_at && !note.note_folder_id);
+  }, [notes]);
 
   const formattedDeletedNotes = useMemo(() => {
     return deletedNotes.map(note => ({
@@ -177,39 +188,67 @@ export const NotesProvider = ({
     }));
   }, [deletedNotes, workspaceId]);
 
+  // Memoize the entire context value to prevent unnecessary re-renders
+  const contextValue = useMemo(
+    () => ({
+      // Data
+      notes,
+      formattedActiveNotes,
+      formattedDeletedNotes,
+      deletedNotes,
+      unfolderedNotes,
+      folders,
+
+      // State
+      loading,
+      foldersLoading,
+      error,
+      searchQuery,
+      handleSearch,
+
+      // Folder operations
+      moveNote,
+      createFolder,
+      updateFolder,
+      deleteFolder,
+
+      // Note operations
+      createNote,
+      softDeleteNote,
+      deleteNote,
+      restoreNote,
+      duplicateNote,
+      emptyTrash,
+      refetch,
+    }),
+    [
+      notes,
+      formattedActiveNotes,
+      formattedDeletedNotes,
+      deletedNotes,
+      unfolderedNotes,
+      folders,
+      loading,
+      foldersLoading,
+      error,
+      searchQuery,
+      handleSearch,
+      moveNote,
+      createFolder,
+      updateFolder,
+      deleteFolder,
+      createNote,
+      softDeleteNote,
+      deleteNote,
+      restoreNote,
+      duplicateNote,
+      emptyTrash,
+      refetch,
+    ]
+  );
+
   return (
-    <NotesContext.Provider
-      value={{
-        // Data
-        notes,
-        formattedActiveNotes,
-        formattedDeletedNotes,
-        deletedNotes,
-        unfolderedNotes,
-        folders,
-
-        // State
-        loading,
-        error,
-        searchQuery,
-        handleSearch,
-
-        // Folder operations
-        moveNote,
-        createFolder,
-        updateFolder,
-        deleteFolder,
-
-        // Note operations
-        createNote,
-        softDeleteNote,
-        deleteNote,
-        restoreNote,
-        duplicateNote,
-        emptyTrash,
-        refetch,
-      }}
-    >
+    <NotesContext.Provider value={contextValue}>
       {children}
     </NotesContext.Provider>
   );

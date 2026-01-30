@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useCallback } from 'react';
+import useSWR from 'swr';
 import type { NoteFolder } from '@/types/note';
 import {
   getFolders,
@@ -27,96 +28,94 @@ interface UseNoteFoldersReturn {
 }
 
 /**
- * Hook for managing note folders
+ * Hook for managing note folders using SWR for caching
  */
 export function useNoteFolders(
   options: UseNoteFoldersOptions
 ): UseNoteFoldersReturn {
   const { workspaceId, autoFetch = true } = options;
 
-  const [folders, setFolders] = useState<NoteFolder[]>([]);
-  const [loading, setLoading] = useState(autoFetch);
-  const [error, setError] = useState<string | null>(null);
+  // Use SWR for data fetching with caching
+  const {
+    data: folders = [],
+    error: swrError,
+    isLoading,
+    mutate,
+  } = useSWR<NoteFolder[]>(
+    autoFetch && workspaceId ? `/workspaces/${workspaceId}/folders` : null,
+    () => getFolders(workspaceId),
+    {
+      revalidateOnFocus: false,
+      revalidateOnReconnect: false,
+      dedupingInterval: 2000, // Don't refetch within 2 seconds
+    }
+  );
 
   const fetchFolders = useCallback(async () => {
-    try {
-      setLoading(true);
-      setError(null);
-
-      const foldersData = await getFolders(workspaceId);
-      setFolders(foldersData);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to fetch folders');
-      console.error('Error fetching folders:', err);
-    } finally {
-      setLoading(false);
-    }
-  }, [workspaceId]);
+    await mutate();
+  }, [mutate]);
 
   const createNewFolder = useCallback(
     async (title: string) => {
       try {
-        setError(null);
         const newFolder = await createFolder(workspaceId, title);
-        setFolders(prev => [newFolder, ...prev]);
+        // Optimistically update the cache
+        mutate(
+          current => (current ? [newFolder, ...current] : [newFolder]),
+          false
+        );
         return newFolder;
       } catch (err) {
-        setError(
-          err instanceof Error ? err.message : 'Failed to create folder'
-        );
         console.error('Error creating folder:', err);
         throw err;
       }
     },
-    [workspaceId]
+    [workspaceId, mutate]
   );
 
   const updateExistingFolder = useCallback(
     async (id: number, title: string) => {
       try {
-        setError(null);
         const updatedFolder = await updateFolder(id, title);
-        setFolders(prev =>
-          prev.map(folder => (folder.id === id ? updatedFolder : folder))
+        // Optimistically update the cache
+        mutate(
+          current =>
+            current?.map(folder =>
+              folder.id === id ? updatedFolder : folder
+            ) ?? [],
+          false
         );
         return updatedFolder;
       } catch (err) {
-        setError(
-          err instanceof Error ? err.message : 'Failed to update folder'
-        );
         console.error('Error updating folder:', err);
         throw err;
       }
     },
-    []
+    [mutate]
   );
 
-  const deleteExistingFolder = useCallback(async (id: number) => {
-    try {
-      setError(null);
-      await deleteFolder(id);
-      setFolders(prev => prev.filter(folder => folder.id !== id));
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to delete folder');
-      console.error('Error deleting folder:', err);
-      throw err;
-    }
-  }, []);
+  const deleteExistingFolder = useCallback(
+    async (id: number) => {
+      try {
+        await deleteFolder(id);
+        // Optimistically update the cache
+        mutate(
+          current => current?.filter(folder => folder.id !== id) ?? [],
+          false
+        );
+      } catch (err) {
+        console.error('Error deleting folder:', err);
+        throw err;
+      }
+    },
+    [mutate]
+  );
 
   const moveNote = useCallback(
     async (noteId: number, folderId: number | null) => {
       try {
-        setError(null);
         await moveNoteToFolder(noteId, folderId);
       } catch (err) {
-        // エラーメッセージを適切に取得
-        const errorMessage =
-          err instanceof Error
-            ? err.message
-            : err && typeof err === 'object' && 'message' in err
-              ? String(err.message)
-              : 'Failed to move note';
-        setError(errorMessage);
         console.error('Error moving note:', err);
         // エラーの詳細をログに出力
         if (err && typeof err === 'object') {
@@ -128,16 +127,10 @@ export function useNoteFolders(
     []
   );
 
-  useEffect(() => {
-    if (workspaceId && autoFetch) {
-      fetchFolders();
-    }
-  }, [workspaceId, fetchFolders, autoFetch]);
-
   return {
     folders,
-    loading,
-    error,
+    loading: isLoading,
+    error: swrError?.message ?? null,
     refetch: fetchFolders,
     createFolder: createNewFolder,
     updateFolder: updateExistingFolder,

@@ -1,5 +1,6 @@
 'use client';
 
+import { memo } from 'react';
 import { PenSquare } from 'lucide-react';
 import GlassButton from '@/components/glass-design/GlassButton';
 import NoteList from './NoteList';
@@ -10,7 +11,6 @@ type NotesViewProps = {
   notes: FormattedNote[];
   folders: NoteFolder[];
   searchQuery: string;
-  onNoteClick: (id: string) => void;
   onContextMenu: (e: React.MouseEvent, id: string, isDeleted: boolean) => void;
   onCreateNote: () => void;
   selectedFolder?: 'trash' | number | null;
@@ -18,11 +18,10 @@ type NotesViewProps = {
   onDeleteAll?: () => void;
 };
 
-export function NotesView({
+export const NotesView = memo(function NotesView({
   notes,
   folders,
   searchQuery,
-  onNoteClick,
   onContextMenu,
   onCreateNote,
   selectedFolder = null,
@@ -64,7 +63,6 @@ export function NotesView({
   return (
     <NoteList
       notes={notes}
-      onNoteClick={onNoteClick}
       onContextMenu={onContextMenu}
       groupBy='folder'
       folders={folders}
@@ -73,4 +71,4 @@ export function NotesView({
       onDeleteAll={onDeleteAll}
     />
   );
-}
+});
