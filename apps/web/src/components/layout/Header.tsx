@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useMemo, useCallback } from 'react';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useNotifications } from '@/features/notifications/hooks/useNotifications';
 import { useUser } from '@/hooks/useUser';
 import { UserMenu } from '@/components/layout/UserMenu';
@@ -19,6 +19,8 @@ import { getAppEventBus } from '@/lib/events/appEventBus';
 
 export default function Header() {
   const pathname = usePathname();
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const isHomePage = pathname === '/home' || pathname === '/cogno';
   const isNotesPage = pathname === '/notes';
   const pageTitleMap: Record<string, string> = {
@@ -47,13 +49,6 @@ export default function Header() {
     fetchPastDueNotifications,
     fetchUnreadCount,
   } = useNotifications(userId || undefined);
-
-  // Notification drawer state
-  const [isNotificationDrawerOpen, setIsNotificationDrawerOpen] =
-    useState(false);
-  const [highlightedNotificationId, setHighlightedNotificationId] = useState<
-    number | null
-  >(null);
   // Initialize on mount
   useEffect(() => {
     setIsMounted(true);
@@ -82,19 +77,29 @@ export default function Header() {
     dispatchHeaderEvent(HEADER_EVENTS.TOGGLE_THREAD_SIDEBAR);
   };
 
-  const handleToggleNotificationPanel = useCallback(() => {
-    if (!userId) return;
+  const handleToggleNotificationPanel = useCallback(
+    (notificationId?: number) => {
+      if (!userId) return;
 
-    // Emit event for tutorial tracking
-    const eventBus = getAppEventBus();
-    eventBus.emit({ type: 'NOTIFICATION_BELL_CLICKED' });
+      // Emit event for tutorial tracking
+      const eventBus = getAppEventBus();
+      eventBus.emit({ type: 'NOTIFICATION_BELL_CLICKED' });
 
-    // Open drawer immediately for instant feedback
-    setIsNotificationDrawerOpen(true);
+      // Open drawer via query params
+      const current = new URLSearchParams(Array.from(searchParams.entries()));
+      current.set('notification', 'open');
+      if (notificationId) {
+        current.set('notificationId', notificationId.toString());
+      }
+      const search = current.toString();
+      const query = search ? `?${search}` : '';
+      router.push(`${pathname}${query}`, { scroll: false });
 
-    // Fetch notifications in background
-    fetchPastDueNotifications();
-  }, [userId, fetchPastDueNotifications]);
+      // Fetch notifications in background
+      fetchPastDueNotifications();
+    },
+    [userId, fetchPastDueNotifications, router, searchParams, pathname]
+  );
 
   // Listen for external toggle events (from mobile app)
   useEffect(() => {
@@ -102,11 +107,7 @@ export default function Header() {
       const customEvent = event as CustomEvent<{ notificationId?: number }>;
       const notificationId = customEvent.detail?.notificationId;
 
-      if (notificationId) {
-        setHighlightedNotificationId(notificationId);
-      }
-
-      handleToggleNotificationPanel();
+      handleToggleNotificationPanel(notificationId);
     };
 
     window.addEventListener(
@@ -128,16 +129,16 @@ export default function Header() {
     if (userId) {
       await fetchUnreadCount();
     }
-    // Clear highlighted notification after processing
-    setHighlightedNotificationId(null);
   }, [fetchPastDueNotifications, userId, fetchUnreadCount]);
 
-  // Reorder notifications to show highlighted one first
+  // Reorder notifications to show highlighted one first (from query params)
   const orderedNotifications = useMemo(() => {
-    if (!highlightedNotificationId || pastDueNotifications.length === 0) {
+    const highlightedId = searchParams.get('notificationId');
+    if (!highlightedId || pastDueNotifications.length === 0) {
       return pastDueNotifications;
     }
 
+    const highlightedNotificationId = parseInt(highlightedId);
     const highlightedIndex = pastDueNotifications.findIndex(
       n => n.id === highlightedNotificationId
     );
@@ -150,7 +151,7 @@ export default function Header() {
     const reordered = [...pastDueNotifications];
     const [highlighted] = reordered.splice(highlightedIndex, 1);
     return [highlighted, ...reordered];
-  }, [pastDueNotifications, highlightedNotificationId]);
+  }, [pastDueNotifications, searchParams]);
 
   return (
     <header className='fixed top-0 left-0 right-0 z-110 py-3'>
@@ -196,7 +197,7 @@ export default function Header() {
               pathname === '/personal') &&
               isMounted && (
                 <GlassButton
-                  onClick={handleToggleNotificationPanel}
+                  onClick={() => handleToggleNotificationPanel()}
                   title='Notifications'
                   size='icon'
                   className='size-12'
@@ -232,11 +233,8 @@ export default function Header() {
         pathname === '/notes' ||
         pathname === '/personal') && (
         <NotificationProcessDrawer
-          open={isNotificationDrawerOpen}
-          onOpenChange={setIsNotificationDrawerOpen}
           notifications={orderedNotifications}
           onNotificationProcessed={handleNotificationProcessed}
-          initialNotificationId={highlightedNotificationId}
           isLoading={isLoadingNotifications}
         />
       )}
