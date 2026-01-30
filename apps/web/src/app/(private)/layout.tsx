@@ -1,5 +1,5 @@
 'use client';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import Header from '@/components/layout/Header';
 import BottomNav from '@/components/layout/BottomNav';
@@ -114,48 +114,14 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
 
           const notificationId = data.notificationId;
 
-          // Wait for Header to be ready before dispatching event
-          const waitForHeaderReady = () => {
-            return new Promise<void>(resolve => {
-              // If already on /workspace, Header should be ready
-              if (pathname === '/workspace') {
-                // Give Header a moment to set up listener
-                setTimeout(resolve, 200);
-                return;
-              }
+          // Navigate to /workspace with notification query params
+          const params = new URLSearchParams();
+          params.set('notification', 'open');
+          if (notificationId) {
+            params.set('notificationId', notificationId.toString());
+          }
 
-              // Navigate to /workspace first
-              router.push('/workspace');
-
-              // Wait for pathname to change, then wait for Header
-              let checkCount = 0;
-              const maxChecks = 20; // Max 1 second (20 * 50ms)
-              const checkReady = () => {
-                checkCount++;
-                // Check if we're now on /workspace
-                if (window.location.pathname === '/workspace') {
-                  // Header should be mounting now, wait for it to set up listener
-                  setTimeout(resolve, 300);
-                } else if (checkCount < maxChecks) {
-                  // Check again after a short delay
-                  setTimeout(checkReady, 50);
-                } else {
-                  // Timeout - resolve anyway to avoid infinite waiting
-                  console.warn('Timeout waiting for navigation to /workspace');
-                  setTimeout(resolve, 300);
-                }
-              };
-              checkReady();
-            });
-          };
-
-          waitForHeaderReady().then(() => {
-            window.dispatchEvent(
-              new CustomEvent('header:toggleNotificationPanel', {
-                detail: { notificationId },
-              })
-            );
-          });
+          router.push(`/workspace?${params.toString()}`);
         }
       } catch (error) {
         // Ignore errors from unrelated postMessage events
@@ -213,7 +179,11 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
   return (
     <div className='relative h-screen bg-black px-2'>
       {/* Header - Absolutely Positioned, Transparent */}
-      {showTopLevelChrome && <Header />}
+      {showTopLevelChrome && (
+        <Suspense fallback={<div className='h-[72px]' />}>
+          <Header />
+        </Suspense>
+      )}
 
       {/* Main Content - Full height, scrolls under transparent header and bottom nav */}
       <main className='h-screen min-h-0 overflow-hidden relative flex flex-col'>
