@@ -155,12 +155,13 @@ export default function CollaborativeNoteEditor({
   }, []);
 
   // Initialize collaborative editor
-  const { editor, isSynced, ydoc } = useCollaborativeEditor({
+  const { editor, ydoc } = useCollaborativeEditor({
     noteId: isValidId ? id : null,
     isGroupNote,
     membersRef,
     notesRef,
     user: userInfo,
+    initialYdocState: note?.ydoc_state || null,
   });
 
   // Track editor focus/blur for mobile toolbar switching
@@ -537,7 +538,7 @@ export default function CollaborativeNoteEditor({
   }
 
   // Show loading state while connecting (phase 2)
-  if (!isSynced) {
+  if (!editor) {
     return (
       <div className='flex flex-col h-full bg-linear-to-br from-slate-950 via-black to-slate-950 text-gray-100 items-center justify-center'>
         <div className='animate-spin rounded-full h-12 w-12 border-b-2 border-white'></div>

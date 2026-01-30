@@ -26,6 +26,7 @@ export interface Note {
   updated_at: string;
   title?: string | null;
   text: string;
+  ydoc_state?: string | null;
   workspace_id: number;
   deleted_at?: string | null;
   note_folder_id?: number | null;

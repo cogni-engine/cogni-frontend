@@ -76,7 +76,7 @@ export async function getNote(id: number): Promise<Note | null> {
   const { data, error } = await supabase
     .from('notes')
     .select(
-      'id, created_at, updated_at, title, text, workspace_id, deleted_at, note_folder_id'
+      'id, created_at, updated_at, title, text, ydoc_state, workspace_id, deleted_at, note_folder_id'
     )
     .eq('id', id)
     .single();

@@ -39,7 +39,7 @@ export function useNote({
       fallbackData: initialData, // Use initial data if provided
       revalidateOnFocus: false,
       revalidateOnReconnect: false,
-      dedupingInterval: 60000, // Don't refetch within 1 minute
+      dedupingInterval: 2000, // Don't refetch within 2 seconds
     }
   );
 

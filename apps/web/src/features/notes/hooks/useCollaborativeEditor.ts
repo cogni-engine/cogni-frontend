@@ -20,6 +20,7 @@ interface UseCollaborativeEditorProps {
   membersRef: React.MutableRefObject<WorkspaceMember[]>;
   notesRef: React.MutableRefObject<any[]>;
   user: UserInfo | null;
+  initialYdocState?: string | null;
 }
 
 interface UseCollaborativeEditorReturn {
@@ -58,6 +59,7 @@ export function useCollaborativeEditor({
   membersRef,
   notesRef,
   user,
+  initialYdocState,
 }: UseCollaborativeEditorProps): UseCollaborativeEditorReturn {
   const [isConnected, setIsConnected] = useState(false);
   const [isSynced, setIsSynced] = useState(false);
@@ -65,11 +67,28 @@ export function useCollaborativeEditor({
     'connecting' | 'connected' | 'disconnected'
   >('disconnected');
 
-  // Create Y.Doc instance
+  // Create Y.Doc instance and pre-populate before provider connects
   const ydoc = useMemo(() => {
     if (!noteId) return null;
-    return new Y.Doc();
-  }, [noteId]);
+
+    const doc = new Y.Doc();
+
+    // Pre-populate with ydoc_state if available (before provider connects)
+    // This ensures content is visible immediately and properly syncs with server
+    if (initialYdocState) {
+      try {
+        console.log('📝 Pre-populating Y.Doc with ydoc_state');
+        const buffer = Buffer.from(initialYdocState, 'base64');
+        const state = new Uint8Array(buffer);
+        Y.applyUpdate(doc, state);
+        console.log('✅ Y.Doc pre-populated - ready for provider connection');
+      } catch (error) {
+        console.error('Failed to apply ydoc_state:', error);
+      }
+    }
+
+    return doc;
+  }, [noteId, initialYdocState]);
 
   // Get Supabase access token for authentication with auto-refresh
   const getToken = useCallback(async (): Promise<string> => {
