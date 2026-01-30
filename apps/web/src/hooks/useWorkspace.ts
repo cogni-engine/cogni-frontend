@@ -2,36 +2,17 @@
 
 import useSWR, { mutate } from 'swr';
 import {
-  getWorkspaces,
   getWorkspace,
-  createWorkspace,
   updateWorkspace,
-  deleteWorkspace,
   getWorkspaceMembers,
 } from '@/lib/api/workspaceApi';
 import type { Workspace, WorkspaceMember } from '@/types/workspace';
 
 // SWR keys
-const WORKSPACES_KEY = '/workspaces';
 const workspaceKey = (id: number) => `/workspaces/${id}`;
+const WORKSPACES_KEY = '/workspaces';
 
 // Hooks
-export function useWorkspaces() {
-  const { data, error, isLoading } = useSWR<Workspace[]>(
-    WORKSPACES_KEY,
-    getWorkspaces,
-    {
-      revalidateOnFocus: false,
-      revalidateOnReconnect: true,
-    }
-  );
-
-  return {
-    workspaces: data,
-    isLoading,
-    error,
-  };
-}
 
 export function useWorkspace(id: number | null) {
   const { data, error, isLoading } = useSWR<Workspace>(
@@ -67,14 +48,12 @@ export function useWorkspaceMembers(workspaceId: number | null) {
   };
 }
 
-// Mutation helpers
+/**
+ * Mutation helpers for workspace updates
+ * Note: For workspace list mutations (create, delete), use useWorkspaceMutations
+ * from @/features/workspace/hooks/useWorkspaces
+ */
 export function useWorkspaceMutations() {
-  const create = async (title: string) => {
-    const workspace = await createWorkspace(title);
-    mutate(WORKSPACES_KEY); // Revalidate list
-    return workspace;
-  };
-
   const update = async (
     id: number,
     updates: Partial<Pick<Workspace, 'title' | 'type' | 'icon_url'>>
@@ -85,10 +64,5 @@ export function useWorkspaceMutations() {
     return workspace;
   };
 
-  const remove = async (id: number) => {
-    await deleteWorkspace(id);
-    mutate(WORKSPACES_KEY); // Revalidate list
-  };
-
-  return { create, update, remove };
+  return { update };
 }

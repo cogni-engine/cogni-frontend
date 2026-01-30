@@ -1,7 +1,10 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { useWorkspaces, useWorkspaceMutations } from '@/hooks/useWorkspace';
+import {
+  useWorkspaces,
+  useWorkspaceMutations,
+} from '@/features/workspace/hooks/useWorkspaces';
 import WorkspaceList from '@/features/workspace/components/WorkspaceList';
 import WorkspaceForm from '@/features/workspace/components/WorkspaceForm';
 import { uploadWorkspaceIcon } from '@/lib/api/workspaceApi';
@@ -11,7 +14,7 @@ import { useIsInputActive } from '@/stores/useGlobalUIStore';
 import ScrollableView from '@/components/layout/ScrollableView';
 
 export default function WorkspacePage() {
-  const { workspaces, isLoading, error } = useWorkspaces();
+  const { workspaces, isLoading, isValidating, error } = useWorkspaces();
   const { create, update } = useWorkspaceMutations();
   const isInputActive = useIsInputActive();
   const [searchQuery, setSearchQuery] = useState('');
@@ -84,28 +87,31 @@ export default function WorkspacePage() {
 
   return (
     <div className='flex flex-col h-full relative overflow-hidden'>
+      {/* Subtle loading indicator when revalidating */}
+      {isValidating && workspaces && (
+        <div className='absolute top-0 left-0 right-0 h-0.5 bg-blue-500/50 animate-pulse z-50' />
+      )}
+
       {/* スクロール可能エリア */}
       <ScrollableView className='pb-32 md:pb-24 overflow-x-hidden'>
-        {isLoading && (
+        {/* Only show loading spinner when we have no data at all (no cache) */}
+        {!workspaces && isLoading && (
           <div className='flex items-center justify-center py-12'>
             <div className='animate-spin rounded-full h-8 w-8 border-b-2 border-white'></div>
           </div>
         )}
 
-        {!isLoading &&
-          workspaces &&
-          (filteredWorkspaces.length > 0 || !isSearching) && (
-            <WorkspaceList workspaces={filteredWorkspaces} />
-          )}
+        {/* Show workspaces immediately if we have data (from cache or fresh) */}
+        {workspaces && (filteredWorkspaces.length > 0 || !isSearching) && (
+          <WorkspaceList workspaces={filteredWorkspaces} />
+        )}
 
-        {!isLoading &&
-          workspaces &&
-          filteredWorkspaces.length === 0 &&
-          isSearching && (
-            <div className='rounded-2xl border border-white/10 bg-white/5 p-8 text-center text-white/70'>
-              No workspaces found matching &quot;{searchQuery.trim()}&quot;.
-            </div>
-          )}
+        {/* Show "no results" message only when we have data but search yields nothing */}
+        {workspaces && filteredWorkspaces.length === 0 && isSearching && (
+          <div className='rounded-2xl border border-white/10 bg-white/5 p-8 text-center text-white/70'>
+            No workspaces found matching &quot;{searchQuery.trim()}&quot;.
+          </div>
+        )}
       </ScrollableView>
 
       {/* Bottom Search Bar and Create Button */}

@@ -7,7 +7,8 @@ import {
   removeWorkspaceIcon,
   uploadWorkspaceIcon,
 } from '@/lib/api/workspaceApi';
-import { useWorkspace, useWorkspaceMutations } from '@/hooks/useWorkspace';
+import { useWorkspace } from '@/hooks/useWorkspace';
+import { useWorkspaceMutations } from './useWorkspaces';
 import { generateAvatarBlob } from '@/features/users/utils/avatarGenerator';
 
 import type { StatusMessage } from '@/features/users/utils/avatar';
