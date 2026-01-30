@@ -14,23 +14,15 @@ import {
   getInitials,
   readFileAsDataUrl,
 } from '@/features/users/utils/avatar';
-import { Button } from '@/components/ui/button';
+import GlassButton from '@/components/glass-design/GlassButton';
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogClose,
-} from '@/components/ui/dialog';
+  Drawer,
+  DrawerContent,
+  DrawerHandle,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerBody,
+} from '@/components/ui/drawer';
 import { Input } from '@/components/ui/input';
 
 type WorkspaceSettingsClientProps = {
@@ -71,7 +63,7 @@ export default function WorkspaceSettingsClient({
   const [zoom, setZoom] = useState(1);
 
   const fileInputRef = useRef<HTMLInputElement | null>(null);
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [deleteDrawerOpen, setDeleteDrawerOpen] = useState(false);
   const [deleteConfirmation, setDeleteConfirmation] = useState('');
   const [deleteError, setDeleteError] = useState<string | null>(null);
 
@@ -199,16 +191,10 @@ export default function WorkspaceSettingsClient({
     [workspace?.title]
   );
 
-  const handleDeleteDialogOpenChange = useCallback((open: boolean) => {
-    if (!open) {
-      setDeleteDialogOpen(false);
-      setDeleteConfirmation('');
-      setDeleteError(null);
-    } else {
-      setDeleteDialogOpen(true);
-      setDeleteConfirmation('');
-      setDeleteError(null);
-    }
+  const handleDeleteDrawerClose = useCallback(() => {
+    setDeleteDrawerOpen(false);
+    setDeleteConfirmation('');
+    setDeleteError(null);
   }, []);
 
   const handleDeleteWorkspace = useCallback(async () => {
@@ -220,14 +206,14 @@ export default function WorkspaceSettingsClient({
 
     const normalizedInput = deleteConfirmation.trim();
     if (normalizedInput !== normalizedWorkspaceTitle) {
-      setDeleteError('Workspace title does not match.');
+      setDeleteError('Workspace name does not match.');
       return;
     }
 
     try {
       setDeleteError(null);
       await deleteWorkspace();
-      handleDeleteDialogOpenChange(false);
+      handleDeleteDrawerClose();
       router.push('/workspace');
     } catch (err) {
       console.error('Failed to delete workspace', err);
@@ -236,7 +222,7 @@ export default function WorkspaceSettingsClient({
   }, [
     deleteConfirmation,
     deleteWorkspace,
-    handleDeleteDialogOpenChange,
+    handleDeleteDrawerClose,
     normalizedWorkspaceTitle,
     router,
     workspace,
@@ -244,25 +230,20 @@ export default function WorkspaceSettingsClient({
 
   if (error && !isLoading) {
     return (
-      <div className='flex h-full items-center justify-center text-red-300'>
-        Failed to load workspace settings.
+      <div className='flex h-full items-center justify-center text-white/50'>
+        Failed to load settings.
       </div>
     );
   }
 
   return (
-    <div className='flex h-full flex-col gap-6 overflow-auto py-20 text-white'>
-      <div>
-        <h1 className='text-3xl font-semibold'>Workspace Settings</h1>
-        <p className='text-white/60'>Manage workspace name and icon.</p>
-      </div>
-
+    <div className='flex h-full flex-col gap-8 overflow-auto py-20 px-4 text-white'>
       {isLoading || !workspace ? (
         <div className='flex flex-1 items-center justify-center text-white/60'>
-          Loading workspace settings...
+          Loading...
         </div>
       ) : (
-        <div className='grid grid-cols-1 gap-6 lg:grid-cols-[1fr,auto]'>
+        <div className='flex flex-col gap-8'>
           <WorkspaceInfoForm
             title={title}
             onTitleChange={handleTitleChange}
@@ -287,41 +268,19 @@ export default function WorkspaceSettingsClient({
             removeDisabled={removingIcon || !iconUrl}
             status={iconStatus}
           />
-        </div>
-      )}
 
-      {workspace && (
-        <Card className='border border-red-500/30 bg-red-500/5'>
-          <CardHeader>
-            <CardTitle className='text-red-200'>Danger zone</CardTitle>
-            <CardDescription>
-              Permanently delete this workspace and all of its data.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className='flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between'>
-            <div className='text-sm text-white/70'>
-              This action is irreversible. Please make sure you really want to
-              remove
-              <span className='font-semibold text-white'>
-                {' '}
-                {workspace.title || 'this workspace'}
-              </span>
-              .
-              {!normalizedWorkspaceTitle && (
-                <span className='block text-xs text-white/60 mt-2'>
-                  Add a workspace name first to enable deletion.
-                </span>
-              )}
-            </div>
-            <Button
-              variant='destructive'
-              onClick={() => handleDeleteDialogOpenChange(true)}
+          {/* Delete Workspace Section */}
+          <div className='pt-6 border-t border-white/10'>
+            <button
+              type='button'
+              onClick={() => setDeleteDrawerOpen(true)}
               disabled={deletingWorkspace || !normalizedWorkspaceTitle}
+              className='text-white/40 hover:text-white/60 text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed'
             >
-              {deletingWorkspace ? 'Deleting…' : 'Delete workspace'}
-            </Button>
-          </CardContent>
-        </Card>
+              Delete Workspace
+            </button>
+          </div>
+        </div>
       )}
 
       <WorkspaceIconCropDialog
@@ -339,63 +298,71 @@ export default function WorkspaceSettingsClient({
         canSave={Boolean(croppedAreaPixels && selectedImageSrc)}
       />
 
-      <Dialog
-        open={deleteDialogOpen}
-        onOpenChange={handleDeleteDialogOpenChange}
+      {/* Delete Workspace Drawer */}
+      <Drawer
+        open={deleteDrawerOpen}
+        onOpenChange={open => !open && handleDeleteDrawerClose()}
       >
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Delete workspace</DialogTitle>
-            <DialogDescription>
+        <DrawerContent zIndex={160} maxHeight='85vh'>
+          <DrawerHandle />
+
+          <DrawerHeader className='px-4 pb-2 pt-4 justify-center border-none'>
+            <DrawerTitle className='text-center'>Delete Workspace</DrawerTitle>
+          </DrawerHeader>
+
+          <DrawerBody className='flex flex-col gap-4'>
+            <p className='text-sm text-white/50 text-center'>
               Type{' '}
-              <span className='font-semibold text-white'>
-                {normalizedWorkspaceTitle || '(rename first)'}
+              <span className='text-white/80'>
+                {normalizedWorkspaceTitle || 'workspace name'}
               </span>{' '}
-              to confirm.
-            </DialogDescription>
-          </DialogHeader>
-          <div className='space-y-4'>
-            <p className='text-sm text-white/70'>
-              Deleting this workspace will remove all notes, members, and
-              history. This cannot be undone.
+              to confirm
             </p>
-            <div className='space-y-2'>
-              <Input
-                value={deleteConfirmation}
-                onChange={event => {
-                  setDeleteConfirmation(event.target.value);
-                  if (deleteError) {
-                    setDeleteError(null);
-                  }
-                }}
-                placeholder={normalizedWorkspaceTitle || 'Workspace name'}
+
+            <Input
+              value={deleteConfirmation}
+              onChange={event => {
+                setDeleteConfirmation(event.target.value);
+                if (deleteError) {
+                  setDeleteError(null);
+                }
+              }}
+              placeholder={normalizedWorkspaceTitle || 'Workspace name'}
+              disabled={deletingWorkspace}
+              className='bg-white/5 border-white/10 focus:border-white/20'
+            />
+
+            {deleteError && (
+              <p className='text-sm text-white/50 text-center'>{deleteError}</p>
+            )}
+
+            <div className='flex gap-3 pt-2'>
+              <GlassButton
+                type='button'
+                onClick={handleDeleteDrawerClose}
                 disabled={deletingWorkspace}
-              />
-              {deleteError && (
-                <p className='text-sm text-red-300'>{deleteError}</p>
-              )}
+                className='flex-1 py-3'
+              >
+                <span className='text-white/70 text-sm'>Cancel</span>
+              </GlassButton>
+              <GlassButton
+                type='button'
+                onClick={handleDeleteWorkspace}
+                disabled={
+                  deletingWorkspace ||
+                  !normalizedWorkspaceTitle ||
+                  !deleteConfirmation.trim()
+                }
+                className='flex-1 py-3'
+              >
+                <span className='text-white text-sm'>
+                  {deletingWorkspace ? 'Deleting...' : 'Delete'}
+                </span>
+              </GlassButton>
             </div>
-          </div>
-          <DialogFooter>
-            <DialogClose asChild>
-              <Button variant='ghost' disabled={deletingWorkspace}>
-                Cancel
-              </Button>
-            </DialogClose>
-            <Button
-              variant='destructive'
-              onClick={handleDeleteWorkspace}
-              disabled={
-                deletingWorkspace ||
-                !normalizedWorkspaceTitle ||
-                !deleteConfirmation.trim()
-              }
-            >
-              {deletingWorkspace ? 'Deleting…' : 'Delete workspace'}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          </DrawerBody>
+        </DrawerContent>
+      </Drawer>
     </div>
   );
 }

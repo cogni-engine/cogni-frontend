@@ -4,15 +4,7 @@ import type { ChangeEvent, RefObject } from 'react';
 import { Sparkles } from 'lucide-react';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Button } from '@/components/ui/button';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
+import GlassButton from '@/components/glass-design/GlassButton';
 
 import type { StatusMessage } from '@/features/users/utils/avatar';
 
@@ -48,36 +40,29 @@ export function WorkspaceIconCard({
   status,
 }: WorkspaceIconCardProps) {
   return (
-    <Card className='h-fit'>
-      <CardHeader>
-        <CardTitle>Workspace icon</CardTitle>
-        <CardDescription>
-          Upload an image to help teammates recognize this workspace.
-        </CardDescription>
-      </CardHeader>
-      <CardContent className='flex flex-col items-center gap-6'>
-        <Avatar className='h-24 w-24 border-white/20 text-2xl'>
+    <div className='space-y-3'>
+      <h2 className='text-sm font-medium text-white/60'>Icon</h2>
+      <div className='flex items-center gap-4'>
+        <Avatar className='h-16 w-16 border border-white/10'>
           {iconUrl ? (
             <AvatarImage src={iconUrl} alt={iconAlt ?? 'Workspace icon'} />
           ) : (
-            <AvatarFallback className='text-lg'>{initials}</AvatarFallback>
+            <AvatarFallback className='text-lg text-white/60 bg-white/5'>
+              {initials}
+            </AvatarFallback>
           )}
         </Avatar>
-        <div className='flex flex-col gap-2 text-center text-sm text-white/60'>
-          <span>Recommended: square image, at least 256×256px.</span>
-          <span>Supported formats: PNG or JPG.</span>
-        </div>
-      </CardContent>
-      <CardFooter className='flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between'>
         <div className='flex flex-wrap gap-2'>
-          <Button
+          <GlassButton
             type='button'
-            variant='secondary'
             onClick={onUploadClick}
             disabled={savingIcon || generatingIcon}
+            className='py-2'
           >
-            {savingIcon ? 'Processing…' : 'Upload new icon'}
-          </Button>
+            <span className='text-white/80 text-sm px-1'>
+              {savingIcon ? 'Processing...' : 'Upload'}
+            </span>
+          </GlassButton>
           <input
             ref={fileInputRef}
             type='file'
@@ -85,37 +70,34 @@ export function WorkspaceIconCard({
             className='hidden'
             onChange={onFileChange}
           />
-          <Button
+          <GlassButton
             type='button'
-            variant='secondary'
             onClick={onGenerateClick}
             disabled={savingIcon || generatingIcon}
-            className='gap-2'
+            className='gap-2 py-2'
           >
-            <Sparkles className='w-4 h-4' />
-            {generatingIcon ? 'Generating…' : 'Generate icon'}
-          </Button>
-          <Button
-            type='button'
-            variant='ghost'
-            onClick={onRemove}
-            disabled={removeDisabled || generatingIcon}
-          >
-            {removingIcon ? 'Removing…' : 'Remove icon'}
-          </Button>
+            <Sparkles className='w-4 h-4 text-white/60' />
+            <span className='text-white/80 text-sm'>
+              {generatingIcon ? 'Generating...' : 'Generate'}
+            </span>
+          </GlassButton>
+          {iconUrl && (
+            <GlassButton
+              type='button'
+              onClick={onRemove}
+              disabled={removeDisabled || generatingIcon}
+              className='py-2'
+            >
+              <span className='text-white/50 text-sm px-1'>
+                {removingIcon ? 'Removing...' : 'Remove'}
+              </span>
+            </GlassButton>
+          )}
         </div>
-        {status && (
-          <span
-            className={
-              status.type === 'success'
-                ? 'text-sm text-emerald-300'
-                : 'text-sm text-red-300'
-            }
-          >
-            {status.message}
-          </span>
-        )}
-      </CardFooter>
-    </Card>
+      </div>
+      {status && (
+        <span className='text-xs text-white/50'>{status.message}</span>
+      )}
+    </div>
   );
 }

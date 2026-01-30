@@ -2,36 +2,34 @@
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { WorkspaceMember } from '@/types/workspace';
-import { User, Crown, Shield } from 'lucide-react';
+import { User, Crown, Shield, Plus } from 'lucide-react';
 
 interface MemberListProps {
   members: WorkspaceMember[];
   loading?: boolean;
+  onInviteClick?: () => void;
 }
 
 const getRoleIcon = (role: string) => {
   switch (role) {
     case 'owner':
-      return <Crown className='w-4 h-4 text-yellow-400' />;
+      return <Crown className='w-4 h-4 text-white/60' />;
     case 'admin':
-      return <Shield className='w-4 h-4 text-blue-400' />;
+      return <Shield className='w-4 h-4 text-white/60' />;
     default:
-      return <User className='w-4 h-4 text-gray-400' />;
+      return <User className='w-4 h-4 text-white/40' />;
   }
 };
 
-const getRoleBadgeStyles = (role: string) => {
-  switch (role) {
-    case 'owner':
-      return 'bg-yellow-500/20 text-yellow-300';
-    case 'admin':
-      return 'bg-blue-500/20 text-blue-300';
-    default:
-      return 'bg-gray-500/20 text-gray-300';
-  }
+const getRoleBadgeStyles = () => {
+  return 'bg-white/10 text-white/70';
 };
 
-export default function MemberList({ members, loading }: MemberListProps) {
+export default function MemberList({
+  members,
+  loading,
+  onInviteClick,
+}: MemberListProps) {
   if (loading) {
     return (
       <div className='flex justify-center py-4'>
@@ -40,58 +38,70 @@ export default function MemberList({ members, loading }: MemberListProps) {
     );
   }
 
-  if (members.length === 0) {
-    return (
-      <div className='text-center py-8'>
-        <User className='w-12 h-12 text-gray-400 mx-auto mb-3' />
-        <p className='text-gray-400'>No members in this workspace</p>
-      </div>
-    );
-  }
-
   return (
-    <div className='space-y-2'>
-      {members.map(member => {
-        const profile = member.user_profile ?? member.agent_profile ?? null;
+    <div className='space-y-1'>
+      {/* Invite Button Row */}
+      {onInviteClick && (
+        <button
+          type='button'
+          onClick={onInviteClick}
+          className='w-full flex items-center gap-3 py-4 px-2 hover:bg-white/5 transition-colors rounded-lg'
+        >
+          <div className='h-10 w-10 rounded-full border border-dashed border-white/30 flex items-center justify-center'>
+            <Plus className='w-5 h-5 text-white/60' />
+          </div>
+          <p className='text-white/70 font-medium'>Invite</p>
+        </button>
+      )}
 
-        return (
-          <div
-            key={member.id}
-            className='flex items-center justify-between bg-white/5 rounded-lg p-4 border border-white/10 hover:bg-white/10 transition-colors'
-          >
-            <div className='flex items-center gap-3'>
-              <Avatar className='h-10 w-10 border border-white/20 bg-white/10 text-sm font-medium'>
-                {profile?.avatar_url ? (
-                  <AvatarImage
-                    src={profile.avatar_url}
-                    alt={profile.name ?? 'Workspace member'}
-                  />
-                ) : (
-                  <AvatarFallback>
-                    <User className='w-4 h-4 text-gray-300' />
-                  </AvatarFallback>
-                )}
-              </Avatar>
-              <div>
-                <p className='text-white font-medium'>
-                  {profile?.name ?? 'Unknown'}
-                </p>
-                <p className='text-sm text-gray-400'>
-                  Joined {new Date(member.created_at).toLocaleDateString()}
-                </p>
+      {/* Member List */}
+      {members.length === 0 ? (
+        <div className='text-center py-8'>
+          <p className='text-white/40'>No members yet</p>
+        </div>
+      ) : (
+        members.map(member => {
+          const profile = member.user_profile ?? member.agent_profile ?? null;
+
+          return (
+            <div
+              key={member.id}
+              className='flex items-center justify-between py-4 px-2 hover:bg-white/5 transition-colors rounded-lg'
+            >
+              <div className='flex items-center gap-3'>
+                <Avatar className='h-10 w-10 border border-white/10'>
+                  {profile?.avatar_url ? (
+                    <AvatarImage
+                      src={profile.avatar_url}
+                      alt={profile.name ?? 'Workspace member'}
+                    />
+                  ) : (
+                    <AvatarFallback className='bg-white/5'>
+                      <User className='w-4 h-4 text-white/40' />
+                    </AvatarFallback>
+                  )}
+                </Avatar>
+                <div>
+                  <p className='text-white font-medium'>
+                    {profile?.name ?? 'Unknown'}
+                  </p>
+                  <p className='text-sm text-white/40'>
+                    Joined {new Date(member.created_at).toLocaleDateString()}
+                  </p>
+                </div>
+              </div>
+              <div className='flex items-center gap-2'>
+                {getRoleIcon(member.role)}
+                <span
+                  className={`px-3 py-1 rounded-full text-xs font-medium ${getRoleBadgeStyles()}`}
+                >
+                  {member.role.charAt(0).toUpperCase() + member.role.slice(1)}
+                </span>
               </div>
             </div>
-            <div className='flex items-center gap-2'>
-              {getRoleIcon(member.role)}
-              <span
-                className={`px-3 py-1 rounded-full text-xs font-medium ${getRoleBadgeStyles(member.role)}`}
-              >
-                {member.role.charAt(0).toUpperCase() + member.role.slice(1)}
-              </span>
-            </div>
-          </div>
-        );
-      })}
+          );
+        })
+      )}
     </div>
   );
 }

@@ -23,7 +23,6 @@ export async function sendBossGreeting(
 
   // Validate inputs
   if (!bossWorkspaceMemberId || !workspaceId) {
-    console.log('Skipping boss greeting - invalid input');
     return;
   }
 
@@ -46,9 +45,5 @@ Feel free to ask me anything or explore the features. I'll be guiding you throug
       bossWorkspaceMemberId,
       greetingText
     );
-
-    console.log('Boss greeting sent successfully');
-  } else {
-    console.log('Boss greeting already sent, skipping');
   }
 }

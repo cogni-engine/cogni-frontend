@@ -45,40 +45,33 @@ const onboardingMachineSetup = setup({
         }
 
         // Generate and create first note (backend handles everything)
-        let firstNote: { noteId: number } | undefined;
+        // This is required for tier2 tutorial to work
+        const locale =
+          typeof navigator !== 'undefined' ? navigator.language : 'en';
 
-        try {
-          const locale =
-            typeof navigator !== 'undefined' ? navigator.language : 'en';
+        const note = await generateFirstNote({
+          primary_role: Array.isArray(input.answers.primaryRole)
+            ? input.answers.primaryRole
+            : input.answers.primaryRole
+              ? [input.answers.primaryRole]
+              : undefined,
+          ai_relationship: Array.isArray(input.answers.aiRelationship)
+            ? input.answers.aiRelationship
+            : input.answers.aiRelationship
+              ? [input.answers.aiRelationship]
+              : undefined,
+          use_case: Array.isArray(input.answers.useCase)
+            ? input.answers.useCase
+            : input.answers.useCase
+              ? [input.answers.useCase]
+              : undefined,
+          user_id: input.userId,
+          workspace_id: result.workspaceId!,
+          onboarding_session_id: input.onboardingSessionId,
+          locale: locale,
+        });
 
-          const note = await generateFirstNote({
-            primary_role: Array.isArray(input.answers.primaryRole)
-              ? input.answers.primaryRole
-              : input.answers.primaryRole
-                ? [input.answers.primaryRole]
-                : undefined,
-            ai_relationship: Array.isArray(input.answers.aiRelationship)
-              ? input.answers.aiRelationship
-              : input.answers.aiRelationship
-                ? [input.answers.aiRelationship]
-                : undefined,
-            use_case: Array.isArray(input.answers.useCase)
-              ? input.answers.useCase
-              : input.answers.useCase
-                ? [input.answers.useCase]
-                : undefined,
-            user_id: input.userId,
-            workspace_id: result.workspaceId!,
-            onboarding_session_id: input.onboardingSessionId,
-            locale: locale,
-          });
-
-          // Backend already created the note and saved noteId to context
-          firstNote = { noteId: note.id };
-        } catch (error) {
-          console.error('Failed to generate first note:', error);
-          // Note creation failed, but we still return workspace info
-        }
+        const firstNote = { noteId: note.id };
 
         return {
           workspaceId: result.workspaceId,

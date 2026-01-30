@@ -137,6 +137,26 @@ export class OnboardingService {
 
       const bossWorkspaceMemberId = bossMember.id;
 
+      // Send boss greeting message immediately (so it's there when user enters workspace)
+      const bossGreetingText = `Welcome to your tutorial workspace! 👋
+
+I'm your AI assistant, and I'm here to help you get started with Cogno. This is a special workspace created just for you to learn the ropes.
+
+Feel free to ask me anything or explore the features. I'll be guiding you through the basics!`;
+
+      const { error: messageError } = await this.supabase
+        .from('workspace_messages')
+        .insert({
+          workspace_id: workspaceId,
+          workspace_member_id: bossWorkspaceMemberId,
+          text: bossGreetingText,
+        });
+
+      if (messageError) {
+        console.error('Error sending boss greeting message:', messageError);
+        // Continue anyway - message is not critical
+      }
+
       // Add boss IDs to the merged context
       const finalContext = {
         ...mergedContext,

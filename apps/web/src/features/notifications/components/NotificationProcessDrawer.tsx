@@ -337,6 +337,7 @@ export default function NotificationProcessDrawer({
       <Drawer open={open} onOpenChange={handleDrawerClose}>
         <DrawerContent
           zIndex={200}
+          data-shepherd-target='notification-panel'
           {...(drawerMode === 'note-input'
             ? { height: `${baseDrawerHeight + noteInputExtraHeight}px` }
             : { maxHeight: '85vh' })}

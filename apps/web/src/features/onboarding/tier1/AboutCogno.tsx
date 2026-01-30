@@ -19,29 +19,30 @@ interface OnboardingSlideData {
 
 const onboardingSlides: OnboardingSlideData[] = [
   {
-    title: 'Cogni helps you work smarter',
+    title: 'Cogno helps me work\nsmarter, effortlessly',
     description:
-      'Your AI-powered workspace for notes, tasks, and seamless collaboration',
+      "Move forward using Cogno's smart notes and chats with autonomous AI notifications",
     screenContent: {
       screenshot: '/screenshots/IMG_0335-portrait.png',
-      alt: 'Cogni workspace preview',
+      alt: 'Cogno workspace preview',
     },
   },
   {
-    title: 'Organize everything in one place',
-    description: 'Keep your notes, tasks and team organized',
+    title: 'Cogno acts autonomously, unprompted',
+    description:
+      'Get notifications and completed tasks, and see how autonomous AI leads to results',
     screenContent: {
       screenshot: '/screenshots/IMG_0336-portrait.png',
-      alt: 'Organization features preview',
+      alt: 'Autonomous AI preview',
     },
   },
   {
-    title: 'Collaborate with your team',
+    title: 'Cogno empowers our team',
     description:
-      'Work together seamlessly with real-time collaboration and AI assistance',
+      "Let's work together as Cogno manages tracking, notifies everyone, and shares team status",
     screenContent: {
       screenshot: '/screenshots/IMG_0338-portrait.png',
-      alt: 'Collaboration features preview',
+      alt: 'Team collaboration preview',
     },
   },
 ];
@@ -51,8 +52,8 @@ export function AboutCognoApp({
   loading,
   handleGetStarted,
 }: AboutCognoAppProps) {
+  const [showWelcome, setShowWelcome] = useState(true);
   const [currentSlide, setCurrentSlide] = useState(0);
-  const [isTransitioning, setIsTransitioning] = useState(false);
   const [dragOffset, setDragOffset] = useState(0);
   const containerRef = useRef<HTMLDivElement>(null);
   const touchStartX = useRef<number | null>(null);
@@ -71,13 +72,11 @@ export function AboutCognoApp({
   };
 
   const goToSlide = (index: number) => {
-    if (index < 0 || index >= onboardingSlides.length || isTransitioning) {
+    if (index < 0 || index >= onboardingSlides.length) {
       return;
     }
-    setIsTransitioning(true);
     setCurrentSlide(index);
     setDragOffset(0);
-    setTimeout(() => setIsTransitioning(false), 500);
   };
 
   // Touch handlers
@@ -120,7 +119,7 @@ export function AboutCognoApp({
       return;
     }
 
-    const minSwipeDistance = 50;
+    const minSwipeDistance = 30;
     const deltaX = dragOffset;
 
     if (Math.abs(deltaX) > minSwipeDistance) {
@@ -192,12 +191,46 @@ export function AboutCognoApp({
 
   const slideWidth = 100; // Percentage
 
+  // Welcome screen - separate from slides
+  if (showWelcome) {
+    return (
+      <div className='flex flex-col items-center justify-between h-full animate-in fade-in duration-500'>
+        {/* Centered Title */}
+        <div className='flex-1 flex items-center justify-center'>
+          <h1 className='text-3xl md:text-4xl font-bold text-white leading-tight text-center'>
+            Welcome to Cogno
+          </h1>
+        </div>
+
+        {/* Error Message */}
+        {error && (
+          <div className='bg-red-900/30 border border-red-500/50 rounded-lg p-4 backdrop-blur-sm mt-4'>
+            <p className='text-red-300 text-sm'>{error}</p>
+          </div>
+        )}
+
+        {/* Let's go Button */}
+        <div className='w-full max-w-md mx-auto px-4 mt-6'>
+          <NextStepButton
+            type='button'
+            onClick={() => setShowWelcome(false)}
+            loading={loading}
+            variant='secondary'
+            text='Continue'
+            loadingText='Loading...'
+          />
+        </div>
+      </div>
+    );
+  }
+
+  // Slides screen
   return (
     <div className='flex flex-col items-center justify-between h-full animate-in fade-in duration-500'>
       {/* App Preview/Mockup - Swipeable Container */}
       <div
         ref={containerRef}
-        className='flex flex-1 items-center justify-center w-full max-w-sm mx-auto overflow-hidden relative'
+        className='flex flex-1 items-start justify-center w-full max-w-sm mx-auto overflow-hidden relative pt-1'
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
@@ -252,7 +285,7 @@ export function AboutCognoApp({
 
       {/* Content */}
       <div
-        className='text-center px-4 w-full overflow-hidden relative shrink-0'
+        className='text-center px-4 w-full overflow-hidden relative shrink-0 mt-4'
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
@@ -286,10 +319,10 @@ export function AboutCognoApp({
                     : 'opacity 0.3s, transform 0.3s',
                 }}
               >
-                <h1 className='text-2xl md:text-4xl font-bold text-white leading-tight'>
+                <h1 className='text-xl md:text-2xl font-bold text-white leading-tight whitespace-pre-line'>
                   {slideData.title}
                 </h1>
-                <p className='text-md md:text-xl text-gray-300 max-w-md mx-auto'>
+                <p className='text-sm md:text-base text-gray-300 max-w-md mx-auto mt-4'>
                   {slideData.description}
                 </p>
               </div>

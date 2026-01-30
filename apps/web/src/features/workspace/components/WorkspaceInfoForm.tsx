@@ -2,14 +2,7 @@
 
 import { FormEvent, useCallback } from 'react';
 
-import { Button } from '@/components/ui/button';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
+import GlassButton from '@/components/glass-design/GlassButton';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
@@ -41,47 +34,34 @@ export function WorkspaceInfoForm({
   );
 
   return (
-    <Card className='h-fit'>
-      <CardHeader>
-        <CardTitle>Workspace details</CardTitle>
-        <CardDescription>
-          Update the workspace name used across shared surfaces.
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <form className='space-y-5' onSubmit={handleSubmit}>
-          <div className='space-y-2'>
-            <Label htmlFor='workspace-title'>Workspace name</Label>
-            <Input
-              id='workspace-title'
-              placeholder='Add a workspace name'
-              value={title}
-              onChange={event => onTitleChange(event.target.value)}
-              disabled={saving}
-              autoComplete='organization'
-            />
-            <p className='text-xs text-white/50'>
-              This is how the workspace is shown to members.
-            </p>
-          </div>
-          <div className='flex items-center gap-3'>
-            <Button type='submit' disabled={saving || disableSave}>
-              {saving ? 'Saving…' : 'Save workspace name'}
-            </Button>
-            {status && (
-              <span
-                className={
-                  status.type === 'success'
-                    ? 'text-sm text-emerald-300'
-                    : 'text-sm text-red-300'
-                }
-              >
-                {status.message}
-              </span>
-            )}
-          </div>
-        </form>
-      </CardContent>
-    </Card>
+    <div className='space-y-3'>
+      <h2 className='text-sm font-medium text-white/60'>Name</h2>
+      <form className='flex items-center gap-3' onSubmit={handleSubmit}>
+        <Label htmlFor='workspace-title' className='sr-only'>
+          Workspace name
+        </Label>
+        <Input
+          id='workspace-title'
+          placeholder='Workspace name'
+          value={title}
+          onChange={event => onTitleChange(event.target.value)}
+          disabled={saving}
+          autoComplete='organization'
+          className='flex-1 bg-white/5 border-white/10 focus:border-white/20'
+        />
+        <GlassButton
+          type='submit'
+          disabled={saving || disableSave}
+          className='py-2'
+        >
+          <span className='text-white text-sm px-1'>
+            {saving ? 'Saving...' : 'Save'}
+          </span>
+        </GlassButton>
+      </form>
+      {status && (
+        <span className='text-xs text-white/50'>{status.message}</span>
+      )}
+    </div>
   );
 }

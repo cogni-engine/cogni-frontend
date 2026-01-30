@@ -122,52 +122,27 @@ const createAINotificationActor = fromPromise(
       sessionId: string;
     };
   }) => {
-    console.log('[Tutorial Notification] 🚀 Starting creation:', {
-      workspaceId: input.workspaceId,
-      sessionId: input.sessionId,
-    });
+    // Get user ID
+    const supabase = createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
 
-    try {
-      // Get user ID
-      const supabase = createClient();
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-
-      if (!user) {
-        console.error('[Tutorial Notification] ❌ User not found');
-        throw new Error('User not found');
-      }
-
-      console.log('[Tutorial Notification] ✅ User ID:', user.id);
-
-      // Get locale
-      const locale =
-        typeof navigator !== 'undefined' ? navigator.language : 'en';
-      console.log('[Tutorial Notification] 🌍 Locale:', locale);
-
-      // Call backend API to generate task and notification
-      console.log('[Tutorial Notification] 📡 Calling API...');
-      const result = await createTutorialNotification(
-        input.sessionId,
-        user.id,
-        locale
-      );
-
-      console.log('[Tutorial Notification] ✅ API Response:', {
-        taskId: result.taskId,
-        notificationId: result.notificationId,
-      });
-
-      console.log(
-        '[Tutorial Notification] 🎉 SUCCESS! Notification will appear in ~5 seconds'
-      );
-
-      return { notificationId: result.notificationId };
-    } catch (error) {
-      console.error('[Tutorial Notification] ❌ ERROR:', error);
-      throw error;
+    if (!user) {
+      throw new Error('User not found');
     }
+
+    // Get locale
+    const locale = typeof navigator !== 'undefined' ? navigator.language : 'en';
+
+    // Call backend API to generate task and notification
+    const result = await createTutorialNotification(
+      input.sessionId,
+      user.id,
+      locale
+    );
+
+    return { notificationId: result.notificationId };
   }
 );
 
@@ -269,9 +244,6 @@ export const tutorialMachine = setup({
         },
         onError: {
           target: 'idle',
-          actions: ({ event }) => {
-            console.error('Failed to initialize tutorial:', event.error);
-          },
         },
       },
     },
@@ -282,33 +254,23 @@ export const tutorialMachine = setup({
     checkState: {
       always: [
         {
-          target: 'bossGreeting',
+          // Skip bossGreeting - message is already created in tier1
+          // Go directly to noteTour
+          target: 'noteTour',
           guard: ({ context }) =>
             !!context.tutorialWorkspaceId &&
-            !!context.onboardingContext?.bossWorkspaceMemberId,
+            !!context.onboardingContext?.bossWorkspaceMemberId &&
+            !!context.onboardingContext?.firstNote?.noteId,
         },
         {
           target: 'idle',
         },
       ],
     },
+    // bossGreeting state is now deprecated - kept for backwards compatibility
     bossGreeting: {
-      invoke: {
-        src: 'sendBossGreeting',
-        input: ({ context }) => ({
-          workspaceId: context.tutorialWorkspaceId ?? 0,
-          bossWorkspaceMemberId:
-            context.onboardingContext?.bossWorkspaceMemberId ?? 0,
-        }),
-        onError: {
-          actions: ({ event }) => {
-            console.error('Failed to send boss greeting:', event.error);
-          },
-        },
-      },
-      on: {
-        USER_RESPONDED: 'noteTour',
-        START: 'active',
+      always: {
+        target: 'noteTour',
       },
     },
     noteTour: {
@@ -324,11 +286,7 @@ export const tutorialMachine = setup({
         onDone: {
           actions: 'storeTutorialNoteId',
         },
-        onError: {
-          actions: ({ event }) => {
-            console.error('Failed to create tutorial note:', event.error);
-          },
-        },
+        onError: {},
       },
       states: {
         waitingForAIRequest: {
@@ -402,26 +360,39 @@ export const tutorialMachine = setup({
       },
     },
     notifications: {
-      initial: 'creatingNotification',
+      initial: 'redirectingToCogno',
+      // Fire-and-forget: Start notification creation in background on entry
+      entry: ({ context }) => {
+        // Create notification in background - don't wait for completion
+        const { tutorialWorkspaceId, onboardingSessionId } = context;
+        if (tutorialWorkspaceId && onboardingSessionId) {
+          import('@/lib/api/notificationsApi').then(
+            ({ createTutorialNotification }) => {
+              import('@/lib/supabase/browserClient').then(
+                ({ createClient }) => {
+                  const supabase = createClient();
+                  supabase.auth.getUser().then(({ data: { user } }) => {
+                    if (user) {
+                      const locale =
+                        typeof navigator !== 'undefined'
+                          ? navigator.language
+                          : 'en';
+                      createTutorialNotification(
+                        onboardingSessionId,
+                        user.id,
+                        locale
+                      ).catch(() => {
+                        // Silently ignore errors in background task
+                      });
+                    }
+                  });
+                }
+              );
+            }
+          );
+        }
+      },
       states: {
-        creatingNotification: {
-          invoke: {
-            src: 'createAINotification',
-            input: ({ context }) => ({
-              workspaceId: context.tutorialWorkspaceId!,
-              sessionId: context.onboardingSessionId!,
-            }),
-            onDone: {
-              target: 'redirectingToCogno',
-              actions: 'storeTutorialNotificationId',
-            },
-            onError: {
-              actions: ({ event }) => {
-                console.error('Failed to create AI notification:', event.error);
-              },
-            },
-          },
-        },
         redirectingToCogno: {
           // Show modal to guide user to cogno page
           on: {
