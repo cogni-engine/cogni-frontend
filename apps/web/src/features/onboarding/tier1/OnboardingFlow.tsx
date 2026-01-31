@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useMachine } from '@xstate/react';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   AboutCognoApp,
   OnboardingName,
@@ -98,6 +99,70 @@ export function OnboardingFlow({
     return 0;
   };
 
+  // Get a unique key for the current step to trigger animations
+  const getStepKey = (): string => {
+    if (state.matches('appIntro')) return 'appIntro';
+    if (state.matches({ profile: 'name' })) return 'profile-name';
+    if (state.matches({ profile: 'icon' })) return 'profile-icon';
+    if (state.matches('welcome')) return 'welcome';
+    if (state.matches({ context: 'primaryRole' })) return 'context-primaryRole';
+    if (state.matches({ context: 'aiRelationship' }))
+      return 'context-aiRelationship';
+    if (state.matches({ context: 'useCase' })) return 'context-useCase';
+    if (state.matches('loadingReady')) return 'loadingReady';
+    if (state.matches('payment')) return 'payment';
+    if (state.matches('completed')) return 'completed';
+    return 'unknown';
+  };
+
+  // Animation variants for slide transitions
+  const slideVariants = {
+    enter: (direction: number) => ({
+      x: direction > 0 ? 500 : -500,
+      opacity: 0,
+    }),
+    center: {
+      x: 0,
+      opacity: 1,
+    },
+    exit: (direction: number) => ({
+      x: direction > 0 ? -1000 : 1000,
+      opacity: 0,
+    }),
+  };
+
+  // Track direction of navigation for animation
+  const [direction, setDirection] = useState(1);
+
+  // Create wrapped send function to track direction
+  const sendWithDirection = (
+    event:
+      | { type: 'NEXT' }
+      | { type: 'BACK' }
+      | { type: 'COMPLETE' }
+      | {
+          type: 'ANSWER';
+          key: 'primaryRole' | 'aiRelationship' | 'useCase';
+          value: string | string[];
+        }
+      | {
+          type: 'UPDATE_PROFILE';
+          profile: Partial<{ name: string; userId: string; userEmail: string }>;
+        }
+  ) => {
+    // Set direction based on event type
+    if (event.type === 'BACK') {
+      setDirection(-1); // Going back, slide in from left
+    } else if (
+      event.type === 'NEXT' ||
+      event.type === 'ANSWER' ||
+      event.type === 'COMPLETE'
+    ) {
+      setDirection(1); // Going forward, slide in from right
+    }
+    send(event);
+  };
+
   // Render the appropriate step based on state
   const renderStep = () => {
     // App intro
@@ -106,7 +171,7 @@ export function OnboardingFlow({
         <AboutCognoApp
           error={null}
           loading={false}
-          handleGetStarted={() => send({ type: 'NEXT' })}
+          handleGetStarted={() => sendWithDirection({ type: 'NEXT' })}
         />
       );
     }
@@ -118,7 +183,9 @@ export function OnboardingFlow({
           error={null}
           loading={false}
           name={state.context.profile.name}
-          setName={name => send({ type: 'UPDATE_PROFILE', profile: { name } })}
+          setName={name =>
+            sendWithDirection({ type: 'UPDATE_PROFILE', profile: { name } })
+          }
           handleNameSubmit={async e => {
             e.preventDefault();
             const currentName = state.context.profile.name;
@@ -128,7 +195,7 @@ export function OnboardingFlow({
               return;
             }
 
-            send({ type: 'NEXT' });
+            sendWithDirection({ type: 'NEXT' });
           }}
         />
       );
@@ -143,7 +210,7 @@ export function OnboardingFlow({
           userId={state.context.profile.userId}
           userEmail={state.context.profile.userEmail}
           userName={state.context.profile.name}
-          handleContinue={() => send({ type: 'NEXT' })}
+          handleContinue={() => sendWithDirection({ type: 'NEXT' })}
         />
       );
     }
@@ -155,7 +222,7 @@ export function OnboardingFlow({
           error={null}
           loading={false}
           userName={state.context.profile.name}
-          handleContinue={() => send({ type: 'NEXT' })}
+          handleContinue={() => sendWithDirection({ type: 'NEXT' })}
         />
       );
     }
@@ -167,9 +234,9 @@ export function OnboardingFlow({
           config={questionConfigs.primaryRole}
           value={state.context.answers.primaryRole}
           onAnswer={value =>
-            send({ type: 'ANSWER', key: 'primaryRole', value })
+            sendWithDirection({ type: 'ANSWER', key: 'primaryRole', value })
           }
-          onNext={() => send({ type: 'NEXT' })}
+          onNext={() => sendWithDirection({ type: 'NEXT' })}
         />
       );
     }
@@ -180,9 +247,9 @@ export function OnboardingFlow({
           config={questionConfigs.aiRelationship}
           value={state.context.answers.aiRelationship}
           onAnswer={value =>
-            send({ type: 'ANSWER', key: 'aiRelationship', value })
+            sendWithDirection({ type: 'ANSWER', key: 'aiRelationship', value })
           }
-          onNext={() => send({ type: 'NEXT' })}
+          onNext={() => sendWithDirection({ type: 'NEXT' })}
         />
       );
     }
@@ -203,8 +270,10 @@ export function OnboardingFlow({
         <QuestionCard
           config={useCaseConfig}
           value={state.context.answers.useCase}
-          onAnswer={value => send({ type: 'ANSWER', key: 'useCase', value })}
-          onNext={() => send({ type: 'NEXT' })}
+          onAnswer={value =>
+            sendWithDirection({ type: 'ANSWER', key: 'useCase', value })
+          }
+          onNext={() => sendWithDirection({ type: 'NEXT' })}
         />
       );
     }
@@ -216,7 +285,7 @@ export function OnboardingFlow({
           userName={state.context.profile.name}
           workspaceReady={!!state.context.tutorialWorkspaceId}
           error={null}
-          handleContinue={() => send({ type: 'NEXT' })}
+          handleContinue={() => sendWithDirection({ type: 'NEXT' })}
         />
       );
     }
@@ -227,8 +296,8 @@ export function OnboardingFlow({
         <OnboardingPayment
           error={null}
           loading={false}
-          handleContinue={() => send({ type: 'COMPLETE' })}
-          handleBack={() => send({ type: 'BACK' })}
+          handleContinue={() => sendWithDirection({ type: 'COMPLETE' })}
+          handleBack={() => sendWithDirection({ type: 'BACK' })}
           userName={state.context.profile.name}
         />
       );
@@ -257,7 +326,7 @@ export function OnboardingFlow({
             <GlassButton
               size='icon'
               className='size-12'
-              onClick={() => send({ type: 'BACK' })}
+              onClick={() => sendWithDirection({ type: 'BACK' })}
             >
               <ChevronLeft className='size-6' />
             </GlassButton>
@@ -273,7 +342,25 @@ export function OnboardingFlow({
 
       {/* Main Content Card */}
       <div className='w-full max-w-2xl flex-1 overflow-y-auto px-4 pb-4'>
-        <div className='h-full'>{renderStep()}</div>
+        <div className='h-full relative'>
+          <AnimatePresence initial={false} custom={direction} mode='sync'>
+            <motion.div
+              key={getStepKey()}
+              custom={direction}
+              variants={slideVariants}
+              initial='enter'
+              animate='center'
+              exit='exit'
+              transition={{
+                duration: 0.3,
+                ease: [0.4, 0, 0.2, 1], // Custom ease curve for smooth motion
+              }}
+              className='h-full absolute inset-0'
+            >
+              {renderStep()}
+            </motion.div>
+          </AnimatePresence>
+        </div>
       </div>
     </div>
   );
