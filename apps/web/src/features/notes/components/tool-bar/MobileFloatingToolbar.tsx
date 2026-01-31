@@ -175,13 +175,13 @@ export function MobileFloatingToolbar({
               : 'auto',
         }}
       >
-        <div className='mx-[8px] mb-[11px]'>
-          <GlassCard
-            className='pointer-events-auto p-2 rounded-full'
-            data-shepherd-target={
-              !isEditorFocused || showAIInput ? 'note-ai-input' : undefined
-            }
-          >
+        <div
+          className='mx-[8px] mb-[11px]'
+          data-shepherd-target={
+            !isEditorFocused || showAIInput ? 'note-ai-input' : undefined
+          }
+        >
+          <GlassCard className='pointer-events-auto p-2 rounded-full'>
             {!isEditorFocused ? (
               // AI Input Mode (when keyboard is not shown)
               <div className='flex items-center px-2'>

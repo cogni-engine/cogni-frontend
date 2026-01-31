@@ -176,13 +176,7 @@ export default function CollaborativeNoteEditor({
     };
 
     const handleBlur = () => {
-      // Don't unfocus if Shepherd is actively targeting an element
-      // This prevents the toolbar from switching during onboarding tours
-      const isShepherdActive =
-        document.querySelector('.shepherd-target') !== null;
-      if (!isShepherdActive) {
-        setIsEditorFocused(false);
-      }
+      setIsEditorFocused(false);
     };
 
     editor.on('focus', handleFocus);
