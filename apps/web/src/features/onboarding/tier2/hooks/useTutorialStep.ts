@@ -32,6 +32,8 @@ export interface TutorialStepConfig {
     text: string;
     action: () => 'next' | 'back' | 'complete' | 'cancel';
   }>;
+  /** Optional: Custom classes to apply to the tooltip */
+  classes?: string;
 }
 
 /**
@@ -196,8 +198,54 @@ export function useTutorialStep(config: TutorialStepConfig) {
             return;
           }
 
-          const element = document.querySelector(config.selector);
-          if (element) {
+          // Find all matching elements and select the first visible one
+          const elements = document.querySelectorAll(config.selector);
+          let visibleElement: Element | null = null;
+          
+          for (const el of Array.from(elements)) {
+            // Check if element and all its parents are visible
+            let currentEl: Element | null = el;
+            let isFullyVisible = true;
+            
+            while (currentEl && currentEl !== document.body) {
+              const rect = currentEl.getBoundingClientRect();
+              const style = window.getComputedStyle(currentEl);
+              
+              // Check basic CSS visibility
+              const notHiddenByCSS = style.display !== 'none' && 
+                     style.visibility !== 'hidden' && 
+                     parseFloat(style.opacity) > 0;
+              
+              if (!notHiddenByCSS) {
+                isFullyVisible = false;
+                break;
+              }
+              
+              currentEl = currentEl.parentElement;
+            }
+            
+            // Also check the target element has some size or is positioned
+            const rect = el.getBoundingClientRect();
+            const style = window.getComputedStyle(el);
+            const hasSize = rect.width > 0 && rect.height > 0;
+            const isPositioned = style.position === 'absolute' || 
+                                  style.position === 'fixed';
+            
+            if (isFullyVisible && (hasSize || isPositioned)) {
+              visibleElement = el;
+              console.log(`[useTutorialStep] Found visible element for ${config.id}`, {
+                selector: config.selector,
+                display: style.display,
+                visibility: style.visibility,
+                opacity: style.opacity,
+                position: style.position,
+                rect: { width: rect.width, height: rect.height }
+              });
+              break;
+            }
+          }
+          
+          if (visibleElement) {
             console.log(`[useTutorialStep] Showing step ${config.id}`);
             // Set flag BEFORE calling showStep to prevent race conditions
             hasShownRef.current = true;
@@ -210,6 +258,7 @@ export function useTutorialStep(config: TutorialStepConfig) {
               },
               ripplePosition: config.ripplePosition,
               buttons: config.buttons,
+              classes: config.classes,
             });
             cleanup();
             return;

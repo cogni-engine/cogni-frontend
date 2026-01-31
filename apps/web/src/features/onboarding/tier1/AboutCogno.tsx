@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import Image from 'next/image';
+import { motion, AnimatePresence } from 'framer-motion';
 import { NextStepButton } from '../components/NextStepButton';
 
 interface AboutCognoAppProps {
@@ -55,6 +56,7 @@ export function AboutCognoApp({
   const [showWelcome, setShowWelcome] = useState(true);
   const [currentSlide, setCurrentSlide] = useState(0);
   const [dragOffset, setDragOffset] = useState(0);
+  const [showContinueButton, setShowContinueButton] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const touchStartX = useRef<number | null>(null);
   const touchStartY = useRef<number | null>(null);
@@ -189,183 +191,211 @@ export function AboutCognoApp({
     };
   }, []);
 
+  // Fade in continue button after 1.2 seconds on welcome screen
+  useEffect(() => {
+    if (showWelcome) {
+      setShowContinueButton(false);
+      const timer = setTimeout(() => {
+        setShowContinueButton(true);
+      }, 1200);
+      return () => clearTimeout(timer);
+    }
+  }, [showWelcome]);
+
   const slideWidth = 100; // Percentage
 
-  // Welcome screen - separate from slides
-  if (showWelcome) {
-    return (
-      <div className='flex flex-col items-center justify-between h-full animate-in fade-in duration-500'>
-        {/* Centered Title */}
-        <div className='flex-1 flex items-center justify-center'>
-          <h1 className='text-3xl md:text-4xl font-bold text-white leading-tight text-center'>
-            Welcome to Cogno
-          </h1>
-        </div>
-
-        {/* Error Message */}
-        {error && (
-          <div className='bg-red-900/30 border border-red-500/50 rounded-lg p-4 backdrop-blur-sm mt-4'>
-            <p className='text-red-300 text-sm'>{error}</p>
-          </div>
-        )}
-
-        {/* Let's go Button */}
-        <div className='w-full max-w-md mx-auto px-4 mt-6'>
-          <NextStepButton
-            type='button'
-            onClick={() => setShowWelcome(false)}
-            loading={loading}
-            variant='secondary'
-            text='Continue'
-            loadingText='Loading...'
-          />
-        </div>
-      </div>
-    );
-  }
-
-  // Slides screen
   return (
-    <div className='flex flex-col items-center justify-between h-full animate-in fade-in duration-500'>
-      {/* App Preview/Mockup - Swipeable Container */}
-      <div
-        ref={containerRef}
-        className='flex flex-1 items-start justify-center w-full max-w-sm mx-auto overflow-hidden relative pt-1'
-        onTouchStart={handleTouchStart}
-        onTouchMove={handleTouchMove}
-        onTouchEnd={handleTouchEnd}
-        onMouseDown={handleMouseDown}
-        onMouseMove={handleMouseMove}
-        onMouseUp={handleMouseUp}
-        onMouseLeave={handleMouseLeave}
-        style={{ touchAction: 'pan-y' }}
-      >
-        <div
-          className='flex transition-transform duration-500 ease-out relative w-full h-full'
-          style={{
-            transform: `translateX(calc(-${currentSlide * slideWidth}% + ${dragOffset}px))`,
-            willChange: isDragging.current ? 'transform' : 'auto',
-          }}
+    <AnimatePresence mode='wait'>
+      {showWelcome ? (
+        // Welcome screen - separate from slides
+        <motion.div
+          key='welcome'
+          initial={{ opacity: 1, x: 0 }}
+          exit={{ opacity: 0, x: -500 }}
+          transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
+          className='flex flex-col items-center justify-between h-full'
         >
-          {onboardingSlides.map((slideData, index) => (
+          {/* Centered Title */}
+          <div className='flex-1 flex items-center justify-center'>
+            <h1 className='text-3xl md:text-4xl font-bold text-white leading-tight text-center animate-in fade-in duration-500'>
+              Welcome to Cogno
+            </h1>
+          </div>
+
+          {/* Error Message */}
+          {error && (
+            <div className='bg-red-900/30 border border-red-500/50 rounded-lg p-4 backdrop-blur-sm mt-4'>
+              <p className='text-red-300 text-sm'>{error}</p>
+            </div>
+          )}
+
+          {/* Let's go Button with delayed fade-in */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: showContinueButton ? 1 : 0 }}
+            transition={{ duration: 0.5 }}
+            className='w-full max-w-md mx-auto px-4 mt-6'
+          >
+            <NextStepButton
+              type='button'
+              onClick={() => setShowWelcome(false)}
+              loading={loading}
+              variant='secondary'
+              text='Continue'
+              loadingText='Loading...'
+            />
+          </motion.div>
+        </motion.div>
+      ) : (
+        // Slides screen
+        <motion.div
+          key='slides'
+          initial={{ opacity: 0, x: 500 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
+          className='flex flex-col items-center justify-between h-full'
+        >
+          {/* App Preview/Mockup - Swipeable Container */}
+          <div
+            ref={containerRef}
+            className='flex flex-1 items-start justify-center w-full max-w-sm mx-auto overflow-hidden relative pt-1'
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleTouchEnd}
+            onMouseDown={handleMouseDown}
+            onMouseMove={handleMouseMove}
+            onMouseUp={handleMouseUp}
+            onMouseLeave={handleMouseLeave}
+            style={{ touchAction: 'pan-y' }}
+          >
             <div
-              key={index}
-              className='shrink-0 flex items-center justify-center overflow-hidden'
-              style={{ width: `${slideWidth}%`, height: '100%' }}
+              className='flex transition-transform duration-500 ease-out relative w-full h-full'
+              style={{
+                transform: `translateX(calc(-${currentSlide * slideWidth}% + ${dragOffset}px))`,
+                willChange: isDragging.current ? 'transform' : 'auto',
+              }}
             >
-              <div
-                className='relative transition-opacity duration-500 w-full h-full flex items-center justify-center overflow-hidden'
-                style={{
-                  opacity: Math.abs(index - currentSlide) > 1 ? 0.3 : 1,
-                }}
-              >
-                {slideData.screenContent?.screenshot ? (
-                  <div className='relative w-full h-full flex items-center justify-center z-110'>
-                    <Image
-                      src={slideData.screenContent.screenshot}
-                      alt={slideData.screenContent.alt || 'App preview'}
-                      width={300}
-                      height={600}
-                      className='object-contain'
-                      style={{
-                        maxWidth: '100%',
-                        height: '100%',
-                        width: 'auto',
-                      }}
-                      sizes='(max-width: 640px) 90vw, (max-width: 1024px) 280px, 300px'
-                      priority={index === 0}
-                    />
+              {onboardingSlides.map((slideData, index) => (
+                <div
+                  key={index}
+                  className='shrink-0 flex items-center justify-center overflow-hidden'
+                  style={{ width: `${slideWidth}%`, height: '100%' }}
+                >
+                  <div
+                    className='relative transition-opacity duration-500 w-full h-full flex items-center justify-center overflow-hidden'
+                    style={{
+                      opacity: Math.abs(index - currentSlide) > 1 ? 0.3 : 1,
+                    }}
+                  >
+                    {slideData.screenContent?.screenshot ? (
+                      <div className='relative w-full h-full flex items-center justify-center z-110'>
+                        <Image
+                          src={slideData.screenContent.screenshot}
+                          alt={slideData.screenContent.alt || 'App preview'}
+                          width={300}
+                          height={600}
+                          className='object-contain'
+                          style={{
+                            maxWidth: '100%',
+                            height: '100%',
+                            width: 'auto',
+                          }}
+                          sizes='(max-width: 640px) 90vw, (max-width: 1024px) 280px, 300px'
+                          priority={index === 0}
+                        />
+                      </div>
+                    ) : null}
                   </div>
-                ) : null}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Content */}
+          <div
+            className='text-center px-4 w-full overflow-hidden relative shrink-0 mt-4'
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleTouchEnd}
+            onMouseDown={handleMouseDown}
+            onMouseMove={handleMouseMove}
+            onMouseUp={handleMouseUp}
+            onMouseLeave={handleMouseLeave}
+            style={{ touchAction: 'pan-y' }}
+          >
+            <div
+              className='flex transition-transform duration-500 ease-out'
+              style={{
+                transform: `translateX(calc(-${currentSlide * slideWidth}% + ${dragOffset}px))`,
+                willChange: isDragging.current ? 'transform' : 'auto',
+                alignItems: 'flex-start',
+              }}
+            >
+              {onboardingSlides.map((slideData, index) => {
+                const distance = Math.abs(index - currentSlide);
+
+                return (
+                  <div
+                    key={index}
+                    className='shrink-0 space-y-2 px-4'
+                    style={{
+                      width: `${slideWidth}%`,
+                      opacity: distance === 0 ? 1 : distance === 1 ? 0.7 : 0.4,
+                      transform: `scale(${distance === 0 ? 1 : 0.96})`,
+                      transition: isDragging.current
+                        ? 'none'
+                        : 'opacity 0.3s, transform 0.3s',
+                    }}
+                  >
+                    <h1 className='text-xl md:text-2xl font-bold text-white leading-tight whitespace-pre-line'>
+                      {slideData.title}
+                    </h1>
+                    <p className='text-sm md:text-base text-gray-300 max-w-md mx-auto mt-4'>
+                      {slideData.description}
+                    </p>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Pagination Dots */}
+            <div className='flex items-center justify-center pt-4'>
+              <div className='flex items-center gap-2 px-3 py-1.5 bg-white/10 backdrop-blur-sm rounded-full'>
+                {onboardingSlides.map((_, index) => (
+                  <button
+                    key={index}
+                    type='button'
+                    onClick={() => goToSlide(index)}
+                    className={`w-2.5 h-2.5 rounded-full transition-all duration-300 focus:outline-none ${
+                      index === currentSlide ? 'bg-white' : 'bg-white/30'
+                    }`}
+                    aria-label={`Go to slide ${index + 1}`}
+                  />
+                ))}
               </div>
             </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Content */}
-      <div
-        className='text-center px-4 w-full overflow-hidden relative shrink-0 mt-4'
-        onTouchStart={handleTouchStart}
-        onTouchMove={handleTouchMove}
-        onTouchEnd={handleTouchEnd}
-        onMouseDown={handleMouseDown}
-        onMouseMove={handleMouseMove}
-        onMouseUp={handleMouseUp}
-        onMouseLeave={handleMouseLeave}
-        style={{ touchAction: 'pan-y' }}
-      >
-        <div
-          className='flex transition-transform duration-500 ease-out'
-          style={{
-            transform: `translateX(calc(-${currentSlide * slideWidth}% + ${dragOffset}px))`,
-            willChange: isDragging.current ? 'transform' : 'auto',
-            alignItems: 'flex-start',
-          }}
-        >
-          {onboardingSlides.map((slideData, index) => {
-            const distance = Math.abs(index - currentSlide);
-
-            return (
-              <div
-                key={index}
-                className='shrink-0 space-y-2 px-4'
-                style={{
-                  width: `${slideWidth}%`,
-                  opacity: distance === 0 ? 1 : distance === 1 ? 0.7 : 0.4,
-                  transform: `scale(${distance === 0 ? 1 : 0.96})`,
-                  transition: isDragging.current
-                    ? 'none'
-                    : 'opacity 0.3s, transform 0.3s',
-                }}
-              >
-                <h1 className='text-xl md:text-2xl font-bold text-white leading-tight whitespace-pre-line'>
-                  {slideData.title}
-                </h1>
-                <p className='text-sm md:text-base text-gray-300 max-w-md mx-auto mt-4'>
-                  {slideData.description}
-                </p>
-              </div>
-            );
-          })}
-        </div>
-
-        {/* Pagination Dots */}
-        <div className='flex items-center justify-center pt-4'>
-          <div className='flex items-center gap-2 px-3 py-1.5 bg-white/10 backdrop-blur-sm rounded-full'>
-            {onboardingSlides.map((_, index) => (
-              <button
-                key={index}
-                type='button'
-                onClick={() => goToSlide(index)}
-                className={`w-2.5 h-2.5 rounded-full transition-all duration-300 focus:outline-none ${
-                  index === currentSlide ? 'bg-white' : 'bg-white/30'
-                }`}
-                aria-label={`Go to slide ${index + 1}`}
-              />
-            ))}
           </div>
-        </div>
-      </div>
 
-      {/* Error Message */}
-      {error && (
-        <div className='bg-red-900/30 border border-red-500/50 rounded-lg p-4 backdrop-blur-sm mt-4'>
-          <p className='text-red-300 text-sm'>{error}</p>
-        </div>
+          {/* Error Message */}
+          {error && (
+            <div className='bg-red-900/30 border border-red-500/50 rounded-lg p-4 backdrop-blur-sm mt-4'>
+              <p className='text-red-300 text-sm'>{error}</p>
+            </div>
+          )}
+
+          {/* Continue Button */}
+          <div className='w-full max-w-md mx-auto px-4 mt-6'>
+            <NextStepButton
+              type='button'
+              onClick={handleContinue}
+              loading={loading}
+              variant='secondary'
+              text={isLastSlide ? 'Get Started' : 'Continue'}
+              loadingText='Loading...'
+            />
+          </div>
+        </motion.div>
       )}
-
-      {/* Continue Button */}
-      <div className='w-full max-w-md mx-auto px-4 mt-6'>
-        <NextStepButton
-          type='button'
-          onClick={handleContinue}
-          loading={loading}
-          variant='secondary'
-          text={isLastSlide ? 'Get Started' : 'Continue'}
-          loadingText='Loading...'
-        />
-      </div>
-    </div>
+    </AnimatePresence>
   );
 }

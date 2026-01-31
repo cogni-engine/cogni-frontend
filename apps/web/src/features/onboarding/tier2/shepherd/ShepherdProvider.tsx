@@ -33,6 +33,7 @@ export interface StepOptions {
     | 'top-right'
     | 'bottom-left'
     | 'bottom-right';
+  classes?: string;
   [key: string]: unknown;
 }
 
