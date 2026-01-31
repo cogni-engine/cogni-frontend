@@ -27,12 +27,12 @@ export function DesktopAIInput({
   };
 
   return (
-    <div
-      className='absolute bottom-0 left-0 right-0 z-100 px-4 py-3'
-      data-shepherd-target='note-ai-input'
-    >
+    <div className='absolute bottom-0 left-0 right-0 z-100 px-4 py-3'>
       <div className='w-full max-w-4xl mx-auto'>
-        <GlassCard className='flex items-center rounded-4xl px-4 py-3'>
+        <GlassCard
+          className='flex items-center rounded-4xl px-4 py-3'
+          data-shepherd-target='note-ai-input'
+        >
           <Sparkles className='mr-2 size-5 text-gray-400 shrink-0' />
           <input
             type='text'

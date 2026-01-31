@@ -39,7 +39,7 @@ export function TutorialStepManager() {
     },
     redirectToNotesChat: {
       id: 'redirect-to-notes',
-      text: 'Great! Now let\'s check out your notes. Click the "Notes" tab to continue.',
+      text: "<strong>Welcome to your first workspace!</strong><br><br>You'll now get a quick tour of the major features Cogno has to offer. <br><br>To begin, click the <strong>'Notes'</strong> tab at the top right of the screen.",
       selector: '[data-shepherd-target="workspace-notes-button"]',
       position: 'bottom' as const,
       ripplePosition: 'center' as const,
@@ -48,6 +48,7 @@ export function TutorialStepManager() {
       workspaceId,
       requireTutorialWorkspace: true,
       delay: 800,
+      classes: 'center-tooltip',
     },
     redirectToNotesNotes: {
       id: 'highlight-tutorial-note',
@@ -72,6 +73,7 @@ export function TutorialStepManager() {
       workspaceId,
       requireTutorialWorkspace: false,
       delay: 1000,
+      classes: 'center-tooltip',
       buttons: [
         {
           text: 'Next',
@@ -141,7 +143,7 @@ export function TutorialStepManager() {
     noteTourRequestAI: {
       id: 'note-tour-request-ai',
       text: 'Try asking AI to improve your note! Type something like "Make this more professional" and press Enter.',
-      // Target both mobile and desktop - selector will match either
+      // Target the wrapper div that contains both mobile and desktop AI inputs
       selector: '[data-shepherd-target="note-ai-input"]',
       position: 'top' as const,
       ripplePosition: 'center' as const,
@@ -150,6 +152,7 @@ export function TutorialStepManager() {
       workspaceId,
       requireTutorialWorkspace: false,
       delay: 1000,
+      classes: 'center-tooltip',
     },
     noteTourProcessingAI: {
       id: 'note-tour-processing-ai',
@@ -178,8 +181,7 @@ export function TutorialStepManager() {
     notificationRedirect: {
       id: 'notification-redirect',
       text: "Great work! Now let's check out your notifications.",
-      selector: 'header', // Target the header so it appears at top center
-      position: 'bottom' as const,
+      selector: undefined, // No target - appears as centered modal
       ripplePosition: 'center' as const,
       showWhenState: 'notifications.redirectingToCogno',
       pathnamePattern: undefined, // Show on any page
@@ -356,7 +358,6 @@ export function TutorialStepManager() {
     currentStep || {
       id: 'none',
       text: '',
-      selector: '',
       showWhenState: '__none__',
     }
   );
