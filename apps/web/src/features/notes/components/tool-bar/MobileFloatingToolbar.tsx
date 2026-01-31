@@ -179,7 +179,7 @@ export function MobileFloatingToolbar({
           <GlassCard
             className='pointer-events-auto p-2 rounded-full'
             data-shepherd-target={
-              !isEditorFocused || showAIInput ? 'note-ai-input' : 'note-toolbar'
+              !isEditorFocused || showAIInput ? 'note-ai-input' : undefined
             }
           >
             {!isEditorFocused ? (
