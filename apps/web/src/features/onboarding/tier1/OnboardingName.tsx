@@ -56,6 +56,11 @@ export function OnboardingName({
                     type='text'
                     value={name}
                     onChange={handleNameChange}
+                    onFocus={() => {
+                      setTimeout(() => {
+                        window.scrollTo(0, 0);
+                      }, 100);
+                    }}
                     className='flex-1 bg-transparent text-white text-lg outline-none border-none autofill:bg-transparent autofill:text-white text-center'
                     required
                     minLength={2}

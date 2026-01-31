@@ -9,6 +9,7 @@ import type { WorkspaceMember } from '@/types/workspace';
 import type { Note } from '@/types/note';
 import type { UploadedFile } from '@/lib/api/workspaceFilesApi';
 import { format } from 'date-fns';
+import ThinkingIndicator from './ThinkingIndicator';
 
 type MessageItemProps = {
   message: Message | AIMessage;
@@ -67,6 +68,11 @@ export default function MessageItem({
       'meta' in message && message.meta?.is_ai_initiated === true;
 
     const content = message.content;
+
+    // Show thinking indicator while waiting for AI response
+    if (!content) {
+      return <ThinkingIndicator />;
+    }
 
     const aiMessageContent = (
       <TiptapRenderer

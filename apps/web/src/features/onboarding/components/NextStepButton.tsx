@@ -42,7 +42,7 @@ export function NextStepButton({
   const isDisabled = !isFormValid || loading || disabled;
 
   const baseStyles =
-    'w-full px-8 py-4 font-semibold text-lg rounded-full shadow-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed';
+    'w-full px-12 py-3 font-semibold text-lg rounded-full shadow-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed';
 
   return (
     <button

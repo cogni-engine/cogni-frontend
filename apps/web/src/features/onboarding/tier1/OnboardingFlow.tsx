@@ -234,19 +234,9 @@ export function OnboardingFlow({
       );
     }
 
-    // Completed (transitioning to workspace)
+    // Completed - redirect happens in useEffect, render nothing
     if (state.matches('completed')) {
-      return (
-        <div className='flex flex-col items-center justify-center h-full space-y-6 animate-in fade-in duration-300'>
-          <div className='w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin' />
-          <div className='text-center space-y-2'>
-            <h2 className='text-2xl font-bold text-white'>
-              Entering your workspace...
-            </h2>
-            <p className='text-gray-400'>Get ready for your tutorial!</p>
-          </div>
-        </div>
-      );
+      return null;
     }
 
     return null;

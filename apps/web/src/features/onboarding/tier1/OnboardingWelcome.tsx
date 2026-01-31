@@ -20,35 +20,19 @@ export function OnboardingWelcome({
         <div className='flex-1 flex flex-col'>
           {/* Welcome Message */}
           <div className='text-center space-y-6 flex-1 flex flex-col justify-center'>
-            <div className='space-y-4'>
+            <div className='space-y-2'>
               <h1 className='text-3xl md:text-4xl font-bold text-white leading-tight'>
-                Welcome to Cogno
+                Welcome, {userName}
               </h1>
-              <h2 className='text-3xl md:text-4xl font-semibold text-gray-200'>
-                {userName}!
-              </h2>
             </div>
 
-            <div className='space-y-4 max-w-lg mx-auto'>
-              <p className='text-xl md:text-2xl text-gray-300 leading-relaxed'>
-                Your personalized workspace awaits.
+            <div className='space-y-3 max-w-lg mx-auto'>
+              <p className='text-xl md:text-2xl text-gray-200 leading-relaxed font-semibold'>
+                Let&apos;s personalize your workspace
               </p>
-              <p className='text-lg text-gray-400'>
-                Let&apos;s set up your profile to get started.
+              <p className='text-base text-gray-400'>
+                We have a few questions to help us understand how you work
               </p>
-            </div>
-
-            {/* Decorative elements */}
-            <div className='flex justify-center space-x-2 mt-8'>
-              <div className='w-3 h-3 rounded-full bg-white/80 animate-pulse'></div>
-              <div
-                className='w-3 h-3 rounded-full bg-white/50 animate-pulse'
-                style={{ animationDelay: '0.2s' }}
-              ></div>
-              <div
-                className='w-3 h-3 rounded-full bg-white/30 animate-pulse'
-                style={{ animationDelay: '0.4s' }}
-              ></div>
             </div>
           </div>
 
