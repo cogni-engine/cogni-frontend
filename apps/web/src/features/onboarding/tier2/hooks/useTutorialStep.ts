@@ -11,8 +11,8 @@ export interface TutorialStepConfig {
   id: string;
   /** Step text to display */
   text: string;
-  /** CSS selector for the target element */
-  selector: string;
+  /** CSS selector for the target element (optional for center-positioned modals) */
+  selector?: string;
   /** Position of the tooltip relative to target */
   position?: 'top' | 'bottom' | 'left' | 'right';
   /** Position of the ripple effect */
@@ -186,6 +186,22 @@ export function useTutorialStep(config: TutorialStepConfig) {
         const tryShowStep = () => {
           // Prevent showing the step multiple times (fixes focus loss in tutorial workspace)
           if (hasShownRef.current) {
+            return;
+          }
+
+          // If no selector (center-positioned modal), show immediately
+          if (!config.selector) {
+            console.log(`[useTutorialStep] Showing center modal ${config.id}`);
+            hasShownRef.current = true;
+            showStep({
+              id: config.id,
+              text: config.text,
+              attachTo: undefined,
+              ripplePosition: config.ripplePosition,
+              buttons: config.buttons,
+              classes: config.classes,
+            });
+            cleanup();
             return;
           }
 

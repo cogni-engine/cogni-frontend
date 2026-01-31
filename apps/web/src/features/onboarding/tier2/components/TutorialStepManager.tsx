@@ -182,7 +182,6 @@ export function TutorialStepManager() {
       id: 'notification-redirect',
       text: "Great work! Now let's check out your notifications.",
       selector: undefined, // No target - appears as centered modal
-      position: 'center' as const,
       ripplePosition: 'center' as const,
       showWhenState: 'notifications.redirectingToCogno',
       pathnamePattern: undefined, // Show on any page
@@ -359,7 +358,6 @@ export function TutorialStepManager() {
     currentStep || {
       id: 'none',
       text: '',
-      selector: '',
       showWhenState: '__none__',
     }
   );
