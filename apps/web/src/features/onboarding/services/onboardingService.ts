@@ -298,7 +298,10 @@ Feel free to ask me anything or explore the features. I'll be guiding you throug
         .update({ onboarding_status: 'tier1_in_progress' }) // This is a typo, it should be 'tier1_in_progress'
         .eq('id', userId);
 
-      // save to zustand store
+      // Clear ALL persisted onboarding state (localStorage cache)
+      useOnboardingStore.getState().reset();
+
+      // Set new session data
       useOnboardingStore.setState({
         userId,
         onboardingSessionId: newSession.id,
