@@ -14,7 +14,6 @@ import {
 import { EditorContent } from '@tiptap/react';
 import { getPersonalWorkspaceId } from '@/lib/cookies';
 import { useWorkspaceMembers } from '@/hooks/useWorkspace';
-import { useIsMobileScreen } from '@/stores/usePlatformStore';
 import { TaskListChain } from './types';
 import { NoteEditorHeader } from './components/NoteEditorHeader';
 import { NoteEditorToolbar } from './components/NoteEditorToolbar';
@@ -46,7 +45,6 @@ export default function CollaborativeNoteEditor({
   const router = useRouter();
   const id = parseInt(noteId, 10);
   const isValidId = !isNaN(id);
-  const isMobileScreen = useIsMobileScreen();
 
   // Use SWR hook for cached note data
   const { note, loading, error } = useNote({
