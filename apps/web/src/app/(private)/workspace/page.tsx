@@ -14,7 +14,7 @@ import { useIsInputActive } from '@/stores/useGlobalUIStore';
 import ScrollableView from '@/components/layout/ScrollableView';
 
 export default function WorkspacePage() {
-  const { workspaces, isLoading, isValidating, error } = useWorkspaces();
+  const { workspaces, isLoading, error } = useWorkspaces();
   const { create, update } = useWorkspaceMutations();
   const isInputActive = useIsInputActive();
   const [searchQuery, setSearchQuery] = useState('');
@@ -97,11 +97,6 @@ export default function WorkspacePage() {
 
   return (
     <div className='flex flex-col h-full relative overflow-hidden'>
-      {/* Subtle loading indicator when revalidating */}
-      {isValidating && workspaces && (
-        <div className='absolute top-0 left-0 right-0 h-0.5 bg-blue-500/50 animate-pulse z-50' />
-      )}
-
       {/* スクロール可能エリア */}
       <ScrollableView className='pb-32 md:pb-24 overflow-x-hidden'>
         {/* Only show loading spinner when we have no data at all (no cache) */}
