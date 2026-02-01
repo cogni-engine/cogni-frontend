@@ -9,7 +9,7 @@ import {
   useCallback,
 } from 'react';
 import { useEditor, EditorContent } from '@tiptap/react';
-import { ArrowUp, Square } from 'lucide-react';
+import { ArrowUp, Square, Loader2 } from 'lucide-react';
 import { VoiceInputButton } from './VoiceInputButton';
 import { useTiptapExtensions } from '@/components/tiptap/extensions/useTiptapExtensions';
 import {
@@ -438,8 +438,12 @@ const TiptapChatInput = forwardRef<TiptapChatInputRef, TiptapChatInputProps>(
           disabled={isLoading || isUploading || (isEmpty && !hasAttachments)}
           className='absolute right-2.5 bottom-1.5 w-10 h-10 rounded-full bg-white/10 backdrop-blur-xl border border-black text-white flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed hover:bg-white/15 hover:scale-102 transition-all duration-300 shadow-[0_8px_32px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.12)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.25),inset_0_1px_0_rgba(255,255,255,0.18)]'
         >
-          {isLoading && canStop ? (
-            <Square className='w-4 h-4 fill-current' />
+          {isLoading ? (
+            canStop ? (
+              <Square className='w-4 h-4 fill-current' />
+            ) : (
+              <Loader2 className='w-4 h-4 animate-spin' />
+            )
           ) : (
             <ArrowUp className='w-4 h-4' />
           )}
