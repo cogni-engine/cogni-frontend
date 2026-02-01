@@ -59,10 +59,13 @@ export default function WorkspaceChatPage() {
   const {
     messages,
     sendMessage: originalSendMessage,
+    addReaction,
+    removeReaction,
     isLoading,
     isLoadingMore,
     error,
     isConnected,
+    workspaceMember,
     loadMoreMessages,
     hasMoreMessages,
     dismissFailedMessage,
@@ -413,6 +416,9 @@ export default function WorkspaceChatPage() {
             workspaceMembers={members}
             workspaceNotes={workspaceNotes}
             onDismissFailedMessage={dismissFailedMessage}
+            currentMemberId={workspaceMember?.id ?? null}
+            onAddReaction={addReaction}
+            onRemoveReaction={removeReaction}
           />
         ) : (
           <div className='flex-1 flex items-center justify-center'>

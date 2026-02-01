@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import {
   useWorkspaces,
   useWorkspaceMutations,
@@ -15,6 +15,8 @@ import ScrollableView from '@/components/layout/ScrollableView';
 
 export default function WorkspacePage() {
   const { workspaces, isLoading, isValidating, error } = useWorkspaces();
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
   const { create, update } = useWorkspaceMutations();
   const isInputActive = useIsInputActive();
   const [searchQuery, setSearchQuery] = useState('');
@@ -97,30 +99,39 @@ export default function WorkspacePage() {
 
   return (
     <div className='flex flex-col h-full relative overflow-hidden'>
-      {/* Subtle loading indicator when revalidating */}
-      {isValidating && workspaces && (
+      {/* Subtle loading indicator when revalidating (mounted 時のみ表示してハイドレーションエラーを回避) */}
+      {mounted && isValidating && workspaces && (
         <div className='absolute top-0 left-0 right-0 h-0.5 bg-blue-500/50 animate-pulse z-50' />
       )}
 
       {/* スクロール可能エリア */}
       <ScrollableView className='pb-32 md:pb-24 overflow-x-hidden'>
-        {/* Only show loading spinner when we have no data at all (no cache) */}
-        {!workspaces && isLoading && (
-          <div className='flex items-center justify-center py-12'>
-            <div className='animate-spin rounded-full h-8 w-8 border-b-2 border-white'></div>
+        {/* mounted まで固定のプレースホルダーでハイドレーションエラーを回避 */}
+        {!mounted ? (
+          <div className='flex justify-center py-12'>
+            <div className='animate-spin rounded-full h-8 w-8 border-b-2 border-white' />
           </div>
-        )}
+        ) : (
+          <>
+            {/* Only show loading spinner when we have no data at all (no cache) */}
+            {!workspaces && isLoading && (
+              <div className='flex items-center justify-center py-12'>
+                <div className='animate-spin rounded-full h-8 w-8 border-b-2 border-white'></div>
+              </div>
+            )}
 
-        {/* Show workspaces immediately if we have data (from cache or fresh) */}
-        {workspaces && (filteredWorkspaces.length > 0 || !isSearching) && (
-          <WorkspaceList workspaces={filteredWorkspaces} />
-        )}
+            {/* Show workspaces immediately if we have data (from cache or fresh) */}
+            {workspaces && (filteredWorkspaces.length > 0 || !isSearching) && (
+              <WorkspaceList workspaces={filteredWorkspaces} />
+            )}
 
-        {/* Show "no results" message only when we have data but search yields nothing */}
-        {workspaces && filteredWorkspaces.length === 0 && isSearching && (
-          <div className='rounded-2xl border border-white/10 bg-white/5 p-8 text-center text-white/70'>
-            No workspaces found matching &quot;{searchQuery.trim()}&quot;.
-          </div>
+            {/* Show "no results" message only when we have data but search yields nothing */}
+            {workspaces && filteredWorkspaces.length === 0 && isSearching && (
+              <div className='rounded-2xl border border-white/10 bg-white/5 p-8 text-center text-white/70'>
+                No workspaces found matching &quot;{searchQuery.trim()}&quot;.
+              </div>
+            )}
+          </>
         )}
       </ScrollableView>
 

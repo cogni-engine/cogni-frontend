@@ -11,6 +11,11 @@ import {
   markWorkspaceMessagesAsRead,
   type CurrentWorkspaceMember,
 } from '@/lib/api/workspaceMessagesApi';
+import {
+  addOrUpdateReaction,
+  removeReaction as removeReactionApi,
+} from '@/lib/api/reactionsApi';
+import type { MessageReaction } from '@/types/workspace';
 
 // Optimistic message uses negative IDs to distinguish from real messages
 let optimisticIdCounter = -1;
@@ -50,12 +55,14 @@ export type OptimisticMessage = WorkspaceMessage & {
 
 export function useWorkspaceChat(
   workspaceId: number,
-  workspaceMembers?: WorkspaceMember[]
+  workspaceMembers?: WorkspaceMember[],
+  options?: { onReactionsChange?: () => void }
 ) {
   const supabase = createClient();
   const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
   const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const retryCountRef = useRef(0);
+  const isIntentionalCloseRef = useRef(false);
   const lastMarkedMessageIdRef = useRef<number | null>(null);
   const markInFlightRef = useRef(false);
   const workspaceMemberRef = useRef<CurrentWorkspaceMember | null>(null);
@@ -73,6 +80,11 @@ export function useWorkspaceChat(
       workspaceMembersRef.current = workspaceMembers;
     }
   }, [workspaceMembers]);
+
+  const onReactionsChangeRef = useRef(options?.onReactionsChange);
+  useEffect(() => {
+    onReactionsChangeRef.current = options?.onReactionsChange;
+  }, [options?.onReactionsChange]);
 
   // Fetch workspace member using SWR
   const {
@@ -185,8 +197,9 @@ export function useWorkspaceChat(
         reconnectTimeoutRef.current = null;
       }
 
-      // Remove existing channel
+      // Remove existing channel (意図的なクローズなので CLOSED 時のリトライをスキップ)
       if (channelRef.current) {
+        isIntentionalCloseRef.current = true;
         supabase.removeChannel(channelRef.current);
         channelRef.current = null;
       }
@@ -231,6 +244,20 @@ export function useWorkspaceChat(
               );
             }
           })
+          .on(
+            'postgres_changes',
+            {
+              event: '*',
+              schema: 'public',
+              table: 'message_reactions',
+              filter: `workspace_id=eq.${workspaceId}`,
+            },
+            () => {
+              if (!mounted) return;
+              onReactionsChangeRef.current?.();
+              mutateMessages();
+            }
+          )
           .subscribe((status, err) => {
             if (!mounted) return;
 
@@ -239,12 +266,20 @@ export function useWorkspaceChat(
             if (status === 'SUBSCRIBED') {
               setIsConnected(true);
               retryCountRef.current = 0;
+              isIntentionalCloseRef.current = false;
             } else if (
               status === 'CHANNEL_ERROR' ||
               status === 'TIMED_OUT' ||
               status === 'CLOSED'
             ) {
               setIsConnected(false);
+
+              // 意図的なクローズ（removeChannel）の場合はリトライしない
+              if (isIntentionalCloseRef.current) {
+                isIntentionalCloseRef.current = false;
+                retryCountRef.current = 0;
+                return;
+              }
 
               // Retry connection with exponential backoff
               const maxRetries = 5;
@@ -298,9 +333,12 @@ export function useWorkspaceChat(
       mounted = false;
       if (reconnectTimeoutRef.current) {
         clearTimeout(reconnectTimeoutRef.current);
+        reconnectTimeoutRef.current = null;
       }
       if (channelRef.current) {
+        isIntentionalCloseRef.current = true;
         supabase.removeChannel(channelRef.current);
+        channelRef.current = null;
       }
     };
   }, [workspaceId, supabase, mutateMessages]);
@@ -383,7 +421,11 @@ export function useWorkspaceChat(
         setLocalMessages(prev =>
           prev.map(msg =>
             msg._optimisticId === optimisticId
-              ? { ...newMessage, is_read_by_current_user: true }
+              ? {
+                  ...newMessage,
+                  reactions: [],
+                  is_read_by_current_user: true,
+                }
               : msg
           )
         );
@@ -461,6 +503,106 @@ export function useWorkspaceChat(
       setIsLoadingMore(false);
     }
   }, [workspaceId, hasMoreMessages, isLoadingMore, decorateMessages]);
+
+  // Add or update reaction (optimistic)
+  const addReaction = useCallback(
+    async (messageId: number, emoji: string) => {
+      if (!workspaceMember?.id) return;
+
+      const currentMemberProfile = workspaceMembersRef.current.find(
+        m => m.id === workspaceMember.id
+      );
+
+      const optimisticReaction: MessageReaction = {
+        id: `optimistic-${messageId}-${workspaceMember.id}`,
+        workspace_message_id: messageId,
+        workspace_member_id: workspaceMember.id,
+        emoji,
+        workspace_member: {
+          id: workspaceMember.id,
+          user_id: currentMemberProfile?.user_id ?? null,
+          user_profile: currentMemberProfile?.user_profile ?? null,
+        },
+      };
+
+      setLocalMessages(prev =>
+        prev.map(msg =>
+          msg.id === messageId
+            ? {
+                ...msg,
+                reactions: [
+                  ...(msg.reactions ?? []).filter(
+                    r => r.workspace_member_id !== workspaceMember.id
+                  ),
+                  optimisticReaction,
+                ],
+              }
+            : msg
+        )
+      );
+
+      try {
+        await addOrUpdateReaction(
+          workspaceId,
+          messageId,
+          workspaceMember.id,
+          emoji
+        );
+      } catch (err) {
+        console.error('Error adding reaction:', err);
+        setLocalMessages(prev =>
+          prev.map(msg =>
+            msg.id === messageId
+              ? {
+                  ...msg,
+                  reactions: (msg.reactions ?? []).filter(
+                    r => r.workspace_member_id !== workspaceMember.id
+                  ),
+                }
+              : msg
+          )
+        );
+      }
+    },
+    [workspaceId, workspaceMember]
+  );
+
+  // Remove reaction (optimistic)
+  const removeReaction = useCallback(
+    async (messageId: number) => {
+      if (!workspaceMember?.id) return;
+
+      const previousReactions =
+        localMessages.find(m => m.id === messageId)?.reactions ?? [];
+
+      setLocalMessages(prev =>
+        prev.map(msg =>
+          msg.id === messageId
+            ? {
+                ...msg,
+                reactions: (msg.reactions ?? []).filter(
+                  r => r.workspace_member_id !== workspaceMember.id
+                ),
+              }
+            : msg
+        )
+      );
+
+      try {
+        await removeReactionApi(messageId, workspaceMember.id);
+      } catch (err) {
+        console.error('Error removing reaction:', err);
+        setLocalMessages(prev =>
+          prev.map(msg =>
+            msg.id === messageId
+              ? { ...msg, reactions: previousReactions }
+              : msg
+          )
+        );
+      }
+    },
+    [workspaceId, workspaceMember, localMessages]
+  );
 
   // Mark messages as read when they appear
   useEffect(() => {
@@ -586,6 +728,8 @@ export function useWorkspaceChat(
   return {
     messages: localMessages,
     sendMessage,
+    addReaction,
+    removeReaction,
     isLoading,
     isLoadingMore,
     error,
