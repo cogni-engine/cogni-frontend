@@ -1,6 +1,7 @@
 // src/middleware.ts
 import { type NextRequest, NextResponse } from 'next/server';
 import { updateSession } from '@/lib/supabase/middleware';
+import { createServerClient } from '@supabase/ssr';
 
 // Helper to detect if request is from mobile app webview
 function isFromMobileApp(request: NextRequest): boolean {
@@ -18,7 +19,7 @@ function isFromMobileApp(request: NextRequest): boolean {
 }
 
 export async function middleware(request: NextRequest) {
-  const { response, user } = await updateSession(request);
+  const { response, user, onboardingStatus } = await updateSession(request);
 
   // Define route types
   const privateRoutes = [
@@ -78,6 +79,61 @@ export async function middleware(request: NextRequest) {
       );
     }
     return NextResponse.redirect(new URL('/workspace', request.url));
+  }
+
+  // Check onboarding status for authenticated users accessing private routes
+  if (user && isPrivateRoute) {
+    const onboardingRoute = '/onboarding';
+    const isOnboardingRoute =
+      request.nextUrl.pathname.startsWith(onboardingRoute);
+
+    // Don't check onboarding status if already on onboarding page
+    if (!isOnboardingRoute) {
+      // First try to get onboarding_status from JWT
+      let status = onboardingStatus;
+      console.log('[Middleware] Onboarding status from JWT:', onboardingStatus);
+
+      // If not in JWT, fall back to database query
+      if (!status) {
+        try {
+          const supabase = createServerClient(
+            process.env.NEXT_PUBLIC_SUPABASE_URL!,
+            process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+            {
+              cookies: {
+                getAll: () =>
+                  request.cookies
+                    .getAll()
+                    .map(c => ({ name: c.name, value: c.value })),
+                setAll: cookiesToSet => {
+                  cookiesToSet.forEach(({ name, value, options }) => {
+                    response.cookies.set({ name, value, ...options });
+                  });
+                },
+              },
+            }
+          );
+
+          const { data: profile, error } = await supabase
+            .from('user_profiles')
+            .select('onboarding_status')
+            .eq('id', user.id)
+            .single();
+
+          if (!error && profile) {
+            status = profile.onboarding_status;
+          }
+        } catch (error) {
+          // Log error but don't block request - allow user to proceed
+          console.error('Error checking onboarding status:', error);
+        }
+      }
+
+      // Redirect to onboarding if status is not 'completed'
+      if (status && status !== 'completed') {
+        return NextResponse.redirect(new URL(onboardingRoute, request.url));
+      }
+    }
   }
 
   return response;

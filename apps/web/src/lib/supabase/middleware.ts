@@ -58,15 +58,21 @@ export async function updateSession(request: NextRequest) {
     }
   }
 
-  // Decode JWT to extract orgs and subscription_plan
+  // Decode JWT to extract orgs, subscription_plan, and onboarding_status
   let orgs: unknown[] = [];
   let subscriptionPlan: string | null = null;
+  let onboardingStatus: string | null = null;
 
   if (session?.access_token) {
     const payload = decodeJWT(session.access_token);
     if (payload) {
       orgs = (payload.orgs as unknown[]) || [];
       subscriptionPlan = (payload.subscription_plan as string) || null;
+      onboardingStatus = (payload.onboarding_status as string) || null;
+      console.log(
+        '[updateSession] JWT payload onboarding_status:',
+        onboardingStatus
+      );
     }
   }
 
@@ -76,6 +82,9 @@ export async function updateSession(request: NextRequest) {
   }
   if (subscriptionPlan) {
     response.headers.set('x-user-subscription-plan', subscriptionPlan);
+  }
+  if (onboardingStatus) {
+    response.headers.set('x-user-onboarding-status', onboardingStatus);
   }
 
   // Set/update current user ID cookie if user is authenticated
@@ -93,5 +102,5 @@ export async function updateSession(request: NextRequest) {
     }
   }
 
-  return { response, user };
+  return { response, user, onboardingStatus };
 }

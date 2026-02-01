@@ -104,6 +104,29 @@ export class OnboardingService {
         return { success: false };
       }
 
+      // Refresh session to get new JWT with updated onboarding_status
+      try {
+        const { error: refreshError } =
+          await this.supabase.auth.refreshSession();
+        if (refreshError) {
+          console.warn(
+            'Warning: Failed to refresh session after onboarding completion:',
+            refreshError
+          );
+          // Don't fail the whole operation if refresh fails
+        } else {
+          console.log(
+            '✅ Session refreshed - new JWT issued with updated onboarding_status'
+          );
+        }
+      } catch (error) {
+        console.warn(
+          'Warning: Error refreshing session after onboarding completion:',
+          error
+        );
+        // Don't fail the whole operation if refresh fails
+      }
+
       return { success: true };
     } catch (error) {
       console.error('Error completing onboarding:', error);
