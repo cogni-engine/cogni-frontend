@@ -35,6 +35,11 @@ export interface TutorialContext {
   // Tutorial flow state
   currentStep: number;
   completedSteps: number[];
+  // Notification reaction (stored when user completes/postpones)
+  notificationReaction?: {
+    type: 'completed' | 'postponed';
+    text?: string;
+  };
 }
 
 /**
@@ -53,6 +58,17 @@ export type TutorialEvent =
   | { type: 'NAVIGATE_TO_COGNO' } // User clicked button to navigate to cogno
   | { type: 'BELL_CLICKED' } // User clicked the bell icon
   | { type: 'NOTIFICATION_VIEWED' } // User viewed the notification
+  // Tier2 extension events
+  | {
+      type: 'REACTION_SELECTED';
+      reaction: 'completed' | 'postponed';
+      reactionText?: string;
+    } // User selected complete or postpone on notification
+  | { type: 'OPEN_ACTIVITY_DRAWER' } // User clicked to open activity drawer
+  | { type: 'ACTIVITY_VIEWED' } // User viewed the activity drawer
+  | { type: 'NAVIGATE_TO_MEMBERS' } // User clicked to navigate to members page
+  | { type: 'INVITE_CLICKED' } // User clicked the invite button
+  | { type: 'SHARE_COMPLETED' } // User completed sharing or skipped
   | {
       type: 'xstate.done.actor.initializeTutorial';
       output: {
@@ -69,6 +85,10 @@ export type TutorialEvent =
   | {
       type: 'xstate.done.actor.createAINotification';
       output: { notificationId: number };
+    }
+  | {
+      type: 'xstate.done.actor.completeTier2Onboarding';
+      output: { success: boolean };
     };
 
 /**
@@ -147,6 +167,54 @@ const createAINotificationActor = fromPromise(
 );
 
 /**
+ * Actor to complete tier2 onboarding by updating database
+ */
+const completeTier2OnboardingActor = fromPromise(
+  async ({ input }: { input: { sessionId: string } }) => {
+    const supabase = createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      return { success: false };
+    }
+
+    try {
+      // Update onboarding_sessions.state to 'completed'
+      const { error: sessionError } = await supabase
+        .from('onboarding_sessions')
+        .update({
+          state: 'completed',
+          completed_at: new Date().toISOString(),
+        })
+        .eq('id', input.sessionId);
+
+      if (sessionError) {
+        console.error('Failed to update onboarding session:', sessionError);
+        return { success: false };
+      }
+
+      // Update user_profiles.onboarding_status to 'completed'
+      const { error: profileError } = await supabase
+        .from('user_profiles')
+        .update({ onboarding_status: 'completed' })
+        .eq('user_id', user.id);
+
+      if (profileError) {
+        console.error('Failed to update user profile:', profileError);
+        return { success: false };
+      }
+
+      return { success: true };
+    } catch (error) {
+      console.error('Error completing tier2 onboarding:', error);
+      return { success: false };
+    }
+  }
+);
+
+/**
  * Minimal XState Machine for Tutorial Flow
  */
 export const tutorialMachine = setup({
@@ -160,6 +228,7 @@ export const tutorialMachine = setup({
     sendBossGreeting: sendBossGreetingActor,
     createTutorialNote: createTutorialNoteActor,
     createAINotification: createAINotificationActor,
+    completeTier2Onboarding: completeTier2OnboardingActor,
   },
   actions: {
     loadSessionData: assign(({ event }) => {
@@ -178,6 +247,9 @@ export const tutorialMachine = setup({
         onboardingSessionId: output.onboardingSessionId,
         tutorialWorkspaceId: output.tutorialWorkspaceId,
         onboardingContext: output.onboardingContext,
+        // If tutorialNotificationId was created in Tier1, use it
+        tutorialNotificationId:
+          output.onboardingContext?.tutorialNotificationId,
       };
     }),
     storeTutorialNoteId: assign(({ event }) => {
@@ -220,6 +292,17 @@ export const tutorialMachine = setup({
       // Navigation will be handled by TutorialProvider via useEffect
       // This action is a placeholder for clarity
     },
+    storeReaction: assign(({ event }) => {
+      if (event.type === 'REACTION_SELECTED') {
+        return {
+          notificationReaction: {
+            type: event.reaction,
+            text: event.reactionText,
+          },
+        };
+      }
+      return {};
+    }),
   },
 }).createMachine({
   /** @xstate-layout N4IgpgJg5mDOIC5QBcCuyD2AnAlgQwBsA6HCAsAYgGUAVAQQCUaBtABgF1FQAHDWHZDgwA7LiAAeiAIwAmAKxEALAE5VygGzLFMqXIDscxQBoQAT0Qy9UournqAzK12G9rBwF93JtJlyEieADGggBulAByAKIAGiwcYrz8giJikggy9opEcvay2qxujrn2JuYIUnp6RMo5um5STjLKrPae3ujY+MRBoZQAQnQAwgDSbJxIIIkCQqITaRkyRPYyABxSUiuKKznKK+oypYhr2QWncjK2rHqabSA+nf49OGEUgwDyALIACgAykTSRMYJPjTFJzRD2DTVTb2dSKPSZWw6dSHdLbJYyJrqOGqRTqKS3e5+brBZ6UKjDACSXyBEymyVmoDSkPU0MUsPhiPOUhRZgsmSIK0xyis2LkUg0yhkni8IGEGAgcDERK6wKSM1SiAAtLyyjrCR1iSQyGA1aDGRJENpUZZFroHE45C43IoDb4ugFSWEzQzNelbNkhawMgU8c0Vja9MolIUCpp7AZWK7ZSr-IEMABbbjkZCQH0a8EIQyLByrVhO1Z6RTByOs5r7ZSyNzqSorGXuIA */
@@ -254,12 +337,13 @@ export const tutorialMachine = setup({
     checkState: {
       always: [
         {
-          // Skip bossGreeting - message is already created in tier1
+          // Skip greeting - messages are already created in tier1 (Mike and Lisa)
           // Go directly to noteTour
           target: 'noteTour',
           guard: ({ context }) =>
             !!context.tutorialWorkspaceId &&
-            !!context.onboardingContext?.bossWorkspaceMemberId &&
+            !!context.onboardingContext?.mikeWorkspaceMemberId &&
+            !!context.onboardingContext?.lisaWorkspaceMemberId &&
             !!context.onboardingContext?.firstNote?.noteId,
         },
         {
@@ -360,39 +444,31 @@ export const tutorialMachine = setup({
       },
     },
     notifications: {
-      initial: 'redirectingToCogno',
-      // Fire-and-forget: Start notification creation in background on entry
-      entry: ({ context }) => {
-        // Create notification in background - don't wait for completion
-        const { tutorialWorkspaceId, onboardingSessionId } = context;
-        if (tutorialWorkspaceId && onboardingSessionId) {
-          import('@/lib/api/notificationsApi').then(
-            ({ createTutorialNotification }) => {
-              import('@/lib/supabase/browserClient').then(
-                ({ createClient }) => {
-                  const supabase = createClient();
-                  supabase.auth.getUser().then(({ data: { user } }) => {
-                    if (user) {
-                      const locale =
-                        typeof navigator !== 'undefined'
-                          ? navigator.language
-                          : 'en';
-                      createTutorialNotification(
-                        onboardingSessionId,
-                        user.id,
-                        locale
-                      ).catch(() => {
-                        // Silently ignore errors in background task
-                      });
-                    }
-                  });
-                }
-              );
-            }
-          );
-        }
-      },
+      initial: 'creatingNotification',
       states: {
+        creatingNotification: {
+          // Skip notification creation if already created in Tier1
+          always: {
+            target: 'redirectingToCogno',
+            guard: ({ context }) => !!context.tutorialNotificationId,
+          },
+          // Wait for notification creation to complete before proceeding
+          invoke: {
+            src: 'createAINotification',
+            input: ({ context }) => ({
+              workspaceId: context.tutorialWorkspaceId!,
+              sessionId: context.onboardingSessionId!,
+            }),
+            onDone: {
+              target: 'redirectingToCogno',
+              actions: 'storeTutorialNotificationId',
+            },
+            onError: {
+              // Proceed anyway even if notification creation fails
+              target: 'redirectingToCogno',
+            },
+          },
+        },
         redirectingToCogno: {
           // Show modal to guide user to cogno page
           on: {
@@ -400,16 +476,71 @@ export const tutorialMachine = setup({
           },
         },
         waitingForBellClick: {
-          // Guide user to click bell icon
+          // Guide user to click bell icon - goes directly to waitingForReaction
           on: {
-            BELL_CLICKED: 'waitingForNotificationView',
+            BELL_CLICKED: 'waitingForReaction',
           },
         },
-        waitingForNotificationView: {
-          // Wait for user to view the notification
+        waitingForReaction: {
+          // Show modal explaining what to do, then wait for complete/postpone
           on: {
-            NOTIFICATION_VIEWED: '#tutorial.completed',
+            REACTION_SELECTED: {
+              target: '#tutorial.activity',
+              actions: 'storeReaction',
+            },
           },
+        },
+      },
+    },
+    // Activity confirmation step
+    activity: {
+      initial: 'showingActivityIntro',
+      states: {
+        showingActivityIntro: {
+          // Show modal, then navigate to workspace and open Activity drawer
+          on: {
+            OPEN_ACTIVITY_DRAWER: 'waitingForActivityView',
+          },
+        },
+        waitingForActivityView: {
+          // No UI - wait for user to interact with existing Activity drawer
+          on: {
+            ACTIVITY_VIEWED: '#tutorial.invite',
+          },
+        },
+      },
+    },
+    // Member invitation step
+    invite: {
+      initial: 'showingInviteIntro',
+      states: {
+        showingInviteIntro: {
+          // Show modal, then navigate to members page
+          on: {
+            NAVIGATE_TO_MEMBERS: 'waitingForInviteAction',
+          },
+        },
+        waitingForInviteAction: {
+          // No UI - wait for user to interact with existing Invite drawer
+          on: {
+            INVITE_CLICKED: '#tutorial.completing',
+            SHARE_COMPLETED: '#tutorial.completing',
+          },
+        },
+      },
+    },
+    // Completion step - update database
+    completing: {
+      invoke: {
+        src: 'completeTier2Onboarding',
+        input: ({ context }) => ({
+          sessionId: context.onboardingSessionId || '',
+        }),
+        onDone: {
+          target: 'completed',
+        },
+        onError: {
+          target: 'completed', // Complete anyway even if DB update fails
         },
       },
     },

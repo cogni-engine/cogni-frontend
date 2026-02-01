@@ -157,17 +157,59 @@ export function TutorialProvider({ children }: { children: ReactNode }) {
           }
           break;
 
-        case 'NOTIFICATION_VIEWED':
-          // Check if we're in the waitingForNotificationView substate
+        case 'NOTIFICATION_REACTION_SELECTED':
+          // Check if we're in the waitingForReaction substate
           if (
             typeof stateValue === 'object' &&
             stateValue !== null &&
             'notifications' in stateValue &&
             (stateValue as { notifications: string }).notifications ===
-              'waitingForNotificationView'
+              'waitingForReaction'
           ) {
-            console.log('Notification viewed, completing tutorial');
-            send({ type: 'NOTIFICATION_VIEWED' });
+            console.log(
+              'Notification reaction selected, transitioning to activity'
+            );
+            send({
+              type: 'REACTION_SELECTED',
+              reaction: event.reaction,
+              reactionText: event.reactionText,
+            });
+          }
+          break;
+
+        case 'ACTIVITY_DRAWER_OPENED':
+          // Check if we're in the waitingForActivityView substate
+          if (
+            typeof stateValue === 'object' &&
+            stateValue !== null &&
+            'activity' in stateValue &&
+            (stateValue as { activity: string }).activity ===
+              'waitingForActivityView' &&
+            context.tutorialWorkspaceId === event.workspaceId
+          ) {
+            // Give user time to view the activity drawer
+            console.log('Activity drawer opened, will transition after delay');
+            setTimeout(() => {
+              send({ type: 'ACTIVITY_VIEWED' });
+            }, 2000);
+          }
+          break;
+
+        case 'MEMBER_INVITE_CLICKED':
+        case 'MEMBER_INVITE_SHARED':
+        case 'MEMBER_INVITE_DRAWER_CLOSED':
+          // Check if we're in the waitingForInviteAction substate
+          if (
+            typeof stateValue === 'object' &&
+            stateValue !== null &&
+            'invite' in stateValue &&
+            (stateValue as { invite: string }).invite ===
+              'waitingForInviteAction' &&
+            context.tutorialWorkspaceId === event.workspaceId
+          ) {
+            console.log('Invite action detected, completing tutorial');
+            // Use INVITE_CLICKED or SHARE_COMPLETED - both work
+            send({ type: 'INVITE_CLICKED' });
           }
           break;
 

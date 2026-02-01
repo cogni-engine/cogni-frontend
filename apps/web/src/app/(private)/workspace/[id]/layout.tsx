@@ -18,6 +18,7 @@ import { useWorkspace } from '@/hooks/useWorkspace';
 import FolderActionButton from '@/components/FolderActionButton';
 import WorkspaceActivityDrawer from '@/features/workspace/components/activity/WorkspaceActivityDrawer';
 import { WorkspaceProvider } from '@/features/workspace/contexts/WorkspaceContext';
+import { getAppEventBus } from '@/lib/events/appEventBus';
 
 type ViewType = 'chat' | 'notes' | 'members' | 'menu';
 
@@ -99,9 +100,16 @@ export default function WorkspaceLayout({
             )}
             {currentView === 'chat' && (
               <GlassButton
-                onClick={() => setIsActivityDrawerOpen(true)}
+                onClick={() => {
+                  setIsActivityDrawerOpen(true);
+                  getAppEventBus().emit({
+                    type: 'ACTIVITY_DRAWER_OPENED',
+                    workspaceId,
+                  });
+                }}
                 title='Activity'
                 className='size-12'
+                data-shepherd-target='activity-button'
               >
                 <GitBranch className='w-5 h-5 text-white' />
               </GlassButton>

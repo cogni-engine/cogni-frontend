@@ -282,7 +282,11 @@ function WorkspaceMessageItem({
 
   if (!message) return null;
 
-  const profile = message.workspace_member?.user_profile ?? null;
+  // Prefer agent_profile for agents (Mike, Lisa), fall back to user_profile
+  const profile =
+    message.workspace_member?.agent_profile ??
+    message.workspace_member?.user_profile ??
+    null;
 
   const name = profile?.name ?? 'Unknown';
   const avatarUrl = profile?.avatar_url ?? '';
@@ -293,7 +297,10 @@ function WorkspaceMessageItem({
   }: {
     repliedMessage: WorkspaceMessage;
   }) => {
-    const repliedProfile = repliedMessage.workspace_member?.user_profile;
+    // Prefer agent_profile for agents, fall back to user_profile
+    const repliedProfile =
+      repliedMessage.workspace_member?.agent_profile ??
+      repliedMessage.workspace_member?.user_profile;
     const repliedName = repliedProfile?.name ?? 'Unknown';
     const repliedText =
       repliedMessage.text.slice(0, 100) +

@@ -132,8 +132,8 @@ export async function getWorkspaceMessages(
         id,
         user_id,
         agent_id,
-        user_profile:user_profiles!user_id(id, name, avatar_url),
-        agent_profile:agent_profiles!agent_id(id, name, avatar_url)
+        user_profile:user_id(id, name, avatar_url),
+        agent_profile:agent_id(id, name, avatar_url)
       ),
       replied_message:reply_to_id(
         id,
@@ -144,8 +144,8 @@ export async function getWorkspaceMessages(
           id,
           user_id,
           agent_id,
-          user_profile:user_profiles!user_id(id, name, avatar_url),
-          agent_profile:agent_profiles!agent_id(id, name, avatar_url)
+          user_profile:user_id(id, name, avatar_url),
+          agent_profile:agent_id(id, name, avatar_url)
         )
       ),
       workspace_message_files(
@@ -225,8 +225,8 @@ export async function sendWorkspaceMessage(
         id,
         user_id,
         agent_id,
-        user_profile:user_profiles!user_id(id, name, avatar_url),
-        agent_profile:agent_profiles!agent_id(id, name, avatar_url)
+        user_profile:user_id(id, name, avatar_url),
+        agent_profile:agent_id(id, name, avatar_url)
       ),
       replied_message:reply_to_id(
         id,
@@ -237,8 +237,8 @@ export async function sendWorkspaceMessage(
           id,
           user_id,
           agent_id,
-          user_profile:user_profiles!user_id(id, name, avatar_url),
-          agent_profile:agent_profiles!agent_id(id, name, avatar_url)
+          user_profile:user_id(id, name, avatar_url),
+          agent_profile:agent_id(id, name, avatar_url)
         )
       )
     `
@@ -306,8 +306,8 @@ export async function updateWorkspaceMessage(
         id,
         user_id,
         agent_id,
-        user_profile:user_profiles!user_id(id, name, avatar_url),
-        agent_profile:agent_profiles!agent_id(id, name, avatar_url)
+        user_profile:user_id(id, name, avatar_url),
+        agent_profile:agent_id(id, name, avatar_url)
       ),
       replied_message:reply_to_id(
         id,
@@ -318,8 +318,8 @@ export async function updateWorkspaceMessage(
           id,
           user_id,
           agent_id,
-          user_profile:user_profiles!user_id(id, name, avatar_url),
-          agent_profile:agent_profiles!agent_id(id, name, avatar_url)
+          user_profile:user_id(id, name, avatar_url),
+          agent_profile:agent_id(id, name, avatar_url)
         )
       )
     `

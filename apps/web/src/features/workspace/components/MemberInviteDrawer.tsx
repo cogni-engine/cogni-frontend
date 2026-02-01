@@ -15,6 +15,7 @@ import GlassButton from '@/components/glass-design/GlassButton';
 import { useWorkspaceInvitations } from '../hooks/useWorkspaceInvitations';
 import { useWorkspaceMembers } from '@/hooks/useWorkspace';
 import { addWorkspaceMembers } from '@/lib/api/workspaceApi';
+import { getAppEventBus } from '@/lib/events/appEventBus';
 
 type DrawerStep = 'initial' | 'invite-friends';
 
@@ -62,6 +63,11 @@ export default function MemberInviteDrawer({
       } else {
         await navigator.clipboard.writeText(inviteLink);
       }
+      // Emit event for tutorial tracking
+      getAppEventBus().emit({
+        type: 'MEMBER_INVITE_SHARED',
+        workspaceId,
+      });
       // Close drawer after successful share
       onClose();
     } catch (error) {
@@ -101,8 +107,13 @@ export default function MemberInviteDrawer({
   const handleClose = useCallback(() => {
     setStep('initial');
     setSelectedUserIds([]);
+    // Emit event for tutorial tracking
+    getAppEventBus().emit({
+      type: 'MEMBER_INVITE_DRAWER_CLOSED',
+      workspaceId,
+    });
     onClose();
-  }, [onClose]);
+  }, [onClose, workspaceId]);
 
   const handleInviteFriends = useCallback(() => {
     setStep('invite-friends');
@@ -114,7 +125,11 @@ export default function MemberInviteDrawer({
 
   return (
     <Drawer open={isOpen} onOpenChange={open => !open && handleClose()}>
-      <DrawerContent zIndex={160} maxHeight='85vh'>
+      <DrawerContent
+        zIndex={160}
+        maxHeight='85vh'
+        data-shepherd-target='invite-drawer'
+      >
         <DrawerHandle />
 
         <DrawerHeader className='px-4 pb-2 pt-0'>

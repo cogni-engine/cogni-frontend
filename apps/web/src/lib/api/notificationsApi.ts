@@ -46,7 +46,7 @@ export async function getWorkspaceActivityNotifications(
 
   const memberIds = members.map(m => m.id);
 
-  // 2. Get notifications with JOIN to workspace_member and user_profile
+  // 2. Get notifications with JOIN to workspace_member, user_profile and agent_profile
   const { data, error } = await supabase
     .from('ai_notifications')
     .select(
@@ -55,7 +55,9 @@ export async function getWorkspaceActivityNotifications(
       workspace_member:workspace_member_id(
         id,
         user_id,
-        user_profile:user_id(name, avatar_url)
+        agent_id,
+        user_profile:user_id(name, avatar_url),
+        agent_profile:agent_id(name, avatar_url)
       )
     `
     )
@@ -78,27 +80,43 @@ export async function getWorkspaceActivityNotifications(
     created_at: string;
     workspace_member?: {
       id: number;
-      user_id: string;
+      user_id: string | null;
+      agent_id: string | null;
       user_profile?: {
         name: string;
         avatar_url?: string;
-      };
+      } | null;
+      agent_profile?: {
+        name: string;
+        avatar_url?: string;
+      } | null;
     };
   };
 
-  return (data || []).map((item: NotificationWithMember) => ({
-    id: item.id,
-    title: item.title,
-    body: item.body,
-    ai_context: item.ai_context,
-    reaction_status: item.reaction_status as NotificationReactionStatus,
-    reaction_text: item.reaction_text,
-    member_name: item.workspace_member?.user_profile?.name || 'Unknown',
-    member_avatar_url: item.workspace_member?.user_profile?.avatar_url,
-    updated_at: item.updated_at,
-    due_date: item.due_date,
-    created_at: item.created_at,
-  }));
+  return (data || []).map((item: NotificationWithMember) => {
+    // Prefer agent_profile for agents (Mike, Lisa), fall back to user_profile
+    const memberName =
+      item.workspace_member?.agent_profile?.name ||
+      item.workspace_member?.user_profile?.name ||
+      'Unknown';
+    const memberAvatarUrl =
+      item.workspace_member?.agent_profile?.avatar_url ||
+      item.workspace_member?.user_profile?.avatar_url;
+
+    return {
+      id: item.id,
+      title: item.title,
+      body: item.body,
+      ai_context: item.ai_context,
+      reaction_status: item.reaction_status as NotificationReactionStatus,
+      reaction_text: item.reaction_text,
+      member_name: memberName,
+      member_avatar_url: memberAvatarUrl,
+      updated_at: item.updated_at,
+      due_date: item.due_date,
+      created_at: item.created_at,
+    };
+  });
 }
 
 /**
@@ -145,16 +163,19 @@ export async function createTutorialNotification(
   }
 
   const data = await response.json();
+
+  // Response contains arrays (tasks[], notifications[])
+  const tasks = data.tasks || [];
+  const notifications = data.notifications || [];
+
   console.log('[API] createTutorialNotification - Success:', {
-    taskId: data.task.id,
-    notificationId: data.notification.id,
-    taskTitle: data.task.title,
-    notificationTitle: data.notification.title,
-    notificationDueDate: data.notification.due_date,
+    taskIds: tasks.map((t: { id: number }) => t.id),
+    notificationIds: notifications.map((n: { id: number }) => n.id),
   });
 
+  // Return first items for backwards compatibility
   return {
-    taskId: data.task.id,
-    notificationId: data.notification.id,
+    taskId: tasks[0]?.id,
+    notificationId: notifications[0]?.id,
   };
 }

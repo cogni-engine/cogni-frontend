@@ -25,6 +25,7 @@ import {
   completeNotification,
   postponeNotification,
 } from '@/features/notifications/api/aiNotificationsApi';
+import { getAppEventBus } from '@/lib/events/appEventBus';
 import { AIMessageView } from '@/features/cogno/components/AIMessageView';
 import { getNote } from '@/features/notes/api/notesApi';
 import { TiptapRenderer } from '@/components/tiptap/TiptapRenderer';
@@ -144,6 +145,13 @@ export default function NotificationProcessDrawer({
       const result = await completeNotification(currentNotification.id);
       console.log('[NotificationDrawer] Complete API response', result);
 
+      // Emit event for tutorial tracking
+      getAppEventBus().emit({
+        type: 'NOTIFICATION_REACTION_SELECTED',
+        notificationId: currentNotification.id,
+        reaction: 'completed',
+      });
+
       // 通知を再取得（配列が更新される）- awaitで完了を待つ
       await onNotificationProcessed?.();
       console.log(
@@ -234,6 +242,14 @@ export default function NotificationProcessDrawer({
     try {
       // Use new backend endpoint that handles postponement and resolves previous notifications
       await postponeNotification(currentNotification.id, noteText || '');
+
+      // Emit event for tutorial tracking
+      getAppEventBus().emit({
+        type: 'NOTIFICATION_REACTION_SELECTED',
+        notificationId: currentNotification.id,
+        reaction: 'postponed',
+        reactionText: noteText || undefined,
+      });
 
       setNoteText('');
       resetTextareaHeight();

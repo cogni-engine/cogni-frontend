@@ -178,6 +178,7 @@ export function TutorialStepManager() {
       requireTutorialWorkspace: false,
       delay: 1000,
     },
+    // No UI for creatingNotification state - wait silently, then show redirect modal
     notificationRedirect: {
       id: 'notification-redirect',
       text: "Great work! Now let's check out your notifications.",
@@ -211,17 +212,107 @@ export function TutorialStepManager() {
       requireTutorialWorkspace: false,
       delay: 1000,
     },
-    notificationPanel: {
-      id: 'notification-panel',
-      text: 'Here are your notifications! Click on the AI notification to view it.',
-      selector: '[data-shepherd-target="notification-panel"]',
-      position: 'left' as const,
+    notificationReaction: {
+      id: 'notification-reaction',
+      text: "Your notification is ready! Click 'Complete' when you're done, or 'Skip' to postpone it.",
+      selector: undefined, // Centered modal
       ripplePosition: 'center' as const,
-      showWhenState: 'notifications.waitingForNotificationView',
+      showWhenState: 'notifications.waitingForReaction',
       pathnamePattern: '/cogno',
-      workspaceId: undefined, // Not workspace-specific
+      workspaceId: undefined,
       requireTutorialWorkspace: false,
-      delay: 1000,
+      delay: 500,
+      buttons: [
+        {
+          text: 'Got it',
+          action: () => {
+            return 'cancel' as const;
+          },
+        },
+      ],
+    },
+    activityIntro: {
+      id: 'activity-intro',
+      text: "Awesome! You've just completed your first notification. Now let's check your Activity feed to see your progress.",
+      selector: undefined, // Centered modal
+      ripplePosition: 'center' as const,
+      showWhenState: 'activity.showingActivityIntro',
+      pathnamePattern: undefined, // Show on any page
+      workspaceId: undefined,
+      requireTutorialWorkspace: false,
+      delay: 500,
+      buttons: [
+        {
+          text: 'Continue',
+          action: () => {
+            const tutorialWorkspaceId =
+              tutorialState.context.tutorialWorkspaceId;
+            if (tutorialWorkspaceId) {
+              router.push(`/workspace/${tutorialWorkspaceId}/chat`);
+            }
+            sendTutorialEvent?.({ type: 'OPEN_ACTIVITY_DRAWER' });
+            return 'cancel' as const;
+          },
+        },
+      ],
+    },
+    activityButtonHighlight: {
+      id: 'activity-button-highlight',
+      text: 'Click the Activity button to see your progress!',
+      selector: '[data-shepherd-target="activity-button"]',
+      position: 'bottom' as const,
+      ripplePosition: 'center' as const,
+      showWhenState: 'activity.waitingForActivityView',
+      pathnamePattern: '/chat',
+      workspaceId,
+      requireTutorialWorkspace: true,
+      delay: 500,
+    },
+    inviteIntro: {
+      id: 'invite-intro',
+      text: "One last thing! Cogno is better with friends. Let's invite someone to your workspace!",
+      selector: undefined, // Centered modal
+      ripplePosition: 'center' as const,
+      showWhenState: 'invite.showingInviteIntro',
+      pathnamePattern: undefined, // Show on any page
+      workspaceId: undefined,
+      requireTutorialWorkspace: false,
+      delay: 500,
+      buttons: [
+        {
+          text: 'Continue',
+          action: () => {
+            const tutorialWorkspaceId =
+              tutorialState.context.tutorialWorkspaceId;
+            if (tutorialWorkspaceId) {
+              router.push(`/workspace/${tutorialWorkspaceId}/members`);
+            }
+            sendTutorialEvent?.({ type: 'NAVIGATE_TO_MEMBERS' });
+            return 'cancel' as const;
+          },
+        },
+      ],
+    },
+    inviteButtonHighlight: {
+      id: 'invite-button-highlight',
+      text: 'Click the Invite button to share your workspace with friends! You can skip this step if you prefer.',
+      selector: '[data-shepherd-target="invite-button"]',
+      position: 'bottom' as const,
+      ripplePosition: 'center' as const,
+      showWhenState: 'invite.waitingForInviteAction',
+      pathnamePattern: '/members',
+      workspaceId,
+      requireTutorialWorkspace: true,
+      delay: 500,
+      buttons: [
+        {
+          text: 'Skip for now',
+          action: () => {
+            sendTutorialEvent?.({ type: 'INVITE_CLICKED' });
+            return 'cancel' as const;
+          },
+        },
+      ],
     },
   };
 
@@ -314,6 +405,8 @@ export function TutorialStepManager() {
                   ).notifications;
                   console.log('notificationsState', notificationsState);
 
+                  // creatingNotification: No UI - wait silently for notification creation
+
                   if (notificationsState === 'redirectingToCogno') {
                     return stepConfigs.notificationRedirect;
                   }
@@ -322,13 +415,59 @@ export function TutorialStepManager() {
                     return stepConfigs.notificationBellIcon;
                   }
 
-                  if (notificationsState === 'waitingForNotificationView') {
-                    return stepConfigs.notificationPanel;
+                  if (notificationsState === 'waitingForReaction') {
+                    return stepConfigs.notificationReaction;
                   }
                 }
                 return null;
               })()
-            : null;
+            : tutorialState.matches('activity')
+              ? // Check activity substates
+                (() => {
+                  if (
+                    typeof stateValue === 'object' &&
+                    stateValue !== null &&
+                    'activity' in stateValue
+                  ) {
+                    const activityState = (stateValue as { activity: string })
+                      .activity;
+                    console.log('activityState', activityState);
+
+                    if (activityState === 'showingActivityIntro') {
+                      return stepConfigs.activityIntro;
+                    }
+
+                    if (activityState === 'waitingForActivityView') {
+                      // Highlight the Activity button
+                      return stepConfigs.activityButtonHighlight;
+                    }
+                  }
+                  return null;
+                })()
+              : tutorialState.matches('invite')
+                ? // Check invite substates
+                  (() => {
+                    if (
+                      typeof stateValue === 'object' &&
+                      stateValue !== null &&
+                      'invite' in stateValue
+                    ) {
+                      const inviteState = (stateValue as { invite: string })
+                        .invite;
+                      console.log('inviteState', inviteState);
+
+                      if (inviteState === 'showingInviteIntro') {
+                        return stepConfigs.inviteIntro;
+                      }
+
+                      if (inviteState === 'waitingForInviteAction') {
+                        // Highlight the Invite button
+                        return stepConfigs.inviteButtonHighlight;
+                      }
+                    }
+                    return null;
+                  })()
+                : null;
 
   const currentStepId = currentStep?.id || 'none';
 

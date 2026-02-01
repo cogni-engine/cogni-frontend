@@ -8,6 +8,7 @@ import MemberInviteDrawer from '@/features/workspace/components/MemberInviteDraw
 import { Plus } from 'lucide-react';
 import GlassButton from '@/components/glass-design/GlassButton';
 import { useWorkspaceContext } from '@/features/workspace/contexts/WorkspaceContext';
+import { getAppEventBus } from '@/lib/events/appEventBus';
 export default function WorkspaceMembersPage() {
   const params = useParams();
   const workspaceId = parseInt(params.id as string);
@@ -35,9 +36,16 @@ export default function WorkspaceMembersPage() {
         <div className='flex items-center justify-between'>
           <h2 className='text-xl font-semibold text-white'>Members</h2>
           <GlassButton
-            onClick={() => setIsInviteDrawerOpen(true)}
+            onClick={() => {
+              setIsInviteDrawerOpen(true);
+              getAppEventBus().emit({
+                type: 'MEMBER_INVITE_CLICKED',
+                workspaceId,
+              });
+            }}
             title='Invite'
             className='gap-2 px-4'
+            data-shepherd-target='invite-button'
           >
             <Plus className='w-5 h-5 text-white' />
             Invite

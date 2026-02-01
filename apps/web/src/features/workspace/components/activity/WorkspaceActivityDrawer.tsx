@@ -77,7 +77,11 @@ export default function WorkspaceActivityDrawer({
 
   return (
     <Drawer open={open} onOpenChange={onOpenChange}>
-      <DrawerContent zIndex={150} height='85vh'>
+      <DrawerContent
+        zIndex={150}
+        height='85vh'
+        data-shepherd-target='activity-drawer'
+      >
         <DrawerHandle />
 
         <DrawerHeader className='px-6 pb-2 pt-0'>

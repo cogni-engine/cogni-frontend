@@ -3,6 +3,7 @@ import type { OnboardingContext, OnboardingEvent } from '../types';
 import { OnboardingService } from '../services/onboardingService';
 import { createBrowserClient } from '@supabase/ssr';
 import { generateFirstNote } from '@/features/onboarding/services/generateFirstNote';
+import { createTutorialNotification } from '@/lib/api/notificationsApi';
 
 /**
  * XState Machine for Onboarding Flow
@@ -73,11 +74,49 @@ const onboardingMachineSetup = setup({
 
         const firstNote = { noteId: note.id };
 
+        // Create tutorial notification (task + notification for Mike/Lisa activity)
+        let tutorialNotificationId: number | undefined;
+        try {
+          const notificationResult = await createTutorialNotification(
+            input.onboardingSessionId,
+            input.userId,
+            locale
+          );
+          tutorialNotificationId = notificationResult.notificationId;
+
+          // Save tutorialNotificationId to database context for Tier2 to access
+          if (tutorialNotificationId) {
+            // Fetch current context and merge
+            const { data: sessionData } = await supabase
+              .from('onboarding_sessions')
+              .select('context')
+              .eq('id', input.onboardingSessionId)
+              .single();
+
+            const currentContext = sessionData?.context || {};
+            await supabase
+              .from('onboarding_sessions')
+              .update({
+                context: {
+                  ...currentContext,
+                  tutorialNotificationId,
+                },
+              })
+              .eq('id', input.onboardingSessionId);
+          }
+        } catch (error) {
+          console.error('Failed to create tutorial notification:', error);
+          // Continue anyway - notification is not critical for onboarding
+        }
+
         return {
           workspaceId: result.workspaceId,
-          bossWorkspaceMemberId: result.bossWorkspaceMemberId,
-          bossAgentProfileId: result.bossAgentProfileId,
+          mikeWorkspaceMemberId: result.mikeWorkspaceMemberId,
+          mikeAgentProfileId: result.mikeAgentProfileId,
+          lisaWorkspaceMemberId: result.lisaWorkspaceMemberId,
+          lisaAgentProfileId: result.lisaAgentProfileId,
           firstNote,
+          tutorialNotificationId,
         };
       }
     ),
@@ -109,13 +148,21 @@ const onboardingMachineSetup = setup({
         if (event.type !== 'STORE_WORKSPACE') return undefined;
         return event.workspaceId;
       },
-      bossWorkspaceMemberId: ({ event }) => {
+      mikeWorkspaceMemberId: ({ event }) => {
         if (event.type !== 'STORE_WORKSPACE') return undefined;
-        return event.bossWorkspaceMemberId;
+        return event.mikeWorkspaceMemberId;
       },
-      bossAgentProfileId: ({ event }) => {
+      mikeAgentProfileId: ({ event }) => {
         if (event.type !== 'STORE_WORKSPACE') return undefined;
-        return event.bossAgentProfileId;
+        return event.mikeAgentProfileId;
+      },
+      lisaWorkspaceMemberId: ({ event }) => {
+        if (event.type !== 'STORE_WORKSPACE') return undefined;
+        return event.lisaWorkspaceMemberId;
+      },
+      lisaAgentProfileId: ({ event }) => {
+        if (event.type !== 'STORE_WORKSPACE') return undefined;
+        return event.lisaAgentProfileId;
       },
     }),
   },
@@ -234,10 +281,15 @@ export const onboardingMachine = onboardingMachineSetup.createMachine({
         onDone: {
           actions: assign({
             tutorialWorkspaceId: ({ event }) => event.output.workspaceId,
-            bossWorkspaceMemberId: ({ event }) =>
-              event.output.bossWorkspaceMemberId,
-            bossAgentProfileId: ({ event }) => event.output.bossAgentProfileId,
+            mikeWorkspaceMemberId: ({ event }) =>
+              event.output.mikeWorkspaceMemberId,
+            mikeAgentProfileId: ({ event }) => event.output.mikeAgentProfileId,
+            lisaWorkspaceMemberId: ({ event }) =>
+              event.output.lisaWorkspaceMemberId,
+            lisaAgentProfileId: ({ event }) => event.output.lisaAgentProfileId,
             firstNote: ({ event }) => event.output.firstNote,
+            tutorialNotificationId: ({ event }) =>
+              event.output.tutorialNotificationId,
           }),
         },
         onError: {

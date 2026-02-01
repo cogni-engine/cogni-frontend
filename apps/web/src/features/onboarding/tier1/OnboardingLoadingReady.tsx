@@ -123,7 +123,10 @@ export function OnboardingLoadingReady({
   const strokeWidth = 8;
   const radius = (size - strokeWidth) / 2;
   const circumference = 2 * Math.PI * radius;
-  const strokeDashoffset = circumference - (progress / 100) * circumference;
+  // Ensure progress shows 100% when complete
+  const displayProgress = isComplete ? 100 : progress;
+  const strokeDashoffset =
+    circumference - (displayProgress / 100) * circumference;
 
   return (
     <div className='flex flex-col h-full items-center justify-between animate-in fade-in duration-500'>

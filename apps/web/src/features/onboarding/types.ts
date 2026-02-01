@@ -33,12 +33,16 @@ export interface OnboardingContext {
   onboardingSessionId: string;
   // Tutorial workspace data
   tutorialWorkspaceId?: number;
-  bossWorkspaceMemberId?: number;
-  bossAgentProfileId?: string;
+  mikeWorkspaceMemberId?: number;
+  mikeAgentProfileId?: string;
+  lisaWorkspaceMemberId?: number;
+  lisaAgentProfileId?: string;
   // First note (noteId only, saved by backend)
   firstNote?: {
     noteId: number;
   };
+  // Tutorial notification ID (created in tier1 for tier2 to use)
+  tutorialNotificationId?: number;
 }
 
 // Onboarding events
@@ -54,8 +58,10 @@ export type OnboardingEvent =
   | {
       type: 'STORE_WORKSPACE';
       workspaceId: number;
-      bossWorkspaceMemberId?: number;
-      bossAgentProfileId?: string;
+      mikeWorkspaceMemberId?: number;
+      mikeAgentProfileId?: string;
+      lisaWorkspaceMemberId?: number;
+      lisaAgentProfileId?: string;
     }
   | { type: 'COMPLETE' };
 

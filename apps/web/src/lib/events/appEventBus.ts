@@ -24,7 +24,17 @@ export type AppEvent =
       suggestionId?: string;
     }
   | { type: 'NOTIFICATION_BELL_CLICKED' }
-  | { type: 'NOTIFICATION_VIEWED'; notificationId: number };
+  | { type: 'NOTIFICATION_VIEWED'; notificationId: number }
+  | {
+      type: 'NOTIFICATION_REACTION_SELECTED';
+      notificationId: number;
+      reaction: 'completed' | 'postponed';
+      reactionText?: string;
+    }
+  | { type: 'ACTIVITY_DRAWER_OPENED'; workspaceId: number }
+  | { type: 'MEMBER_INVITE_CLICKED'; workspaceId: number }
+  | { type: 'MEMBER_INVITE_SHARED'; workspaceId: number }
+  | { type: 'MEMBER_INVITE_DRAWER_CLOSED'; workspaceId: number };
 
 class AppEventBus {
   private listeners = new Set<(event: AppEvent) => void>();

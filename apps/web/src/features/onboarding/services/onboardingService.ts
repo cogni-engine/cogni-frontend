@@ -21,8 +21,10 @@ export interface OnboardingContext {
   aiRelationship?: string | string[];
   useCase?: string | string[];
   // Tutorial workspace IDs (added during tier1 completion)
-  bossWorkspaceMemberId?: number;
-  bossAgentProfileId?: string;
+  mikeWorkspaceMemberId?: number;
+  mikeAgentProfileId?: string;
+  lisaWorkspaceMemberId?: number;
+  lisaAgentProfileId?: string;
   tutorialWorkspaceId?: number;
   tutorialNoteId?: number;
   // First note (noteId only, saved by backend)
@@ -65,8 +67,10 @@ export class OnboardingService {
   ): Promise<{
     success: boolean;
     workspaceId?: number;
-    bossWorkspaceMemberId?: number;
-    bossAgentProfileId?: string;
+    mikeWorkspaceMemberId?: number;
+    mikeAgentProfileId?: string;
+    lisaWorkspaceMemberId?: number;
+    lisaAgentProfileId?: string;
   }> {
     try {
       // Merge answers with existing context
@@ -100,72 +104,118 @@ export class OnboardingService {
         return { success: false };
       }
 
-      // Create the "boss" agent profile
-      const { data: newBoss, error: bossError } = await this.supabase
+      // Create Mike agent profile
+      const { data: mike, error: mikeError } = await this.supabase
         .from('agent_profiles')
         .insert({
-          name: 'boss',
+          name: 'Mike',
           avatar_url:
-            'https://gtcwgwlgcphwhapmnerq.supabase.co/storage/v1/object/public/avatars/public/DN2QOL01.svg', // Mock URL for now
+            'https://gtcwgwlgcphwhapmnerq.supabase.co/storage/v1/object/public/avatars/public/DN2QOL01.svg',
         })
         .select('id')
         .single();
 
-      if (bossError || !newBoss) {
-        console.error('Error creating boss agent:', bossError);
+      if (mikeError || !mike) {
+        console.error('Error creating Mike agent:', mikeError);
         return { success: false };
       }
 
-      const bossAgentId = newBoss.id;
+      // Create Lisa agent profile
+      const { data: lisa, error: lisaError } = await this.supabase
+        .from('agent_profiles')
+        .insert({
+          name: 'Lisa',
+          avatar_url:
+            'https://gtcwgwlgcphwhapmnerq.supabase.co/storage/v1/object/public/avatars/public/DN2QOL01.svg',
+        })
+        .select('id')
+        .single();
 
-      // Add boss agent as a member of the tutorial workspace
-      const { data: bossMember, error: memberError } = await this.supabase
+      if (lisaError || !lisa) {
+        console.error('Error creating Lisa agent:', lisaError);
+        return { success: false };
+      }
+
+      // Add Mike as a member of the tutorial workspace
+      const { data: mikeMember, error: mikeMemberError } = await this.supabase
         .from('workspace_member')
         .insert({
           workspace_id: workspaceId,
-          agent_id: bossAgentId,
+          agent_id: mike.id,
           user_id: null,
           role: 'member',
         })
         .select('id')
         .single();
 
-      if (memberError || !bossMember) {
-        console.error('Error adding boss agent to workspace:', memberError);
+      if (mikeMemberError || !mikeMember) {
+        console.error('Error adding Mike to workspace:', mikeMemberError);
         return { success: false };
       }
 
-      const bossWorkspaceMemberId = bossMember.id;
-
-      // Send boss greeting message immediately (so it's there when user enters workspace)
-      const bossGreetingText = `Welcome to your tutorial workspace! 👋
-
-I'm your AI assistant, and I'm here to help you get started with Cogno. This is a special workspace created just for you to learn the ropes.
-
-Feel free to ask me anything or explore the features. I'll be guiding you through the basics!`;
-
-      const { error: messageError } = await this.supabase
-        .from('workspace_messages')
+      // Add Lisa as a member of the tutorial workspace
+      const { data: lisaMember, error: lisaMemberError } = await this.supabase
+        .from('workspace_member')
         .insert({
           workspace_id: workspaceId,
-          workspace_member_id: bossWorkspaceMemberId,
-          text: bossGreetingText,
-        });
+          agent_id: lisa.id,
+          user_id: null,
+          role: 'member',
+        })
+        .select('id')
+        .single();
 
-      if (messageError) {
-        console.error('Error sending boss greeting message:', messageError);
-        // Continue anyway - message is not critical
+      if (lisaMemberError || !lisaMember) {
+        console.error('Error adding Lisa to workspace:', lisaMemberError);
+        return { success: false };
       }
 
-      // Add boss IDs to the merged context
+      // Send alternating greeting messages from Mike and Lisa
+      const greetingMessages = [
+        {
+          memberId: mikeMember.id,
+          text: `Hey! Welcome to Cogno! 👋 I'm Mike.`,
+        },
+        {
+          memberId: lisaMember.id,
+          text: `Hi there! I'm Lisa. We'll help you get started with your productivity journey!`,
+        },
+        {
+          memberId: mikeMember.id,
+          text: `This workspace is your tutorial area. Feel free to explore and try things out.`,
+        },
+        {
+          memberId: lisaMember.id,
+          text: `Don't worry about making mistakes - that's how we learn! Ask us anything anytime. 😊`,
+        },
+      ];
+
+      for (const msg of greetingMessages) {
+        const { error: messageError } = await this.supabase
+          .from('workspace_messages')
+          .insert({
+            workspace_id: workspaceId,
+            workspace_member_id: msg.memberId,
+            text: msg.text,
+          });
+
+        if (messageError) {
+          console.error('Error sending greeting message:', messageError);
+          // Continue anyway - messages are not critical
+        }
+      }
+
+      // Add Mike and Lisa IDs to the merged context
       const finalContext = {
         ...mergedContext,
-        bossWorkspaceMemberId,
-        bossAgentProfileId: bossAgentId,
+        mikeWorkspaceMemberId: mikeMember.id,
+        mikeAgentProfileId: mike.id,
+        lisaWorkspaceMemberId: lisaMember.id,
+        lisaAgentProfileId: lisa.id,
         tutorialWorkspaceId: workspaceId,
       };
 
-      // Store all answers and boss IDs in onboarding_sessions.context and mark session as tier2
+      // Store all answers and agent IDs in onboarding_sessions.context and mark session as tier2
       const { error: contextError } = await this.supabase
         .from('onboarding_sessions')
         .update({
@@ -193,8 +243,10 @@ Feel free to ask me anything or explore the features. I'll be guiding you throug
       return {
         success: true,
         workspaceId,
-        bossWorkspaceMemberId,
-        bossAgentProfileId: bossAgentId,
+        mikeWorkspaceMemberId: mikeMember.id,
+        mikeAgentProfileId: mike.id,
+        lisaWorkspaceMemberId: lisaMember.id,
+        lisaAgentProfileId: lisa.id,
       };
     } catch (error) {
       console.error('Error completing onboarding:', error);
