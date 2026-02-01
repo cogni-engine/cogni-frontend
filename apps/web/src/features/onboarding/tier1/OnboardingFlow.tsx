@@ -280,26 +280,10 @@ export function OnboardingFlow({
 
     // LoadingReady (combined loading animation and ready screen)
     if (state.matches('loadingReady')) {
-      // Check if the completeTier1 actor has finished successfully
-      // The actor is done when it has an output (success) or is in error state
-      const actorSnapshot = state.children.completeTier1?.getSnapshot();
-      const isProcessingComplete =
-        actorSnapshot?.status === 'done' ||
-        actorSnapshot?.status === 'error' ||
-        !!actorSnapshot?.output;
-
-      // Debug logging
-      console.log('[OnboardingFlow] LoadingReady state:', {
-        actorStatus: actorSnapshot?.status,
-        hasOutput: !!actorSnapshot?.output,
-        isProcessingComplete,
-        actorId: state.children.completeTier1?.id,
-      });
-
       return (
         <OnboardingLoadingReady
           userName={state.context.profile.name}
-          workspaceReady={!!isProcessingComplete}
+          workspaceReady={false}
           error={null}
           handleContinue={() => sendWithDirection({ type: 'NEXT' })}
         />

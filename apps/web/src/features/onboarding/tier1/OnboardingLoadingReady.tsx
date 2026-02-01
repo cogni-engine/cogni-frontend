@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useRef, useCallback } from 'react';
 import { NextStepButton } from '../components/NextStepButton';
+import { createClient } from '@/lib/supabase/browserClient';
 
 interface OnboardingLoadingReadyProps {
   userName?: string;
@@ -12,73 +13,14 @@ interface OnboardingLoadingReadyProps {
 
 export function OnboardingLoadingReady({
   userName,
-  workspaceReady,
   error,
   handleContinue,
 }: OnboardingLoadingReadyProps) {
   const [progress, setProgress] = useState(0);
   const [isComplete, setIsComplete] = useState(false);
   const [showCheckmark, setShowCheckmark] = useState(false);
-  const workspaceReadyRef = useRef(workspaceReady);
   const hasCompletedRef = useRef(false);
-  const startTimeRef = useRef<number | null>(null);
-
-  // Keep refs up to date
-  useEffect(() => {
-    workspaceReadyRef.current = workspaceReady;
-  }, [workspaceReady]);
-
-  // Watch for workspaceReady to become true and trigger completion check
-  useEffect(() => {
-    console.log('[OnboardingLoadingReady] workspaceReady changed:', {
-      workspaceReady,
-      hasCompleted: hasCompletedRef.current,
-      startTime: startTimeRef.current,
-    });
-
-    if (workspaceReady && !hasCompletedRef.current && startTimeRef.current) {
-      const elapsed = Date.now() - startTimeRef.current;
-      const minDuration = 2500;
-      const minDurationMet = elapsed >= minDuration;
-
-      console.log('[OnboardingLoadingReady] Checking completion:', {
-        elapsed,
-        minDurationMet,
-      });
-
-      if (minDurationMet) {
-        console.log('[OnboardingLoadingReady] Completing!');
-        hasCompletedRef.current = true;
-        setProgress(100);
-        setTimeout(() => {
-          setIsComplete(true);
-          setTimeout(() => {
-            setShowCheckmark(true);
-          }, 200);
-        }, 100);
-      }
-    }
-  }, [workspaceReady]);
-
-  // Fallback: Complete after minimum duration even if workspaceReady never becomes true
-  useEffect(() => {
-    if (!hasCompletedRef.current && startTimeRef.current) {
-      const timeout = setTimeout(() => {
-        if (!hasCompletedRef.current) {
-          hasCompletedRef.current = true;
-          setProgress(100);
-          setTimeout(() => {
-            setIsComplete(true);
-            setTimeout(() => {
-              setShowCheckmark(true);
-            }, 200);
-          }, 100);
-        }
-      }, 3000); // 3 seconds fallback (slightly longer than minDuration)
-
-      return () => clearTimeout(timeout);
-    }
-  }, []);
+  const hasCheckedDatabaseRef = useRef(false);
 
   // Generate random increment with natural variation
   const getRandomIncrement = useCallback((currentProgress: number) => {
@@ -119,52 +61,89 @@ export function OnboardingLoadingReady({
     }
   }, []);
 
+  // Check database and complete onboarding when progress reaches 90%
   useEffect(() => {
-    const startTime = Date.now();
-    startTimeRef.current = startTime;
+    const checkAndCompleteOnboarding = async () => {
+      if (hasCheckedDatabaseRef.current || hasCompletedRef.current) return;
 
+      try {
+        const supabase = createClient();
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+
+        if (!user) {
+          console.error('No authenticated user found');
+          return;
+        }
+
+        // Check current onboarding_status
+        const { data: profile, error: fetchError } = await supabase
+          .from('user_profiles')
+          .select('onboarding_status')
+          .eq('id', user.id)
+          .single();
+
+        if (fetchError) {
+          console.error('Error fetching onboarding status:', fetchError);
+          return;
+        }
+
+        // If not completed, update it
+        if (profile?.onboarding_status !== 'completed') {
+          const { error: updateError } = await supabase
+            .from('user_profiles')
+            .update({ onboarding_status: 'completed' })
+            .eq('id', user.id);
+
+          if (updateError) {
+            console.error('Error updating onboarding status:', updateError);
+            return;
+          }
+
+          // Refresh session to get new JWT with updated onboarding_status
+          await supabase.auth.refreshSession();
+        }
+
+        // Mark as checked and complete
+        hasCheckedDatabaseRef.current = true;
+        hasCompletedRef.current = true;
+
+        // Complete the animation
+        setProgress(100);
+        setTimeout(() => {
+          setIsComplete(true);
+          setTimeout(() => {
+            setShowCheckmark(true);
+          }, 200);
+        }, 100);
+      } catch (error) {
+        console.error('Error checking/updating onboarding status:', error);
+      }
+    };
+
+    // Trigger check when progress reaches 90%
+    if (progress >= 90 && !hasCheckedDatabaseRef.current) {
+      checkAndCompleteOnboarding();
+    }
+  }, [progress]);
+
+  // Progress animation - smoothly load to 90%
+  useEffect(() => {
     let timeoutId: NodeJS.Timeout | null = null;
-    const minDuration = 2500; // Minimum 2.5 seconds
 
     const updateProgress = () => {
       if (hasCompletedRef.current) return;
 
       setProgress(currentProgress => {
-        const elapsed = Date.now() - startTime;
-        const isProcessingComplete = workspaceReadyRef.current;
-        const minDurationMet = elapsed >= minDuration;
-
-        // If processing is complete and minimum duration met, go to 100%
-        // Remove the progress >= 85 requirement - complete once both conditions are met
-        if (isProcessingComplete && minDurationMet) {
-          hasCompletedRef.current = true;
-
-          // First complete the progress bar to 100%
-          setTimeout(() => {
-            setIsComplete(true);
-            // Then show the animated checkmark after a brief moment
-            setTimeout(() => {
-              setShowCheckmark(true);
-            }, 200);
-          }, 100);
-
-          return 100;
-        }
-
-        // Cap at 90% until processing is complete and minimum duration met
-        const maxProgress = isProcessingComplete && minDurationMet ? 100 : 90;
-
-        if (currentProgress >= maxProgress) {
-          // Keep polling if we're waiting for completion
-          if (!isProcessingComplete || !minDurationMet) {
-            timeoutId = setTimeout(updateProgress, 300);
-          }
-          return currentProgress;
+        // Cap at 90%
+        if (currentProgress >= 90) {
+          return 90;
         }
 
         // Calculate next progress with random increment
         const increment = getRandomIncrement(currentProgress);
-        const nextProgress = Math.min(currentProgress + increment, maxProgress);
+        const nextProgress = Math.min(currentProgress + increment, 90);
 
         // Schedule next update with random delay
         const delay = getRandomDelay(currentProgress);
