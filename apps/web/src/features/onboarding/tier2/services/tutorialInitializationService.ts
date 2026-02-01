@@ -28,12 +28,12 @@ export async function initializeTutorial(): Promise<TutorialInitializationData |
       return null;
     }
 
-    // Fetch the active session (tier1 or tier2)
+    // Fetch only tier2 sessions (tier1 now completes directly to 'completed' state)
     const { data: session } = await supabase
       .from('onboarding_sessions')
       .select('id, context, state')
       .eq('user_id', user.id)
-      .in('state', ['tier1', 'tier2'])
+      .eq('state', 'tier2')
       .maybeSingle();
 
     if (!session) {

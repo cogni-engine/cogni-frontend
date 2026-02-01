@@ -27,7 +27,7 @@ export default function RegisterForm() {
   };
 
   // Show email verification message after signup
-  if (submitted || true) {
+  if (submitted) {
     return (
       <div className='fixed inset-0 flex items-center justify-center px-4'>
         <div className='w-full max-w-[500px] md:w-[500px] rounded-3xl md:border border-white/10 p-6 md:p-12 shadow-2xl backdrop-blur-sm'>
