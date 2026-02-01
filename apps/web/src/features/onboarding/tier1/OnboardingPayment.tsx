@@ -106,10 +106,14 @@ export function OnboardingPayment({
                 key={tier.name}
                 type='button'
                 onClick={() => setSelectedTier(tier.name)}
-                className={`relative w-full py-4 px-4 text-left rounded-xl bg-white/5 border transition-all duration-200 ${
+                className={`relative w-full py-4 px-4 text-left rounded-xl backdrop-blur-md transition-all duration-200 ${
+                  tier.name === 'Pro'
+                    ? 'bg-white/10 border-2 border-white'
+                    : 'bg-white/5 border border-white/10'
+                } ${
                   selectedTier === tier.name
-                    ? 'text-white border-white/50'
-                    : 'text-gray-300 border-transparent'
+                    ? 'text-white ring-2 ring-white/50'
+                    : 'text-gray-300'
                 }`}
               >
                 <div className='space-y-2'>
