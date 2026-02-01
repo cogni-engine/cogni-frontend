@@ -540,7 +540,7 @@ export default function CollaborativeNoteEditor({
   }
 
   return (
-    <div className='flex flex-col h-full bg-linear-to-br from-slate-950 via-black to-slate-950 text-gray-100 relative overflow-hidden'>
+    <div className='flex flex-col h-full bg-linear-to-br from-slate-950 via-black to-slate-950 text-gray-100 relative overflow-hidden animate-in fade-in duration-500'>
       <NoteEditorHeader
         title={title}
         onTitleChange={handleTitleChange}
