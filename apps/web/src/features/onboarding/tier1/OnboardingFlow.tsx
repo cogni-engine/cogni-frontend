@@ -74,13 +74,13 @@ export function OnboardingFlow({
 
   // Handle completion - redirect to workspace
   useEffect(() => {
-    if (state.matches('completed') && state.context.tutorialWorkspaceId) {
+    if (state.matches('completed')) {
       // Clear the saved snapshot since onboarding is complete
       setMachineSnapshot(null);
       console.log('✅ Onboarding completed - clearing saved state');
 
-      // Redirect to the tutorial workspace
-      router.push(`/workspace/${state.context.tutorialWorkspaceId}/chat`);
+      // Redirect to the main workspace page
+      router.push('/workspace');
     }
   }, [state, router, setMachineSnapshot]);
 
@@ -280,10 +280,26 @@ export function OnboardingFlow({
 
     // LoadingReady (combined loading animation and ready screen)
     if (state.matches('loadingReady')) {
+      // Check if the completeTier1 actor has finished successfully
+      // The actor is done when it has an output (success) or is in error state
+      const actorSnapshot = state.children.completeTier1?.getSnapshot();
+      const isProcessingComplete =
+        actorSnapshot?.status === 'done' ||
+        actorSnapshot?.status === 'error' ||
+        !!actorSnapshot?.output;
+
+      // Debug logging
+      console.log('[OnboardingFlow] LoadingReady state:', {
+        actorStatus: actorSnapshot?.status,
+        hasOutput: !!actorSnapshot?.output,
+        isProcessingComplete,
+        actorId: state.children.completeTier1?.id,
+      });
+
       return (
         <OnboardingLoadingReady
           userName={state.context.profile.name}
-          workspaceReady={!!state.context.tutorialWorkspaceId}
+          workspaceReady={!!isProcessingComplete}
           error={null}
           handleContinue={() => sendWithDirection({ type: 'NEXT' })}
         />

@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useState, useRef, useCallback } from 'react';
-import { Check } from 'lucide-react';
 import { NextStepButton } from '../components/NextStepButton';
 
 interface OnboardingLoadingReadyProps {
@@ -19,55 +18,113 @@ export function OnboardingLoadingReady({
 }: OnboardingLoadingReadyProps) {
   const [progress, setProgress] = useState(0);
   const [isComplete, setIsComplete] = useState(false);
+  const [showCheckmark, setShowCheckmark] = useState(false);
   const workspaceReadyRef = useRef(workspaceReady);
   const hasCompletedRef = useRef(false);
+  const startTimeRef = useRef<number | null>(null);
 
   // Keep refs up to date
   useEffect(() => {
     workspaceReadyRef.current = workspaceReady;
   }, [workspaceReady]);
 
-  // Generate random increment with natural variation (slower)
-  const getRandomIncrement = useCallback((currentProgress: number) => {
-    // Slower progression overall
-    if (currentProgress < 20) {
-      return Math.random() * 2 + 0.5; // 0.5-2.5%
-    } else if (currentProgress < 40) {
-      return Math.random() * 3 + 1; // 1-4%
-    } else if (currentProgress < 60) {
-      return Math.random() * 2.5 + 0.5; // 0.5-3%
-    } else if (currentProgress < 75) {
-      return Math.random() * 2 + 0.5; // 0.5-2.5%
-    } else {
-      return Math.random() * 1.5 + 0.3; // 0.3-1.8%
+  // Watch for workspaceReady to become true and trigger completion check
+  useEffect(() => {
+    console.log('[OnboardingLoadingReady] workspaceReady changed:', {
+      workspaceReady,
+      hasCompleted: hasCompletedRef.current,
+      startTime: startTimeRef.current,
+    });
+
+    if (workspaceReady && !hasCompletedRef.current && startTimeRef.current) {
+      const elapsed = Date.now() - startTimeRef.current;
+      const minDuration = 2500;
+      const minDurationMet = elapsed >= minDuration;
+
+      console.log('[OnboardingLoadingReady] Checking completion:', {
+        elapsed,
+        minDurationMet,
+      });
+
+      if (minDurationMet) {
+        console.log('[OnboardingLoadingReady] Completing!');
+        hasCompletedRef.current = true;
+        setProgress(100);
+        setTimeout(() => {
+          setIsComplete(true);
+          setTimeout(() => {
+            setShowCheckmark(true);
+          }, 200);
+        }, 100);
+      }
+    }
+  }, [workspaceReady]);
+
+  // Fallback: Complete after minimum duration even if workspaceReady never becomes true
+  useEffect(() => {
+    if (!hasCompletedRef.current && startTimeRef.current) {
+      const timeout = setTimeout(() => {
+        if (!hasCompletedRef.current) {
+          hasCompletedRef.current = true;
+          setProgress(100);
+          setTimeout(() => {
+            setIsComplete(true);
+            setTimeout(() => {
+              setShowCheckmark(true);
+            }, 200);
+          }, 100);
+        }
+      }, 3000); // 3 seconds fallback (slightly longer than minDuration)
+
+      return () => clearTimeout(timeout);
     }
   }, []);
 
-  // Generate random delay with natural variation (longer delays)
-  const getRandomDelay = useCallback((currentProgress: number) => {
-    // Slower updates overall
-    if (currentProgress < 30) {
-      return Math.random() * 400 + 250; // 250-650ms
+  // Generate random increment with natural variation
+  const getRandomIncrement = useCallback((currentProgress: number) => {
+    if (currentProgress < 20) {
+      return Math.random() * 3 + 1; // 1-4%
+    } else if (currentProgress < 40) {
+      return Math.random() * 4 + 1.5; // 1.5-5.5%
     } else if (currentProgress < 60) {
-      return Math.random() * 500 + 300; // 300-800ms
+      return Math.random() * 3.5 + 1; // 1-4.5%
+    } else if (currentProgress < 80) {
+      return Math.random() * 3 + 1; // 1-4%
     } else {
-      return Math.random() * 600 + 400; // 400-1000ms
+      return Math.random() * 2.5 + 0.5; // 0.5-3%
+    }
+  }, []);
+
+  // Generate random delay with natural variation
+  const getRandomDelay = useCallback((currentProgress: number) => {
+    if (currentProgress < 30) {
+      return Math.random() * 300 + 150; // 150-450ms
+    } else if (currentProgress < 60) {
+      return Math.random() * 350 + 200; // 200-550ms
+    } else if (currentProgress < 90) {
+      return Math.random() * 400 + 250; // 250-650ms
+    } else {
+      return Math.random() * 300 + 200; // 200-500ms
     }
   }, []);
 
   // Get loading message based on progress
   const getLoadingMessage = useCallback((currentProgress: number) => {
-    if (currentProgress < 60) {
-      return 'Calculating...';
+    if (currentProgress < 40) {
+      return 'Setting up your workspace...';
+    } else if (currentProgress < 80) {
+      return 'Personalizing your experience...';
     } else {
-      return 'Personalizing your experience';
+      return 'Almost ready...';
     }
   }, []);
 
   useEffect(() => {
-    let timeoutId: NodeJS.Timeout | null = null;
-    const minDuration = 4000; // Minimum 4 seconds before allowing completion
     const startTime = Date.now();
+    startTimeRef.current = startTime;
+
+    let timeoutId: NodeJS.Timeout | null = null;
+    const minDuration = 2500; // Minimum 2.5 seconds
 
     const updateProgress = () => {
       if (hasCompletedRef.current) return;
@@ -78,22 +135,29 @@ export function OnboardingLoadingReady({
         const minDurationMet = elapsed >= minDuration;
 
         // If processing is complete and minimum duration met, go to 100%
-        if (isProcessingComplete && minDurationMet && currentProgress >= 70) {
+        // Remove the progress >= 85 requirement - complete once both conditions are met
+        if (isProcessingComplete && minDurationMet) {
           hasCompletedRef.current = true;
-          // Mark as complete after a small delay
+
+          // First complete the progress bar to 100%
           setTimeout(() => {
             setIsComplete(true);
-          }, 300);
+            // Then show the animated checkmark after a brief moment
+            setTimeout(() => {
+              setShowCheckmark(true);
+            }, 200);
+          }, 100);
+
           return 100;
         }
 
-        // Cap at 80% until processing is complete
-        const maxProgress = isProcessingComplete ? 95 : 80;
+        // Cap at 90% until processing is complete and minimum duration met
+        const maxProgress = isProcessingComplete && minDurationMet ? 100 : 90;
 
         if (currentProgress >= maxProgress) {
           // Keep polling if we're waiting for completion
           if (!isProcessingComplete || !minDurationMet) {
-            timeoutId = setTimeout(updateProgress, 500);
+            timeoutId = setTimeout(updateProgress, 300);
           }
           return currentProgress;
         }
@@ -111,7 +175,7 @@ export function OnboardingLoadingReady({
     };
 
     // Start the animation
-    timeoutId = setTimeout(updateProgress, 300);
+    timeoutId = setTimeout(updateProgress, 200);
 
     return () => {
       if (timeoutId) clearTimeout(timeoutId);
@@ -176,14 +240,29 @@ export function OnboardingLoadingReady({
             </defs>
           </svg>
 
-          {/* Center content - Checkmark when complete */}
-          {isComplete && (
-            <div className='absolute inset-0 flex items-center justify-center animate-in fade-in zoom-in duration-300'>
-              <Check
-                className='w-16 h-16'
-                style={{ color: 'rgba(255, 255, 255, 0.8)' }}
-                strokeWidth={2.5}
-              />
+          {/* Animated Checkmark - drawn with SVG path animation */}
+          {showCheckmark && (
+            <div className='absolute inset-0 flex items-center justify-center'>
+              <svg
+                width={80}
+                height={80}
+                viewBox='0 0 80 80'
+                fill='none'
+                xmlns='http://www.w3.org/2000/svg'
+              >
+                <path
+                  d='M20 42L32 54L60 26'
+                  stroke='rgba(255, 255, 255, 0.9)'
+                  strokeWidth='6'
+                  strokeLinecap='round'
+                  strokeLinejoin='round'
+                  style={{
+                    strokeDasharray: 100,
+                    strokeDashoffset: 100,
+                    animation: 'drawCheck 0.6s ease-out forwards',
+                  }}
+                />
+              </svg>
             </div>
           )}
         </div>
@@ -193,21 +272,19 @@ export function OnboardingLoadingReady({
           {isComplete ? (
             <>
               <h2 className='text-2xl md:text-3xl font-semibold text-white'>
-                Your workspace is ready!
+                You&apos;re all set!
               </h2>
               {userName && (
-                <p className='text-lg text-gray-400'>
-                  Let&apos;s get started, {userName}
-                </p>
+                <p className='text-lg text-gray-400'>Welcome, {userName}</p>
               )}
             </>
           ) : (
             <>
               <h2 className='text-2xl md:text-3xl font-semibold text-white'>
-                Setting up your workspace...
+                {getLoadingMessage(progress)}
               </h2>
               <p className='text-lg text-gray-400'>
-                {getLoadingMessage(progress)}
+                This will only take a moment
               </p>
             </>
           )}
@@ -254,6 +331,15 @@ export function OnboardingLoadingReady({
           />
         </div>
       )}
+
+      {/* CSS for checkmark animation */}
+      <style jsx>{`
+        @keyframes drawCheck {
+          to {
+            stroke-dashoffset: 0;
+          }
+        }
+      `}</style>
     </div>
   );
 }

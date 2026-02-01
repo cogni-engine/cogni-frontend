@@ -56,7 +56,7 @@ export class OnboardingService {
     return activeSession || null;
   }
   /**
-   * Complete tier 1 onboarding - saves all answers and starts tier 2 onboarding
+   * Complete tier 1 onboarding - saves all answers and marks onboarding as completed
    */
   async completeTier1Onboarding(
     userId: string,
@@ -64,120 +64,17 @@ export class OnboardingService {
     answers: Partial<OnboardingContext>
   ): Promise<{
     success: boolean;
-    workspaceId?: number;
-    bossWorkspaceMemberId?: number;
-    bossAgentProfileId?: string;
   }> {
     try {
-      // Merge answers with existing context
-      const mergedContext = {
-        ...answers,
-      };
-
-      // Create tutorial workspace using RPC (includes member creation and icon generation)
-      const { data: rpcData, error: rpcError } = await this.supabase.rpc(
-        'create_workspace_with_member',
-        {
-          p_title: 'Tutorial Workspace',
-        }
-      );
-
-      if (rpcError || !rpcData || rpcData.length === 0) {
-        console.error('Error creating tutorial workspace:', rpcError);
-        return { success: false };
-      }
-
-      const workspaceId = rpcData[0].workspace_id;
-
-      // Update workspace with onboarding_session_id ** this can be moved to the rpc if the rpc is updated
-      const { error: updateError } = await this.supabase
-        .from('workspace')
-        .update({ onboarding_session_id: onboardingSessionId })
-        .eq('id', workspaceId);
-
-      if (updateError) {
-        console.error('Error updating workspace with session ID:', updateError);
-        return { success: false };
-      }
-
-      // Create the "boss" agent profile
-      const { data: newBoss, error: bossError } = await this.supabase
-        .from('agent_profiles')
-        .insert({
-          name: 'boss',
-          avatar_url:
-            'https://gtcwgwlgcphwhapmnerq.supabase.co/storage/v1/object/public/avatars/public/DN2QOL01.svg', // Mock URL for now
-        })
-        .select('id')
-        .single();
-
-      if (bossError || !newBoss) {
-        console.error('Error creating boss agent:', bossError);
-        return { success: false };
-      }
-
-      const bossAgentId = newBoss.id;
-
-      // Add boss agent as a member of the tutorial workspace
-      const { data: bossMember, error: memberError } = await this.supabase
-        .from('workspace_member')
-        .insert({
-          workspace_id: workspaceId,
-          agent_id: bossAgentId,
-          user_id: null,
-          role: 'member',
-        })
-        .select('id')
-        .single();
-
-      if (memberError || !bossMember) {
-        console.error('Error adding boss agent to workspace:', memberError);
-        return { success: false };
-      }
-
-      const bossWorkspaceMemberId = bossMember.id;
-
-      // Send boss greeting message immediately (so it's there when user enters workspace)
-      const bossGreetingText = `Welcome to your tutorial workspace! 👋
-
-I'm your AI assistant, and I'm here to help you get started with Cogno. This is a special workspace created just for you to learn the ropes.
-
-Feel free to ask me anything or explore the features. I'll be guiding you through the basics!`;
-
-      const { error: messageError } = await this.supabase
-        .from('workspace_messages')
-        .insert({
-          workspace_id: workspaceId,
-          workspace_member_id: bossWorkspaceMemberId,
-          text: bossGreetingText,
-        });
-
-      if (messageError) {
-        console.error('Error sending boss greeting message:', messageError);
-        // Continue anyway - message is not critical
-      }
-
-      // Add boss IDs to the merged context
-      const finalContext = {
-        ...mergedContext,
-        bossWorkspaceMemberId,
-        bossAgentProfileId: bossAgentId,
-        tutorialWorkspaceId: workspaceId,
-      };
-
-      // Store all answers and boss IDs in onboarding_sessions.context and mark session as tier2
+      // Store all answers in onboarding_sessions.context and mark session as completed
       const { error: contextError } = await this.supabase
         .from('onboarding_sessions')
         .update({
-          state: 'tier2',
-          context: finalContext,
+          state: 'completed',
+          completed_at: new Date().toISOString(),
+          context: answers,
         })
         .eq('id', onboardingSessionId);
-
-      const { error: profileError } = await this.supabase
-        .from('user_profiles')
-        .update({ onboarding_status: 'tier2_in_progress' })
-        .eq('id', userId);
 
       if (contextError) {
         console.error(
@@ -185,17 +82,20 @@ Feel free to ask me anything or explore the features. I'll be guiding you throug
           contextError
         );
         return { success: false };
-      } else if (profileError) {
+      }
+
+      // Update user profile onboarding status
+      const { error: profileError } = await this.supabase
+        .from('user_profiles')
+        .update({ onboarding_status: 'completed' })
+        .eq('id', userId);
+
+      if (profileError) {
         console.error('Error updating user profile:', profileError);
         return { success: false };
       }
 
-      return {
-        success: true,
-        workspaceId,
-        bossWorkspaceMemberId,
-        bossAgentProfileId: bossAgentId,
-      };
+      return { success: true };
     } catch (error) {
       console.error('Error completing onboarding:', error);
       return { success: false };

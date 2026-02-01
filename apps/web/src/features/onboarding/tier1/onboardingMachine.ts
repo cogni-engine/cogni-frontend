@@ -2,7 +2,6 @@ import { setup, assign, fromPromise } from 'xstate';
 import type { OnboardingContext, OnboardingEvent } from '../types';
 import { OnboardingService } from '../services/onboardingService';
 import { createBrowserClient } from '@supabase/ssr';
-import { generateFirstNote } from '@/features/onboarding/services/generateFirstNote';
 
 /**
  * XState Machine for Onboarding Flow
@@ -16,7 +15,7 @@ const onboardingMachineSetup = setup({
     events: {} as OnboardingEvent,
   },
   actors: {
-    // Actor to complete tier 1 onboarding and create workspace
+    // Actor to complete tier 1 onboarding - just saves answers and marks complete
     completeTier1: fromPromise(
       async ({
         input,
@@ -44,41 +43,7 @@ const onboardingMachineSetup = setup({
           throw new Error('Failed to complete tier 1 onboarding');
         }
 
-        // Generate and create first note (backend handles everything)
-        // This is required for tier2 tutorial to work
-        const locale =
-          typeof navigator !== 'undefined' ? navigator.language : 'en';
-
-        const note = await generateFirstNote({
-          primary_role: Array.isArray(input.answers.primaryRole)
-            ? input.answers.primaryRole
-            : input.answers.primaryRole
-              ? [input.answers.primaryRole]
-              : undefined,
-          ai_relationship: Array.isArray(input.answers.aiRelationship)
-            ? input.answers.aiRelationship
-            : input.answers.aiRelationship
-              ? [input.answers.aiRelationship]
-              : undefined,
-          use_case: Array.isArray(input.answers.useCase)
-            ? input.answers.useCase
-            : input.answers.useCase
-              ? [input.answers.useCase]
-              : undefined,
-          user_id: input.userId,
-          workspace_id: result.workspaceId!,
-          onboarding_session_id: input.onboardingSessionId,
-          locale: locale,
-        });
-
-        const firstNote = { noteId: note.id };
-
-        return {
-          workspaceId: result.workspaceId,
-          bossWorkspaceMemberId: result.bossWorkspaceMemberId,
-          bossAgentProfileId: result.bossAgentProfileId,
-          firstNote,
-        };
+        return { success: true };
       }
     ),
   },
@@ -231,15 +196,6 @@ export const onboardingMachine = onboardingMachineSetup.createMachine({
           onboardingSessionId: context.onboardingSessionId,
           answers: context.answers,
         }),
-        onDone: {
-          actions: assign({
-            tutorialWorkspaceId: ({ event }) => event.output.workspaceId,
-            bossWorkspaceMemberId: ({ event }) =>
-              event.output.bossWorkspaceMemberId,
-            bossAgentProfileId: ({ event }) => event.output.bossAgentProfileId,
-            firstNote: ({ event }) => event.output.firstNote,
-          }),
-        },
         onError: {
           actions: ({ event }) => {
             console.error('Failed to complete tier 1 onboarding:', event.error);
