@@ -40,7 +40,11 @@ export function PricingCard({
 
   return (
     <div
-      className={`relative flex h-full flex-col rounded-3xl border border-white/10 bg-black/40 p-6 transition-all ${className}`}
+      className={`relative flex h-full flex-col rounded-3xl p-6 transition-all backdrop-blur-md ${
+        isBestValue
+          ? 'border-2 border-white bg-white/10'
+          : 'border border-white/10 bg-white/5'
+      } ${className}`}
     >
       {/* Header section - fixed height */}
       <div className='mb-4' style={{ height: '80px' }}>
@@ -54,7 +58,9 @@ export function PricingCard({
       <div className='mb-6 flex items-end' style={{ height: '60px' }}>
         {price && (
           <div className='flex items-baseline gap-2'>
-            <span className={`font-bold text-white ${priceClassName}`}>{price}</span>
+            <span className={`font-bold text-white ${priceClassName}`}>
+              {price}
+            </span>
             {priceNote && (
               <span className='text-lg text-slate-400'>{priceNote}</span>
             )}
@@ -73,7 +79,10 @@ export function PricingCard({
       <div className='flex-1' style={{ minHeight: '200px' }}>
         <div className='space-y-6'>
           {features.map((feature, index) => (
-            <div key={index} className={`flex items-start gap-3 ${featureClassName}`}>
+            <div
+              key={index}
+              className={`flex items-start gap-3 ${featureClassName}`}
+            >
               {feature.included ? (
                 <Check className='mt-0.5 h-5 w-5 flex-shrink-0 text-white' />
               ) : (
@@ -93,4 +102,3 @@ export function PricingCard({
     </div>
   );
 }
-
