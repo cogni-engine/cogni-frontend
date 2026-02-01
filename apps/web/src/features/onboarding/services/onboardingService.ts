@@ -61,7 +61,8 @@ export class OnboardingService {
   async completeTier1Onboarding(
     userId: string,
     onboardingSessionId: string,
-    answers: Partial<OnboardingContext>
+    answers: Partial<OnboardingContext>,
+    userName?: string
   ): Promise<{
     success: boolean;
   }> {
@@ -84,10 +85,18 @@ export class OnboardingService {
         return { success: false };
       }
 
-      // Update user profile onboarding status
+      // Update user profile with name and onboarding status
+      const profileUpdate: { onboarding_status: string; name?: string } = {
+        onboarding_status: 'completed',
+      };
+
+      if (userName) {
+        profileUpdate.name = userName;
+      }
+
       const { error: profileError } = await this.supabase
         .from('user_profiles')
-        .update({ onboarding_status: 'completed' })
+        .update(profileUpdate)
         .eq('id', userId);
 
       if (profileError) {

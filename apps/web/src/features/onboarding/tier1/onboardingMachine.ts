@@ -24,6 +24,7 @@ const onboardingMachineSetup = setup({
           userId: string;
           onboardingSessionId: string;
           answers: OnboardingContext['answers'];
+          userName: string;
         };
       }) => {
         const supabase = createBrowserClient(
@@ -36,7 +37,8 @@ const onboardingMachineSetup = setup({
         const result = await onboardingService.completeTier1Onboarding(
           input.userId,
           input.onboardingSessionId,
-          input.answers
+          input.answers,
+          input.userName
         );
 
         if (!result.success) {
@@ -195,6 +197,7 @@ export const onboardingMachine = onboardingMachineSetup.createMachine({
           userId: context.profile.userId,
           onboardingSessionId: context.onboardingSessionId,
           answers: context.answers,
+          userName: context.profile.name,
         }),
         onError: {
           actions: ({ event }) => {
