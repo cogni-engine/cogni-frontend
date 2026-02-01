@@ -76,6 +76,26 @@ export function ShepherdProvider({ children, tours }: ShepherdProviderProps) {
     };
   }, []);
 
+  // Protect input focus from Shepherd's focus trap (critical for mobile)
+  useEffect(() => {
+    // Allow inputs to keep focus even when Shepherd is active
+    const protectInputFocus = (e: FocusEvent) => {
+      const target = e.target as HTMLElement;
+      if (
+        target &&
+        (target.matches('input, textarea') || target.isContentEditable)
+      ) {
+        e.stopPropagation();
+      }
+    };
+
+    document.addEventListener('focusin', protectInputFocus, true);
+
+    return () => {
+      document.removeEventListener('focusin', protectInputFocus, true);
+    };
+  }, []);
+
   const startTour = (tourId: string) => {
     // Cancel any existing tour
     if (currentTourRef.current) {
@@ -156,6 +176,49 @@ export function ShepherdProvider({ children, tours }: ShepherdProviderProps) {
       setIsActive(true);
     });
 
+    // 🔥 Disable Shepherd's focus trap to allow mobile keyboard input (startTour)
+    tour.on('show', e => {
+      const stepEl = e.step.el;
+
+      if (stepEl) {
+        // Make the dialog completely non-focusable
+        stepEl.removeAttribute('tabindex');
+        stepEl.setAttribute('tabindex', '-1');
+
+        // Prevent the dialog from being focusable
+        stepEl.style.outline = 'none';
+        stepEl.style.pointerEvents = 'none';
+
+        // But allow pointer events on the content inside
+        const content = stepEl.querySelector('.shepherd-content');
+        if (content) {
+          (content as HTMLElement).style.pointerEvents = 'auto';
+        }
+
+        // Remove aria-hidden from app root if Shepherd added it
+        const appRoot =
+          document.querySelector('#__next') || document.querySelector('main');
+        appRoot?.removeAttribute('aria-hidden');
+
+        // Prevent any focus events on the dialog
+        const preventFocus = (ev: Event) => {
+          ev.preventDefault();
+          ev.stopPropagation();
+        };
+
+        stepEl.addEventListener('focus', preventFocus, true);
+        stepEl.addEventListener('focusin', preventFocus, true);
+
+        // Clean up on hide
+        const cleanup = () => {
+          stepEl.removeEventListener('focus', preventFocus, true);
+          stepEl.removeEventListener('focusin', preventFocus, true);
+          e.step.off('hide', cleanup);
+        };
+        e.step.on('hide', cleanup);
+      }
+    });
+
     currentTourRef.current = tour;
     tour.start();
   };
@@ -232,6 +295,60 @@ export function ShepherdProvider({ children, tours }: ShepherdProviderProps) {
 
     tour.on('start', () => {
       setIsActive(true);
+    });
+
+    // 🔥 Disable Shepherd's focus trap to allow mobile keyboard input (showStep)
+    tour.on('show', e => {
+      const stepEl = e.step.el;
+
+      if (stepEl) {
+        // Make the dialog completely non-focusable
+        stepEl.removeAttribute('tabindex');
+        stepEl.setAttribute('tabindex', '-1');
+
+        // Prevent the dialog from being focusable
+        stepEl.style.outline = 'none';
+        stepEl.style.pointerEvents = 'none';
+
+        // But allow pointer events on the content inside
+        const content = stepEl.querySelector('.shepherd-content');
+        if (content) {
+          (content as HTMLElement).style.pointerEvents = 'auto';
+        }
+
+        // Remove aria-hidden from app root if Shepherd added it
+        const appRoot =
+          document.querySelector('#__next') || document.querySelector('main');
+        appRoot?.removeAttribute('aria-hidden');
+
+        // Prevent any focus events on the dialog and refocus input if needed
+        const preventFocus = (ev: Event) => {
+          ev.preventDefault();
+          ev.stopPropagation();
+
+          // Immediately refocus the input if it exists
+          if (stepOptions.attachTo?.element) {
+            const targetEl = document.querySelector(
+              stepOptions.attachTo.element
+            );
+            const input = targetEl?.querySelector('input');
+            if (input) {
+              setTimeout(() => input.focus(), 0);
+            }
+          }
+        };
+
+        stepEl.addEventListener('focus', preventFocus, true);
+        stepEl.addEventListener('focusin', preventFocus, true);
+
+        // Clean up on hide
+        const cleanup = () => {
+          stepEl.removeEventListener('focus', preventFocus, true);
+          stepEl.removeEventListener('focusin', preventFocus, true);
+          e.step.off('hide', cleanup);
+        };
+        e.step.on('hide', cleanup);
+      }
     });
 
     currentTourRef.current = tour;

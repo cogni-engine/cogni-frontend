@@ -113,6 +113,21 @@ input:-webkit-autofill:active {
   max-width: calc(100vw - 6rem) !important;
   z-index: 100 !important;
   margin: 1rem !important;
+  pointer-events: auto !important;
+}
+
+/* Prevent focus trap on mobile - critical for keyboard input */
+.shepherd-element,
+.shepherd-element * {
+  outline: none !important;
+  -webkit-tap-highlight-color: transparent !important;
+}
+
+/* Ensure inputs can still receive focus */
+input,
+textarea,
+[contenteditable='true'] {
+  pointer-events: auto !important;
 }
 
 @media (min-width: 640px) {
