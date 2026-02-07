@@ -27,12 +27,15 @@ import { exampleTours } from '@/features/onboarding/tier2/shepherd/tours';
 import { TutorialProvider } from '@/features/onboarding/tier2/TutorialProvider';
 import { TutorialStepManager } from '@/features/onboarding/tier2/components/TutorialStepManager';
 import { SubscriptionProvider } from '@/providers/SubscriptionProvider';
+import { OfflineBanner, OnlineIndicator } from '@/components/OfflineBanner';
+import { useOfflineStore } from '@/stores/useOfflineStore';
 
 function LayoutContent({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const isInputActive = useIsInputActive();
   const isDrawerOpen = useIsDrawerOpen();
+  const { isOnline, hasMounted } = useOfflineStore();
   const {
     isOpen: noteDrawerOpen,
     noteId: selectedNoteId,
@@ -219,11 +222,21 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
 
   return (
     <div className='relative h-screen bg-black px-2'>
+      {/* Offline Banner - Shows when offline */}
+      <OfflineBanner />
+      <OnlineIndicator />
+
       {/* Header - Absolutely Positioned, Transparent */}
       {showTopLevelChrome && <Header />}
 
       {/* Main Content - Full height, scrolls under transparent header and bottom nav */}
-      <main className='h-screen min-h-0 overflow-hidden relative flex flex-col'>
+      <main
+        className='h-screen min-h-0 overflow-hidden relative flex flex-col'
+        style={{
+          // Only apply paddingTop after mount to prevent hydration mismatch
+          paddingTop: hasMounted && !isOnline ? '2.5rem' : '0',
+        }}
+      >
         {/* Top darkening gradient */}
         <div className='absolute top-0 left-0 right-0 h-32 bg-linear-to-b from-black via-black/50 to-transparent pointer-events-none z-50' />
 

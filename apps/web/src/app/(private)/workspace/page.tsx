@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
   useWorkspaces,
   useWorkspaceMutations,
@@ -18,6 +18,13 @@ export default function WorkspacePage() {
   const { create, update } = useWorkspaceMutations();
   const isInputActive = useIsInputActive();
   const [searchQuery, setSearchQuery] = useState('');
+  const [hasMounted, setHasMounted] = useState(false);
+
+  // Avoid hydration mismatches by deferring workspace-dependent UI
+  // until after the component has mounted on the client.
+  useEffect(() => {
+    setHasMounted(true);
+  }, []);
 
   const filteredWorkspaces = useMemo(() => {
     if (!workspaces) {
@@ -95,6 +102,14 @@ export default function WorkspacePage() {
     );
   }
 
+  // Avoid hydration mismatches entirely by rendering this page
+  // only after the component has mounted on the client.
+  // This route is a private, authenticated workspace page,なので
+  // SEO への影響は問題になりにくく、UXを優先している。
+  if (!hasMounted) {
+    return null;
+  }
+
   return (
     <div className='flex flex-col h-full relative overflow-hidden'>
       {/* スクロール可能エリア */}
@@ -106,17 +121,24 @@ export default function WorkspacePage() {
           </div>
         )}
 
-        {/* Show workspaces immediately if we have data (from cache or fresh) */}
-        {workspaces && (filteredWorkspaces.length > 0 || !isSearching) && (
-          <WorkspaceList workspaces={filteredWorkspaces} />
-        )}
+        {/* Show workspaces only after mount to keep SSR/CSR markup in sync */}
+        {hasMounted &&
+          workspaces &&
+          (filteredWorkspaces.length > 0 || !isSearching) && (
+            <WorkspaceList workspaces={filteredWorkspaces} />
+          )}
 
-        {/* Show "no results" message only when we have data but search yields nothing */}
-        {workspaces && filteredWorkspaces.length === 0 && isSearching && (
-          <div className='rounded-2xl border border-white/10 bg-white/5 p-8 text-center text-white/70'>
-            No workspaces found matching &quot;{searchQuery.trim()}&quot;.
-          </div>
-        )}
+        {/* Show "no results" message only when we have data but search yields nothing.
+            Also gated by hasMounted to avoid hydration mismatches when cached data
+            is available immediately on the client but not on the server render. */}
+        {hasMounted &&
+          workspaces &&
+          filteredWorkspaces.length === 0 &&
+          isSearching && (
+            <div className='rounded-2xl border border-white/10 bg-white/5 p-8 text-center text-white/70'>
+              No workspaces found matching &quot;{searchQuery.trim()}&quot;.
+            </div>
+          )}
       </ScrollableView>
 
       {/* Bottom Search Bar and Create Button */}
