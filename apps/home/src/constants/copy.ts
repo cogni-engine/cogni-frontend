@@ -250,14 +250,14 @@ export const LOCALIZED_COPY: Record<Language, LocalizedCopy> = {
       title: 'AI management that fits any team',
       cases: [
         {
+          title: 'Project Management',
+          description:
+            'Eliminate scattered information and endless status meetings that slow your team down.\n\nCogno automatically visualizes project-wide progress and bottlenecks, delivering timely notifications to the right stakeholders.\n\nCogno also suggests the next actions to take—preventing missed follow-ups and delayed decisions, and driving your entire team forward.',
+        },
+        {
           title: 'Education & Learning Management',
           description:
             "Based on materials, deadlines, and comprehension levels, Cogno optimizes each student's learning process.\n\nAI constantly checks question responses, progress, and acquisition status, and escalates to instructors when necessary.\n\nTeachers can significantly reduce confirmation and management workload, while students can focus on planning, problem-solving, and deep understanding.",
-        },
-        {
-          title: 'Care & Healthcare',
-          description:
-            'Standardize and structure care work to prevent knowledge silos.\n\nAI optimally assigns tasks by organizing work, managing the field with situation-appropriate notifications and follow-ups.\n\nAddresses the challenges of work complexity and staff shortages, achieving both efficiency and stable care quality simultaneously.',
         },
         {
           title: 'Personal Management',
@@ -737,14 +737,14 @@ export const LOCALIZED_COPY: Record<Language, LocalizedCopy> = {
       title: 'どんなチームにもフィットするAIマネジメント',
       cases: [
         {
+          title: 'プロジェクトマネジメント',
+          description:
+            '情報が散在し、進捗確認のためだけにミーティングが増え続ける状況を根本から解消。\n\nCognoがプロジェクト全体の進捗とボトルネックを自動で可視化し、適切なタイミングで関係者に通知を届けます。\n\n次に打つべき手もCognoが提案。対応漏れや判断の遅れをなくし、チーム全体のプロジェクト推進力を引き上げます。',
+        },
+        {
           title: '教育・学習管理',
           description:
             '教材・期限・理解度をもとに、Cognoが生徒一人ひとりの学習プロセスを最適化。\n\nAIが質問対応しながら、進捗・習得状況をチェックし、理解が不十分な場合には講師への質問をともに考えます。\n\n教員は確認・管理の工数を大幅に削減でき、生徒は方向性をぶらさずに効率的に学習できます',
-        },
-        {
-          title: '介護・ヘルスケア',
-          description:
-            '介護業務をマニュアル化・構造化し、属人化を防止。\n\n業務を整理して最適にアサインし、状況に応じたAIによる通知とフォローで現場をマネジメントします。\n\n業務の複雑さや人員不足に悩む現場でも、無理なく業務を回せる体制を整え、効率化とケア品質の安定を実感できます。',
         },
         {
           title: 'パーソナルマネジメント',
