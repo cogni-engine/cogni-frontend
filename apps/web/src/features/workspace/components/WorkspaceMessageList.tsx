@@ -104,6 +104,9 @@ type Props = {
   workspaceMembers?: WorkspaceMember[];
   workspaceNotes?: Note[];
   onDismissFailedMessage?: (optimisticId: number) => void;
+  currentMemberId?: number | null;
+  onAddReaction?: (messageId: number, emoji: string) => void;
+  onRemoveReaction?: (messageId: number) => void;
 };
 
 function WorkspaceMessageList({
@@ -115,6 +118,9 @@ function WorkspaceMessageList({
   workspaceMembers = [],
   workspaceNotes = [],
   onDismissFailedMessage,
+  currentMemberId = null,
+  onAddReaction,
+  onRemoveReaction,
 }: Props) {
   // Process messages for grouping by minute and date
   const dateGroups = useMemo(
@@ -164,6 +170,9 @@ function WorkspaceMessageList({
                   showTimestamp={showTimestamp}
                   showAvatar={showAvatar}
                   onDismissFailedMessage={onDismissFailedMessage}
+                  currentMemberId={currentMemberId}
+                  onAddReaction={onAddReaction}
+                  onRemoveReaction={onRemoveReaction}
                 />
               </div>
             ))}

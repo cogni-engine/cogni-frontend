@@ -6,6 +6,8 @@ import { useState, useRef, useEffect, useCallback, useMemo, memo } from 'react';
 import { useDrag } from '@use-gesture/react';
 import MessageContextMenu from './MessageContextMenu';
 import MessageFiles from './MessageFiles';
+import ReactionDisplay from './ReactionDisplay';
+import ReactionPicker from './ReactionPicker';
 import { TiptapRenderer } from '@/components/tiptap/TiptapRenderer';
 import type { WorkspaceMember } from '@/types/workspace';
 import type { Note } from '@/types/note';
@@ -23,6 +25,9 @@ type Props = {
   showTimestamp?: boolean;
   showAvatar?: boolean;
   onDismissFailedMessage?: (optimisticId: number) => void;
+  currentMemberId?: number | null;
+  onAddReaction?: (messageId: number, emoji: string) => void;
+  onRemoveReaction?: (messageId: number) => void;
 };
 
 function ReadStatus({ readCount }: { readCount: number }) {
@@ -42,6 +47,9 @@ function WorkspaceMessageItem({
   showTimestamp = true,
   showAvatar = true,
   onDismissFailedMessage,
+  currentMemberId = null,
+  onAddReaction,
+  onRemoveReaction,
 }: Props) {
   // Check if this is an optimistic message
   const optimisticMessage = message as OptimisticMessage;
@@ -53,6 +61,10 @@ function WorkspaceMessageItem({
     state => state.openChatMessageDrawer
   );
   const [contextMenu, setContextMenu] = useState<{
+    x: number;
+    y: number;
+  } | null>(null);
+  const [reactionPicker, setReactionPicker] = useState<{
     x: number;
     y: number;
   } | null>(null);
@@ -105,6 +117,46 @@ function WorkspaceMessageItem({
     }
     setContextMenu(null);
   }, [onReply, message.id]);
+
+  const handleReactionClick = useCallback(
+    (emoji: string) => {
+      if (!onAddReaction || !onRemoveReaction || currentMemberId == null)
+        return;
+      const hasThisEmoji = (message.reactions ?? []).some(
+        r => r.workspace_member_id === currentMemberId && r.emoji === emoji
+      );
+      if (hasThisEmoji) {
+        onRemoveReaction(message.id);
+      } else {
+        onAddReaction(message.id, emoji);
+      }
+    },
+    [
+      message.id,
+      message.reactions,
+      currentMemberId,
+      onAddReaction,
+      onRemoveReaction,
+    ]
+  );
+
+  const handleAddReaction = useCallback(() => {
+    const rect = messageRef.current?.getBoundingClientRect();
+    if (rect) {
+      setReactionPicker({
+        x: Math.min(rect.left, window.innerWidth - 200),
+        y: rect.top - 180,
+      });
+    }
+  }, []);
+
+  const handleReactionPickerSelect = useCallback(
+    (emoji: string) => {
+      onAddReaction?.(message.id, emoji);
+      setReactionPicker(null);
+    },
+    [message.id, onAddReaction]
+  );
 
   const handleNoteMentionClick = useCallback(
     (noteId: number) => {
@@ -458,6 +510,18 @@ function WorkspaceMessageItem({
               {message.files && message.files.length > 0 && (
                 <MessageFiles files={message.files} />
               )}
+              {!isOptimistic &&
+                message.reactions &&
+                message.reactions.length > 0 &&
+                currentMemberId != null && (
+                  <div className='mt-1'>
+                    <ReactionDisplay
+                      reactions={message.reactions ?? []}
+                      currentMemberId={currentMemberId}
+                      onReactionClick={handleReactionClick}
+                    />
+                  </div>
+                )}
             </div>
           </div>
         </div>
@@ -465,8 +529,19 @@ function WorkspaceMessageItem({
           <MessageContextMenu
             messageText={message.text}
             onReply={handleReply}
+            onReact={() => {
+              setContextMenu(null);
+              handleAddReaction();
+            }}
             onClose={() => setContextMenu(null)}
             position={contextMenu}
+          />
+        )}
+        {reactionPicker && (
+          <ReactionPicker
+            onSelect={handleReactionPickerSelect}
+            onClose={() => setReactionPicker(null)}
+            position={reactionPicker}
           />
         )}
       </>
@@ -575,6 +650,16 @@ function WorkspaceMessageItem({
               {message.files && message.files.length > 0 && (
                 <MessageFiles files={message.files} align='left' />
               )}
+              {(message.reactions?.length ?? 0) > 0 &&
+                currentMemberId != null && (
+                  <div className='mt-1'>
+                    <ReactionDisplay
+                      reactions={message.reactions ?? []}
+                      currentMemberId={currentMemberId}
+                      onReactionClick={handleReactionClick}
+                    />
+                  </div>
+                )}
             </div>
             {showTimestamp && (
               <p className='text-xs text-gray-500 mt-1'>
@@ -588,8 +673,19 @@ function WorkspaceMessageItem({
         <MessageContextMenu
           messageText={message.text}
           onReply={handleReply}
+          onReact={() => {
+            setContextMenu(null);
+            handleAddReaction();
+          }}
           onClose={() => setContextMenu(null)}
           position={contextMenu}
+        />
+      )}
+      {reactionPicker && (
+        <ReactionPicker
+          onSelect={handleReactionPickerSelect}
+          onClose={() => setReactionPicker(null)}
+          position={reactionPicker}
         />
       )}
     </>
