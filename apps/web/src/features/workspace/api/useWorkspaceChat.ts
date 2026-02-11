@@ -513,6 +513,13 @@ export function useWorkspaceChat(
         m => m.id === workspaceMember.id
       );
 
+      if (!currentMemberProfile) {
+        console.warn(
+          'Current member profile not found, skipping optimistic update.'
+        );
+        return;
+      }
+
       const optimisticReaction: MessageReaction = {
         id: `optimistic-${messageId}-${workspaceMember.id}`,
         workspace_message_id: messageId,
@@ -520,8 +527,8 @@ export function useWorkspaceChat(
         emoji,
         workspace_member: {
           id: workspaceMember.id,
-          user_id: currentMemberProfile?.user_id ?? null,
-          user_profile: currentMemberProfile?.user_profile ?? null,
+          user_id: currentMemberProfile?.user_id,
+          user_profile: currentMemberProfile?.user_profile,
         },
       };
 
@@ -696,7 +703,10 @@ export function useWorkspaceChat(
           })
         );
       } catch (err) {
-        console.error('Error marking messages as read:', err);
+        const message =
+          err instanceof Error ? err.message : JSON.stringify(err);
+        const details = err instanceof Error ? err.stack : err;
+        console.error('Error marking messages as read:', message, details);
       } finally {
         if (!cancelled) {
           markInFlightRef.current = false;
