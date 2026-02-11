@@ -81,9 +81,6 @@ export function useTutorialStep(config: TutorialStepConfig) {
 
         // Check if we're in the parent state
         if (!tutorialState.matches(parentState as never)) {
-          console.log(
-            `[useTutorialStep] Not in parent state ${parentState} for ${statePath}`
-          );
           return false;
         }
 
@@ -96,33 +93,18 @@ export function useTutorialStep(config: TutorialStepConfig) {
           const nestedState = (stateValue as Record<string, string>)[
             parentState
           ];
-          const matches = nestedState === childState;
-          console.log(
-            `[useTutorialStep] Checking nested state: ${statePath}, nestedState=${nestedState}, matches=${matches}`
-          );
-          return matches;
+          return nestedState === childState;
         }
 
-        console.log(
-          `[useTutorialStep] State value is not object with ${parentState} key`
-        );
         return false;
       }
 
       // Regular state matching for non-nested states
-      const matches = tutorialState.matches(statePath as never);
-      console.log(
-        `[useTutorialStep] Checking regular state: ${statePath}, matches=${matches}`
-      );
-      return matches;
+      return tutorialState.matches(statePath as never);
     };
 
     const isInTargetState = showWhenStates.some(state =>
       checkNestedState(state)
-    );
-
-    console.log(
-      `[useTutorialStep] Step ${config.id}: isInTargetState=${isInTargetState}, showWhenStates=${showWhenStates.join(', ')}`
     );
 
     // Check workspace context
@@ -151,10 +133,6 @@ export function useTutorialStep(config: TutorialStepConfig) {
       isInTutorialWorkspace &&
       matchesPathname &&
       !shepherdIsActive;
-
-    console.log(
-      `[useTutorialStep] Step ${config.id}: shouldShow=${shouldShow}, isInTargetState=${isInTargetState}, isInTutorialWorkspace=${isInTutorialWorkspace}, matchesPathname=${matchesPathname}, shepherdIsActive=${shepherdIsActive}`
-    );
 
     // Determine if step should be canceled
     const shouldCancel =
@@ -191,7 +169,6 @@ export function useTutorialStep(config: TutorialStepConfig) {
 
           // If no selector (center-positioned modal), show immediately
           if (!config.selector) {
-            console.log(`[useTutorialStep] Showing center modal ${config.id}`);
             hasShownRef.current = true;
             showStep({
               id: config.id,
@@ -207,15 +184,13 @@ export function useTutorialStep(config: TutorialStepConfig) {
 
           // Check timeout
           if (Date.now() - startTime > maxWaitTime) {
-            console.warn(
-              `[useTutorialStep] Element not found: ${config.selector} after ${maxWaitTime}ms`
-            );
             cleanup();
             return;
           }
 
           // Find all matching elements and select the first visible one
           const elements = document.querySelectorAll(config.selector);
+
           let visibleElement: Element | null = null;
 
           for (const el of Array.from(elements)) {
@@ -250,23 +225,11 @@ export function useTutorialStep(config: TutorialStepConfig) {
 
             if (isFullyVisible && (hasSize || isPositioned)) {
               visibleElement = el;
-              console.log(
-                `[useTutorialStep] Found visible element for ${config.id}`,
-                {
-                  selector: config.selector,
-                  display: style.display,
-                  visibility: style.visibility,
-                  opacity: style.opacity,
-                  position: style.position,
-                  rect: { width: rect.width, height: rect.height },
-                }
-              );
               break;
             }
           }
 
           if (visibleElement) {
-            console.log(`[useTutorialStep] Showing step ${config.id}`);
             // Set flag BEFORE calling showStep to prevent race conditions
             hasShownRef.current = true;
             showStep({

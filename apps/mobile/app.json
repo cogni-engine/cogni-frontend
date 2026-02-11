@@ -16,9 +16,9 @@
       "backgroundColor": "#000000",
       "infoPlist": {
         "CFBundleAllowMixedLocalizations": true,
-        "NSCameraUsageDescription": "We use the camera to take photos you can share in group chats or with Cogni AI.",
-        "NSPhotoLibraryUsageDescription": "We access your photo library so you can choose images to send in group chats or to Cogni AI.",
-        "NSPhotoLibraryAddUsageDescription": "We save images from group chats or Cogni to your photo library when you choose to save them.",
+        "NSCameraUsageDescription": "We use the camera to take photos you can share in group chats or with Cogno AI.",
+        "NSPhotoLibraryUsageDescription": "We access your photo library so you can choose images to send in group chats or to Cogno AI.",
+        "NSPhotoLibraryAddUsageDescription": "We save images from group chats or Cogno to your photo library when you choose to save them.",
         "NSMicrophoneUsageDescription": "We use the microphone for voice messages and voice input features.",
         "NSAppTransportSecurity": {
           "NSAllowsArbitraryLoads": true,

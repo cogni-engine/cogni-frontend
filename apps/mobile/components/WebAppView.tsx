@@ -539,7 +539,7 @@ export default function WebAppView({ url = 'https://app.cogno.studio', session }
           // Add custom headers to identify mobile app and bypass ngrok warning
           headers: {
             'X-Mobile-App': 'true',
-            'User-Agent': 'Cogni-Mobile-App/1.0', // Custom UA to bypass ngrok warning
+            'User-Agent': 'Cogno-Mobile-App/1.0', // Custom UA to bypass ngrok warning
             'ngrok-skip-browser-warning': 'true', // Skip ngrok warning page for dev
           }
         }}

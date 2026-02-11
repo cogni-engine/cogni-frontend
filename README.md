@@ -1,6 +1,6 @@
-# Cogni Frontend
+# Cogno Frontend
 
-A monorepo containing the frontend applications for Cogni, an AI-powered work management platform that automates planning, task management, and workflow coordination.
+A monorepo containing the frontend applications for Cogno, an AI-powered work management platform that automates planning, task management, and workflow coordination.
 
 ## 🏗️ Architecture
 

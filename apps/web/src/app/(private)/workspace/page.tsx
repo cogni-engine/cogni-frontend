@@ -103,7 +103,6 @@ export default function WorkspacePage() {
       {mounted && isValidating && workspaces && (
         <div className='absolute top-0 left-0 right-0 h-0.5 bg-blue-500/50 animate-pulse z-50' />
       )}
-
       {/* スクロール可能エリア */}
       <ScrollableView className='pb-32 md:pb-24 overflow-x-hidden'>
         {/* mounted まで固定のプレースホルダーでハイドレーションエラーを回避 */}

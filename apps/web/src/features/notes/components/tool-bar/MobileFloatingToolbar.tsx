@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, createElement } from 'react';
+import { useState, useMemo, createElement, useEffect } from 'react';
 import { Editor } from '@tiptap/react';
 import {
   Sparkles,
@@ -99,6 +99,60 @@ export function MobileFloatingToolbar({
     setShowAIInput(false);
   };
 
+  // 🔥 CRITICAL FIX: Aggressively prevent Shepherd from stealing focus
+  useEffect(() => {
+    const disableShepherdFocus = (dialog: HTMLElement) => {
+      if (!dialog) return;
+
+      // Make it inert (prevents all interactions including focus)
+      dialog.setAttribute('inert', '');
+      dialog.setAttribute('tabindex', '-1');
+      dialog.setAttribute('aria-hidden', 'true');
+
+      // Disable focus via JavaScript property
+      Object.defineProperty(dialog, 'focus', {
+        value: () => {},
+        writable: false,
+      });
+
+      // Make dialog non-focusable but allow content interactions
+      dialog.style.pointerEvents = 'none';
+      const content = dialog.querySelector('.shepherd-content');
+      if (content) {
+        (content as HTMLElement).style.pointerEvents = 'auto';
+      }
+    };
+
+    // Monitor for Shepherd dialogs and disable them immediately
+    const observer = new MutationObserver(mutations => {
+      mutations.forEach(mutation => {
+        mutation.addedNodes.forEach(node => {
+          if (
+            node instanceof HTMLElement &&
+            node.classList?.contains('shepherd-element')
+          ) {
+            disableShepherdFocus(node);
+          }
+        });
+      });
+    });
+
+    observer.observe(document.body, {
+      childList: true,
+      subtree: true,
+    });
+
+    // Also disable any existing dialogs
+    const existingDialog = document.querySelector(
+      '.shepherd-element'
+    ) as HTMLElement;
+    if (existingDialog) {
+      disableShepherdFocus(existingDialog);
+    }
+
+    return () => observer.disconnect();
+  }, []);
+
   if (!editor) return null;
 
   // Show at bottom when not focused (AI input mode)
@@ -176,7 +230,7 @@ export function MobileFloatingToolbar({
         }}
       >
         <div
-          className='mx-[8px] mb-[11px]'
+          className='mx-[8px] mb-[11px] rounded-full'
           data-shepherd-target={
             !isEditorFocused || showAIInput ? 'note-ai-input' : undefined
           }
@@ -191,6 +245,19 @@ export function MobileFloatingToolbar({
                   value={aiInstruction}
                   onChange={e => onInstructionChange(e.target.value)}
                   onKeyDown={handleKeyDown}
+                  onBlur={e => {
+                    // 🔥 PREVENT blur if it's going to Shepherd dialog - refocus immediately
+                    if (
+                      e.relatedTarget &&
+                      (e.relatedTarget as HTMLElement).classList?.contains(
+                        'shepherd-element'
+                      )
+                    ) {
+                      setTimeout(() => {
+                        (e.target as HTMLInputElement).focus();
+                      }, 0);
+                    }
+                  }}
                   placeholder='Ask AI to edit this note...'
                   className='flex-1 bg-transparent text-white text-base outline-none placeholder-white/50'
                   disabled={aiLoading}
@@ -228,6 +295,19 @@ export function MobileFloatingToolbar({
                   value={aiInstruction}
                   onChange={e => onInstructionChange(e.target.value)}
                   onKeyDown={handleKeyDown}
+                  onBlur={e => {
+                    // 🔥 PREVENT blur if it's going to Shepherd dialog - refocus immediately
+                    if (
+                      e.relatedTarget &&
+                      (e.relatedTarget as HTMLElement).classList?.contains(
+                        'shepherd-element'
+                      )
+                    ) {
+                      setTimeout(() => {
+                        (e.target as HTMLInputElement).focus();
+                      }, 0);
+                    }
+                  }}
                   placeholder='Ask AI to edit...'
                   className='flex-1 bg-transparent text-white text-base outline-none placeholder-white/50 min-w-0'
                   disabled={aiLoading}
