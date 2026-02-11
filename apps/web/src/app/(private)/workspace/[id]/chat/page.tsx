@@ -406,7 +406,7 @@ export default function WorkspaceChatPage() {
             flex-1 makes it grow to fill remaining space, pushing messages to visual top when few */}
         <div className='flex-1 min-h-0' />
 
-        {(isConnected || messages.length > 0) && currentUserId ? (
+        {(isConnected || messages.length > 0) && currentUserId && workspaceMember?.id ? (
           <WorkspaceMessageList
             messages={messages}
             currentUserId={currentUserId}
@@ -416,7 +416,7 @@ export default function WorkspaceChatPage() {
             workspaceMembers={members}
             workspaceNotes={workspaceNotes}
             onDismissFailedMessage={dismissFailedMessage}
-            currentMemberId={workspaceMember?.id ?? null}
+            currentMemberId={workspaceMember?.id}
             onAddReaction={addReaction}
             onRemoveReaction={removeReaction}
           />
