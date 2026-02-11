@@ -1,7 +1,9 @@
 import type { Metadata, Viewport } from 'next';
+import Script from 'next/script';
 import { Geist, Geist_Mono } from 'next/font/google';
 import './globals.css';
 import { QueryProvider } from '@/providers/QueryProvider';
+import { ServiceWorkerRegistration } from '@/components/ServiceWorkerRegistration';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -47,6 +49,15 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
+        {/* 初回訪問時もできるだけ早く SW を登録し、オフライン再訪問でオフライン画面を表示できるようにする */}
+        <Script
+          id='sw-register'
+          strategy='beforeInteractive'
+          dangerouslySetInnerHTML={{
+            __html: `if('serviceWorker' in navigator){navigator.serviceWorker.register('/sw.js',{scope:'/'});}`,
+          }}
+        />
+        <ServiceWorkerRegistration />
         <QueryProvider>{children}</QueryProvider>
       </body>
     </html>
