@@ -510,15 +510,18 @@ function WorkspaceMessageItem({
               {message.files && message.files.length > 0 && (
                 <MessageFiles files={message.files} />
               )}
-              {!isOptimistic && (message.reactions?.length ?? 0) > 0 && (
-                <div className='mt-1'>
-                  <ReactionDisplay
-                    reactions={message.reactions ?? []}
-                    currentMemberId={currentMemberId ?? null}
-                    onReactionClick={handleReactionClick}
-                  />
-                </div>
-              )}
+              {!isOptimistic &&
+                message.reactions &&
+                message.reactions.length > 0 &&
+                currentMemberId != null && (
+                  <div className='mt-1'>
+                    <ReactionDisplay
+                      reactions={message.reactions ?? []}
+                      currentMemberId={currentMemberId}
+                      onReactionClick={handleReactionClick}
+                    />
+                  </div>
+                )}
             </div>
           </div>
         </div>
@@ -647,15 +650,16 @@ function WorkspaceMessageItem({
               {message.files && message.files.length > 0 && (
                 <MessageFiles files={message.files} align='left' />
               )}
-              {(message.reactions?.length ?? 0) > 0 && (
-                <div className='mt-1'>
-                  <ReactionDisplay
-                    reactions={message.reactions ?? []}
-                    currentMemberId={currentMemberId ?? null}
-                    onReactionClick={handleReactionClick}
-                  />
-                </div>
-              )}
+              {(message.reactions?.length ?? 0) > 0 &&
+                currentMemberId != null && (
+                  <div className='mt-1'>
+                    <ReactionDisplay
+                      reactions={message.reactions ?? []}
+                      currentMemberId={currentMemberId}
+                      onReactionClick={handleReactionClick}
+                    />
+                  </div>
+                )}
             </div>
             {showTimestamp && (
               <p className='text-xs text-gray-500 mt-1'>

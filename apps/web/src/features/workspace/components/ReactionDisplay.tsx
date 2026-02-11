@@ -5,17 +5,15 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { User } from 'lucide-react';
 import type { MessageReaction } from '@/types/workspace';
 
-type Props = {
-  reactions: MessageReaction[];
-  currentMemberId: number | null;
-  onReactionClick: (emoji: string) => void;
-};
-
 export default function ReactionDisplay({
   reactions,
   currentMemberId,
   onReactionClick,
-}: Props) {
+}: {
+  reactions: MessageReaction[];
+  currentMemberId: number;
+  onReactionClick: (emoji: string) => void;
+}) {
   const [openEmoji, setOpenEmoji] = useState<string | null>(null);
   const popoverRef = useRef<HTMLDivElement>(null);
 
@@ -110,7 +108,7 @@ export default function ReactionDisplay({
                     );
                   })}
                 </ul>
-                {hasCurrentUser && currentMemberId != null && (
+                {hasCurrentUser && (
                   <div className='border-t border-white/10 p-2'>
                     <button
                       type='button'
