@@ -97,6 +97,7 @@ export async function getWorkspaceInvitations(
     .select('role')
     .eq('workspace_id', workspaceId)
     .eq('user_id', user.id)
+    .is('removed_at', null)
     .single();
 
   if (memberError || !memberData) {
@@ -130,6 +131,7 @@ export async function getWorkspaceInviteLinks(
     .select('role')
     .eq('workspace_id', workspaceId)
     .eq('user_id', user.id)
+    .is('removed_at', null)
     .single();
 
   if (memberError || !memberData) {
@@ -332,6 +334,7 @@ export async function cancelInvitation(invitationId: string): Promise<void> {
     .select('role')
     .eq('workspace_id', invitation.workspace_id)
     .eq('user_id', user.id)
+    .is('removed_at', null)
     .single();
 
   if (memberError || !memberData) {
@@ -373,6 +376,7 @@ export async function disableInviteLink(inviteLinkId: string): Promise<void> {
     .select('role')
     .eq('workspace_id', parseInt(inviteLink.workspace_id))
     .eq('user_id', user.id)
+    .is('removed_at', null)
     .single();
 
   if (memberError || !memberData) {

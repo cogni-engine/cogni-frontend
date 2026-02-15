@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import type { Workspace } from '@/types/workspace';
-import { Building2 } from 'lucide-react';
+import { Building2, User } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import GlassCard from '@/components/glass-design/GlassCard';
 
@@ -43,7 +43,16 @@ function WorkspaceCard({ workspace }: WorkspaceCardProps) {
   const hasUnread = unreadCount > 0;
   const displayCount = unreadCount > 99 ? '99+' : unreadCount;
   const memberCount = workspace.member_count ?? 0;
-  const showMemberCount = memberCount >= 3;
+  const isDm = workspace.type === 'dm';
+  const showMemberCount = !isDm && memberCount >= 3;
+  const displayName = isDm
+    ? workspace.dm_other_user?.name || 'Direct Message'
+    : workspace.title || 'Untitled Workspace';
+  const dmAvatarUrl = isDm ? workspace.dm_other_user?.avatar_url : null;
+  const dmInitial =
+    isDm && workspace.dm_other_user?.name
+      ? workspace.dm_other_user.name.charAt(0).toUpperCase()
+      : null;
 
   const formatDate = (dateString: string | null | undefined): string => {
     if (!dateString) return '';
@@ -96,7 +105,13 @@ function WorkspaceCard({ workspace }: WorkspaceCardProps) {
       <div className='flex items-center justify-between gap-3 py-2'>
         <div className='flex items-center gap-3 flex-1 min-w-0'>
           <Avatar className='h-12 w-12 uppercase text-sm tracking-wide border-0 bg-white/10'>
-            {workspace.icon_url ? (
+            {isDm && dmAvatarUrl ? (
+              <AvatarImage src={dmAvatarUrl} alt={displayName} />
+            ) : isDm ? (
+              <AvatarFallback className='bg-white/10 text-white/90'>
+                {dmInitial || <User className='w-4 h-4' />}
+              </AvatarFallback>
+            ) : workspace.icon_url ? (
               <AvatarImage
                 src={workspace.icon_url}
                 alt={workspace.title ?? 'Workspace icon'}
@@ -111,7 +126,7 @@ function WorkspaceCard({ workspace }: WorkspaceCardProps) {
             <div className='flex flex-col gap-0.5'>
               <div className='flex items-center gap-2'>
                 <h3 className='font-semibold text-white/90 text-[15px] leading-[1.4] truncate'>
-                  {workspace.title || 'Untitled Workspace'}
+                  {displayName}
                 </h3>
                 {showMemberCount && (
                   <span className='font-semibold text-[15px] text-white/80 shrink-0 leading-[1.4]'>

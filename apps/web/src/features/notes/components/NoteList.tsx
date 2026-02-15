@@ -9,6 +9,7 @@ import type { FormattedNote } from '../NotesProvider';
 import { groupAndSortNotes } from '../lib/noteListHelpers';
 import { FolderGroupHeader } from './FolderGroupHeader';
 import { FlatList, FlatListItem } from '@/components/FlatList';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 
 type NoteListProps = {
   notes: FormattedNote[];
@@ -104,26 +105,61 @@ function NoteCardComponent({
               </p>
             </div>
           </div>
-          {showWorkspaceBadge && note.isGroupNote && note.workspace?.title && (
-            <div className='flex items-center gap-1.5 shrink-0'>
-              {note.workspace.icon_url ? (
-                <Image
-                  src={note.workspace.icon_url}
-                  alt={note.workspace.title}
-                  width={16}
-                  height={16}
-                  className='w-4 h-4 rounded-md object-cover'
-                />
-              ) : (
-                <div className='w-4 h-4 rounded-md bg-linear-to-br from-purple-500 to-pink-500 flex items-center justify-center text-[8px] text-white/90 font-bold'>
-                  {note.workspace.title.charAt(0).toUpperCase()}
+          <div className='flex items-center gap-2 shrink-0'>
+            {/* Assignee avatars */}
+            {note.workspace_member_note &&
+              note.workspace_member_note.length > 0 && (
+                <div className='flex -space-x-1.5'>
+                  {note.workspace_member_note
+                    .filter(a => a.workspace_member_note_role === 'assignee')
+                    .slice(0, 3)
+                    .map(assignment => {
+                      const profile =
+                        assignment.workspace_member?.user_profiles;
+                      return (
+                        <Avatar
+                          key={assignment.workspace_member?.id}
+                          className='h-5 w-5 text-[8px] ring-1 ring-black/50'
+                        >
+                          {profile?.avatar_url ? (
+                            <AvatarImage
+                              src={profile.avatar_url}
+                              alt={profile.name || 'User'}
+                              sizes='20px'
+                            />
+                          ) : (
+                            <AvatarFallback>
+                              {(profile?.name || '?').charAt(0).toUpperCase()}
+                            </AvatarFallback>
+                          )}
+                        </Avatar>
+                      );
+                    })}
                 </div>
               )}
-              <span className='text-[11px] text-white whitespace-nowrap'>
-                {note.workspace.title}
-              </span>
-            </div>
-          )}
+            {showWorkspaceBadge &&
+              note.isGroupNote &&
+              note.workspace?.title && (
+                <div className='flex items-center gap-1.5'>
+                  {note.workspace.icon_url ? (
+                    <Image
+                      src={note.workspace.icon_url}
+                      alt={note.workspace.title}
+                      width={16}
+                      height={16}
+                      className='w-4 h-4 rounded-md object-cover'
+                    />
+                  ) : (
+                    <div className='w-4 h-4 rounded-md bg-linear-to-br from-purple-500 to-pink-500 flex items-center justify-center text-[8px] text-white/90 font-bold'>
+                      {note.workspace.title.charAt(0).toUpperCase()}
+                    </div>
+                  )}
+                  <span className='text-[11px] text-white whitespace-nowrap'>
+                    {note.workspace.title}
+                  </span>
+                </div>
+              )}
+          </div>
         </div>
       </FlatListItem>
     </Link>

@@ -227,7 +227,7 @@ export function OnboardingIcon({
           </div>
 
           {/* Continue Button */}
-          <div className='w-full max-w-md mx-auto px-4 mt-6'>
+          <div className='mt-8 pt-6'>
             <NextStepButton
               type='button'
               onClick={handleContinueClick}

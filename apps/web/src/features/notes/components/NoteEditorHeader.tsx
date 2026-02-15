@@ -35,7 +35,7 @@ export function NoteEditorHeader({
   const hasAssignees = assigneeIds.length > 0;
 
   return (
-    <header className='flex items-center gap-3 px-2 md:px-6 py-4 relative z-100'>
+    <header className='flex items-center gap-3 px-2 md:px-6 py-4 md:pb-1 relative z-100'>
       {/* 戻るボタン - 丸く浮き出る */}
       <GlassButton onClick={onBack} className='size-12'>
         <ArrowLeft className='w-5 h-5' />

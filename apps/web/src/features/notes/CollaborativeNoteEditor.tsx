@@ -540,32 +540,37 @@ export default function CollaborativeNoteEditor({
   }
 
   return (
-    <div className='flex flex-col h-full bg-linear-to-br from-slate-950 via-black to-slate-950 text-gray-100 relative overflow-hidden animate-in fade-in duration-500'>
-      <NoteEditorHeader
-        title={title}
-        onTitleChange={handleTitleChange}
-        onBack={() => router.back()}
-        isGroupNote={isGroupNote}
-        showAssignmentDropdown={showAssignmentDropdown}
-        onToggleAssignmentDropdown={() =>
-          setShowAssignmentDropdown(!showAssignmentDropdown)
-        }
-        onCloseAssignmentDropdown={() => setShowAssignmentDropdown(false)}
-        members={members}
-        assigneeIds={assigneeIds}
-        onToggleAssignee={toggleAssignee}
-        onSelectAllAssignees={() => selectAllAssignees(members.map(m => m.id))}
-      />
-
-      <div className='hidden md:block'>
-        <NoteEditorToolbar
-          editor={editor}
-          uploadingImage={uploadingImage}
-          canUploadImage={!!note?.workspace_id}
-          onImageUpload={triggerImageInput}
-          onToggleTaskList={handleToggleTaskList}
+    <div className='h-full bg-linear-to-br from-slate-950 via-black to-slate-950 text-gray-100 relative overflow-hidden animate-in fade-in duration-500'>
+      {/* Header + Toolbar - above layout gradient (z-50), no background */}
+      <div className='absolute top-0 left-0 right-0 z-[60]'>
+        <NoteEditorHeader
+          title={title}
+          onTitleChange={handleTitleChange}
+          onBack={() => router.back()}
           isGroupNote={isGroupNote}
+          showAssignmentDropdown={showAssignmentDropdown}
+          onToggleAssignmentDropdown={() =>
+            setShowAssignmentDropdown(!showAssignmentDropdown)
+          }
+          onCloseAssignmentDropdown={() => setShowAssignmentDropdown(false)}
+          members={members}
+          assigneeIds={assigneeIds}
+          onToggleAssignee={toggleAssignee}
+          onSelectAllAssignees={() =>
+            selectAllAssignees(members.map(m => m.id))
+          }
         />
+
+        <div className='hidden md:block'>
+          <NoteEditorToolbar
+            editor={editor}
+            uploadingImage={uploadingImage}
+            canUploadImage={!!note?.workspace_id}
+            onImageUpload={triggerImageInput}
+            onToggleTaskList={handleToggleTaskList}
+            isGroupNote={isGroupNote}
+          />
+        </div>
       </div>
 
       {/* Floating Accept/Reject All Buttons */}
@@ -587,25 +592,27 @@ export default function CollaborativeNoteEditor({
         </GlassCard>
       )}
 
-      {/* Info bar for other users' suggestions */}
-      {hasOtherUserSuggestions && !hasPendingSuggestions && (
-        <div className='mx-4 md:mx-6 mb-2 px-4 py-2 bg-linear-to-r from-gray-500/10 to-gray-600/10 border border-gray-500/20 rounded-lg'>
-          <span className='text-sm text-gray-400'>
-            Other users have pending suggestions (shown in muted colors)
-          </span>
-        </div>
-      )}
-
-      {/* Editor Content */}
+      {/* Editor Content - full height, scrolls behind header and bottom */}
       <div
-        className='flex flex-col flex-1 px-4 md:px-8 md:pt-4 relative z-10 overflow-auto'
+        className='h-full px-4 md:px-8 relative z-10 overflow-auto'
         style={{
           willChange: 'scroll-position',
           transform: 'translateZ(0)',
           WebkitOverflowScrolling: 'touch',
         }}
       >
-        <div className='flex-1 min-h-full' data-shepherd-target='note-editor'>
+        <div
+          className='pt-16 md:pt-24 min-h-full'
+          data-shepherd-target='note-editor'
+        >
+          {/* Info bar for other users' suggestions */}
+          {hasOtherUserSuggestions && !hasPendingSuggestions && (
+            <div className='mb-2 px-4 py-2 bg-linear-to-r from-gray-500/10 to-gray-600/10 border border-gray-500/20 rounded-lg'>
+              <span className='text-sm text-gray-400'>
+                Other users have pending suggestions (shown in muted colors)
+              </span>
+            </div>
+          )}
           <EditorContent editor={editor} />
           <div className='h-1/2'></div>
         </div>

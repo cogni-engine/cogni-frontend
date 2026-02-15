@@ -14,7 +14,8 @@ import {
 } from 'lucide-react';
 import GlassCard from '@/components/glass-design/GlassCard';
 import GlassButton from '@/components/glass-design/GlassButton';
-import { useWorkspace } from '@/hooks/useWorkspace';
+import { useWorkspace, useWorkspaceMembers } from '@/hooks/useWorkspace';
+import { getCurrentUserId } from '@/lib/cookies';
 import FolderActionButton from '@/components/FolderActionButton';
 import WorkspaceActivityDrawer from '@/features/workspace/components/activity/WorkspaceActivityDrawer';
 import { WorkspaceProvider } from '@/features/workspace/contexts/WorkspaceContext';
@@ -32,6 +33,15 @@ export default function WorkspaceLayout({
   const workspaceId = parseInt(params.id as string);
 
   const { workspace } = useWorkspace(workspaceId);
+  const isDm = workspace?.type === 'dm';
+  const { members } = useWorkspaceMembers(isDm ? workspaceId : null);
+  const currentUserId = getCurrentUserId();
+  const dmOtherMember = isDm
+    ? members.find(m => m.user_id !== currentUserId)
+    : null;
+  const headerTitle = isDm
+    ? dmOtherMember?.user_profile?.name || 'Direct Message'
+    : workspace?.title || 'Workspace';
 
   const getCurrentView = (): ViewType => {
     if (pathname.includes('/members')) return 'members';
@@ -92,7 +102,7 @@ export default function WorkspaceLayout({
               <ArrowLeft className='w-5 h-5' />
             </GlassButton>
             <h1 className='flex-1 min-w-0 text-md font-bold bg-linear-to-r from-white to-gray-300 bg-clip-text text-transparent truncate'>
-              {workspace ? workspace.title : 'Workspace'}
+              {headerTitle}
             </h1>
             {currentView === 'notes' && (
               <FolderActionButton workspaceId={workspaceId} />

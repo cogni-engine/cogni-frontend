@@ -1,7 +1,9 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useLayoutEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { Reply, Copy, Check } from 'lucide-react';
+import GlassCard from '@/components/glass-design/GlassCard';
 
 type MessageContextMenuProps = {
   messageText: string;
@@ -18,6 +20,33 @@ export default function MessageContextMenu({
 }: MessageContextMenuProps) {
   const menuRef = useRef<HTMLDivElement>(null);
   const [copied, setCopied] = useState(false);
+  const [adjustedPos, setAdjustedPos] = useState<{
+    left: number;
+    top: number;
+    visible: boolean;
+  }>({ left: position.x, top: position.y, visible: false });
+
+  // Adjust position to stay within viewport after menu renders
+  useLayoutEffect(() => {
+    if (!menuRef.current) return;
+
+    const { width, height } = menuRef.current.getBoundingClientRect();
+
+    let left = position.x;
+    let top = position.y;
+
+    // Keep within viewport
+    if (left + width > window.innerWidth) {
+      left = window.innerWidth - width - 8;
+    }
+    if (left < 8) left = 8;
+    if (top + height > window.innerHeight) {
+      top = window.innerHeight - height - 8;
+    }
+    if (top < 8) top = 8;
+
+    setAdjustedPos({ left, top, visible: true });
+  }, [position]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent | TouchEvent) => {
@@ -57,13 +86,15 @@ export default function MessageContextMenu({
     }
   };
 
-  return (
-    <div
+  // Portal to document.body to escape parent transform stacking contexts
+  return createPortal(
+    <GlassCard
       ref={menuRef}
-      className='fixed z-50 bg-white/15 backdrop-blur-xl border border-black rounded-2xl shadow-[0_8px_32px_rgba(0,0,0,0.25),inset_0_1px_0_rgba(255,255,255,0.18)] overflow-hidden'
+      className='fixed z-50 rounded-3xl p-2 min-w-[140px]'
       style={{
-        left: `${position.x}px`,
-        top: `${position.y}px`,
+        left: adjustedPos.left,
+        top: adjustedPos.top,
+        visibility: adjustedPos.visible ? 'visible' : 'hidden',
       }}
     >
       <button
@@ -71,27 +102,28 @@ export default function MessageContextMenu({
           onReply();
           onClose();
         }}
-        className='w-full px-4 py-3 flex items-center gap-3 text-white hover:bg-white/10 transition-colors text-sm border-b border-white/10'
+        className='w-full p-2 text-left text-sm text-white hover:bg-white/5 flex items-center gap-2 transition-colors rounded-xl mb-1'
       >
-        <Reply className='w-4 h-4' />
+        <Reply className='w-4 h-4 text-white' />
         <span>Reply</span>
       </button>
       <button
         onClick={handleCopy}
-        className='w-full px-4 py-3 flex items-center gap-3 text-white hover:bg-white/10 transition-colors text-sm'
+        className='w-full p-2 text-left text-sm text-white hover:bg-white/5 flex items-center gap-2 transition-colors rounded-xl'
       >
         {copied ? (
           <>
-            <Check className='w-4 h-4' />
+            <Check className='w-4 h-4 text-white' />
             <span>Copied!</span>
           </>
         ) : (
           <>
-            <Copy className='w-4 h-4' />
+            <Copy className='w-4 h-4 text-white' />
             <span>Copy</span>
           </>
         )}
       </button>
-    </div>
+    </GlassCard>,
+    document.body
   );
 }

@@ -1,3 +1,4 @@
+import { useRef, useEffect } from 'react';
 import { NextStepButton } from '../components/NextStepButton';
 import { SubText } from '../components/SubText';
 
@@ -18,8 +19,17 @@ export function OnboardingName({
   setName,
   handleNameSubmit,
 }: OnboardingNameProps) {
+  const inputRef = useRef<HTMLInputElement>(null);
   const isFormValid = name.trim().length >= 2 && name.length <= MAX_NAME_LENGTH;
   const characterCount = name.length;
+
+  // Delay focus to avoid scroll-into-view during framer-motion enter animation
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      inputRef.current?.focus({ preventScroll: true });
+    }, 350);
+    return () => clearTimeout(timer);
+  }, []);
 
   const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
@@ -52,6 +62,7 @@ export function OnboardingName({
               <div className='relative pb-6'>
                 <div className='flex items-center gap-4 border-b border-white pb-2 focus-within:border-white transition-colors'>
                   <input
+                    ref={inputRef}
                     id='name'
                     type='text'
                     value={name}
@@ -65,7 +76,6 @@ export function OnboardingName({
                     required
                     minLength={2}
                     maxLength={MAX_NAME_LENGTH}
-                    autoFocus
                     autoComplete='off'
                   />
                 </div>

@@ -1,7 +1,10 @@
 import { useState, useRef, useEffect } from 'react';
-import Image from 'next/image';
+import Image, { StaticImageData } from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import { NextStepButton } from '../components/NextStepButton';
+import screenshot1 from '../../../../public/screenshots/IMG_0335-portrait.png';
+import screenshot2 from '../../../../public/screenshots/IMG_0336-portrait.png';
+import screenshot3 from '../../../../public/screenshots/IMG_0338-portrait.png';
 
 interface AboutCognoAppProps {
   error: string | null;
@@ -13,7 +16,7 @@ interface OnboardingSlideData {
   title: string;
   description: string;
   screenContent?: {
-    screenshot?: string;
+    screenshot: StaticImageData;
     alt?: string;
   };
 }
@@ -24,7 +27,7 @@ const onboardingSlides: OnboardingSlideData[] = [
     description:
       "Move forward using Cogno's smart notes and chats with autonomous AI notifications",
     screenContent: {
-      screenshot: '/screenshots/IMG_0335-portrait.png',
+      screenshot: screenshot1,
       alt: 'Cogno workspace preview',
     },
   },
@@ -33,7 +36,7 @@ const onboardingSlides: OnboardingSlideData[] = [
     description:
       'Get notifications and completed tasks, and see how autonomous AI leads to results',
     screenContent: {
-      screenshot: '/screenshots/IMG_0336-portrait.png',
+      screenshot: screenshot2,
       alt: 'Autonomous AI preview',
     },
   },
@@ -42,7 +45,7 @@ const onboardingSlides: OnboardingSlideData[] = [
     description:
       "Let's work together as Cogno manages tracking, notifies everyone, and shares team status",
     screenContent: {
-      screenshot: '/screenshots/IMG_0338-portrait.png',
+      screenshot: screenshot3,
       alt: 'Team collaboration preview',
     },
   },
@@ -292,8 +295,6 @@ export function AboutCognoApp({
                         <Image
                           src={slideData.screenContent.screenshot}
                           alt={slideData.screenContent.alt || 'App preview'}
-                          width={300}
-                          height={600}
                           className='object-contain'
                           style={{
                             maxWidth: '100%',
@@ -301,7 +302,9 @@ export function AboutCognoApp({
                             width: 'auto',
                           }}
                           sizes='(max-width: 640px) 90vw, (max-width: 1024px) 280px, 300px'
-                          priority={index === 0}
+                          quality={75}
+                          priority
+                          placeholder='blur'
                         />
                       </div>
                     ) : null}

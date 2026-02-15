@@ -17,7 +17,6 @@ export interface Notification {
   due_date: string;
   status: NotificationStatus;
   task_id: number;
-  task_result_id?: number | null;
   user_id: string;
   workspace_member_id?: number | null;
   reaction_status: NotificationReactionStatus;
@@ -29,10 +28,13 @@ export interface WorkspaceActivity {
   title: string;
   body?: string;
   ai_context: string;
+  task_id: number;
   reaction_status: NotificationReactionStatus;
   reaction_text: string | null;
+  reaction_choices: string[] | null;
   member_name: string;
   member_avatar_url?: string;
+  workspace_member_id: number | null;
   updated_at: string;
   due_date: string;
   created_at: string;

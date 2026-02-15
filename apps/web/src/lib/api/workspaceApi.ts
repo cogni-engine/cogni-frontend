@@ -35,7 +35,8 @@ export async function getWorkspaces(): Promise<Workspace[]> {
   const { data: memberData, error: memberError } = await supabase
     .from('workspace_member')
     .select('workspace_id, id, last_read_message_id')
-    .eq('user_id', userId);
+    .eq('user_id', userId)
+    .is('removed_at', null);
 
   if (memberError) throw memberError;
 
@@ -65,7 +66,7 @@ export async function getWorkspaces(): Promise<Workspace[]> {
       .from('workspace')
       .select('*')
       .in('id', workspaceIds)
-      .eq('type', 'group')
+      .in('type', ['group', 'dm'])
       .order('workspace_messages_updated_at', {
         ascending: false,
         nullsFirst: false,
@@ -81,7 +82,8 @@ export async function getWorkspaces(): Promise<Workspace[]> {
     supabase
       .from('workspace_member')
       .select('workspace_id')
-      .in('workspace_id', workspaceIds),
+      .in('workspace_id', workspaceIds)
+      .is('removed_at', null),
 
     // 4. Get latest message for each workspace (one per workspace)
     supabase
@@ -95,6 +97,41 @@ export async function getWorkspaces(): Promise<Workspace[]> {
 
   if (!workspacesResult.data || workspacesResult.data.length === 0) {
     return [];
+  }
+
+  // Fetch DM other user profiles
+  const dmWorkspaces = workspacesResult.data.filter(
+    (w: { type: string }) => w.type === 'dm'
+  );
+  const dmProfileMap = new Map<
+    number,
+    { user_id: string; name: string | null; avatar_url: string | null }
+  >();
+
+  if (dmWorkspaces.length > 0) {
+    const dmWorkspaceIds = dmWorkspaces.map((w: { id: number }) => w.id);
+    const { data: dmMembers } = await supabase
+      .from('workspace_member')
+      .select('workspace_id, user_id, user_profile:user_id(name, avatar_url)')
+      .in('workspace_id', dmWorkspaceIds)
+      .neq('user_id', userId)
+      .is('removed_at', null);
+
+    if (dmMembers) {
+      for (const m of dmMembers) {
+        const profile = m.user_profile as unknown as {
+          name: string | null;
+          avatar_url: string | null;
+        } | null;
+        if (profile && m.user_id) {
+          dmProfileMap.set(m.workspace_id, {
+            user_id: m.user_id,
+            name: profile.name,
+            avatar_url: profile.avatar_url,
+          });
+        }
+      }
+    }
   }
 
   // Create lookup maps
@@ -152,6 +189,7 @@ export async function getWorkspaces(): Promise<Workspace[]> {
     unread_count: unreadCountMap.get(workspace.id) || 0,
     member_count: memberCountMap.get(workspace.id) || 0,
     latest_message_text: latestMessageMap.get(workspace.id) || null,
+    dm_other_user: dmProfileMap.get(workspace.id) || null,
   }));
 }
 
@@ -193,12 +231,13 @@ export async function getWorkspace(id: number): Promise<Workspace> {
     throw new Error('User not authenticated');
   }
 
-  // Verify user is a member of this workspace
+  // Verify user is an active member of this workspace
   const { data: memberData, error: memberError } = await supabase
     .from('workspace_member')
     .select('workspace_id')
     .eq('workspace_id', id)
     .eq('user_id', user.id)
+    .is('removed_at', null)
     .single();
 
   if (memberError || !memberData) {
@@ -393,6 +432,7 @@ export async function checkWorkspaceMembership(
     .select('workspace_id')
     .eq('workspace_id', workspaceId)
     .eq('user_id', user.id)
+    .is('removed_at', null)
     .maybeSingle();
 
   return !error && data !== null;
@@ -417,6 +457,7 @@ export async function getWorkspaceMembers(
     `
     )
     .eq('workspace_id', workspaceId)
+    .is('removed_at', null)
     .order('created_at', { ascending: true });
 
   console.log('📦 getWorkspaceMembers raw response:', { data, error });
@@ -454,7 +495,8 @@ export async function getAllWorkspaceMembersForUser(): Promise<
   const { data: userMemberships, error: membershipError } = await supabase
     .from('workspace_member')
     .select('workspace_id')
-    .eq('user_id', user.id);
+    .eq('user_id', user.id)
+    .is('removed_at', null);
 
   if (membershipError) throw membershipError;
 
@@ -481,6 +523,7 @@ export async function getAllWorkspaceMembersForUser(): Promise<
     .in('workspace_id', workspaceIds)
     .neq('user_id', user.id) // Exclude current user
     .is('agent_id', null) // Exclude agent users
+    .is('removed_at', null) // Exclude removed members
     .order('created_at', { ascending: true });
 
   if (error) throw error;
@@ -524,12 +567,13 @@ export async function addWorkspaceMembers(
     return [];
   }
 
-  // Check which users are already members
+  // Check which users are already active members
   const { data: existingMembers, error: checkError } = await supabase
     .from('workspace_member')
     .select('user_id')
     .eq('workspace_id', workspaceId)
-    .in('user_id', userIds);
+    .in('user_id', userIds)
+    .is('removed_at', null);
 
   if (checkError) {
     throw checkError;
@@ -563,4 +607,116 @@ export async function addWorkspaceMembers(
   }
 
   return (insertedMembers || []).map(m => m.id);
+}
+
+/**
+ * Find or create a DM workspace between the current user and another user.
+ * Uses Supabase RPC to prevent duplicates.
+ */
+export async function findOrCreateDmWorkspace(
+  otherUserId: string
+): Promise<{ workspace_id: number; is_new: boolean }> {
+  const userId = getCurrentUserId();
+  if (!userId) {
+    throw new Error('User not authenticated');
+  }
+
+  const { data, error } = await supabase.rpc('find_or_create_dm_workspace', {
+    p_user_id_1: userId,
+    p_user_id_2: otherUserId,
+  });
+
+  if (error) {
+    console.error('RPC find_or_create_dm_workspace error:', {
+      message: error.message,
+      code: error.code,
+      details: error.details,
+      hint: error.hint,
+    });
+    throw new Error(error.message || 'DM workspace creation failed');
+  }
+
+  if (!data || data.length === 0) {
+    throw new Error('Failed to find or create DM workspace');
+  }
+
+  return data[0];
+}
+
+/**
+ * Remove (kick) a member from a workspace by setting removed_at.
+ * Permission: owner can kick anyone, admin can kick members only.
+ */
+export async function removeWorkspaceMember(
+  workspaceId: number,
+  targetMemberId: number
+): Promise<void> {
+  const userId = getCurrentUserId();
+  if (!userId) {
+    throw new Error('User not authenticated');
+  }
+
+  // Block removal in DM workspaces
+  const { data: workspace } = await supabase
+    .from('workspace')
+    .select('type')
+    .eq('id', workspaceId)
+    .single();
+
+  if (workspace?.type === 'dm') {
+    throw new Error('Cannot remove members from a DM workspace');
+  }
+
+  // Get current user's role
+  const { data: currentMember, error: currentError } = await supabase
+    .from('workspace_member')
+    .select('id, role')
+    .eq('workspace_id', workspaceId)
+    .eq('user_id', userId)
+    .is('removed_at', null)
+    .single();
+
+  if (currentError || !currentMember) {
+    throw new Error('You are not a member of this workspace');
+  }
+
+  // Get target member's role
+  const { data: targetMember, error: targetError } = await supabase
+    .from('workspace_member')
+    .select('id, role, user_id')
+    .eq('id', targetMemberId)
+    .eq('workspace_id', workspaceId)
+    .is('removed_at', null)
+    .single();
+
+  if (targetError || !targetMember) {
+    throw new Error('Member not found');
+  }
+
+  // Cannot remove yourself
+  if (targetMember.user_id === userId) {
+    throw new Error('You cannot remove yourself');
+  }
+
+  // Permission check: owner cannot be kicked, others can kick equal or lower roles
+  const targetRole = targetMember.role;
+
+  if (targetRole === 'owner') {
+    throw new Error('Cannot remove the workspace owner');
+  }
+
+  const roleRank: Record<string, number> = { owner: 3, admin: 2, member: 1 };
+  if ((roleRank[currentMember.role] ?? 0) < (roleRank[targetRole] ?? 0)) {
+    throw new Error('You do not have permission to remove this member');
+  }
+
+  // Soft delete: set removed_at
+  const { error: updateError } = await supabase
+    .from('workspace_member')
+    .update({ removed_at: new Date().toISOString() })
+    .eq('id', targetMemberId);
+
+  if (updateError) {
+    throw new Error(updateError.message || 'Failed to remove member');
+  }
 }

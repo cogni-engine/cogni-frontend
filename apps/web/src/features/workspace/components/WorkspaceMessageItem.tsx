@@ -123,12 +123,9 @@ function WorkspaceMessageItem({
   const scheduleLongPress = useCallback(() => {
     cancelLongPress();
     longPressTimer.current = setTimeout(() => {
-      const rect = messageRef.current?.getBoundingClientRect();
-      if (rect) {
-        setContextMenu({
-          x: Math.min(rect.right - 150, window.innerWidth - 200),
-          y: rect.top,
-        });
+      const start = pointerStartRef.current;
+      if (start) {
+        setContextMenu({ x: start.x, y: start.y });
       }
     }, 500);
   }, [cancelLongPress]);

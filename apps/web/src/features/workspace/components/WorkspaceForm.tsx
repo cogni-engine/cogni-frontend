@@ -12,10 +12,16 @@ import {
 import { useRouter } from 'next/navigation';
 import type { Area } from 'react-easy-crop';
 import type { Workspace } from '@/types/workspace';
-import { Plus, Sparkles } from 'lucide-react';
+import { Plus, Sparkles, MessageCircle, User, Loader2 } from 'lucide-react';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import GlassButton from '@/components/glass-design/GlassButton';
+import useSWR from 'swr';
+import { mutate } from 'swr';
+import {
+  getAllWorkspaceMembersForUser,
+  findOrCreateDmWorkspace,
+} from '@/lib/api/workspaceApi';
 import {
   Drawer,
   DrawerContent,
@@ -35,6 +41,7 @@ import { generateAvatarBlob } from '@/features/users/utils/avatarGenerator';
 
 interface WorkspaceFormProps {
   workspace?: Workspace | null;
+  workspaces?: Workspace[];
   onSubmit: (payload: {
     id: number | null;
     title: string;
@@ -46,6 +53,7 @@ interface WorkspaceFormProps {
 
 export default function WorkspaceForm({
   workspace,
+  workspaces,
   onSubmit,
   onEditComplete,
   isLoading,
@@ -72,6 +80,27 @@ export default function WorkspaceForm({
   const [crop, setCrop] = useState({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
   const [croppedAreaPixels, setCroppedAreaPixels] = useState<Area | null>(null);
+
+  // DM section state
+  const [dmLoadingUserId, setDmLoadingUserId] = useState<string | null>(null);
+  const isCreateMode = !workspace;
+
+  const { data: allMembers } = useSWR(
+    open && isCreateMode ? '/all-workspace-members' : null,
+    getAllWorkspaceMembersForUser
+  );
+
+  const unconnectedMembers = useMemo(() => {
+    if (!allMembers) return [];
+    const existingDmUserIds = new Set(
+      (workspaces ?? [])
+        .filter(w => w.type === 'dm' && w.dm_other_user?.user_id)
+        .map(w => w.dm_other_user!.user_id)
+    );
+    return allMembers.filter(
+      m => m.user_id && !existingDmUserIds.has(m.user_id)
+    );
+  }, [allMembers, workspaces]);
 
   const updateIconPreview = useCallback((preview: string | null) => {
     if (iconPreviewRef.current && iconPreviewRef.current.startsWith('blob:')) {
@@ -125,6 +154,26 @@ export default function WorkspaceForm({
       }
     },
     [onEditComplete, resetState]
+  );
+
+  const handleDmSelect = useCallback(
+    async (userId: string) => {
+      if (!userId || dmLoadingUserId) return;
+      setDmLoadingUserId(userId);
+      try {
+        const result = await findOrCreateDmWorkspace(userId);
+        mutate('/workspaces');
+        handleDialogOpenChange(false);
+        router.push(`/workspace/${result.workspace_id}/chat`);
+      } catch (err: unknown) {
+        const message =
+          err instanceof Error ? err.message : JSON.stringify(err);
+        console.error('Failed to create DM workspace:', message);
+      } finally {
+        setDmLoadingUserId(null);
+      }
+    },
+    [dmLoadingUserId, handleDialogOpenChange, router]
   );
 
   const handleTitleChange = useCallback(
@@ -421,6 +470,59 @@ export default function WorkspaceForm({
                 </div>
               )}
             </form>
+
+            {/* DM section - only in create mode */}
+            {isCreateMode && unconnectedMembers.length > 0 && (
+              <div className='mt-6 px-4'>
+                <div className='border-t border-white/10 pt-5'>
+                  <div className='flex items-center gap-2 mb-3'>
+                    <MessageCircle className='w-3.5 h-3.5 text-gray-500' />
+                    <h3 className='text-xs font-medium text-gray-500 uppercase tracking-wider'>
+                      Direct Message
+                    </h3>
+                  </div>
+                  <div className='space-y-1'>
+                    {unconnectedMembers.map(member => {
+                      const profile = member.user_profile;
+                      const isDmLoading = dmLoadingUserId === member.user_id;
+                      const initial = profile?.name
+                        ? profile.name.charAt(0).toUpperCase()
+                        : null;
+
+                      return (
+                        <button
+                          key={member.user_id}
+                          onClick={() =>
+                            member.user_id && handleDmSelect(member.user_id)
+                          }
+                          disabled={!!dmLoadingUserId}
+                          className='w-full flex items-center gap-3 p-3 rounded-xl hover:bg-white/5 transition-colors disabled:opacity-50'
+                        >
+                          <Avatar className='h-10 w-10 border border-white/10 bg-white/5 text-sm'>
+                            {profile?.avatar_url ? (
+                              <AvatarImage
+                                src={profile.avatar_url}
+                                alt={profile.name ?? 'User'}
+                              />
+                            ) : (
+                              <AvatarFallback className='bg-white/5 text-white/70'>
+                                {initial || <User className='w-4 h-4' />}
+                              </AvatarFallback>
+                            )}
+                          </Avatar>
+                          <span className='text-white text-sm font-medium flex-1 text-left'>
+                            {profile?.name ?? 'Unknown'}
+                          </span>
+                          {isDmLoading && (
+                            <Loader2 className='w-4 h-4 text-gray-400 animate-spin' />
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+            )}
           </DrawerBody>
 
           <DrawerFooter className='flex gap-3 px-4 pb-4'>

@@ -31,7 +31,10 @@ export default function WorkspacePage() {
     }
 
     return workspaces.filter(workspace => {
-      const title = (workspace.title || 'Untitled Workspace').toLowerCase();
+      const title =
+        workspace.type === 'dm'
+          ? (workspace.dm_other_user?.name || 'Direct Message').toLowerCase()
+          : (workspace.title || 'Untitled Workspace').toLowerCase();
       const typeLabel = workspace.type.toLowerCase();
       return title.includes(query) || typeLabel.includes(query);
     });
@@ -131,7 +134,11 @@ export default function WorkspacePage() {
             value={searchQuery}
             onChange={event => setSearchQuery(event.target.value)}
           />
-          <WorkspaceForm onSubmit={handleSubmit} isLoading={isLoading} />
+          <WorkspaceForm
+            onSubmit={handleSubmit}
+            isLoading={isLoading}
+            workspaces={workspaces ?? undefined}
+          />
         </div>
       </div>
     </div>

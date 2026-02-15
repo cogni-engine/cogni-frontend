@@ -39,7 +39,8 @@ export async function getWorkspaceActivityNotifications(
   const { data: members, error: memberError } = await supabase
     .from('workspace_member')
     .select('id')
-    .eq('workspace_id', workspaceId);
+    .eq('workspace_id', workspaceId)
+    .is('removed_at', null);
 
   if (memberError) throw memberError;
   if (!members || members.length === 0) return [];
@@ -71,8 +72,11 @@ export async function getWorkspaceActivityNotifications(
     title: string;
     body?: string;
     ai_context: string;
+    task_id: number;
     reaction_status: string;
     reaction_text: string | null;
+    reaction_choices: string[] | null;
+    workspace_member_id: number | null;
     updated_at: string;
     due_date: string;
     created_at: string;
@@ -91,10 +95,13 @@ export async function getWorkspaceActivityNotifications(
     title: item.title,
     body: item.body,
     ai_context: item.ai_context,
+    task_id: item.task_id,
     reaction_status: item.reaction_status as NotificationReactionStatus,
     reaction_text: item.reaction_text,
+    reaction_choices: item.reaction_choices || null,
     member_name: item.workspace_member?.user_profile?.name || 'Unknown',
     member_avatar_url: item.workspace_member?.user_profile?.avatar_url,
+    workspace_member_id: item.workspace_member_id,
     updated_at: item.updated_at,
     due_date: item.due_date,
     created_at: item.created_at,

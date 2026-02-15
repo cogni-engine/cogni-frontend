@@ -24,7 +24,7 @@ export interface Workspace {
   created_at: string;
   title: string | null;
   icon_url: string | null;
-  type: 'group' | 'personal';
+  type: 'group' | 'personal' | 'dm';
   workspace_messages_updated_at?: string | null;
 }
 
@@ -125,7 +125,7 @@ export interface Note {
   workspace?: {
     id: number;
     title: string;
-    type: 'group' | 'personal';
+    type: 'group' | 'personal' | 'dm';
     created_at: string;
   };
   workspace_member_note?: NoteAssignment[];

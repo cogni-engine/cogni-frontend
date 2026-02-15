@@ -354,6 +354,7 @@ export async function getCurrentWorkspaceMember(
     .select('id, last_read_message_id')
     .eq('workspace_id', workspaceId)
     .eq('user_id', userId)
+    .is('removed_at', null)
     .maybeSingle();
 
   if (error) throw error;

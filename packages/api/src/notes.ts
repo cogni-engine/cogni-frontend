@@ -327,7 +327,8 @@ export async function getUserAssignedNotes(): Promise<Note[]> {
   const { data: members, error: memberError } = await supabase
     .from('workspace_member')
     .select('id')
-    .eq('user_id', user.id);
+    .eq('user_id', user.id)
+    .is('removed_at', null);
 
   if (memberError) throw memberError;
   if (!members || members.length === 0) return [];

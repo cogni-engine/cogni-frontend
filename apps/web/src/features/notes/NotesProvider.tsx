@@ -7,7 +7,7 @@ import React, {
   useCallback,
 } from 'react';
 import { useNoteFolders } from './hooks/useNoteFolders';
-import { NoteFolder, NoteWithParsed } from '@/types/note';
+import { NoteAssignment, NoteFolder, NoteWithParsed } from '@/types/note';
 import { useNotes } from './hooks/useNotes';
 import { formatDate } from './lib/noteHelpers';
 
@@ -27,6 +27,7 @@ export type FormattedNote = {
   updated_at: string;
   deleted_at?: string | null;
   note_folder_id?: number | null;
+  workspace_member_note?: NoteAssignment[];
 };
 
 type NotesContextType = {
@@ -163,6 +164,7 @@ export const NotesProvider = ({
       updated_at: note.updated_at,
       deleted_at: note.deleted_at,
       note_folder_id: note.note_folder_id,
+      workspace_member_note: note.workspace_member_note,
     }));
   }, [activeNotes, workspaceId]);
 
@@ -185,6 +187,7 @@ export const NotesProvider = ({
         note.workspace?.type === 'group' && note.workspace_id !== workspaceId,
       updated_at: note.updated_at,
       deleted_at: note.deleted_at,
+      workspace_member_note: note.workspace_member_note,
     }));
   }, [deletedNotes, workspaceId]);
 

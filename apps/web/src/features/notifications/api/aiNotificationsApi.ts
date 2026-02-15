@@ -21,12 +21,12 @@ export interface AINotification {
   body: string | null;
   due_date: string;
   task_id: number;
-  task_result_id: number | null;
   user_id: string;
   workspace_member_id: number | null;
   status: 'scheduled' | 'sent' | 'resolved';
   reaction_status: 'None' | 'completed' | 'postponed' | 'dismissed';
   reaction_text: string | null;
+  reaction_choices: string[] | null;
   created_at: string;
   updated_at: string;
   task_result: TaskResult | null;
@@ -60,6 +60,7 @@ export interface ReactedAINotification {
   status: 'scheduled' | 'sent' | 'resolved';
   reaction_status: 'None' | 'completed' | 'postponed' | 'dismissed';
   reaction_text: string | null;
+  reaction_choices: string[] | null;
   created_at: string;
   updated_at: string;
   note: {
@@ -71,7 +72,6 @@ export interface ReactedAINotification {
     name: string | null;
     avatar_url: string | null;
   } | null;
-  task_result: TaskResult | null;
 }
 
 /**

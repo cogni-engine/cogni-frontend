@@ -4,6 +4,22 @@ import { getCurrentUserId } from '@/lib/cookies';
 
 const supabase = createClient();
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function normalizeAssignment(assignment: any) {
+  // workspace_member can be a single object (to-one FK) or array depending on Supabase version
+  const wm = Array.isArray(assignment.workspace_member)
+    ? assignment.workspace_member[0]
+    : assignment.workspace_member;
+  if (!wm) return { ...assignment, workspace_member: undefined };
+  const userProfiles = Array.isArray(wm.user_profiles)
+    ? wm.user_profiles[0]
+    : wm.user_profiles;
+  return {
+    ...assignment,
+    workspace_member: { ...wm, user_profiles: userProfiles },
+  };
+}
+
 /**
  * Get all notes for a specific workspace with assignments
  * @param workspaceId - The workspace ID
@@ -51,20 +67,7 @@ export async function getNotes(
   return (data || []).map((note: any) => ({
     ...note,
     workspace_member_note: (note.workspace_member_note || []).map(
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (assignment: any) => ({
-        ...assignment,
-        workspace_member: assignment.workspace_member?.[0]
-          ? {
-              ...assignment.workspace_member[0],
-              user_profiles: Array.isArray(
-                assignment.workspace_member[0].user_profiles
-              )
-                ? assignment.workspace_member[0].user_profiles[0]
-                : assignment.workspace_member[0].user_profiles,
-            }
-          : undefined,
-      })
+      normalizeAssignment
     ),
   })) as Note[];
 }
@@ -271,20 +274,7 @@ export async function searchNotes(
       ? note.workspace[0]
       : note.workspace,
     workspace_member_note: (note.workspace_member_note || []).map(
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (assignment: any) => ({
-        ...assignment,
-        workspace_member: assignment.workspace_member?.[0]
-          ? {
-              ...assignment.workspace_member[0],
-              user_profiles: Array.isArray(
-                assignment.workspace_member[0].user_profiles
-              )
-                ? assignment.workspace_member[0].user_profiles[0]
-                : assignment.workspace_member[0].user_profiles,
-            }
-          : undefined,
-      })
+      normalizeAssignment
     ),
   })) as Note[];
 }
@@ -301,7 +291,8 @@ export async function getUserAssignedNotes(): Promise<Note[]> {
   const { data: members, error: memberError } = await supabase
     .from('workspace_member')
     .select('id')
-    .eq('user_id', userId);
+    .eq('user_id', userId)
+    .is('removed_at', null);
 
   if (memberError) throw memberError;
   if (!members || members.length === 0) return [];
@@ -356,20 +347,7 @@ export async function getUserAssignedNotes(): Promise<Note[]> {
       ? note.workspace[0]
       : note.workspace,
     workspace_member_note: (note.workspace_member_note || []).map(
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (assignment: any) => ({
-        ...assignment,
-        workspace_member: assignment.workspace_member?.[0]
-          ? {
-              ...assignment.workspace_member[0],
-              user_profiles: Array.isArray(
-                assignment.workspace_member[0].user_profiles
-              )
-                ? assignment.workspace_member[0].user_profiles[0]
-                : assignment.workspace_member[0].user_profiles,
-            }
-          : undefined,
-      })
+      normalizeAssignment
     ),
   })) as Note[];
 

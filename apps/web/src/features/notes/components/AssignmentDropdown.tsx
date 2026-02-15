@@ -1,7 +1,7 @@
-import Image from 'next/image';
 import { Check } from 'lucide-react';
 import { WorkspaceMember } from '@/types/workspace';
 import GlassCard from '@/components/glass-design/GlassCard';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 
 interface AssignmentDropdownProps {
   isOpen: boolean;
@@ -32,8 +32,8 @@ export function AssignmentDropdown({
       {/* Dropdown menu */}
       <GlassCard className='absolute right-0 top-full mt-2 w-64 rounded-3xl z-40'>
         <div className='p-2'>
-          <div className='px-3 py-2 text-sm font-medium text-white'>
-            Assignee
+          <div className='px-3 py-2 text-xs font-semibold tracking-wider text-gray-400'>
+            ASSIGNEE
           </div>
           <div className='h-px bg-white/10 mb-2' />
 
@@ -43,7 +43,7 @@ export function AssignmentDropdown({
               <button
                 type='button'
                 onClick={onSelectAll}
-                className='w-full p-2 text-left text-sm hover:bg-white/5 rounded-xl transition-colors flex items-center justify-between'
+                className='w-full py-1.5 pl-3 pr-2 text-left text-sm hover:bg-white/5 rounded-xl transition-colors flex items-center justify-between'
               >
                 <span className='text-white'>Select All</span>
                 {allSelected && <Check className='w-4 h-4 text-white' />}
@@ -66,21 +66,21 @@ export function AssignmentDropdown({
                     className='w-full p-2 text-left text-sm hover:bg-white/5 rounded-xl transition-colors flex items-center justify-between'
                   >
                     <div className='flex items-center gap-3'>
-                      {member.user_profile?.avatar_url ? (
-                        <Image
-                          src={member.user_profile.avatar_url}
-                          alt={member.user_profile?.name || 'User'}
-                          width={24}
-                          height={24}
-                          className='w-6 h-6 rounded-full object-cover'
-                        />
-                      ) : (
-                        <div className='w-6 h-6 rounded-full bg-white/20 flex items-center justify-center text-xs text-white font-medium'>
-                          {(member.user_profile?.name || '?')
-                            .charAt(0)
-                            .toUpperCase()}
-                        </div>
-                      )}
+                      <Avatar className='h-6 w-6 text-[10px]'>
+                        {member.user_profile?.avatar_url ? (
+                          <AvatarImage
+                            src={member.user_profile.avatar_url}
+                            alt={member.user_profile?.name || 'User'}
+                            sizes='24px'
+                          />
+                        ) : (
+                          <AvatarFallback>
+                            {(member.user_profile?.name || '?')
+                              .charAt(0)
+                              .toUpperCase()}
+                          </AvatarFallback>
+                        )}
+                      </Avatar>
                       <span className='text-white'>
                         {member.user_profile?.name || 'Unknown'}
                       </span>

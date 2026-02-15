@@ -35,17 +35,19 @@ export function useWorkspaceActivity(workspaceId?: number) {
             title: notification.title,
             body: notification.body || undefined,
             ai_context: notification.ai_context,
+            task_id: notification.task_id,
             reaction_status:
               notification.reaction_status as WorkspaceActivity['reaction_status'],
             reaction_text: notification.reaction_text,
+            reaction_choices: notification.reaction_choices || null,
             member_name: notification.user?.name || 'Unknown',
             member_avatar_url: notification.user?.avatar_url || undefined,
+            workspace_member_id: notification.workspace_member_id || null,
             updated_at: notification.updated_at,
             due_date: notification.due_date,
             created_at: notification.created_at,
             note_id: notification.note?.id || null,
             note_title: notification.note?.title || null,
-            task_result: notification.task_result || null,
           })
         );
 

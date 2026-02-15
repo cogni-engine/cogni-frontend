@@ -1,7 +1,5 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { createPortal } from 'react-dom';
 import {
   Check,
   Clock,
@@ -14,9 +12,7 @@ import {
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { getInitials } from '@/features/users/utils/avatar';
 import { useGlobalUIStore } from '@/stores/useGlobalUIStore';
-import { AIMessageView } from '@/features/cogno/components/AIMessageView';
 import { cn } from '@/lib/utils';
-import { CognoSvgIcon } from '@/components/icons/CognoSvgIcon';
 import type { WorkspaceActivity } from '@/types/notification';
 
 interface ActivityItemProps {
@@ -93,39 +89,12 @@ export default function ActivityItem({
 }: ActivityItemProps) {
   const statusDisplay = getStatusDisplay(activity.reaction_status);
   const openNoteDrawer = useGlobalUIStore(state => state.openNoteDrawer);
-  const [showFullScreenResult, setShowFullScreenResult] = useState(false);
-  const [isAnimatingIn, setIsAnimatingIn] = useState(false);
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  // Handle full screen animation
-  useEffect(() => {
-    if (showFullScreenResult) {
-      requestAnimationFrame(() => {
-        setIsAnimatingIn(true);
-      });
-    } else {
-      setIsAnimatingIn(false);
-    }
-  }, [showFullScreenResult]);
 
   const handleViewNote = () => {
     if (activity.note_id) {
       openNoteDrawer(activity.note_id);
     }
   };
-
-  const taskResult = activity.task_result
-    ? {
-        result_title: activity.task_result.result_title,
-        result_text: activity.task_result.result_text,
-        executed_at: activity.task_result.executed_at,
-        created_at: activity.task_result.created_at,
-      }
-    : null;
 
   return (
     <div className='relative flex gap-3'>
@@ -173,11 +142,6 @@ export default function ActivityItem({
             </span>
           </div>
           <div className='flex items-center gap-2'>
-            {taskResult && (
-              <div title='Has results' className='text-white/80'>
-                <CognoSvgIcon className='w-3.5 h-3.5' />
-              </div>
-            )}
             <button
               onClick={e => {
                 e.stopPropagation();
@@ -255,92 +219,10 @@ export default function ActivityItem({
                   </div>
                 )}
               </div>
-
-              {/* Task Result */}
-              {taskResult && (
-                <div className='bg-white/5 border border-white/10 rounded-md p-4'>
-                  <div className='text-xs text-white/40 uppercase tracking-wide mb-1'>
-                    Task Result
-                  </div>
-                  <h3 className='font-semibold text-sm text-white mb-2'>
-                    {taskResult.result_title}
-                  </h3>
-                  <div className='prose prose-invert max-w-none mb-3'>
-                    <AIMessageView content={taskResult.result_text} />
-                  </div>
-                  <div className='text-xs text-white/40 mb-2'>
-                    Executed: {formatTimestamp(taskResult.executed_at)}
-                  </div>
-                  <button
-                    onClick={e => {
-                      e.stopPropagation();
-                      setShowFullScreenResult(true);
-                    }}
-                    className='text-xs text-white/60 hover:text-white/90 underline'
-                  >
-                    View full screen
-                  </button>
-                </div>
-              )}
             </div>
           </div>
         </div>
       </div>
-
-      {/* Full Screen Task Result Modal */}
-      {mounted &&
-        showFullScreenResult &&
-        taskResult &&
-        createPortal(
-          <div
-            className={cn(
-              'fixed inset-0 z-10000 flex flex-col bg-black/95 backdrop-blur-sm',
-              'transition-all duration-300 ease-out',
-              isAnimatingIn
-                ? 'opacity-100 translate-y-0'
-                : 'opacity-0 translate-y-full'
-            )}
-          >
-            {/* Header with Close Button */}
-            <div
-              className={cn(
-                'flex items-center justify-between p-4 border-b border-white/10',
-                'transition-all duration-200 ease-out delay-100',
-                isAnimatingIn
-                  ? 'opacity-100 translate-y-0'
-                  : 'opacity-0 -translate-y-4'
-              )}
-            >
-              <div className='space-y-1'>
-                <div className='text-xs text-white/40 uppercase tracking-wide'>
-                  Task Result
-                </div>
-                <h2 className='font-semibold text-lg text-white'>
-                  {taskResult!.result_title}
-                </h2>
-              </div>
-              <button
-                onClick={() => setShowFullScreenResult(false)}
-                className='p-2 rounded-full bg-white/10 hover:bg-white/20 text-white transition-all'
-              >
-                <X className='w-6 h-6' />
-              </button>
-            </div>
-
-            {/* Scrollable Content */}
-            <div
-              className={cn(
-                'flex-1 overflow-y-auto p-6',
-                'transition-all duration-500'
-              )}
-            >
-              <div className='max-w-3xl mx-auto'>
-                <AIMessageView content={taskResult!.result_text} />
-              </div>
-            </div>
-          </div>,
-          document.body
-        )}
     </div>
   );
 }

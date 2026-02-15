@@ -3,13 +3,18 @@ export interface Workspace {
   created_at: string;
   title: string | null;
   icon_url: string | null;
-  type: 'group' | 'personal';
+  type: 'group' | 'personal' | 'dm';
   workspace_messages_updated_at: string | null;
   notes?: Note[];
   members?: WorkspaceMember[];
   unread_count?: number;
   member_count?: number;
   latest_message_text?: string | null;
+  dm_other_user?: {
+    user_id: string;
+    name: string | null;
+    avatar_url: string | null;
+  } | null;
 }
 
 export interface Note {
