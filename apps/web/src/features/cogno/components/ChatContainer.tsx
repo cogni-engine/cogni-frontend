@@ -19,7 +19,6 @@ type ChatContainerProps = {
     notificationId?: number,
     timerCompleted?: boolean
   ) => Promise<void>;
-  streamingContainerRef?: React.RefObject<HTMLDivElement | null>;
   workspaceMembers?: WorkspaceMember[];
   workspaceNotes?: Note[];
   isInitialMount?: React.RefObject<boolean>;
@@ -31,7 +30,6 @@ const ChatContainer = forwardRef<HTMLDivElement, ChatContainerProps>(
       messages,
       isLoading = false,
       sendMessage,
-      streamingContainerRef,
       workspaceMembers = [],
       workspaceNotes = [],
     },
@@ -55,7 +53,7 @@ const ChatContainer = forwardRef<HTMLDivElement, ChatContainerProps>(
           )}
 
           {/* Messages */}
-          <div ref={streamingContainerRef}>
+          <div>
             {messages.map((message, i) => {
               const messageId = 'id' in message ? message.id : i;
               const key = `${messageId}-${i}`;

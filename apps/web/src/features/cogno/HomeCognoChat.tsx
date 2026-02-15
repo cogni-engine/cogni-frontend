@@ -29,7 +29,6 @@ export default function HomeCognoChat({ isInitialMount }: HomeCognoChatProps) {
     });
 
   const scrollContainerRef = useRef<HTMLDivElement>(null);
-  const streamingContainerRef = useRef<HTMLDivElement>(null);
   const isInputActive = useIsInputActive();
   const { members, notes } = useAIChatMentions();
 
@@ -59,11 +58,10 @@ export default function HomeCognoChat({ isInitialMount }: HomeCognoChatProps) {
     [sendMessage]
   );
 
-  // Auto-scroll when new messages arrive
+  // Auto-scroll when new messages arrive and during streaming
   useMessageAutoScroll({
     messages: messages,
     scrollContainerRef,
-    streamingContainerRef,
     isInitialMount: isInitialMount.current,
   });
 
@@ -74,7 +72,7 @@ export default function HomeCognoChat({ isInitialMount }: HomeCognoChatProps) {
         messages={messages}
         isLoading={messagesLoading}
         sendMessage={handleSendMessage}
-        streamingContainerRef={streamingContainerRef}
+
         workspaceMembers={memoizedMembers}
         workspaceNotes={memoizedNotes}
         isInitialMount={isInitialMount}
