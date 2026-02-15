@@ -37,9 +37,12 @@ export function useMessageAutoScroll({
 
       // Reset the flag after scroll completes
       // Use a timeout since smooth scrolling is animated
-      setTimeout(() => {
-        isAutoScrollingRef.current = false;
-      }, behavior === 'smooth' ? 300 : 50);
+      setTimeout(
+        () => {
+          isAutoScrollingRef.current = false;
+        },
+        behavior === 'smooth' ? 300 : 50
+      );
     },
     [scrollContainerRef]
   );

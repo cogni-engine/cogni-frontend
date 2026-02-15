@@ -72,7 +72,6 @@ export default function HomeCognoChat({ isInitialMount }: HomeCognoChatProps) {
         messages={messages}
         isLoading={messagesLoading}
         sendMessage={handleSendMessage}
-
         workspaceMembers={memoizedMembers}
         workspaceNotes={memoizedNotes}
         isInitialMount={isInitialMount}
