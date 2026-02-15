@@ -3,6 +3,7 @@
 import { useEditor, EditorContent } from '@tiptap/react';
 import { useMemo, useEffect } from 'react';
 import { useTiptapExtensions } from './extensions/useTiptapExtensions';
+import { isInMobileWebView, sendToNativeApp } from '@/lib/webview';
 import type { WorkspaceMember } from '@/types/workspace';
 import type { Note } from '@/types/note';
 import type { WorkspaceFile } from '@/lib/api/workspaceFilesApi';
@@ -45,6 +46,12 @@ function TiptapRenderer({
 
     let processed = content;
 
+    // Convert bare URLs to markdown links (avoid wrapping URLs already in ](url))
+    processed = processed.replace(
+      /(?<!\]\()(https?:\/\/[^\s<>"{}|\\^`[\]]+)/g,
+      url => `[${url}](${url})`
+    );
+
     // Convert note mentions: [# id="..." label="..." noteId="..."] to HTML
     processed = processed.replace(
       /\[#\s+id="([^"]*)"\s+label="([^"]*)"(?:\s+noteId="([^"]*)")?\]/g,
@@ -76,7 +83,27 @@ function TiptapRenderer({
   const editorProps = useMemo(
     () => ({
       attributes: {
-        class: `tiptap-editor ${className}`,
+        class: `tiptap-editor tiptap-renderer ${className}`,
+      },
+      handleDOMEvents: {
+        click: (_view: unknown, event: MouseEvent) => {
+          const target = event.target as HTMLElement;
+          const anchor = target.closest('a[href]');
+          if (anchor instanceof HTMLAnchorElement && anchor.href) {
+            const href = anchor.getAttribute('href');
+            if (
+              href &&
+              (href.startsWith('http://') || href.startsWith('https://'))
+            ) {
+              if (isInMobileWebView()) {
+                event.preventDefault();
+                event.stopPropagation();
+                sendToNativeApp({ type: 'OPEN_EXTERNAL_URL', url: href });
+                return true;
+              }
+            }
+          }
+        },
       },
       handleClickOn: (
         view: unknown,

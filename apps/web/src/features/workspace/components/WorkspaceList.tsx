@@ -8,6 +8,32 @@ import GlassCard from '@/components/glass-design/GlassCard';
 
 import { FlatList, FlatListItem } from '@/components/FlatList';
 
+/** [text](url) をリンクとして表示（生の []() を表示しない） */
+function TextWithParsedLinks({ text }: { text: string }) {
+  const regex = /\[([^\]]*)\]\(([^)]*)\)/g;
+  const parts: React.ReactNode[] = [];
+  let lastIndex = 0;
+  let match;
+  while ((match = regex.exec(text)) !== null) {
+    parts.push(text.slice(lastIndex, match.index));
+    parts.push(
+      <a
+        key={match.index}
+        href={match[2]}
+        target='_blank'
+        rel='noopener noreferrer'
+        className='text-blue-400 underline hover:text-blue-300'
+        onClick={e => e.stopPropagation()}
+      >
+        {match[1]}
+      </a>
+    );
+    lastIndex = regex.lastIndex;
+  }
+  parts.push(text.slice(lastIndex));
+  return <>{parts}</>;
+}
+
 interface WorkspaceListProps {
   workspaces: Workspace[];
 }
@@ -121,7 +147,7 @@ function WorkspaceCard({ workspace }: WorkspaceCardProps) {
               </div>
               {workspace.latest_message_text && (
                 <div className='text-[12px] text-gray-400 truncate'>
-                  {workspace.latest_message_text}
+                  <TextWithParsedLinks text={workspace.latest_message_text} />
                 </div>
               )}
             </div>

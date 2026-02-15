@@ -6,6 +6,7 @@ import remarkGfm from 'remark-gfm';
 import { cn } from '@/lib/utils';
 import { Components } from 'react-markdown';
 import { Copy, Check } from 'lucide-react';
+import { isInMobileWebView, sendToNativeApp } from '@/lib/webview';
 
 type AIMessageViewProps = {
   content: string;
@@ -102,16 +103,29 @@ export const AIMessageView = ({ content, className }: AIMessageViewProps) => {
       );
     },
     pre: PreBlock,
-    a: ({ children, href }) => (
-      <a
-        href={href}
-        target='_blank'
-        rel='noopener noreferrer'
-        className='text-blue-400 underline hover:text-blue-300'
-      >
-        {children}
-      </a>
-    ),
+    a: ({ children, href }) => {
+      const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+        if (
+          href &&
+          (href.startsWith('http://') || href.startsWith('https://')) &&
+          isInMobileWebView()
+        ) {
+          e.preventDefault();
+          sendToNativeApp({ type: 'OPEN_EXTERNAL_URL', url: href });
+        }
+      };
+      return (
+        <a
+          href={href}
+          target='_blank'
+          rel='noopener noreferrer'
+          className='text-blue-400 underline hover:text-blue-300'
+          onClick={handleClick}
+        >
+          {children}
+        </a>
+      );
+    },
     ul: ({ children }) => (
       <ul className='my-3 ml-6 list-disc space-y-1 text-gray-200'>
         {children}
