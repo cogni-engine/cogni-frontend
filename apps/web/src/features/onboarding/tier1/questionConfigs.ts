@@ -29,7 +29,7 @@ export const questionConfigs: Record<string, QuestionConfig> = {
   // Q0: Life Intent (Core - most important) - kept for backward compatibility
   lifeIntent: {
     id: 'lifeIntent',
-    title: 'How do you want Cogni to transform your life?',
+    title: 'How do you want Cogno to transform your life?',
     type: 'single-select',
     options: [
       'Think clearly and see the path',

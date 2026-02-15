@@ -1,10 +1,10 @@
-# # Cogni Mobile App
+# # Cogno Mobile App
 
-This is a React Native mobile app built with [Expo](https://expo.dev) that embeds the Cogni web application using a WebView.
+This is a React Native mobile app built with [Expo](https://expo.dev) that embeds the Cogno web application using a WebView.
 
 ## Overview
 
-This mobile app provides a native wrapper around the Cogni web application (https://cogno.studio), giving users a seamless mobile experience while maintaining all the functionality of the web app.
+This mobile app provides a native wrapper around the Cogno web application (https://cogno.studio), giving users a seamless mobile experience while maintaining all the functionality of the web app.
 
 ## Get Started
 
@@ -101,4 +101,4 @@ npx expo run:ios
 
 - [Expo Documentation](https://docs.expo.dev/)
 - [React Native WebView](https://github.com/react-native-webview/react-native-webview)
-- [Cogni Platform](https://cogno.studio)
+- [Cogno Platform](https://cogno.studio)

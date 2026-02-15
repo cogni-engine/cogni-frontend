@@ -2,12 +2,13 @@
 
 import { useEffect, useRef, useState, useLayoutEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { Reply, Copy, Check } from 'lucide-react';
+import { Reply, Copy, Check, Smile } from 'lucide-react';
 import GlassCard from '@/components/glass-design/GlassCard';
 
 type MessageContextMenuProps = {
   messageText: string;
   onReply: () => void;
+  onReact?: () => void;
   onClose: () => void;
   position: { x: number; y: number };
 };
@@ -15,6 +16,7 @@ type MessageContextMenuProps = {
 export default function MessageContextMenu({
   messageText,
   onReply,
+  onReact,
   onClose,
   position,
 }: MessageContextMenuProps) {
@@ -107,6 +109,18 @@ export default function MessageContextMenu({
         <Reply className='w-4 h-4 text-white' />
         <span>Reply</span>
       </button>
+      {onReact && (
+        <button
+          onClick={() => {
+            onReact();
+            onClose();
+          }}
+          className='w-full px-4 py-3 flex items-center gap-3 text-white hover:bg-white/10 transition-colors text-sm border-b border-white/10'
+        >
+          <Smile className='w-4 h-4' />
+          <span>React</span>
+        </button>
+      )}
       <button
         onClick={handleCopy}
         className='w-full p-2 text-left text-sm text-white hover:bg-white/5 flex items-center gap-2 transition-colors rounded-xl'

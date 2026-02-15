@@ -15,11 +15,11 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: 'Cogni',
-    template: '%s | Cogni',
+    default: 'Cogno',
+    template: '%s | Cogno',
   },
   description:
-    'Cogni keeps your team aligned with collaborative workspaces, notes, and AI assistance.',
+    'Cogno keeps your team aligned with collaborative workspaces, notes, and AI assistance.',
   manifest: '/manifest.json',
   icons: {
     icon: '/favicon.svg',
@@ -29,7 +29,7 @@ export const metadata: Metadata = {
   appleWebApp: {
     capable: true,
     statusBarStyle: 'black-translucent',
-    title: 'Cogni',
+    title: 'Cogno',
   },
 };
 

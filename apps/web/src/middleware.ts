@@ -13,7 +13,7 @@ function isFromMobileApp(request: NextRequest): boolean {
 
   // Option 2: User agent detection (backup)
   const hasWebViewUA =
-    userAgent.includes('Cogni-Mobile') || userAgent.includes('wv'); // Android WebView marker
+    userAgent.includes('Cogno-Mobile') || userAgent.includes('wv'); // Android WebView marker
 
   return isMobileApp || hasWebViewUA;
 }

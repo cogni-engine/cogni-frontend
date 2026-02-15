@@ -100,6 +100,56 @@ export interface WorkspaceMessageFile {
   file_size: number;
 }
 
+export interface MessageReaction {
+  id: string;
+  workspace_message_id: number;
+  workspace_member_id: number;
+  emoji: string;
+  workspace_member?: {
+    id: number;
+    user_id: string | null;
+    user_profile?: WorkspaceProfile | null;
+  };
+}
+
+export const REACTION_EMOJIS = [
+  '👍',
+  '👎',
+  '✅',
+  '❌',
+  '🙂',
+  '😍',
+  '😆',
+  '😭',
+  '🥺',
+  '😡',
+  '😮',
+  '😱',
+  '🤔',
+  '👏',
+  '🙌',
+  '👀',
+  '🙏',
+  '💪',
+  '🔥',
+  '🎉',
+  '🎊',
+  '🥳',
+  '🍻',
+  '❤️',
+  '❤️‍🔥',
+  '😎',
+  '🫡',
+  '🥰',
+  '💦',
+] as const;
+
+export type ReactionEmoji = (typeof REACTION_EMOJIS)[number];
+
+export function isValidReactionEmoji(emoji: string): emoji is ReactionEmoji {
+  return (REACTION_EMOJIS as readonly string[]).includes(emoji);
+}
+
 export interface WorkspaceMessage {
   id: number;
   workspace_id: number;
@@ -120,4 +170,5 @@ export interface WorkspaceMessage {
   read_count?: number;
   is_read_by_current_user?: boolean;
   files?: WorkspaceMessageFile[];
+  reactions?: MessageReaction[];
 }

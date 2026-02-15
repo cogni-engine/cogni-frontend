@@ -7,6 +7,7 @@ import {
 } from '@/lib/api/profileUtils';
 import type { WorkspaceMessage } from '@/types/workspace';
 import { linkFilesToMessage } from './workspaceFilesApi';
+import { getReactionsForMessages } from './reactionsApi';
 import {
   syncWorkspaceMessageMentions,
   syncWorkspaceMessageNoteMentions,
@@ -177,10 +178,15 @@ export async function getWorkspaceMessages(
 
   // Query 2: Get read counts separately (much faster than nested joins)
   const messageIds = messages.map(m => m.id);
-  const { data: readCounts } = await supabase
-    .from('workspace_message_reads')
-    .select('workspace_message_id')
-    .in('workspace_message_id', messageIds);
+  const [readCountsResult, reactionsMap] = await Promise.all([
+    supabase
+      .from('workspace_message_reads')
+      .select('workspace_message_id')
+      .in('workspace_message_id', messageIds),
+    getReactionsForMessages(messageIds),
+  ]);
+
+  const { data: readCounts } = readCountsResult;
 
   // Build a count map
   const countMap = new Map<number, number>();
@@ -191,12 +197,13 @@ export async function getWorkspaceMessages(
     );
   });
 
-  // Transform with counts
+  // Transform with counts and reactions
   return messages.map(row => {
     const transformed = transformMessageRow(row);
     return {
       ...transformed,
       read_count: countMap.get(row.id) || 0,
+      reactions: reactionsMap.get(row.id) ?? [],
     };
   });
 }

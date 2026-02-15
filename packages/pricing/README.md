@@ -1,6 +1,6 @@
 # @cogni/pricing
 
-A reusable pricing component package for Cogni applications.
+A reusable pricing component package for Cogno applications.
 
 ## Features
 
@@ -11,7 +11,7 @@ A reusable pricing component package for Cogni applications.
 
 ## Installation
 
-This package is part of the Cogni monorepo and is already available in workspaces.
+This package is part of the Cogno monorepo and is already available in workspaces.
 
 ```bash
 pnpm install
