@@ -1,5 +1,15 @@
 import React, { useRef, useState, useEffect } from 'react';
-import { View, StyleSheet, Platform, Text, TouchableOpacity, Animated, Easing, Alert } from 'react-native';
+import {
+  View,
+  StyleSheet,
+  Platform,
+  Text,
+  TouchableOpacity,
+  Animated,
+  Easing,
+  Alert,
+  Linking,
+} from 'react-native';
 import { WebView } from 'react-native-webview';
 import { ThemedView } from './themed-view';
 import { Session } from '@supabase/supabase-js';
@@ -485,6 +495,19 @@ export default function WebAppView({ url = 'https://app.cogno.studio', session }
           // Web app requesting native document picker
           await handleFilePick(message.requestId, message.options);
           break;
+
+        case 'OPEN_EXTERNAL_URL':
+          if (message.url) {
+            try {
+              const canOpen = await Linking.canOpenURL(message.url);
+              if (canOpen) {
+                await Linking.openURL(message.url);
+              }
+            } catch (err) {
+              console.error('Failed to open external URL:', err);
+            }
+          }
+          break;
       }
     } catch {
       // Non-JSON message, ignore
@@ -496,15 +519,32 @@ export default function WebAppView({ url = 'https://app.cogno.studio', session }
     const { url: requestUrl } = request;
 
     // Block navigation to web login/register pages
-    if (      requestUrl.includes('/login') ||
+    if (
+      requestUrl.includes('/login') ||
       requestUrl.includes('/register') ||
-      requestUrl.includes('/mobile-auth-required')) {
-      // Redirect to native login
+      requestUrl.includes('/mobile-auth-required')
+    ) {
       router.replace('/auth/login');
-      return false; // Block the navigation
+      return false;
     }
 
-    // Allow all other navigation
+    // Open external URLs in device browser
+    try {
+      if (
+        requestUrl.startsWith('http://') ||
+        requestUrl.startsWith('https://')
+      ) {
+        const appOrigin = new URL(url).origin;
+        const requestOrigin = new URL(requestUrl).origin;
+        if (requestOrigin !== appOrigin) {
+          Linking.openURL(requestUrl);
+          return false;
+        }
+      }
+    } catch {
+      // URL parsing failed
+    }
+
     return true;
   };
 
