@@ -3,6 +3,7 @@ import StarterKit from '@tiptap/starter-kit';
 import { Markdown } from '@tiptap/markdown';
 import Placeholder from '@tiptap/extension-placeholder';
 import Image from '@tiptap/extension-image';
+import Link from '@tiptap/extension-link';
 import TaskList from '@tiptap/extension-task-list';
 import TaskItem from '@tiptap/extension-task-item';
 import { CustomMention } from '@/lib/tiptap/MentionExtension';
@@ -46,6 +47,16 @@ export function useTiptapExtensions({
   return useMemo(() => {
     const extensions: any[] = [];
 
+    const linkExtension = Link.configure({
+      openOnClick: true,
+      HTMLAttributes: {
+        target: '_blank',
+        rel: 'noopener noreferrer',
+        class: 'tiptap-link',
+      },
+      autolink: true,
+    });
+
     // Base extensions for all modes
     if (mode === 'readonly' || mode === 'minimal') {
       // Read-only mode: full feature set like NoteEditor but without editing
@@ -56,6 +67,7 @@ export function useTiptapExtensions({
         }),
         Markdown,
         Image,
+        linkExtension,
         TaskList,
         TaskItem.configure({
           nested: true,
@@ -77,7 +89,8 @@ export function useTiptapExtensions({
           showOnlyWhenEditable: false,
           includeChildren: true,
         }),
-        Markdown
+        Markdown,
+        linkExtension
       );
     } else if (mode === 'full') {
       // Full editor mode (for notes)
@@ -89,6 +102,7 @@ export function useTiptapExtensions({
         Placeholder.configure({ placeholder }),
         Markdown,
         Image,
+        linkExtension,
         TaskList,
         TaskItem.configure({
           nested: true,

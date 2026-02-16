@@ -194,6 +194,20 @@
   color: rgb(48, 248, 81);
 }
 
+/* Link styles */
+.ProseMirror a.tiptap-link,
+.ProseMirror a[href] {
+  color: rgb(96, 165, 250);
+  text-decoration: underline;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.ProseMirror a.tiptap-link:hover,
+.ProseMirror a[href]:hover {
+  color: rgb(147, 197, 253);
+}
+
 /* File mention styles */
 .ProseMirror .file-mention {
   background-color: rgba(251, 146, 60, 0.2);
