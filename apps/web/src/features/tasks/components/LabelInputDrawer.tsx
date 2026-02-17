@@ -26,11 +26,19 @@ export function LabelInputDrawer({
       <DrawerContent zIndex={120} swipeToClose={false}>
         {/* Header */}
         <DrawerHeader className='p-4'>
-          <button onClick={onClose} className='text-blue-400 text-[15px]'>
+          <button
+            onClick={onClose}
+            className='text-blue-600 dark:text-blue-400 text-[15px]'
+          >
             Cancel
           </button>
-          <span className='text-white text-[17px] font-semibold'>Label</span>
-          <button onClick={onClose} className='text-blue-400 text-[15px]'>
+          <span className='text-text-primary text-[17px] font-semibold'>
+            Label
+          </span>
+          <button
+            onClick={onClose}
+            className='text-blue-600 dark:text-blue-400 text-[15px]'
+          >
             Done
           </button>
         </DrawerHeader>
@@ -43,7 +51,7 @@ export function LabelInputDrawer({
             onChange={e => onChange(e.target.value)}
             placeholder='Task name'
             autoFocus
-            className='w-full bg-white/5 text-white text-[17px] px-4 py-3 rounded-xl border border-white/10 outline-none focus:border-blue-400 placeholder:text-white/30 transition-colors'
+            className='w-full bg-surface-primary text-text-primary text-[17px] px-4 py-3 rounded-xl border border-border-default outline-none focus:border-blue-400 placeholder:text-text-muted transition-colors'
           />
         </DrawerBody>
       </DrawerContent>

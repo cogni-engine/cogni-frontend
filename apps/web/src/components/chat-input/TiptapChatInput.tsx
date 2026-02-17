@@ -88,7 +88,7 @@ const TiptapChatInput = forwardRef<TiptapChatInputRef, TiptapChatInputProps>(
         editorProps: {
           attributes: {
             class:
-              'w-full bg-transparent text-white px-5 py-3.5 pr-[50px] focus:outline-none resize-none overflow-y-auto chat-input-editor',
+              'w-full bg-transparent text-text-primary px-5 py-3.5 pr-[50px] focus:outline-none resize-none overflow-y-auto chat-input-editor',
             style:
               'max-height: 140px; touch-action: manipulation; -webkit-user-select: text; user-select: text;', // ~7 lines, prevent double-tap zoom on mobile, ensure text selection works
             'data-placeholder': placeholder,
@@ -401,7 +401,7 @@ const TiptapChatInput = forwardRef<TiptapChatInputRef, TiptapChatInputProps>(
       <div className='flex-1 relative min-w-0'>
         <div
           ref={editorRef}
-          className='w-full bg-white/2 backdrop-blur-sm rounded-4xl border border-black focus-within:shadow-[0_12px_40px_rgba(0,0,0,0.25),inset_0_1px_0_rgba(255,255,255,0.18)] transition-all duration-300 shadow-[0_8px_32px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.12)]'
+          className='w-full bg-surface-overlay dark:backdrop-blur-sm rounded-4xl border border-border-default focus-within:shadow-card-hover transition-all duration-300 shadow-card'
         >
           {topContent}
           <EditorContent editor={editor} />
@@ -436,7 +436,7 @@ const TiptapChatInput = forwardRef<TiptapChatInputRef, TiptapChatInputProps>(
             }
           }}
           disabled={isLoading || isUploading || (isEmpty && !hasAttachments)}
-          className='absolute right-2.5 bottom-1.5 w-10 h-10 rounded-full bg-white/10 backdrop-blur-xl border border-black text-white flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed hover:bg-white/15 hover:scale-102 transition-all duration-300 shadow-[0_8px_32px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.12)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.25),inset_0_1px_0_rgba(255,255,255,0.18)]'
+          className='absolute right-2.5 bottom-1.5 w-10 h-10 rounded-full bg-interactive-hover dark:backdrop-blur-xl border border-border-default text-text-primary flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed hover:bg-interactive-active hover:scale-102 transition-all duration-300 shadow-card hover:shadow-card-hover'
         >
           {isLoading ? (
             canStop ? (

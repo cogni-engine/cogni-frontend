@@ -77,19 +77,19 @@ export default function SendableDefaultFile({
       <div
         className={cn(
           'flex items-center gap-2',
-          'bg-white/13 backdrop-blur-xl border border-black rounded-3xl',
+          'bg-surface-secondary dark:backdrop-blur-xl border border-border-default rounded-3xl',
           'px-4 py-2.5',
-          'shadow-[0_8px_32px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.12)]',
-          'hover:bg-white/16 transition-all',
+          'shadow-card',
+          'hover:bg-interactive-hover transition-all',
           'min-w-0 max-w-72 md:max-w-128'
         )}
       >
-        <Icon className='w-5 h-5 text-white/60 flex-shrink-0' />
+        <Icon className='w-5 h-5 text-text-secondary flex-shrink-0' />
         <div className='flex-1 min-w-0 overflow-hidden'>
-          <p className='text-sm text-white truncate' title={filename}>
+          <p className='text-sm text-text-primary truncate' title={filename}>
             {filename}
           </p>
-          <p className='text-xs text-white/40 truncate'>
+          <p className='text-xs text-text-muted truncate'>
             {formatFileSize(fileSize)}
           </p>
         </div>
@@ -99,10 +99,10 @@ export default function SendableDefaultFile({
               e.stopPropagation();
               onDownload();
             }}
-            className='ml-2 p-1.5 rounded-md hover:bg-white/10 transition-colors flex-shrink-0'
+            className='ml-2 p-1.5 rounded-md hover:bg-interactive-hover transition-colors flex-shrink-0'
             aria-label='Download file'
           >
-            <Download className='w-4 h-4 text-white/60' />
+            <Download className='w-4 h-4 text-text-secondary' />
           </button>
         )}
       </div>

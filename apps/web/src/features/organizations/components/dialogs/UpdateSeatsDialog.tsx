@@ -93,9 +93,9 @@ export function UpdateSeatsDialog({
   const hasChanged = !isNaN(newSeats) && newSeats !== currentSeatCount;
 
   return (
-    <div className='fixed inset-0 z-120 flex items-center justify-center bg-black/60 backdrop-blur-md px-4 py-8'>
-      <GlassCard className='w-full max-w-md rounded-3xl border border-white/12 bg-white/10 p-6 shadow-[0_20px_60px_rgba(0,0,0,0.45)]'>
-        <div className='flex flex-col gap-4 text-white'>
+    <div className='fixed inset-0 z-120 flex items-center justify-center bg-dialog-overlay dark:backdrop-blur-md px-4 py-8'>
+      <GlassCard className='w-full max-w-md rounded-3xl border border-border-default bg-interactive-hover p-6 shadow-card'>
+        <div className='flex flex-col gap-4 text-text-primary'>
           <div className='flex items-start gap-3'>
             <div className='flex h-10 w-10 items-center justify-center rounded-2xl bg-blue-500/20'>
               <Users className='h-5 w-5 text-blue-300' />
@@ -109,7 +109,7 @@ export function UpdateSeatsDialog({
 
           <div className='space-y-3'>
             <div className='space-y-2'>
-              <label className='text-sm font-medium text-white/80'>
+              <label className='text-sm font-medium text-text-secondary'>
                 Number of seats
               </label>
               <input
@@ -136,9 +136,9 @@ export function UpdateSeatsDialog({
                   }
                 }}
                 placeholder='Enter number of seats'
-                className={`w-full px-4 py-3.5 bg-white/5 border rounded-xl text-white focus:outline-none focus:ring-2 transition-all ${
+                className={`w-full px-4 py-3.5 bg-surface-primary border rounded-xl text-text-primary focus:outline-none focus:ring-2 transition-all ${
                   validation.isValid
-                    ? 'border-white/10 focus:border-blue-500/50 focus:ring-blue-500/20'
+                    ? 'border-border-default focus:border-blue-500/50 focus:ring-blue-500/20'
                     : 'border-red-500/30 focus:border-red-500/50 focus:ring-red-500/20'
                 }`}
                 disabled={isUpdating}
@@ -152,29 +152,29 @@ export function UpdateSeatsDialog({
                 </div>
               )}
 
-              <p className='text-xs text-white/50'>
+              <p className='text-xs text-text-muted'>
                 Current: {currentSeatCount} seats | Minimum: {minSeats} (active
                 members)
               </p>
             </div>
 
-            <div className='p-4 bg-white/5 rounded-xl border border-white/10 space-y-2'>
+            <div className='p-4 bg-surface-primary rounded-xl border border-border-default space-y-2'>
               <div className='flex justify-between text-sm'>
-                <span className='text-white/70'>Current cost:</span>
-                <span className='text-white font-medium'>
+                <span className='text-text-secondary'>Current cost:</span>
+                <span className='text-text-primary font-medium'>
                   ${(45 * currentSeatCount).toFixed(2)}/month
                 </span>
               </div>
               <div className='flex justify-between text-sm'>
-                <span className='text-white/70'>New cost:</span>
-                <span className='text-white font-medium'>
+                <span className='text-text-secondary'>New cost:</span>
+                <span className='text-text-primary font-medium'>
                   {!isNaN(newSeats) && newSeats > 0
                     ? `$${(45 * newSeats).toFixed(2)}/month`
                     : '—'}
                 </span>
               </div>
               {hasChanged && validation.isValid && (
-                <p className='text-xs text-white/50 pt-2 border-t border-white/10'>
+                <p className='text-xs text-text-muted pt-2 border-t border-border-default'>
                   Change will be pro-rated based on remaining days in billing
                   cycle
                 </p>
@@ -182,20 +182,20 @@ export function UpdateSeatsDialog({
             </div>
           </div>
 
-          <div className='h-px bg-white/10' />
+          <div className='h-px bg-border-default' />
 
           <div className='flex justify-end gap-3'>
             <button
               onClick={() => onOpenChange(false)}
               disabled={isUpdating}
-              className='rounded-full bg-white/10 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-white/16 disabled:opacity-50 disabled:cursor-not-allowed'
+              className='rounded-full bg-interactive-hover px-4 py-2 text-sm font-semibold text-text-primary transition-colors hover:bg-interactive-active disabled:opacity-50 disabled:cursor-not-allowed'
             >
               Cancel
             </button>
             <button
               onClick={handleUpdate}
               disabled={isUpdating || !validation.isValid}
-              className='rounded-full bg-blue-500/90 px-4 py-2 text-sm font-semibold text-white shadow-[0_12px_30px_rgba(59,130,246,0.35)] transition-colors hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2'
+              className='rounded-full bg-blue-500/90 px-4 py-2 text-sm font-semibold text-white shadow-card transition-colors hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2'
             >
               {isUpdating ? (
                 <>

@@ -77,7 +77,9 @@ export const NoteList = forwardRef<NoteListRef, NoteListProps>((props, ref) => {
         props.items.map((item, index) => (
           <button
             className={`flex items-center gap-3 w-full px-4 py-2.5 text-left transition-colors ${
-              index === selectedIndex ? 'bg-white/20' : 'hover:bg-white/10'
+              index === selectedIndex
+                ? 'bg-interactive-active'
+                : 'hover:bg-interactive-hover'
             }`}
             key={item.id}
             onClick={() => selectItem(index)}
@@ -87,11 +89,11 @@ export const NoteList = forwardRef<NoteListRef, NoteListProps>((props, ref) => {
               <FileText className='w-4 h-4 text-green-400' />
             </div>
             <div className='flex-1 min-w-0'>
-              <div className='text-white font-medium truncate'>
+              <div className='text-text-primary font-medium truncate'>
                 {item.title || 'Untitled'}
               </div>
               {item.content && (
-                <div className='text-xs text-gray-400 truncate'>
+                <div className='text-xs text-text-muted truncate'>
                   {item.content.substring(0, 60)}
                   {item.content.length > 60 ? '...' : ''}
                 </div>
@@ -100,7 +102,7 @@ export const NoteList = forwardRef<NoteListRef, NoteListProps>((props, ref) => {
           </button>
         ))
       ) : (
-        <div className='px-4 py-3 text-sm text-gray-400'>No notes found</div>
+        <div className='px-4 py-3 text-sm text-text-muted'>No notes found</div>
       )}
     </GlassCard>
   );

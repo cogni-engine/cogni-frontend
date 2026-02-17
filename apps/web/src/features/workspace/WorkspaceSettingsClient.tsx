@@ -244,21 +244,21 @@ export default function WorkspaceSettingsClient({
 
   if (error && !isLoading) {
     return (
-      <div className='flex h-full items-center justify-center text-red-300'>
+      <div className='flex h-full items-center justify-center text-red-600 dark:text-red-300'>
         Failed to load workspace settings.
       </div>
     );
   }
 
   return (
-    <div className='flex h-full flex-col gap-6 overflow-auto py-20 text-white'>
+    <div className='flex h-full flex-col gap-6 overflow-auto py-20 text-text-primary'>
       <div>
         <h1 className='text-3xl font-semibold'>Workspace Settings</h1>
-        <p className='text-white/60'>Manage workspace name and icon.</p>
+        <p className='text-text-secondary'>Manage workspace name and icon.</p>
       </div>
 
       {isLoading || !workspace ? (
-        <div className='flex flex-1 items-center justify-center text-white/60'>
+        <div className='flex flex-1 items-center justify-center text-text-secondary'>
           Loading workspace settings...
         </div>
       ) : (
@@ -293,22 +293,24 @@ export default function WorkspaceSettingsClient({
       {workspace && (
         <Card className='border border-red-500/30 bg-red-500/5'>
           <CardHeader>
-            <CardTitle className='text-red-200'>Danger zone</CardTitle>
+            <CardTitle className='text-red-600 dark:text-red-200'>
+              Danger zone
+            </CardTitle>
             <CardDescription>
               Permanently delete this workspace and all of its data.
             </CardDescription>
           </CardHeader>
           <CardContent className='flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between'>
-            <div className='text-sm text-white/70'>
+            <div className='text-sm text-text-secondary'>
               This action is irreversible. Please make sure you really want to
               remove
-              <span className='font-semibold text-white'>
+              <span className='font-semibold text-text-primary'>
                 {' '}
                 {workspace.title || 'this workspace'}
               </span>
               .
               {!normalizedWorkspaceTitle && (
-                <span className='block text-xs text-white/60 mt-2'>
+                <span className='block text-xs text-text-secondary mt-2'>
                   Add a workspace name first to enable deletion.
                 </span>
               )}
@@ -348,14 +350,14 @@ export default function WorkspaceSettingsClient({
             <DialogTitle>Delete workspace</DialogTitle>
             <DialogDescription>
               Type{' '}
-              <span className='font-semibold text-white'>
+              <span className='font-semibold text-text-primary'>
                 {normalizedWorkspaceTitle || '(rename first)'}
               </span>{' '}
               to confirm.
             </DialogDescription>
           </DialogHeader>
           <div className='space-y-4'>
-            <p className='text-sm text-white/70'>
+            <p className='text-sm text-text-secondary'>
               Deleting this workspace will remove all notes, members, and
               history. This cannot be undone.
             </p>
@@ -372,7 +374,9 @@ export default function WorkspaceSettingsClient({
                 disabled={deletingWorkspace}
               />
               {deleteError && (
-                <p className='text-sm text-red-300'>{deleteError}</p>
+                <p className='text-sm text-red-600 dark:text-red-300'>
+                  {deleteError}
+                </p>
               )}
             </div>
           </div>

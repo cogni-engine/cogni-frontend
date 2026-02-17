@@ -71,13 +71,13 @@ export function CheckoutForm({
   return (
     <form onSubmit={handleSubmit} className='space-y-6'>
       <div className='space-y-4'>
-        <div className='rounded-lg border border-white/10 bg-white/5 p-4'>
+        <div className='rounded-lg border border-border-default bg-surface-primary p-4'>
           <PaymentElement />
         </div>
       </div>
 
       {error && (
-        <div className='rounded-lg border border-red-500/50 bg-red-500/10 p-3 text-sm text-red-300'>
+        <div className='rounded-lg border border-red-500/50 bg-red-500/10 p-3 text-sm text-red-600 dark:text-red-300'>
           {error}
         </div>
       )}
@@ -86,7 +86,7 @@ export function CheckoutForm({
         <Button
           type='submit'
           disabled={!stripe || !elements || isLoading}
-          className='w-full rounded-full bg-purple-500 hover:bg-purple-600 text-white border-transparent'
+          className='w-full rounded-full bg-purple-500 hover:bg-purple-600 text-white dark:text-white border-transparent'
         >
           {isLoading ? (
             <>
@@ -97,7 +97,7 @@ export function CheckoutForm({
             `Confirm Payment - ${planPrice}`
           )}
         </Button>
-        <p className='text-xs text-center text-white/60'>
+        <p className='text-xs text-center text-text-secondary'>
           By confirming, you agree to subscribe to {planName} plan
         </p>
       </div>

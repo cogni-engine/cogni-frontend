@@ -151,7 +151,7 @@ export default function FolderDropdown({
     if (selectedFolder === 'notes')
       return <FolderIcon className='w-4 h-4 text-blue-400' />;
     if (selectedFolder === 'trash')
-      return <Trash2 className='w-4 h-4 text-gray-400' />;
+      return <Trash2 className='w-4 h-4 text-text-muted' />;
     return <FolderIcon className='w-4 h-4 text-yellow-400' />;
   };
 
@@ -165,11 +165,11 @@ export default function FolderDropdown({
         <div className='flex items-center justify-center w-8 h-8 rounded-xl bg-transparent transition-colors'>
           {getSelectedIcon()}
         </div>
-        <span className='flex-1 text-left text-sm font-semibold text-white truncate transition-colors group-hover:text-white group-focus-visible:text-white'>
+        <span className='flex-1 text-left text-sm font-semibold text-text-primary truncate transition-colors group-hover:text-text-primary group-focus-visible:text-text-primary'>
           {getSelectedLabel()}
         </span>
         <ChevronRight
-          className={`w-4 h-4 text-gray-400 transition-transform duration-200 group-hover:text-white ${isOpen ? 'rotate-90' : ''}`}
+          className={`w-4 h-4 text-text-muted transition-transform duration-200 group-hover:text-text-primary ${isOpen ? 'rotate-90' : ''}`}
         />
       </GlassCard>
 
@@ -184,30 +184,32 @@ export default function FolderDropdown({
                 setIsOpen(false);
               }}
               className={`w-full flex items-center justify-between px-3 py-2 rounded-xl transition-all duration-200 group ${
-                selectedFolder === 'all' ? 'bg-white/10' : 'hover:bg-white/5'
+                selectedFolder === 'all'
+                  ? 'bg-interactive-hover'
+                  : 'hover:bg-surface-primary'
               }`}
             >
               <div className='flex items-center gap-3'>
                 <div
                   className={`flex items-center justify-center w-9 h-9 rounded-lg transition-colors ${
                     selectedFolder === 'all'
-                      ? 'bg-white/10'
-                      : 'bg-white/5 group-hover:bg-white/10'
+                      ? 'bg-interactive-hover'
+                      : 'bg-surface-primary group-hover:bg-interactive-hover'
                   }`}
                 >
                   <FolderOpen className='w-5 h-5 text-purple-400' />
                 </div>
                 <div className='flex flex-col items-start'>
-                  <span className='text-sm font-medium text-white'>
+                  <span className='text-sm font-medium text-text-primary'>
                     All Notes
                   </span>
-                  <span className='text-xs text-gray-400'>
+                  <span className='text-xs text-text-muted'>
                     {noteCounts.all} notes
                   </span>
                 </div>
               </div>
               {selectedFolder === 'all' && (
-                <Check className='w-5 h-5 text-white' />
+                <Check className='w-5 h-5 text-text-primary' />
               )}
             </button>
 
@@ -218,36 +220,40 @@ export default function FolderDropdown({
                 setIsOpen(false);
               }}
               className={`w-full flex items-center justify-between p-3 rounded-xl transition-all duration-200 group ${
-                selectedFolder === 'notes' ? 'bg-white/10' : 'hover:bg-white/5'
+                selectedFolder === 'notes'
+                  ? 'bg-interactive-hover'
+                  : 'hover:bg-surface-primary'
               }`}
             >
               <div className='flex items-center gap-3'>
                 <div
                   className={`flex items-center justify-center w-9 h-9 rounded-lg transition-colors ${
                     selectedFolder === 'notes'
-                      ? 'bg-white/5'
-                      : 'bg-white/3 group-hover:bg-white/10'
+                      ? 'bg-surface-primary'
+                      : 'bg-surface-primary group-hover:bg-interactive-hover'
                   }`}
                 >
                   <FolderIcon className='w-5 h-5 text-blue-400' />
                 </div>
                 <div className='flex flex-col items-start'>
-                  <span className='text-sm font-medium text-white'>Notes</span>
-                  <span className='text-xs text-gray-400'>
+                  <span className='text-sm font-medium text-text-primary'>
+                    Notes
+                  </span>
+                  <span className='text-xs text-text-muted'>
                     {noteCounts.notes} notes
                   </span>
                 </div>
               </div>
               {selectedFolder === 'notes' && (
-                <Check className='w-5 h-5 text-white' />
+                <Check className='w-5 h-5 text-text-primary' />
               )}
             </button>
 
-            <div className='h-px bg-white/10 my-3' />
+            <div className='h-px bg-border-default my-3' />
 
             {/* Create New Folder */}
             {isCreating ? (
-              <div className='p-3 bg-white/5 rounded-xl mb-2 border border-white/10'>
+              <div className='p-3 bg-surface-primary rounded-xl mb-2 border border-border-default'>
                 <input
                   type='text'
                   value={newFolderName}
@@ -261,12 +267,12 @@ export default function FolderDropdown({
                   }}
                   placeholder='Folder name...'
                   autoFocus
-                  className='w-full px-3 py-2 bg-transparent border-none outline-none text-white text-sm placeholder-gray-500'
+                  className='w-full px-3 py-2 bg-transparent border-none outline-none text-text-primary text-sm placeholder-text-muted'
                 />
                 <div className='flex gap-2 mt-3'>
                   <button
                     onClick={handleCreateFolder}
-                    className='flex-1 px-4 py-2 bg-green-500 hover:bg-green-600 text-white text-sm font-medium rounded-lg transition-all duration-200 shadow-lg shadow-green-500/20'
+                    className='flex-1 px-4 py-2 bg-green-500 hover:bg-green-600 text-white dark:text-white text-sm font-medium rounded-lg transition-all duration-200 shadow-lg shadow-green-500/20'
                   >
                     Create
                   </button>
@@ -275,7 +281,7 @@ export default function FolderDropdown({
                       setIsCreating(false);
                       setNewFolderName('');
                     }}
-                    className='flex-1 px-4 py-2 bg-white/10 hover:bg-white/20 text-white text-sm font-medium rounded-lg transition-colors'
+                    className='flex-1 px-4 py-2 bg-interactive-hover hover:bg-interactive-active text-text-primary text-sm font-medium rounded-lg transition-colors'
                   >
                     Cancel
                   </button>
@@ -284,12 +290,12 @@ export default function FolderDropdown({
             ) : (
               <button
                 onClick={() => setIsCreating(true)}
-                className='w-full flex items-center gap-3 p-3 hover:bg-white/5 rounded-xl transition-all duration-200 mb-2 group'
+                className='w-full flex items-center gap-3 p-3 hover:bg-surface-primary rounded-xl transition-all duration-200 mb-2 group'
               >
-                <div className='flex items-center justify-center w-9 h-9 rounded-lg bg-white/5 group-hover:bg-white/10 transition-colors'>
+                <div className='flex items-center justify-center w-9 h-9 rounded-lg bg-surface-primary group-hover:bg-interactive-hover transition-colors'>
                   <Plus className='w-5 h-5 text-green-400' />
                 </div>
-                <span className='text-sm font-medium text-white'>
+                <span className='text-sm font-medium text-text-primary'>
                   New Folder
                 </span>
               </button>
@@ -299,7 +305,7 @@ export default function FolderDropdown({
             {folders.map(folder => (
               <div key={folder.id} className='relative mb-1'>
                 {editingFolderId === folder.id ? (
-                  <div className='p-3 bg-white/5 rounded-xl border border-white/10'>
+                  <div className='p-3 bg-surface-primary rounded-xl border border-border-default'>
                     <input
                       type='text'
                       value={editingFolderName}
@@ -312,12 +318,12 @@ export default function FolderDropdown({
                         }
                       }}
                       autoFocus
-                      className='w-full px-3 py-2 bg-transparent border-none outline-none text-white text-sm'
+                      className='w-full px-3 py-2 bg-transparent border-none outline-none text-text-primary text-sm'
                     />
                     <div className='flex gap-2 mt-3'>
                       <button
                         onClick={() => handleUpdateFolder(folder.id)}
-                        className='flex-1 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white text-sm font-medium rounded-lg transition-all duration-200 shadow-lg shadow-blue-500/20'
+                        className='flex-1 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white dark:text-white text-sm font-medium rounded-lg transition-all duration-200 shadow-lg shadow-blue-500/20'
                       >
                         Save
                       </button>
@@ -326,7 +332,7 @@ export default function FolderDropdown({
                           setEditingFolderId(null);
                           setEditingFolderName('');
                         }}
-                        className='flex-1 px-4 py-2 bg-white/10 hover:bg-white/20 text-white text-sm font-medium rounded-lg transition-colors'
+                        className='flex-1 px-4 py-2 bg-interactive-hover hover:bg-interactive-active text-text-primary text-sm font-medium rounded-lg transition-colors'
                       >
                         Cancel
                       </button>
@@ -353,35 +359,35 @@ export default function FolderDropdown({
                     }}
                     className={`w-full flex items-center justify-between p-3 rounded-xl transition-all duration-200 ${
                       selectedFolder === folder.id
-                        ? 'bg-white/10'
-                        : 'hover:bg-white/5'
+                        ? 'bg-interactive-hover'
+                        : 'hover:bg-surface-primary'
                     }`}
                   >
                     <div className='flex items-center gap-3'>
                       <div
                         className={`flex items-center justify-center w-9 h-9 rounded-lg transition-colors ${
                           selectedFolder === folder.id
-                            ? 'bg-white/10'
-                            : 'bg-white/5 group-hover:bg-white/10'
+                            ? 'bg-interactive-hover'
+                            : 'bg-surface-primary group-hover:bg-interactive-hover'
                         }`}
                       >
                         <FolderIcon className='w-5 h-5 text-yellow-400' />
                       </div>
                       <div className='flex flex-col items-start'>
-                        <span className='text-sm font-medium text-white truncate'>
+                        <span className='text-sm font-medium text-text-primary truncate'>
                           {folder.title}
                         </span>
                       </div>
                     </div>
                     {selectedFolder === folder.id && (
-                      <Check className='w-5 h-5 text-white' />
+                      <Check className='w-5 h-5 text-text-primary' />
                     )}
                   </button>
                 )}
               </div>
             ))}
 
-            <div className='h-px bg-white/10 my-3' />
+            <div className='h-px bg-border-default my-3' />
 
             {/* Recently Deleted */}
             <button
@@ -390,30 +396,32 @@ export default function FolderDropdown({
                 setIsOpen(false);
               }}
               className={`w-full flex items-center justify-between p-3 rounded-xl transition-all duration-200 group ${
-                selectedFolder === 'trash' ? 'bg-white/10' : 'hover:bg-white/5'
+                selectedFolder === 'trash'
+                  ? 'bg-interactive-hover'
+                  : 'hover:bg-surface-primary'
               }`}
             >
               <div className='flex items-center gap-3'>
                 <div
                   className={`flex items-center justify-center w-9 h-9 rounded-lg transition-colors ${
                     selectedFolder === 'trash'
-                      ? 'bg-white/10'
-                      : 'bg-white/5 group-hover:bg-white/10'
+                      ? 'bg-interactive-hover'
+                      : 'bg-surface-primary group-hover:bg-interactive-hover'
                   }`}
                 >
-                  <Trash2 className='w-5 h-5 text-gray-400' />
+                  <Trash2 className='w-5 h-5 text-text-muted' />
                 </div>
                 <div className='flex flex-col items-start'>
-                  <span className='text-sm font-medium text-white'>
+                  <span className='text-sm font-medium text-text-primary'>
                     Recently Deleted
                   </span>
-                  <span className='text-xs text-gray-400'>
+                  <span className='text-xs text-text-muted'>
                     {noteCounts.trash} notes
                   </span>
                 </div>
               </div>
               {selectedFolder === 'trash' && (
-                <Check className='w-5 h-5 text-white' />
+                <Check className='w-5 h-5 text-text-primary' />
               )}
             </button>
           </div>
@@ -423,7 +431,7 @@ export default function FolderDropdown({
       {folderContextMenu && (
         <div
           ref={contextMenuRef}
-          className='fixed z-110 min-w-[180px] rounded-xl border border-white/15 bg-black/70 px-2 py-2 text-sm text-white shadow-[0_12px_32px_rgba(0,0,0,0.45)] backdrop-blur-md'
+          className='fixed z-110 min-w-[180px] rounded-xl border border-border-default bg-dropdown-bg px-2 py-2 text-sm text-text-primary shadow-card dark:backdrop-blur-md'
           style={{
             left: `${folderContextMenu.x}px`,
             top: `${folderContextMenu.y}px`,
@@ -439,7 +447,7 @@ export default function FolderDropdown({
               }
               setFolderContextMenu(null);
             }}
-            className='flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left transition-colors hover:bg-white/10'
+            className='flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left transition-colors hover:bg-interactive-hover'
           >
             Rename folder
           </button>
@@ -448,7 +456,7 @@ export default function FolderDropdown({
               setShowDeleteConfirm(folderContextMenu.folderId);
               setFolderContextMenu(null);
             }}
-            className='flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-red-300 transition-colors hover:bg-red-500/15'
+            className='flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-red-600 dark:text-red-300 transition-colors hover:bg-red-500/15'
           >
             Delete folder
           </button>
@@ -457,36 +465,36 @@ export default function FolderDropdown({
 
       {/* Delete Confirmation Modal */}
       {showDeleteConfirm && (
-        <div className='fixed inset-0 z-100 flex items-center justify-center bg-black/60 backdrop-blur-md px-4 py-8'>
-          <GlassCard className='w-full max-w-md rounded-3xl border border-white/12 bg-white/10 p-6 shadow-[0_20px_60px_rgba(0,0,0,0.45)]'>
-            <div className='flex flex-col gap-4 text-white'>
+        <div className='fixed inset-0 z-100 flex items-center justify-center bg-dialog-overlay dark:backdrop-blur-md px-4 py-8'>
+          <GlassCard className='w-full max-w-md rounded-3xl border border-border-default bg-interactive-hover p-6 shadow-card'>
+            <div className='flex flex-col gap-4 text-text-primary'>
               <div className='flex items-start gap-3'>
                 <div className='flex h-10 w-10 items-center justify-center rounded-2xl bg-red-500/20'>
-                  <Trash2 className='h-5 w-5 text-red-300' />
+                  <Trash2 className='h-5 w-5 text-red-600 dark:text-red-300' />
                 </div>
                 <div>
                   <h3 className='text-lg font-semibold tracking-tight'>
                     Delete folder?
                   </h3>
-                  <p className='mt-1 text-sm text-white/70'>
+                  <p className='mt-1 text-sm text-text-secondary'>
                     Notes inside this folder will move back to “Notes”. This
                     action can’t be undone.
                   </p>
                 </div>
               </div>
 
-              <div className='h-px bg-white/10' />
+              <div className='h-px bg-border-default' />
 
               <div className='flex justify-end gap-3'>
                 <button
                   onClick={() => setShowDeleteConfirm(null)}
-                  className='rounded-full bg-white/10 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-white/16'
+                  className='rounded-full bg-interactive-hover px-4 py-2 text-sm font-semibold text-text-primary transition-colors hover:bg-interactive-active'
                 >
                   Cancel
                 </button>
                 <button
                   onClick={() => handleDeleteFolder(showDeleteConfirm)}
-                  className='rounded-full bg-red-500/90 px-4 py-2 text-sm font-semibold text-white shadow-[0_12px_30px_rgba(248,113,113,0.35)] transition-colors hover:bg-red-500'
+                  className='rounded-full bg-red-500/90 px-4 py-2 text-sm font-semibold text-white dark:text-white shadow-card transition-colors hover:bg-red-500'
                 >
                   Delete
                 </button>

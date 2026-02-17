@@ -438,14 +438,14 @@ export default function WorkspaceNotesPage() {
       >
         <div className='flex justify-between items-start gap-3'>
           <div className='flex-1 min-w-0'>
-            <h2 className='font-semibold text-white/90 text-[15px] leading-[1.4] line-clamp-2'>
+            <h2 className='font-semibold text-text-primary text-[15px] leading-[1.4] line-clamp-2'>
               {note.title || 'Untitled'}
             </h2>
             <div className='flex items-center gap-2 mt-0.5'>
-              <span className='text-[11px] text-gray-400 whitespace-nowrap'>
+              <span className='text-[11px] text-text-muted whitespace-nowrap'>
                 {formatDate(note.updated_at)}
               </span>
-              <p className='text-[13px] text-gray-400 leading-[1.6] line-clamp-1 flex-1 min-w-0'>
+              <p className='text-[13px] text-text-muted leading-[1.6] line-clamp-1 flex-1 min-w-0'>
                 {note.preview || 'No content'}
               </p>
             </div>
@@ -464,7 +464,7 @@ export default function WorkspaceNotesPage() {
                     .map((assignment, index) => (
                       <div
                         key={assignment.workspace_member?.id || `temp-${index}`}
-                        className='w-6 h-6 rounded-full bg-white/20 border-2 border-gray-900 flex items-center justify-center text-white text-xs font-medium'
+                        className='w-6 h-6 rounded-full bg-interactive-active border-2 border-background flex items-center justify-center text-text-primary text-xs font-medium'
                         title={
                           assignment.workspace_member?.user_profiles?.name ||
                           'Unknown'
@@ -496,7 +496,7 @@ export default function WorkspaceNotesPage() {
                     assignment =>
                       assignment.workspace_member_note_role === 'assignee'
                   ).length > 3 && (
-                    <div className='w-6 h-6 rounded-full bg-gray-700 border-2 border-gray-900 flex items-center justify-center text-white text-xs font-medium'>
+                    <div className='w-6 h-6 rounded-full bg-surface-secondary border-2 border-background flex items-center justify-center text-text-primary text-xs font-medium'>
                       +
                       {note.workspace_member_note.filter(
                         assignment =>
@@ -516,10 +516,10 @@ export default function WorkspaceNotesPage() {
 
   if (loading && !isSearching && notes.length === 0) {
     return (
-      <div className='flex flex-col h-full text-gray-100 overflow-hidden'>
+      <div className='flex flex-col h-full text-text-primary overflow-hidden'>
         <div className='flex-1 flex items-center justify-center'>
           <div className='text-center'>
-            <p className='text-gray-400 font-medium animate-pulse'>
+            <p className='text-text-muted font-medium animate-pulse'>
               Loading notes...
             </p>
           </div>
@@ -530,9 +530,9 @@ export default function WorkspaceNotesPage() {
 
   if (error) {
     return (
-      <div className='flex flex-col h-full text-gray-100 overflow-hidden'>
+      <div className='flex flex-col h-full text-text-primary overflow-hidden'>
         <div className='flex-1 flex items-center justify-center p-4'>
-          <div className='bg-red-500/10 border border-red-500/20 rounded-lg p-4 text-red-300 max-w-md w-full'>
+          <div className='bg-red-500/10 border border-red-500/20 rounded-lg p-4 text-red-600 dark:text-red-300 max-w-md w-full'>
             <div className='flex items-center justify-between'>
               <span>{error}</span>
               <button
@@ -549,16 +549,16 @@ export default function WorkspaceNotesPage() {
   }
 
   return (
-    <div className='flex flex-col h-full text-gray-100 overflow-hidden'>
+    <div className='flex flex-col h-full text-text-primary overflow-hidden'>
       {/* Scrollable Notes List */}
       <ScrollableView className='md:px-6 pt-32 pb-24'>
         {activeNotes.length === 0 && folders.length === 0 && !searchQuery ? (
           <div className='text-center py-12'>
-            <FolderOpen className='w-12 h-12 text-gray-600 mx-auto mb-3' />
-            <h3 className='text-lg font-medium text-white mb-2'>
+            <FolderOpen className='w-12 h-12 text-text-muted mx-auto mb-3' />
+            <h3 className='text-lg font-medium text-text-primary mb-2'>
               No notes yet
             </h3>
-            <p className='text-gray-400 mb-6'>
+            <p className='text-text-muted mb-6'>
               Create your first note to get started
             </p>
             <GlassButton
@@ -571,11 +571,11 @@ export default function WorkspaceNotesPage() {
           </div>
         ) : activeNotes.length === 0 && searchQuery ? (
           <div className='text-center py-12'>
-            <FolderOpen className='w-12 h-12 text-gray-600 mx-auto mb-3' />
-            <h3 className='text-lg font-medium text-white mb-2'>
+            <FolderOpen className='w-12 h-12 text-text-muted mx-auto mb-3' />
+            <h3 className='text-lg font-medium text-text-primary mb-2'>
               No notes found
             </h3>
-            <p className='text-gray-400'>{`No notes match "${searchQuery}"`}</p>
+            <p className='text-text-muted'>{`No notes match "${searchQuery}"`}</p>
           </div>
         ) : selectedFolder !== null ? (
           // Show selected folder or Recently Deleted
@@ -595,7 +595,7 @@ export default function WorkspaceNotesPage() {
               {selectedFolder === 'trash' && deletedNotes.length > 0 && (
                 <button
                   onClick={() => setShowEmptyTrashConfirm(true)}
-                  className='text-xs text-gray-400 hover:text-white px-3 py-1.5 rounded-lg hover:bg-white/10 transition-all duration-200 font-medium mr-5'
+                  className='text-xs text-text-muted hover:text-text-primary px-3 py-1.5 rounded-lg hover:bg-interactive-hover transition-all duration-200 font-medium mr-5'
                 >
                   Delete All
                 </button>
@@ -617,7 +617,7 @@ export default function WorkspaceNotesPage() {
                     inRecentlyDeleted={selectedFolder === 'trash'}
                   />
                   {index < arr.length - 1 && (
-                    <div className='border-b border-white/10' />
+                    <div className='border-b border-border-default' />
                   )}
                 </div>
               ))}
@@ -629,7 +629,7 @@ export default function WorkspaceNotesPage() {
                     )
                   : []
               ).length === 0 && (
-                <div className='text-center py-12 text-gray-400'>
+                <div className='text-center py-12 text-text-muted'>
                   {selectedFolder === 'trash'
                     ? 'No recently deleted notes'
                     : 'No notes in this folder'}
@@ -667,7 +667,7 @@ export default function WorkspaceNotesPage() {
                         <div key={note.id}>
                           <NoteCard note={note} />
                           {index < arr.length - 1 && (
-                            <div className='border-b border-white/10 py-0.5' />
+                            <div className='border-b border-border-default py-0.5' />
                           )}
                         </div>
                       ))}
@@ -700,9 +700,9 @@ export default function WorkspaceNotesPage() {
             className='disabled:cursor-not-allowed shrink-0 size-12'
           >
             {isCreating ? (
-              <div className='animate-spin rounded-full h-5 w-5 border-b-2 border-gray-300'></div>
+              <div className='animate-spin rounded-full h-5 w-5 border-b-2 border-text-muted'></div>
             ) : (
-              <PenSquare className='w-5 h-5 text-white' />
+              <PenSquare className='w-5 h-5 text-text-primary' />
             )}
           </GlassButton>
         </div>
@@ -769,25 +769,25 @@ export default function WorkspaceNotesPage() {
 
       {/* Hard Delete Confirmation Modal */}
       {showHardDeleteConfirm && (
-        <div className='fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4'>
+        <div className='fixed inset-0 bg-dialog-overlay dark:backdrop-blur-sm flex items-center justify-center z-50 p-4'>
           <GlassCard className='p-6 max-w-sm w-full rounded-2xl'>
-            <h3 className='text-lg font-semibold text-white mb-2'>
+            <h3 className='text-lg font-semibold text-text-primary mb-2'>
               Delete Permanently
             </h3>
-            <p className='text-gray-400 mb-6 text-sm leading-relaxed'>
+            <p className='text-text-muted mb-6 text-sm leading-relaxed'>
               Are you sure you want to permanently delete this note? This action
               cannot be undone.
             </p>
             <div className='flex gap-3'>
               <button
                 onClick={() => setShowHardDeleteConfirm(null)}
-                className='flex-1 px-4 py-2.5 bg-white/10 hover:bg-white/20 text-white rounded-lg transition-all duration-200 font-medium'
+                className='flex-1 px-4 py-2.5 bg-interactive-hover hover:bg-interactive-active text-text-primary rounded-lg transition-all duration-200 font-medium'
               >
                 Cancel
               </button>
               <button
                 onClick={() => handleHardDelete(showHardDeleteConfirm)}
-                className='flex-1 px-4 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-all duration-200 font-medium shadow-lg shadow-red-500/20'
+                className='flex-1 px-4 py-2.5 bg-red-600 hover:bg-red-700 text-text-primary rounded-lg transition-all duration-200 font-medium shadow-lg shadow-red-500/20'
               >
                 Delete
               </button>
@@ -798,12 +798,12 @@ export default function WorkspaceNotesPage() {
 
       {/* Delete All Confirmation Modal */}
       {showEmptyTrashConfirm && (
-        <div className='fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4'>
+        <div className='fixed inset-0 bg-dialog-overlay dark:backdrop-blur-sm flex items-center justify-center z-50 p-4'>
           <GlassCard className='p-6 max-w-sm w-full rounded-2xl'>
-            <h3 className='text-lg font-semibold text-white mb-2'>
+            <h3 className='text-lg font-semibold text-text-primary mb-2'>
               Delete All Notes
             </h3>
-            <p className='text-gray-400 mb-6 text-sm leading-relaxed'>
+            <p className='text-text-muted mb-6 text-sm leading-relaxed'>
               Are you sure you want to permanently delete {deletedNotes.length}{' '}
               note
               {deletedNotes.length !== 1 ? 's' : ''}? This action cannot be
@@ -812,13 +812,13 @@ export default function WorkspaceNotesPage() {
             <div className='flex gap-3'>
               <button
                 onClick={() => setShowEmptyTrashConfirm(false)}
-                className='flex-1 px-4 py-2.5 bg-white/10 hover:bg-white/20 text-white rounded-lg transition-all duration-200 font-medium'
+                className='flex-1 px-4 py-2.5 bg-interactive-hover hover:bg-interactive-active text-text-primary rounded-lg transition-all duration-200 font-medium'
               >
                 Cancel
               </button>
               <button
                 onClick={handleEmptyTrash}
-                className='flex-1 px-4 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-all duration-200 font-medium shadow-lg shadow-red-500/20'
+                className='flex-1 px-4 py-2.5 bg-red-600 hover:bg-red-700 text-text-primary rounded-lg transition-all duration-200 font-medium shadow-lg shadow-red-500/20'
               >
                 Delete All
               </button>

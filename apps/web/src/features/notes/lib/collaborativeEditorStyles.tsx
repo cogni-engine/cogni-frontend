@@ -66,7 +66,7 @@ export function CollaborativeEditorStyles() {
         font-size: 0.7rem;
         font-weight: 600;
         color: white;
-        border: 2px solid rgba(15, 23, 42, 1);
+        border: 2px solid var(--background);
         margin-left: -0.5rem;
       }
 

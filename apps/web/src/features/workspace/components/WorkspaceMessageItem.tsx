@@ -33,7 +33,7 @@ type Props = {
 function ReadStatus({ readCount }: { readCount: number }) {
   if (readCount <= 0) return null;
 
-  return <p className='text-xs text-gray-500 mt-1'>Read {readCount}</p>;
+  return <p className='text-xs text-text-muted mt-1'>Read {readCount}</p>;
 }
 
 function WorkspaceMessageItem({
@@ -359,12 +359,12 @@ function WorkspaceMessageItem({
     return (
       <div
         data-replied-preview
-        className='mb-2 border-white/20 cursor-pointer rounded transition-colors'
+        className='mb-2 border-border-default cursor-pointer rounded transition-colors'
         onClick={handleClick}
         style={{ pointerEvents: 'auto' }}
       >
         <div className='flex items-start gap-2'>
-          <Avatar className='h-6 w-6 border border-white/15 bg-white/10 text-[10px] font-medium shrink-0'>
+          <Avatar className='h-6 w-6 border border-border-subtle bg-interactive-hover text-[10px] font-medium shrink-0'>
             {repliedProfile?.avatar_url ? (
               <AvatarImage src={repliedProfile.avatar_url} alt={repliedName} />
             ) : (
@@ -374,8 +374,8 @@ function WorkspaceMessageItem({
             )}
           </Avatar>
           <div className='min-w-0 flex-1'>
-            <p className='text-xs text-white/50 mb-1'>{repliedName}</p>
-            <div className='text-xs text-white/40'>
+            <p className='text-xs text-text-muted mb-1'>{repliedName}</p>
+            <div className='text-xs text-text-muted'>
               <TiptapRenderer
                 content={repliedText}
                 contentType='markdown'
@@ -415,7 +415,7 @@ function WorkspaceMessageItem({
                 opacity: showSwipeIndicator ? 1 : 0,
               }}
             >
-              <Reply className='w-5 h-5 text-white/60' />
+              <Reply className='w-5 h-5 text-text-secondary' />
             </div>
           )}
           <div
@@ -433,7 +433,7 @@ function WorkspaceMessageItem({
                       onClick={() =>
                         optimisticId && onDismissFailedMessage?.(optimisticId)
                       }
-                      className='text-xs text-red-400 hover:text-red-300 flex items-center gap-1'
+                      className='text-xs text-red-600 dark:text-red-400 hover:text-red-500 dark:hover:text-red-300 flex items-center gap-1'
                     >
                       <AlertCircle className='w-3 h-3' />
                       <span>Failed - Tap to dismiss</span>
@@ -445,7 +445,7 @@ function WorkspaceMessageItem({
                     <div className='text-right'>
                       <ReadStatus readCount={readCount} />
                     </div>
-                    <p className='text-xs text-gray-500 text-right'>
+                    <p className='text-xs text-text-muted text-right'>
                       {format(new Date(message.created_at), 'HH:mm')}
                     </p>
                   </>
@@ -455,10 +455,10 @@ function WorkspaceMessageItem({
             <div className='flex flex-col gap-2 items-end'>
               {(message.text || message.replied_message) && (
                 <div
-                  className={`inline-block max-w-[75vw] backdrop-blur-xl border rounded-3xl px-4 py-2.5 shadow-[0_8px_32px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.12)] ${
+                  className={`inline-block max-w-[75vw] dark:backdrop-blur-xl border rounded-3xl px-4 py-2.5 shadow-card ${
                     isFailed
                       ? 'bg-red-500/20 border-red-500/30'
-                      : 'bg-white/13 border-black'
+                      : 'bg-surface-secondary border-border-default'
                   }`}
                 >
                   {message.replied_message && (
@@ -467,7 +467,7 @@ function WorkspaceMessageItem({
                     />
                   )}
                   {message.text && (
-                    <div className='text-sm text-white'>
+                    <div className='text-sm text-text-primary'>
                       <div
                         ref={contentRef}
                         className={`relative transition-all ${
@@ -495,7 +495,7 @@ function WorkspaceMessageItem({
                       {isOverflowing && !isOptimistic && (
                         <button
                           onClick={() => openChatMessageDrawer(message)}
-                          className='mt-1 text-xs text-blue-400 hover:underline'
+                          className='mt-1 text-xs text-blue-600 dark:text-blue-400 hover:underline'
                         >
                           See All
                         </button>
@@ -566,7 +566,7 @@ function WorkspaceMessageItem({
               opacity: showSwipeIndicator ? 1 : 0,
             }}
           >
-            <Reply className='w-5 h-5 text-white/60' />
+            <Reply className='w-5 h-5 text-text-secondary' />
           </div>
         )}
         <div
@@ -576,7 +576,7 @@ function WorkspaceMessageItem({
           }}
         >
           {showAvatar ? (
-            <Avatar className='h-8 w-8 border border-white/15 bg-white/10 text-xs font-medium'>
+            <Avatar className='h-8 w-8 border border-border-subtle bg-interactive-hover text-xs font-medium'>
               {avatarUrl ? (
                 <AvatarImage src={avatarUrl} alt={name} />
               ) : (
@@ -596,18 +596,18 @@ function WorkspaceMessageItem({
             transform: `translateX(${swipeOffset}px)`,
           }}
         >
-          {showAvatar && <p className='text-xs text-gray-400 mb-1'>{name}</p>}
+          {showAvatar && <p className='text-xs text-text-muted mb-1'>{name}</p>}
           <div className='flex items-end'>
             <div className='flex flex-col gap-2 min-w-0'>
               {(message.text || message.replied_message) && (
-                <div className='inline-block max-w-[75vw] bg-white/8 backdrop-blur-xl border border-black rounded-3xl px-4 py-2.5 shadow-[0_8px_32px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.12)]'>
+                <div className='inline-block max-w-[75vw] bg-surface-secondary dark:backdrop-blur-xl border border-border-default rounded-3xl px-4 py-2.5 shadow-card'>
                   {message.replied_message && (
                     <RepliedMessagePreview
                       repliedMessage={message.replied_message}
                     />
                   )}
                   {message.text && (
-                    <div className='text-sm text-white'>
+                    <div className='text-sm text-text-primary'>
                       <div
                         ref={contentRef}
                         className={`relative transition-all ${
@@ -635,7 +635,7 @@ function WorkspaceMessageItem({
                       {isOverflowing && (
                         <button
                           onClick={() => openChatMessageDrawer(message)}
-                          className='mt-1 text-xs text-blue-400 hover:underline'
+                          className='mt-1 text-xs text-blue-600 dark:text-blue-400 hover:underline'
                         >
                           See All
                         </button>
@@ -659,7 +659,7 @@ function WorkspaceMessageItem({
                 )}
             </div>
             {showTimestamp && (
-              <p className='text-xs text-gray-500 mt-1'>
+              <p className='text-xs text-text-muted mt-1'>
                 {format(new Date(message.created_at), 'HH:mm')}
               </p>
             )}

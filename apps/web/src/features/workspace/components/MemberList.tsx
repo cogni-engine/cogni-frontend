@@ -34,7 +34,7 @@ const getRoleIcon = (role: string) => {
     case 'admin':
       return <Shield className='w-4 h-4 text-blue-400' />;
     default:
-      return <User className='w-4 h-4 text-gray-400' />;
+      return <User className='w-4 h-4 text-text-muted' />;
   }
 };
 
@@ -45,7 +45,7 @@ const getRoleBadgeStyles = (role: string) => {
     case 'admin':
       return 'bg-blue-500/20 text-blue-300';
     default:
-      return 'bg-gray-500/20 text-gray-300';
+      return 'bg-gray-500/20 text-text-secondary';
   }
 };
 
@@ -111,7 +111,7 @@ export default function MemberList({
   if (loading) {
     return (
       <div className='flex justify-center py-4'>
-        <div className='animate-spin rounded-full h-6 w-6 border-b-2 border-white'></div>
+        <div className='animate-spin rounded-full h-6 w-6 border-b-2 border-text-primary'></div>
       </div>
     );
   }
@@ -119,8 +119,8 @@ export default function MemberList({
   if (members.length === 0) {
     return (
       <div className='text-center py-8'>
-        <User className='w-12 h-12 text-gray-400 mx-auto mb-3' />
-        <p className='text-gray-400'>No members in this workspace</p>
+        <User className='w-12 h-12 text-text-muted mx-auto mb-3' />
+        <p className='text-text-muted'>No members in this workspace</p>
       </div>
     );
   }
@@ -143,7 +143,7 @@ export default function MemberList({
         return (
           <div
             key={member.id}
-            className='relative overflow-hidden rounded-lg border border-white/10 bg-white/5 hover:bg-white/10 transition-colors'
+            className='relative overflow-hidden rounded-lg border border-border-default bg-surface-primary hover:bg-interactive-hover transition-colors'
           >
             <div className='flex items-center p-4'>
               {/* Edit mode: minus icon on left */}
@@ -158,7 +158,7 @@ export default function MemberList({
 
               {/* Avatar + info */}
               <div className='flex items-center gap-3 flex-1 min-w-0'>
-                <Avatar className='h-10 w-10 border border-white/20 bg-white/10 text-sm font-medium flex-shrink-0'>
+                <Avatar className='h-10 w-10 border border-border-default bg-interactive-hover text-sm font-medium flex-shrink-0'>
                   {profile?.avatar_url ? (
                     <AvatarImage
                       src={profile.avatar_url}
@@ -166,15 +166,15 @@ export default function MemberList({
                     />
                   ) : (
                     <AvatarFallback>
-                      <User className='w-4 h-4 text-gray-300' />
+                      <User className='w-4 h-4 text-text-secondary' />
                     </AvatarFallback>
                   )}
                 </Avatar>
                 <div className='min-w-0'>
-                  <p className='text-white font-medium truncate'>
+                  <p className='text-text-primary font-medium truncate'>
                     {profile?.name ?? 'Unknown'}
                   </p>
-                  <p className='text-sm text-gray-400'>
+                  <p className='text-sm text-text-muted'>
                     Joined {new Date(member.created_at).toLocaleDateString()}
                   </p>
                 </div>
@@ -186,13 +186,13 @@ export default function MemberList({
                   <button
                     onClick={() => handleDmClick(member.user_id!)}
                     disabled={!!dmLoadingUserId}
-                    className='p-2 rounded-lg hover:bg-white/10 transition-colors disabled:opacity-50'
+                    className='p-2 rounded-lg hover:bg-interactive-hover transition-colors disabled:opacity-50'
                     title='Direct Message'
                   >
                     {dmLoadingUserId === member.user_id ? (
-                      <Loader2 className='w-4 h-4 text-gray-400 animate-spin' />
+                      <Loader2 className='w-4 h-4 text-text-muted animate-spin' />
                     ) : (
-                      <MessageCircle className='w-4 h-4 text-gray-400' />
+                      <MessageCircle className='w-4 h-4 text-text-muted' />
                     )}
                   </button>
                 )}
@@ -208,20 +208,20 @@ export default function MemberList({
             {/* Confirmation bar: slides down when minus is clicked */}
             {isEditing && isConfirming && kickable && (
               <div className='flex items-center justify-between px-4 py-3 bg-red-500/10 border-t border-red-500/20'>
-                <span className='text-sm text-red-300'>
+                <span className='text-sm text-red-600 dark:text-red-300'>
                   Remove this member?
                 </span>
                 <div className='flex items-center gap-2'>
                   <button
                     onClick={() => setConfirmRemoveId(null)}
-                    className='px-3 py-1 text-xs rounded-md text-gray-300 hover:bg-white/10 transition-colors'
+                    className='px-3 py-1 text-xs rounded-md text-text-secondary hover:bg-interactive-hover transition-colors'
                   >
                     Cancel
                   </button>
                   <button
                     onClick={() => handleRemoveConfirm(member.id)}
                     disabled={!!removingMemberId}
-                    className='px-3 py-1 text-xs rounded-md bg-red-500/20 text-red-300 hover:bg-red-500/30 transition-colors disabled:opacity-50'
+                    className='px-3 py-1 text-xs rounded-md bg-red-500/20 text-red-600 dark:text-red-300 hover:bg-red-500/30 transition-colors disabled:opacity-50'
                   >
                     {isRemoving ? (
                       <Loader2 className='w-3 h-3 animate-spin inline' />

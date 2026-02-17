@@ -48,17 +48,17 @@ export default function FileUploadPreview({
           return (
             <div
               key={item.id}
-              className='relative group bg-white/5 backdrop-blur-xl border border-white/10 rounded-xl overflow-hidden'
+              className='relative group bg-surface-primary dark:backdrop-blur-xl border border-border-default rounded-xl overflow-hidden'
             >
               {/* Remove button */}
               {!isUploading && (
                 <button
                   type='button'
                   onClick={() => onRemove(item.id)}
-                  className='absolute top-1 right-1 z-100 w-6 h-6 rounded-full bg-black/60 hover:bg-black/80 backdrop-blur-sm flex items-center justify-center transition-all'
+                  className='absolute top-1 right-1 z-100 w-6 h-6 rounded-full bg-dialog-overlay hover:bg-dropdown-bg dark:backdrop-blur-sm flex items-center justify-center transition-all'
                   aria-label='Remove file'
                 >
-                  <X className='w-3 h-3 text-white' />
+                  <X className='w-3 h-3 text-text-primary' />
                 </button>
               )}
 
@@ -74,15 +74,15 @@ export default function FileUploadPreview({
                     unoptimized
                   />
                 ) : (
-                  <div className='w-full h-full flex items-center justify-center bg-white/5'>
-                    <FileIcon className='w-8 h-8 text-white/40' />
+                  <div className='w-full h-full flex items-center justify-center bg-surface-primary'>
+                    <FileIcon className='w-8 h-8 text-text-muted' />
                   </div>
                 )}
 
                 {/* Upload progress overlay */}
                 {isUploading && (
-                  <div className='absolute inset-0 bg-black/50 flex items-center justify-center'>
-                    <Loader2 className='w-5 h-5 text-white animate-spin' />
+                  <div className='absolute inset-0 bg-dialog-overlay flex items-center justify-center'>
+                    <Loader2 className='w-5 h-5 text-text-primary animate-spin' />
                   </div>
                 )}
 
@@ -95,9 +95,9 @@ export default function FileUploadPreview({
 
                 {/* Progress bar */}
                 {isUploading && (
-                  <div className='absolute bottom-0 left-0 right-0 h-1 bg-black/30'>
+                  <div className='absolute bottom-0 left-0 right-0 h-1 bg-background/30'>
                     <div
-                      className='h-full bg-white/60 transition-all duration-300'
+                      className='h-full bg-text-secondary transition-all duration-300'
                       style={{ width: `${item.progress}%` }}
                     />
                   </div>
@@ -107,12 +107,12 @@ export default function FileUploadPreview({
               {/* File name */}
               <div className='px-2 py-1 max-w-[80px]'>
                 <p
-                  className='text-xs text-white/80 truncate'
+                  className='text-xs text-text-secondary truncate'
                   title={item.file.name}
                 >
                   {item.file.name}
                 </p>
-                <p className='text-xs text-white/40'>
+                <p className='text-xs text-text-muted'>
                   {formatFileSize(item.file.size)}
                 </p>
               </div>
@@ -121,7 +121,7 @@ export default function FileUploadPreview({
               {hasError && (
                 <div className='px-2 pb-1'>
                   <p
-                    className='text-xs text-red-300 truncate'
+                    className='text-xs text-red-600 dark:text-red-300 truncate'
                     title={item.error}
                   >
                     {item.error}

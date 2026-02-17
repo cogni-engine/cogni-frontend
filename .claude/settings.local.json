@@ -9,7 +9,10 @@
       "Bash(head:*)",
       "Bash(sort:*)",
       "Bash(pnpm add:*)",
-      "Bash(pnpm --filter @cogni/web exec next build:*)"
+      "Bash(pnpm --filter @cogni/web exec next build:*)",
+      "Bash(pnpm format:*)",
+      "WebFetch(domain:codepen.io)",
+      "Bash(pnpm build:*)"
     ]
   }
 }

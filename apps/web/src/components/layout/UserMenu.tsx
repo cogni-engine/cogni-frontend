@@ -183,7 +183,9 @@ export function UserMenu() {
                     handleSelectSubscriptions();
                   }}
                   className={`flex items-center gap-2 ${
-                    isProOrBusiness ? '' : 'text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300'
+                    isProOrBusiness
+                      ? ''
+                      : 'text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300'
                   }`}
                 >
                   <ArrowUpCircle className='h-4 w-4' />

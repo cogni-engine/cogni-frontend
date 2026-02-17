@@ -82,7 +82,7 @@ export function OnboardingPayment({
         <button
           type='button'
           onClick={handleContinue}
-          className='text-gray-400 hover:text-gray-300 transition-colors p-2'
+          className='text-text-muted hover:text-text-secondary transition-colors p-2'
           aria-label='Close'
         >
           <X className='size-6' />
@@ -91,7 +91,7 @@ export function OnboardingPayment({
 
       {/* Header */}
       <div className='shrink-0 text-center space-y-3 mb-8'>
-        <h1 className='text-3xl md:text-4xl font-bold text-white leading-tight'>
+        <h1 className='text-3xl md:text-4xl font-bold text-text-primary leading-tight'>
           Hey {userName || 'there'}! It&apos;s time to get full access to Cogno!
         </h1>
       </div>
@@ -106,14 +106,14 @@ export function OnboardingPayment({
                 key={tier.name}
                 type='button'
                 onClick={() => setSelectedTier(tier.name)}
-                className={`relative w-full py-4 px-4 text-left rounded-xl backdrop-blur-md transition-all duration-200 ${
+                className={`relative w-full py-4 px-4 text-left rounded-xl dark:backdrop-blur-md transition-all duration-200 ${
                   tier.name === 'Pro'
-                    ? 'bg-white/10 border-2 border-white'
-                    : 'bg-white/5 border border-white/10'
+                    ? 'bg-interactive-hover border-2 border-border-default'
+                    : 'bg-surface-primary border border-border-default'
                 } ${
                   selectedTier === tier.name
-                    ? 'text-white ring-2 ring-white/50'
-                    : 'text-gray-300'
+                    ? 'text-text-primary ring-2 ring-ring'
+                    : 'text-text-secondary'
                 }`}
               >
                 <div className='space-y-2'>
@@ -133,8 +133,8 @@ export function OnboardingPayment({
           </div>
 
           {/* Info Banner */}
-          <div className='bg-white/5 border border-white/10 rounded-xl p-4 backdrop-blur-sm mt-4'>
-            <p className='text-gray-400 text-sm text-center'>
+          <div className='bg-surface-primary border border-border-default rounded-xl p-4 dark:backdrop-blur-sm mt-4'>
+            <p className='text-text-muted text-sm text-center'>
               You can change your plan anytime from settings. No credit card
               required for free tier.
             </p>
@@ -142,8 +142,8 @@ export function OnboardingPayment({
 
           {/* Error Message */}
           {error && (
-            <div className='mt-4 bg-red-900/30 border border-red-500/50 rounded-lg p-4 backdrop-blur-sm'>
-              <p className='text-red-300 text-sm'>{error}</p>
+            <div className='mt-4 bg-red-900/30 border border-red-500/50 rounded-lg p-4 dark:backdrop-blur-sm'>
+              <p className='text-red-600 dark:text-red-300 text-sm'>{error}</p>
             </div>
           )}
         </div>

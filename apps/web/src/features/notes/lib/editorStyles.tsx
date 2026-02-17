@@ -5,7 +5,7 @@ export function EditorStyles() {
         outline: none;
         min-height: 100%;
         padding: 0;
-        color: rgba(255, 255, 255, 0.9);
+        color: var(--text-primary);
       }
       .ProseMirror p {
         margin: 0.9em 0;
@@ -26,12 +26,12 @@ export function EditorStyles() {
         margin-bottom: 0.5em;
         font-weight: 700;
         line-height: 1.3;
-        color: rgba(255, 255, 255, 0.9);
+        color: var(--text-primary);
       }
       .ProseMirror h1 {
         font-size: 2.25em;
         letter-spacing: -0.02em;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        border-bottom: 1px solid var(--border-default);
         padding-bottom: 0.3em;
       }
       .ProseMirror h2 {
@@ -49,11 +49,11 @@ export function EditorStyles() {
       }
       .ProseMirror h6 {
         font-size: 1em;
-        color: rgba(255, 255, 255, 0.8);
+        color: var(--text-secondary);
       }
       .ProseMirror hr {
         margin: 1.5em 0;
-        color: rgba(255, 255, 255, 0.5);
+        color: var(--text-muted);
       }
       .ProseMirror ul,
       .ProseMirror ol {
@@ -123,7 +123,7 @@ export function EditorStyles() {
         width: 1.5em;
         height: 1.5em;
         cursor: pointer;
-        border: 2px solid rgba(255, 255, 255, 0.3);
+        border: 2px solid var(--text-muted);
         background-color: transparent;
         border-radius: 50%;
         margin: 0;
@@ -135,9 +135,9 @@ export function EditorStyles() {
         li[data-type='taskItem']
         > label
         input[type='checkbox']:hover {
-        border-color: rgba(255, 255, 255, 0.6);
+        border-color: var(--text-secondary);
         transform: scale(1.1);
-        box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.1);
+        box-shadow: 0 0 0 3px var(--border-default);
       }
       .ProseMirror li.task-item > label input[type='checkbox']:checked,
       .ProseMirror
@@ -184,11 +184,11 @@ export function EditorStyles() {
       .ProseMirror li[data-type='taskItem'][data-checked='true'] > div {
       }
       .ProseMirror blockquote {
-        border-left: 3px solid rgba(255, 255, 255, 0.2);
+        border-left: 3px solid var(--border-default);
         padding-left: 1em;
         margin: 1em 0;
         font-style: italic;
-        color: rgba(255, 255, 255, 0.7);
+        color: var(--text-secondary);
       }
       .ProseMirror strong {
         font-weight: 600;
@@ -202,7 +202,7 @@ export function EditorStyles() {
       .ProseMirror p.is-editor-empty:first-child::before {
         content: attr(data-placeholder);
         float: left;
-        color: rgba(156, 163, 175, 0.6);
+        color: var(--input-placeholder);
         pointer-events: none;
         height: 0;
       }
@@ -213,10 +213,10 @@ export function EditorStyles() {
         margin: 1em 0;
         display: block;
         cursor: pointer;
-        border: 1px solid rgba(255, 255, 255, 0.1);
+        border: 1px solid var(--border-default);
       }
       .ProseMirror img.editor-image:hover {
-        border-color: rgba(255, 255, 255, 0.2);
+        border-color: var(--border-default);
       }
       .ProseMirror img.editor-image.ProseMirror-selectednode {
         outline: 2px solid rgba(59, 130, 246, 0.5);
@@ -260,12 +260,12 @@ export function EditorStyles() {
       }
       /* Diff suggestion mark styles - Monochrome */
       .ProseMirror .diff-added {
-        background: rgba(255, 255, 255, 0.08);
+        background: var(--surface-secondary);
         border-radius: 3px;
         padding: 1px 4px;
         margin: 0 1px;
-        border-bottom: 2px solid rgba(255, 255, 255, 0.4);
-        color: rgba(255, 255, 255, 0.95);
+        border-bottom: 2px solid var(--text-muted);
+        color: var(--text-primary);
         position: relative;
         font-weight: 500;
       }
@@ -277,7 +277,7 @@ export function EditorStyles() {
         transform: translateY(-50%);
         font-size: 9px;
         font-weight: 700;
-        color: rgba(255, 255, 255, 0.4);
+        color: var(--text-muted);
         opacity: 0;
         transition: opacity 0.2s ease;
       }
@@ -291,8 +291,8 @@ export function EditorStyles() {
         margin: 0 1px;
         text-decoration: line-through;
         text-decoration-thickness: 1.5px;
-        text-decoration-color: rgba(255, 255, 255, 0.4);
-        color: rgba(255, 255, 255, 0.4);
+        text-decoration-color: var(--text-muted);
+        color: var(--text-muted);
         position: relative;
       }
       .ProseMirror .diff-deleted::before {
@@ -303,7 +303,7 @@ export function EditorStyles() {
         transform: translateY(-50%);
         font-size: 9px;
         font-weight: 700;
-        color: rgba(255, 255, 255, 0.3);
+        color: var(--text-muted);
         opacity: 0;
         transition: opacity 0.2s ease;
       }
@@ -363,20 +363,20 @@ export function EditorStyles() {
 
       /* Block added styles - Monochrome */
       .diff-block-added-view {
-        background: rgba(255, 255, 255, 0.04);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        border-left: 3px solid rgba(255, 255, 255, 0.5);
+        background: var(--surface-primary);
+        border: 1px solid var(--border-default);
+        border-left: 3px solid var(--text-muted);
       }
 
       /* Block deleted styles - Monochrome */
       .diff-block-deleted-view {
         background: transparent;
-        border: 1px dashed rgba(255, 255, 255, 0.15);
-        border-left: 3px solid rgba(255, 255, 255, 0.25);
+        border: 1px dashed var(--border-default);
+        border-left: 3px solid var(--text-muted);
       }
       .diff-block-deleted-view .diff-block-inner-content {
         text-decoration: line-through;
-        text-decoration-color: rgba(255, 255, 255, 0.4);
+        text-decoration-color: var(--text-muted);
         opacity: 0.5;
       }
 
@@ -406,19 +406,19 @@ export function EditorStyles() {
         letter-spacing: 0.5px;
       }
       .diff-block-indicator-added {
-        color: rgba(255, 255, 255, 0.9);
-        background: rgba(255, 255, 255, 0.1);
+        color: var(--text-primary);
+        background: var(--interactive-hover);
         padding: 2px 8px;
         border-radius: 4px;
       }
       .diff-block-indicator-deleted {
-        color: rgba(255, 255, 255, 0.5);
-        background: rgba(255, 255, 255, 0.05);
+        color: var(--text-muted);
+        background: var(--border-subtle);
         padding: 2px 8px;
         border-radius: 4px;
       }
       .diff-block-other-user-label {
-        color: rgba(255, 255, 255, 0.5);
+        color: var(--text-muted);
         font-size: 10px;
         font-weight: 400;
         text-transform: none;
@@ -469,8 +469,8 @@ export function EditorStyles() {
         transform: scale(1.05);
       }
       .diff-action-reject {
-        color: rgba(255, 255, 255, 0.6);
-        border: 1px solid rgba(255, 255, 255, 0.1);
+        color: var(--text-secondary);
+        border: 1px solid var(--border-default);
       }
       .diff-action-reject:hover {
         background: rgba(239, 68, 68, 0.2);
@@ -506,20 +506,20 @@ export function EditorStyles() {
         line-height: 1;
       }
       .inline-diff-accept {
-        background: rgba(255, 255, 255, 0.1);
-        color: rgba(255, 255, 255, 0.8);
+        background: var(--interactive-hover);
+        color: var(--text-secondary);
       }
       .inline-diff-accept:hover {
-        background: rgba(255, 255, 255, 0.9);
-        color: rgba(0, 0, 0, 0.8);
+        background: var(--text-primary);
+        color: var(--background);
       }
       .inline-diff-reject {
-        background: rgba(255, 255, 255, 0.05);
-        color: rgba(255, 255, 255, 0.5);
+        background: var(--border-subtle);
+        color: var(--text-muted);
       }
       .inline-diff-reject:hover {
-        background: rgba(255, 255, 255, 0.3);
-        color: rgba(255, 255, 255, 0.9);
+        background: var(--text-muted);
+        color: var(--text-primary);
       }
     `}</style>
   );

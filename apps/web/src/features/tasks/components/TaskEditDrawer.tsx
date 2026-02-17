@@ -82,11 +82,11 @@ export function TaskEditDrawer({
           <DrawerHeader className='px-4 pb-3 pt-1'>
             <button
               onClick={onClose}
-              className='w-8 h-8 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 transition-colors'
+              className='w-8 h-8 rounded-full bg-interactive-hover flex items-center justify-center hover:bg-interactive-active transition-colors'
             >
-              <X className='w-4 h-4 text-white/70' />
+              <X className='w-4 h-4 text-text-secondary' />
             </button>
-            <span className='text-white text-[17px] font-semibold'>
+            <span className='text-text-primary text-[17px] font-semibold'>
               {editingTask ? 'Edit Task' : 'New Task'}
             </span>
             <button
@@ -94,7 +94,7 @@ export function TaskEditDrawer({
               disabled={!formTitle.trim() || saving}
               className='w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center disabled:opacity-50 hover:bg-blue-600 transition-colors'
             >
-              <Check className='w-5 h-5 text-white' />
+              <Check className='w-5 h-5 text-text-primary' />
             </button>
           </DrawerHeader>
 
@@ -135,7 +135,7 @@ export function TaskEditDrawer({
                 <GlassCard className='rounded-xl overflow-hidden'>
                   <button
                     onClick={onDelete}
-                    className='w-full py-4 text-red-400 text-[15px] font-medium flex items-center justify-center gap-2 hover:bg-white/5 transition-colors'
+                    className='w-full py-4 text-red-600 dark:text-red-400 text-[15px] font-medium flex items-center justify-center gap-2 hover:bg-surface-primary transition-colors'
                   >
                     <Trash2 className='w-4 h-4' />
                     Delete Task

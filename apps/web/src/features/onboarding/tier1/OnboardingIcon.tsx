@@ -166,7 +166,7 @@ export function OnboardingIcon({
           <div className='flex-1 flex flex-col'>
             {/* Title */}
             <div className='text-center space-y-3 mb-8'>
-              <h1 className='text-3xl md:text-4xl font-bold text-white leading-tight'>
+              <h1 className='text-3xl md:text-4xl font-bold text-text-primary leading-tight'>
                 Add a profile picture
               </h1>
               <SubText>
@@ -186,11 +186,11 @@ export function OnboardingIcon({
                     className='object-cover'
                   />
                 ) : (
-                  <div className='w-full h-full bg-white/5 flex items-center justify-center'>
+                  <div className='w-full h-full bg-surface-primary flex items-center justify-center'>
                     {generating ? (
-                      <div className='w-8 h-8 border-2 border-white/20 border-t-white rounded-full animate-spin' />
+                      <div className='w-8 h-8 border-2 border-interactive-active border-t-text-primary rounded-full animate-spin' />
                     ) : (
-                      <User className='size-16 md:size-20 text-white/40' />
+                      <User className='size-16 md:size-20 text-text-muted' />
                     )}
                   </div>
                 )}
@@ -211,7 +211,7 @@ export function OnboardingIcon({
                 type='button'
                 onClick={() => fileInputRef.current?.click()}
                 disabled={uploading || loading || generating}
-                className='w-full py-2 px-1 backdrop-blur-xl text-white rounded-3xl hover:border-white/15 transition-all duration-300 shadow-[0_8px_32px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.12)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.25),inset_0_1px_0_rgba(255,255,255,0.18)] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center justify-center gap-2 font-medium'
+                className='w-full py-2 px-1 dark:backdrop-blur-xl text-text-primary rounded-3xl hover:border-border-default transition-all duration-300 shadow-card hover:shadow-card-hover disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center justify-center gap-2 font-medium'
               >
                 <Upload className='size-4' />
                 {uploading ? 'Uploading...' : 'Upload Photo'}
@@ -220,8 +220,10 @@ export function OnboardingIcon({
 
             {/* Error Messages */}
             {(error || localError) && (
-              <div className='mt-4 bg-red-900/30 border border-red-500/50 rounded-lg p-4 backdrop-blur-sm max-w-md mx-auto'>
-                <p className='text-red-300 text-sm'>{error || localError}</p>
+              <div className='mt-4 bg-red-900/30 border border-red-500/50 rounded-lg p-4 dark:backdrop-blur-sm max-w-md mx-auto'>
+                <p className='text-red-600 dark:text-red-300 text-sm'>
+                  {error || localError}
+                </p>
               </div>
             )}
           </div>

@@ -111,7 +111,7 @@ export default function WorkspaceActivityDrawer({
                             }`}
                             title={profile.name || 'Unknown'}
                           >
-                            <Avatar className='h-8 w-8 border border-white/20 bg-white/10'>
+                            <Avatar className='h-8 w-8 border border-border-default bg-interactive-hover'>
                               {profile.avatar_url ? (
                                 <AvatarImage
                                   src={profile.avatar_url}
@@ -133,7 +133,7 @@ export default function WorkspaceActivityDrawer({
             </div>
 
             {/* View Mode Tabs */}
-            <div className='flex gap-1 bg-white/[0.03] rounded-xl p-1'>
+            <div className='flex gap-1 bg-surface-primary rounded-xl p-1'>
               {VIEW_TABS.map(tab => (
                 <button
                   key={tab.key}
@@ -141,8 +141,8 @@ export default function WorkspaceActivityDrawer({
                   className={cn(
                     'flex-1 px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-200',
                     viewMode === tab.key
-                      ? 'bg-white/10 text-white shadow-sm'
-                      : 'text-white/40 hover:text-white/60 hover:bg-white/[0.03]'
+                      ? 'bg-interactive-hover text-text-primary shadow-sm'
+                      : 'text-text-muted hover:text-text-secondary hover:bg-surface-primary'
                   )}
                 >
                   {tab.label}

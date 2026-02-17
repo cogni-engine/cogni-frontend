@@ -59,16 +59,16 @@ export default function AcceptOrganizationInvitePage() {
   }, [token, router]);
 
   return (
-    <div className='min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-black flex items-center justify-center p-4'>
-      <div className='bg-white/10 backdrop-blur-lg border border-white/20 rounded-2xl p-8 max-w-md w-full shadow-2xl'>
+    <div className='min-h-screen bg-background flex items-center justify-center p-4'>
+      <div className='bg-card-bg dark:backdrop-blur-lg border border-card-border rounded-2xl p-8 max-w-md w-full shadow-card'>
         {status === 'checking' && (
           <div className='text-center space-y-4'>
             <Loader2 className='h-16 w-16 text-purple-400 animate-spin mx-auto' />
             <div>
-              <h2 className='text-2xl font-bold text-white mb-2'>
+              <h2 className='text-2xl font-bold text-text-primary mb-2'>
                 Checking Invitation
               </h2>
-              <p className='text-white/70'>Please wait...</p>
+              <p className='text-text-secondary'>Please wait...</p>
             </div>
           </div>
         )}
@@ -77,10 +77,12 @@ export default function AcceptOrganizationInvitePage() {
           <div className='text-center space-y-4'>
             <Loader2 className='h-16 w-16 text-blue-400 animate-spin mx-auto' />
             <div>
-              <h2 className='text-2xl font-bold text-white mb-2'>
+              <h2 className='text-2xl font-bold text-text-primary mb-2'>
                 Joining Organization
               </h2>
-              <p className='text-white/70'>This will only take a moment...</p>
+              <p className='text-text-secondary'>
+                This will only take a moment...
+              </p>
             </div>
           </div>
         )}
@@ -89,16 +91,16 @@ export default function AcceptOrganizationInvitePage() {
           <div className='text-center space-y-4'>
             <CheckCircle2 className='h-16 w-16 text-green-400 mx-auto' />
             <div>
-              <h2 className='text-2xl font-bold text-white mb-2'>
+              <h2 className='text-2xl font-bold text-text-primary mb-2'>
                 Welcome! 🎉
               </h2>
-              <p className='text-white/90'>
+              <p className='text-text-primary'>
                 You&apos;ve successfully joined{' '}
-                <span className='font-semibold text-purple-300'>
+                <span className='font-semibold text-purple-600 dark:text-purple-300'>
                   {organizationName}
                 </span>
               </p>
-              <p className='text-white/60 text-sm mt-4'>
+              <p className='text-text-secondary text-sm mt-4'>
                 Redirecting to your organizations...
               </p>
             </div>
@@ -120,12 +122,12 @@ export default function AcceptOrganizationInvitePage() {
           <div className='text-center space-y-4'>
             <XCircle className='h-16 w-16 text-red-400 mx-auto' />
             <div>
-              <h2 className='text-2xl font-bold text-white mb-2'>
+              <h2 className='text-2xl font-bold text-text-primary mb-2'>
                 Unable to Join
               </h2>
-              <p className='text-white/90 mb-4'>{error}</p>
+              <p className='text-text-primary mb-4'>{error}</p>
               <div className='space-y-2'>
-                <p className='text-white/60 text-sm'>
+                <p className='text-text-secondary text-sm'>
                   This invitation may have expired or already been used.
                 </p>
               </div>

@@ -39,7 +39,7 @@ export default function WorkspaceMembersPage() {
 
       <div className='h-full overflow-y-auto space-y-6 py-20 px-4'>
         <div className='flex items-center justify-between'>
-          <h2 className='text-xl font-semibold text-white'>Members</h2>
+          <h2 className='text-xl font-semibold text-text-primary'>Members</h2>
           <div className='flex items-center gap-2'>
             {canEdit && (
               <GlassButton
@@ -54,14 +54,14 @@ export default function WorkspaceMembersPage() {
               title='Invite'
               className='gap-2 px-4'
             >
-              <Plus className='w-5 h-5 text-white' />
+              <Plus className='w-5 h-5 text-text-primary' />
               Invite
             </GlassButton>
           </div>
         </div>
 
         {membersError && (
-          <div className='bg-red-500/10 border border-red-500/20 rounded-lg p-4 text-red-300'>
+          <div className='bg-red-500/10 border border-red-500/20 rounded-lg p-4 text-red-600 dark:text-red-300'>
             Failed to load members
           </div>
         )}

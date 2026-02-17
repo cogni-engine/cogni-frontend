@@ -391,7 +391,7 @@ export default function WorkspaceChatPage() {
     <div className='flex flex-col h-full relative'>
       {/* Error Display */}
       {error && (
-        <div className='px-4 py-2 mb-2 bg-white/8 backdrop-blur-xl border border-black rounded-4xl text-center text-sm text-white/80 shadow-[0_8px_32px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.12)]'>
+        <div className='px-4 py-2 mb-2 bg-surface-primary dark:backdrop-blur-xl border border-border-default rounded-4xl text-center text-sm text-text-secondary shadow-card'>
           {error}
         </div>
       )}
@@ -425,7 +425,7 @@ export default function WorkspaceChatPage() {
         ) : (
           <div className='flex-1 flex items-center justify-center'>
             <div className='text-center'>
-              <p className='text-gray-400 font-medium animate-pulse'>
+              <p className='text-text-muted font-medium animate-pulse'>
                 Connecting to real-time chat...
               </p>
             </div>
@@ -435,8 +435,8 @@ export default function WorkspaceChatPage() {
         {/* Loading indicator for older messages - appears at top when scrolling up */}
         {isLoadingMore && messages.length > 0 && (
           <div className='flex items-center justify-center py-4'>
-            <div className='flex items-center gap-2 text-gray-400 text-sm'>
-              <div className='animate-spin rounded-full h-4 w-4 border-b-2 border-gray-400'></div>
+            <div className='flex items-center gap-2 text-text-muted text-sm'>
+              <div className='animate-spin rounded-full h-4 w-4 border-b-2 border-text-muted'></div>
               <span>Loading older messages...</span>
             </div>
           </div>

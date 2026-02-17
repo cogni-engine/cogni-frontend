@@ -111,13 +111,13 @@ export const TimerDisplay: React.FC<TimerDisplayProps> = ({
 
   return (
     <div className='flex justify-start items-center my-6 px-2'>
-      <div className='bg-black/20 backdrop-blur-xl rounded-[20px] px-6 py-2 flex items-center justify-between min-w-[270px] border border-white/5 shadow-[0_8px_32px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.12)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.25),inset_0_1px_0_rgba(255,255,255,0.18)] transition-all duration-300'>
+      <div className='bg-surface-overlay dark:backdrop-blur-xl rounded-[20px] px-6 py-2 flex items-center justify-between min-w-[270px] border border-border-subtle shadow-card hover:shadow-card-hover transition-all duration-300'>
         {/* 左側: 時間表示 */}
         <div className='flex flex-col items-start'>
-          <div className='text-3xl font-light text-white tracking-tight'>
+          <div className='text-3xl font-light text-text-primary tracking-tight'>
             {timeDisplay}
           </div>
-          <div className='text-sm text-white/60 font-normal mt-1 px-2'>
+          <div className='text-sm text-text-secondary font-normal mt-1 px-2'>
             Timer
           </div>
         </div>

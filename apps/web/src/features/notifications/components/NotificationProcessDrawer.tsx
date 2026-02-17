@@ -341,12 +341,12 @@ export default function NotificationProcessDrawer({
 
           {/* Fixed Header - Title Section */}
           {currentNotification && (
-            <div className='px-6 py-3 border-b border-white/10 flex items-center justify-between'>
-              <h2 className='font-semibold text-lg text-white truncate flex-1'>
+            <div className='px-6 py-3 border-b border-border-default flex items-center justify-between'>
+              <h2 className='font-semibold text-lg text-text-primary truncate flex-1'>
                 {currentNotification.title}
               </h2>
               {notifications.length > 0 && (
-                <span className='text-sm text-white/40 ml-4 shrink-0'>
+                <span className='text-sm text-text-muted ml-4 shrink-0'>
                   {notifications.length} left
                 </span>
               )}
@@ -374,11 +374,11 @@ export default function NotificationProcessDrawer({
               >
                 {isLoading ? (
                   <div className='flex items-center justify-center py-12'>
-                    <Loader2 className='w-8 h-8 text-white/40 animate-spin' />
+                    <Loader2 className='w-8 h-8 text-text-muted animate-spin' />
                   </div>
                 ) : notifications.length === 0 ? (
                   <div className='flex items-center justify-center py-12'>
-                    <p className='text-white/60 text-center'>
+                    <p className='text-text-secondary text-center'>
                       No notifications
                     </p>
                   </div>
@@ -391,30 +391,30 @@ export default function NotificationProcessDrawer({
                         className={cn(
                           'w-full flex items-center gap-4',
                           'px-5 py-4 rounded-2xl',
-                          'border border-white/10 bg-white/[0.03]',
-                          'hover:bg-white/[0.06] hover:border-white/20',
+                          'border border-border-default bg-surface-primary',
+                          'hover:bg-surface-secondary hover:border-border-default',
                           'transition-all duration-200',
                           'text-left group'
                         )}
                       >
-                        <div className='w-10 h-10 rounded-xl bg-white/[0.08] flex items-center justify-center shrink-0'>
-                          <FileText className='w-5 h-5 text-white/60' />
+                        <div className='w-10 h-10 rounded-xl bg-surface-secondary flex items-center justify-center shrink-0'>
+                          <FileText className='w-5 h-5 text-text-secondary' />
                         </div>
                         <div className='flex-1 min-w-0'>
-                          <p className='text-base text-white font-medium truncate'>
+                          <p className='text-base text-text-primary font-medium truncate'>
                             {taskResult.result_title}
                           </p>
-                          <p className='text-xs text-white/40 mt-0.5'>
+                          <p className='text-xs text-text-muted mt-0.5'>
                             Tap to view
                           </p>
                         </div>
-                        <SquareArrowOutUpRight className='w-5 h-5 text-white/30 group-hover:text-white/60 transition-colors shrink-0' />
+                        <SquareArrowOutUpRight className='w-5 h-5 text-text-muted group-hover:text-text-secondary transition-colors shrink-0' />
                       </button>
                     )}
 
                     {/* Notification Body */}
                     {currentNotification.body && (
-                      <p className='text-base text-white/80'>
+                      <p className='text-base text-text-secondary'>
                         {currentNotification.body}
                       </p>
                     )}
@@ -431,12 +431,12 @@ export default function NotificationProcessDrawer({
                           <div className='flex items-center gap-2 min-w-0'>
                             <ChevronRight
                               className={cn(
-                                'w-4 h-4 text-white/50 shrink-0 transition-transform duration-200',
+                                'w-4 h-4 text-text-muted shrink-0 transition-transform duration-200',
                                 expandedNoteId ===
                                   currentNotification.note.id && 'rotate-90'
                               )}
                             />
-                            <span className='text-sm text-white/90 truncate'>
+                            <span className='text-sm text-text-primary truncate'>
                               {currentNotification.note.title ||
                                 'Untitled Note'}
                             </span>
@@ -447,7 +447,7 @@ export default function NotificationProcessDrawer({
                           <div className='mt-4 max-h-[40vh] overflow-y-auto'>
                             {isLoadingNote ? (
                               <div className='flex items-center justify-center py-4'>
-                                <Loader2 className='w-5 h-5 text-white/40 animate-spin' />
+                                <Loader2 className='w-5 h-5 text-text-muted animate-spin' />
                               </div>
                             ) : (
                               <div className='prose prose-invert prose-sm max-w-none'>
@@ -474,7 +474,7 @@ export default function NotificationProcessDrawer({
               >
                 {hasReactionChoices && (
                   <div className='space-y-3'>
-                    <p className='text-sm text-white/50 mb-4'>
+                    <p className='text-sm text-text-muted mb-4'>
                       How would you like to respond?
                     </p>
                     {currentNotification.reaction_choices!.map(
@@ -485,13 +485,13 @@ export default function NotificationProcessDrawer({
                           disabled={isProcessing}
                           className={cn(
                             'w-full px-5 py-3.5 rounded-2xl text-left',
-                            'border border-white/10 bg-white/[0.03]',
-                            'hover:bg-white/[0.08] hover:border-white/20',
+                            'border border-border-default bg-surface-primary',
+                            'hover:bg-surface-secondary hover:border-border-default',
                             'active:scale-[0.98]',
                             'transition-all duration-200',
-                            'text-sm text-white/90',
+                            'text-sm text-text-primary',
                             selectedChoice === choice &&
-                              'bg-white/10 border-white/30',
+                              'bg-interactive-hover border-border-default',
                             isProcessing && 'opacity-50 pointer-events-none'
                           )}
                         >
@@ -513,11 +513,11 @@ export default function NotificationProcessDrawer({
                       disabled={isProcessing}
                       className={cn(
                         'w-full px-5 py-3.5 rounded-2xl text-left',
-                        'border border-dashed border-white/10 bg-transparent',
-                        'hover:bg-white/[0.04] hover:border-white/20',
+                        'border border-dashed border-border-default bg-transparent',
+                        'hover:bg-surface-primary hover:border-border-default',
                         'active:scale-[0.98]',
                         'transition-all duration-200',
-                        'text-sm text-white/50',
+                        'text-sm text-text-muted',
                         'flex items-center gap-2',
                         isProcessing && 'opacity-50 pointer-events-none'
                       )}
@@ -544,10 +544,10 @@ export default function NotificationProcessDrawer({
                   rows={4}
                   className={cn(
                     'w-full px-5 py-4',
-                    'bg-white/[0.03] rounded-2xl',
-                    'border border-white/5',
-                    'text-white placeholder-white/25',
-                    'focus:outline-none focus:border-white/10',
+                    'bg-surface-primary rounded-2xl',
+                    'border border-border-subtle',
+                    'text-text-primary placeholder-text-muted',
+                    'focus:outline-none focus:border-border-default',
                     'resize-none transition-all duration-200',
                     'overflow-hidden'
                   )}
@@ -558,7 +558,7 @@ export default function NotificationProcessDrawer({
           </DrawerBody>
 
           {notifications.length > 0 && (
-            <DrawerFooter className='sticky bottom-0 bg-black/80 backdrop-blur-md z-10'>
+            <DrawerFooter className='sticky bottom-0 bg-dialog-overlay dark:backdrop-blur-md z-10'>
               {drawerMode === 'notification' ? (
                 <div className='flex gap-3 w-full'>
                   <GlassButton
@@ -651,7 +651,7 @@ export default function NotificationProcessDrawer({
           <div
             className={cn(
               'fixed inset-0 z-10000',
-              'bg-black/65 backdrop-blur-xl',
+              'bg-dialog-overlay dark:backdrop-blur-xl',
               'transition-all duration-300 ease-out',
               isAnimatingIn
                 ? 'opacity-100 translate-y-0'
@@ -666,7 +666,7 @@ export default function NotificationProcessDrawer({
               </div>
             </div>
 
-            <div className='absolute top-0 left-0 right-0 h-32 bg-linear-to-b from-black via-black/50 to-transparent pointer-events-none z-10' />
+            <div className='absolute top-0 left-0 right-0 h-32 bg-linear-to-b from-background via-background/50 to-transparent pointer-events-none z-10' />
 
             <header
               className={cn(
@@ -686,7 +686,7 @@ export default function NotificationProcessDrawer({
                 <X className='w-5 h-5' />
               </GlassButton>
 
-              <h2 className='font-semibold text-lg text-white truncate flex-1 text-center mx-4'>
+              <h2 className='font-semibold text-lg text-text-primary truncate flex-1 text-center mx-4'>
                 {taskResult.result_title}
               </h2>
 

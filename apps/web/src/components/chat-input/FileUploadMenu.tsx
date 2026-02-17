@@ -115,7 +115,7 @@ export default function FileUploadMenu({
             setIsOpen(true);
           }}
           disabled={disabled}
-          className='flex h-[52px] w-[52px] items-center justify-center rounded-full bg-white/3 backdrop-blur-md text-white/80 border border-black transition-all duration-300 shadow-[0_8px_32px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.12)] hover:bg-white/15 hover:text-white hover:shadow-[0_12px_40px_rgba(0,0,0,0.25),inset_0_1px_0_rgba(255,255,255,0.18)] disabled:opacity-50 disabled:cursor-not-allowed'
+          className='flex h-[52px] w-[52px] items-center justify-center rounded-full bg-surface-primary dark:backdrop-blur-md text-text-secondary border border-border-default transition-all duration-300 shadow-card hover:bg-interactive-hover hover:text-text-primary hover:shadow-card-hover disabled:opacity-50 disabled:cursor-not-allowed'
           aria-label='Add files'
         >
           <svg
@@ -166,9 +166,9 @@ export default function FileUploadMenu({
                         type='button'
                         onClick={handleNativeImagePick}
                         disabled={disabled}
-                        className='flex items-center gap-4 w-full px-4 py-3 rounded-xl bg-white/5 text-white/90 transition-all duration-200 hover:bg-white/10 active:bg-white/15 disabled:opacity-50 disabled:cursor-not-allowed'
+                        className='flex items-center gap-4 w-full px-4 py-3 rounded-xl bg-surface-primary text-text-primary transition-all duration-200 hover:bg-interactive-hover active:bg-interactive-active disabled:opacity-50 disabled:cursor-not-allowed'
                       >
-                        <div className='flex h-10 w-10 items-center justify-center rounded-full bg-white/10'>
+                        <div className='flex h-10 w-10 items-center justify-center rounded-full bg-interactive-hover'>
                           <ImageIcon className='h-5 w-5' />
                         </div>
                         <span className='text-[17px]'>Choose from library</span>
@@ -177,9 +177,9 @@ export default function FileUploadMenu({
                         type='button'
                         onClick={handleNativeCamera}
                         disabled={disabled}
-                        className='flex items-center gap-4 w-full px-4 py-3 rounded-xl bg-white/5 text-white/90 transition-all duration-200 hover:bg-white/10 active:bg-white/15 disabled:opacity-50 disabled:cursor-not-allowed'
+                        className='flex items-center gap-4 w-full px-4 py-3 rounded-xl bg-surface-primary text-text-primary transition-all duration-200 hover:bg-interactive-hover active:bg-interactive-active disabled:opacity-50 disabled:cursor-not-allowed'
                       >
-                        <div className='flex h-10 w-10 items-center justify-center rounded-full bg-white/10'>
+                        <div className='flex h-10 w-10 items-center justify-center rounded-full bg-interactive-hover'>
                           <Camera className='h-5 w-5' />
                         </div>
                         <span className='text-[17px]'>Take photo</span>
@@ -191,7 +191,7 @@ export default function FileUploadMenu({
                       type='button'
                       onClick={handleNativeFilePick}
                       disabled={disabled}
-                      className='flex items-center gap-4 w-full px-4 py-3 rounded-xl bg-white/5 text-white/90 transition-all duration-200 hover:bg-white/10 active:bg-white/15 disabled:opacity-50 disabled:cursor-not-allowed'
+                      className='flex items-center gap-4 w-full px-4 py-3 rounded-xl bg-surface-primary text-text-primary transition-all duration-200 hover:bg-interactive-hover active:bg-interactive-active disabled:opacity-50 disabled:cursor-not-allowed'
                     >
                       <div className='flex h-10 w-10 items-center justify-center rounded-full bg-white/10'>
                         <FileIcon className='h-5 w-5' />
@@ -206,7 +206,7 @@ export default function FileUploadMenu({
                     type='button'
                     onClick={() => triggerFileInput('image')}
                     disabled={disabled}
-                    className='flex items-center gap-4 w-full px-4 py-3 rounded-xl bg-white/5 text-white/90 transition-all duration-200 hover:bg-white/10 active:bg-white/15 disabled:opacity-50 disabled:cursor-not-allowed'
+                    className='flex items-center gap-4 w-full px-4 py-3 rounded-xl bg-surface-primary text-text-primary transition-all duration-200 hover:bg-interactive-hover active:bg-interactive-active disabled:opacity-50 disabled:cursor-not-allowed'
                   >
                     <div className='flex h-10 w-10 items-center justify-center rounded-full bg-white/10'>
                       <ImageIcon className='h-5 w-5' />
@@ -217,7 +217,7 @@ export default function FileUploadMenu({
                     type='button'
                     onClick={() => triggerFileInput('file')}
                     disabled={disabled}
-                    className='flex items-center gap-4 w-full px-4 py-3 rounded-xl bg-white/5 text-white/90 transition-all duration-200 hover:bg-white/10 active:bg-white/15 disabled:opacity-50 disabled:cursor-not-allowed'
+                    className='flex items-center gap-4 w-full px-4 py-3 rounded-xl bg-surface-primary text-text-primary transition-all duration-200 hover:bg-interactive-hover active:bg-interactive-active disabled:opacity-50 disabled:cursor-not-allowed'
                   >
                     <div className='flex h-10 w-10 items-center justify-center rounded-full bg-white/10'>
                       <FileIcon className='h-5 w-5' />

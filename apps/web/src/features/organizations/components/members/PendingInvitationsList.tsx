@@ -22,16 +22,18 @@ export function PendingInvitationsList({
 
   return (
     <div className='mt-8'>
-      <h3 className='text-lg font-semibold text-white mb-4'>
+      <h3 className='text-lg font-semibold text-text-primary mb-4'>
         Pending Invitations
       </h3>
 
       {isLoading ? (
         <div className='flex justify-center py-8'>
-          <Loader2 className='h-6 w-6 text-white/40 animate-spin' />
+          <Loader2 className='h-6 w-6 text-text-muted animate-spin' />
         </div>
       ) : pendingInvitations.length === 0 ? (
-        <p className='text-white/40 text-center py-8'>No pending invitations</p>
+        <p className='text-text-muted text-center py-8'>
+          No pending invitations
+        </p>
       ) : (
         <div className='space-y-2'>
           {pendingInvitations.map(invitation => (

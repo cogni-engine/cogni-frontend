@@ -46,7 +46,7 @@ export function OnboardingName({
           <div className='space-y-6 flex-1'>
             {/* Title */}
             <div className='text-center space-y-3'>
-              <h1 className='text-3xl md:text-4xl font-bold text-white leading-tight'>
+              <h1 className='text-3xl md:text-4xl font-bold text-text-primary leading-tight'>
                 What&apos;s your
                 <br />
                 preferred name?
@@ -60,7 +60,7 @@ export function OnboardingName({
             {/* Input Field */}
             <div className='space-y-2 mt-12'>
               <div className='relative pb-6'>
-                <div className='flex items-center gap-4 border-b border-white pb-2 focus-within:border-white transition-colors'>
+                <div className='flex items-center gap-4 border-b border-border-default pb-2 focus-within:border-border-default transition-colors'>
                   <input
                     ref={inputRef}
                     id='name'
@@ -72,14 +72,14 @@ export function OnboardingName({
                         window.scrollTo(0, 0);
                       }, 100);
                     }}
-                    className='flex-1 bg-transparent text-white text-lg outline-none border-none autofill:bg-transparent autofill:text-white text-center'
+                    className='flex-1 bg-transparent text-text-primary text-lg outline-none border-none autofill:bg-transparent autofill:text-text-primary text-center'
                     required
                     minLength={2}
                     maxLength={MAX_NAME_LENGTH}
                     autoComplete='off'
                   />
                 </div>
-                <span className='absolute bottom-0 right-0 text-sm text-gray-400'>
+                <span className='absolute bottom-0 right-0 text-sm text-text-muted'>
                   {characterCount}/{MAX_NAME_LENGTH}
                 </span>
               </div>
@@ -87,8 +87,10 @@ export function OnboardingName({
 
             {/* Error Message */}
             {error && (
-              <div className='bg-red-900/30 border border-red-500/50 rounded-lg p-4 backdrop-blur-sm'>
-                <p className='text-red-300 text-sm'>{error}</p>
+              <div className='bg-red-900/30 border border-red-500/50 rounded-lg p-4 dark:backdrop-blur-sm'>
+                <p className='text-red-600 dark:text-red-300 text-sm'>
+                  {error}
+                </p>
               </div>
             )}
           </div>

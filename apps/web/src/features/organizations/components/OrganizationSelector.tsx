@@ -44,14 +44,14 @@ export function OrganizationSelector({
   if (organizations.length <= 1) {
     return (
       <GlassCard className='flex items-center gap-3 px-4 py-2.5 rounded-3xl w-full md:w-[400px]'>
-        <div className='flex items-center justify-center w-8 h-8 rounded-2xl bg-white/5'>
-          <Building2 className='w-4 h-4 text-blue-400' />
+        <div className='flex items-center justify-center w-8 h-8 rounded-2xl bg-surface-primary'>
+          <Building2 className='w-4 h-4 text-blue-600 dark:text-blue-400' />
         </div>
         <div className='text-left'>
-          <div className='text-sm font-semibold text-white'>
+          <div className='text-sm font-semibold text-text-primary'>
             {currentOrg.organization.name}
           </div>
-          <div className='text-xs text-white/50 capitalize'>
+          <div className='text-xs text-text-muted capitalize'>
             {currentOrg.role}
           </div>
         </div>
@@ -64,21 +64,21 @@ export function OrganizationSelector({
       {/* Organization Display / Selector */}
       <GlassCard
         onClick={() => setIsOpen(!isOpen)}
-        className='flex items-center gap-3 px-4 py-2.5 rounded-3xl cursor-pointer group transition-all duration-200 hover:bg-white/5 w-full'
+        className='flex items-center gap-3 px-4 py-2.5 rounded-3xl cursor-pointer group transition-all duration-200 hover:bg-surface-primary w-full'
       >
-        <div className='flex items-center justify-center w-8 h-8 rounded-2xl bg-white/5'>
-          <Building2 className='w-4 h-4 text-blue-400' />
+        <div className='flex items-center justify-center w-8 h-8 rounded-2xl bg-surface-primary'>
+          <Building2 className='w-4 h-4 text-blue-600 dark:text-blue-400' />
         </div>
         <div className='flex-1 text-left'>
-          <div className='text-sm font-semibold text-white'>
+          <div className='text-sm font-semibold text-text-primary'>
             {currentOrg.organization.name}
           </div>
-          <div className='text-xs text-white/50 capitalize'>
+          <div className='text-xs text-text-muted capitalize'>
             {currentOrg.role}
           </div>
         </div>
         <ChevronDown
-          className={`w-4 h-4 text-gray-400 transition-transform duration-200 group-hover:text-white ${
+          className={`w-4 h-4 text-text-muted transition-transform duration-200 group-hover:text-text-primary ${
             isOpen ? 'rotate-180' : ''
           }`}
         />
@@ -87,7 +87,7 @@ export function OrganizationSelector({
       {/* Dropdown Menu */}
       {isOpen && (
         <div className='absolute z-50 left-0 right-0 mt-2 animate-in fade-in-0 slide-in-from-top-2 duration-200'>
-          <GlassCard className='rounded-3xl p-2 bg-white/8 backdrop-blur-xl border border-white/10'>
+          <GlassCard className='rounded-3xl p-2 bg-surface-secondary dark:backdrop-blur-xl border border-border-default'>
             <div className='space-y-1'>
               {organizations.map(org => {
                 const isSelected =
@@ -103,25 +103,27 @@ export function OrganizationSelector({
                     className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-2xl transition-colors ${
                       isSelected
                         ? 'bg-blue-500/20 hover:bg-blue-500/25'
-                        : 'hover:bg-white/10'
+                        : 'hover:bg-interactive-hover'
                     }`}
                   >
                     <div
                       className={`flex items-center justify-center w-8 h-8 rounded-2xl ${
-                        isSelected ? 'bg-blue-500/20' : 'bg-white/5'
+                        isSelected ? 'bg-blue-500/20' : 'bg-surface-primary'
                       }`}
                     >
-                      <Building2 className='w-4 h-4 text-blue-400' />
+                      <Building2 className='w-4 h-4 text-blue-600 dark:text-blue-400' />
                     </div>
                     <div className='flex-1 text-left'>
-                      <div className='text-sm font-semibold text-white'>
+                      <div className='text-sm font-semibold text-text-primary'>
                         {org.organization.name}
                       </div>
-                      <div className='text-xs text-white/50 capitalize'>
+                      <div className='text-xs text-text-muted capitalize'>
                         {org.role}
                       </div>
                     </div>
-                    {isSelected && <Check className='w-4 h-4 text-blue-400' />}
+                    {isSelected && (
+                      <Check className='w-4 h-4 text-blue-600 dark:text-blue-400' />
+                    )}
                   </button>
                 );
               })}

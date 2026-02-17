@@ -250,19 +250,19 @@ export function OnboardingLoadingReady({
         <div className='text-center space-y-3 mt-12 animate-in fade-in duration-700 delay-200'>
           {isComplete ? (
             <>
-              <h2 className='text-2xl md:text-3xl font-semibold text-white'>
+              <h2 className='text-2xl md:text-3xl font-semibold text-text-primary'>
                 You&apos;re all set!
               </h2>
               {userName && (
-                <p className='text-lg text-gray-400'>Welcome, {userName}</p>
+                <p className='text-lg text-text-muted'>Welcome, {userName}</p>
               )}
             </>
           ) : (
             <>
-              <h2 className='text-2xl md:text-3xl font-semibold text-white'>
+              <h2 className='text-2xl md:text-3xl font-semibold text-text-primary'>
                 {getLoadingMessage(progress)}
               </h2>
-              <p className='text-lg text-gray-400'>
+              <p className='text-lg text-text-muted'>
                 This will only take a moment
               </p>
             </>
@@ -275,7 +275,7 @@ export function OnboardingLoadingReady({
             {[...Array(5)].map((_, i) => (
               <div
                 key={i}
-                className='w-2 h-2 rounded-full bg-white/20'
+                className='w-2 h-2 rounded-full bg-interactive-active'
                 style={{
                   animation: `pulse 1.5s ease-in-out ${i * 0.15}s infinite`,
                 }}
@@ -286,13 +286,13 @@ export function OnboardingLoadingReady({
 
         {/* Error Message */}
         {error && (
-          <div className='mt-8 bg-red-900/30 border border-red-500/50 rounded-lg p-4 backdrop-blur-sm max-w-md text-center'>
-            <p className='text-red-300 text-sm mb-3'>
+          <div className='mt-8 bg-red-900/30 border border-red-500/50 rounded-lg p-4 dark:backdrop-blur-sm max-w-md text-center'>
+            <p className='text-red-600 dark:text-red-300 text-sm mb-3'>
               Something went wrong. Please try again.
             </p>
             <button
               onClick={() => window.location.reload()}
-              className='text-sm text-white/70 hover:text-white underline'
+              className='text-sm text-text-secondary hover:text-text-primary underline'
             >
               Retry
             </button>

@@ -86,11 +86,11 @@ export function QuestionCard({
     <div className='flex flex-col h-full animate-in fade-in duration-500'>
       {/* Fixed Header: Title */}
       <div className='shrink-0 text-center space-y-3 mb-8'>
-        <h1 className='text-3xl md:text-4xl font-bold text-white leading-tight'>
+        <h1 className='text-3xl md:text-4xl font-bold text-text-primary leading-tight'>
           {config.title}
         </h1>
         {config.subtitle && (
-          <p className='text-lg md:text-xl text-gray-300 max-w-md mx-auto'>
+          <p className='text-lg md:text-xl text-text-secondary max-w-md mx-auto'>
             {config.subtitle}
           </p>
         )}
@@ -109,10 +109,10 @@ export function QuestionCard({
                     type='button'
                     onClick={() => handleSelect(option)}
                     disabled={loading}
-                    className={`w-full py-3 px-4 text-left rounded-xl bg-white/5 border transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed ${
+                    className={`w-full py-3 px-4 text-left rounded-xl bg-surface-primary border transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed ${
                       isSelected
-                        ? 'text-white border-white/50'
-                        : 'text-gray-300 border-transparent'
+                        ? 'text-text-primary border-border-default'
+                        : 'text-text-secondary border-transparent'
                     }`}
                   >
                     <span className='font-medium'>{option}</span>
@@ -133,10 +133,10 @@ export function QuestionCard({
                     type='button'
                     onClick={() => handleSelect(option)}
                     disabled={loading}
-                    className={`w-full py-3 px-4 text-left rounded-xl bg-white/5 border transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed ${
+                    className={`w-full py-3 px-4 text-left rounded-xl bg-surface-primary border transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed ${
                       isSelected
-                        ? 'text-white border-white/50'
-                        : 'text-gray-300 border-transparent'
+                        ? 'text-text-primary border-border-default'
+                        : 'text-text-secondary border-transparent'
                     }`}
                   >
                     <span className='font-medium'>{option}</span>
@@ -153,7 +153,7 @@ export function QuestionCard({
                 onChange={handleTextChange}
                 placeholder={config.placeholder}
                 disabled={loading}
-                className='w-full px-4 py-3 border border-white/20 rounded-lg bg-white/5 backdrop-blur-sm text-white placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all resize-none min-h-[120px]'
+                className='w-full px-4 py-3 border border-interactive-active rounded-lg bg-surface-primary dark:backdrop-blur-sm text-text-primary placeholder-text-muted focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all resize-none min-h-[120px]'
                 rows={5}
               />
             </div>
@@ -162,8 +162,8 @@ export function QuestionCard({
 
         {/* Error Message */}
         {error && (
-          <div className='mt-4 bg-red-900/30 border border-red-500/50 rounded-lg p-4 backdrop-blur-sm'>
-            <p className='text-red-300 text-sm'>{error}</p>
+          <div className='mt-4 bg-red-900/30 border border-red-500/50 rounded-lg p-4 dark:backdrop-blur-sm'>
+            <p className='text-red-600 dark:text-red-300 text-sm'>{error}</p>
           </div>
         )}
       </div>

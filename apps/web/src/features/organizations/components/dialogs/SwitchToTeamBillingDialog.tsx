@@ -60,10 +60,10 @@ export function SwitchToTeamBillingDialog({
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className='bg-gray-900 border-white/10 text-white max-w-4xl max-h-[90vh] overflow-y-auto'>
+      <DialogContent className='bg-dialog-bg border-border-default text-text-primary max-w-4xl max-h-[90vh] overflow-y-auto'>
         <DialogHeader>
           <DialogTitle>Switch to Team Billing</DialogTitle>
-          <DialogDescription className='text-white/60'>
+          <DialogDescription className='text-text-secondary'>
             Switching to team billing will:
             <ul className='list-disc list-inside mt-2 space-y-1'>
               <li>

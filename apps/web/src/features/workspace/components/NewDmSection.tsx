@@ -58,8 +58,8 @@ export default function NewDmSection({ workspaces }: NewDmSectionProps) {
   return (
     <div className='px-4 pb-4'>
       <div className='flex items-center gap-2 mb-3 px-1'>
-        <MessageCircle className='w-3.5 h-3.5 text-gray-500' />
-        <h3 className='text-xs font-medium text-gray-500 uppercase tracking-wider'>
+        <MessageCircle className='w-3.5 h-3.5 text-text-muted' />
+        <h3 className='text-xs font-medium text-text-muted uppercase tracking-wider'>
           New Message
         </h3>
       </div>
@@ -79,25 +79,25 @@ export default function NewDmSection({ workspaces }: NewDmSectionProps) {
               className='flex flex-col items-center gap-1.5 min-w-[60px] max-w-[60px] group disabled:opacity-50'
             >
               <div className='relative'>
-                <Avatar className='h-12 w-12 border border-white/10 bg-white/5 transition-all duration-200 group-hover:border-white/25 group-hover:scale-105'>
+                <Avatar className='h-12 w-12 border border-border-default bg-surface-primary transition-all duration-200 group-hover:border-border-default group-hover:scale-105'>
                   {profile?.avatar_url ? (
                     <AvatarImage
                       src={profile.avatar_url}
                       alt={profile.name ?? 'User'}
                     />
                   ) : (
-                    <AvatarFallback className='bg-white/5 text-white/70 text-sm'>
+                    <AvatarFallback className='bg-surface-primary text-text-secondary text-sm'>
                       {initial || <User className='w-4 h-4' />}
                     </AvatarFallback>
                   )}
                 </Avatar>
                 {isLoading && (
-                  <div className='absolute inset-0 flex items-center justify-center bg-black/40 rounded-full'>
-                    <Loader2 className='w-4 h-4 text-white animate-spin' />
+                  <div className='absolute inset-0 flex items-center justify-center bg-dialog-overlay rounded-full'>
+                    <Loader2 className='w-4 h-4 text-text-primary animate-spin' />
                   </div>
                 )}
               </div>
-              <span className='text-[11px] text-gray-400 truncate w-full text-center leading-tight group-hover:text-white/70 transition-colors'>
+              <span className='text-[11px] text-text-muted truncate w-full text-center leading-tight group-hover:text-text-secondary transition-colors'>
                 {profile?.name ?? 'Unknown'}
               </span>
             </button>

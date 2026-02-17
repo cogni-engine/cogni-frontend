@@ -68,7 +68,7 @@ export default function MoveFolderDrawer({
         <DrawerHeader className='p-4'>
           <DrawerTitle>Move to Folder</DrawerTitle>
           <DrawerClose>
-            <X className='w-5 h-5 text-gray-400' />
+            <X className='w-5 h-5 text-text-muted' />
           </DrawerClose>
         </DrawerHeader>
 
@@ -76,10 +76,10 @@ export default function MoveFolderDrawer({
         <DrawerBody>
           {/* Create New Folder */}
           {isCreating ? (
-            <div className='mb-4 p-3 bg-white/5 rounded-lg border border-white/10'>
+            <div className='mb-4 p-3 bg-surface-primary rounded-lg border border-border-default'>
               <div className='flex items-center gap-2 mb-3'>
                 <FolderIcon className='w-5 h-5 text-yellow-400' />
-                <span className='text-sm font-medium text-white'>
+                <span className='text-sm font-medium text-text-primary'>
                   New Folder
                 </span>
               </div>
@@ -97,12 +97,12 @@ export default function MoveFolderDrawer({
                   }}
                   placeholder='Folder name...'
                   autoFocus
-                  className='flex-1 px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white placeholder-gray-500 outline-none focus:border-blue-400 transition-colors'
+                  className='flex-1 px-3 py-2 bg-surface-primary border border-border-default rounded-lg text-text-primary placeholder-text-muted outline-none focus:border-blue-400 transition-colors'
                 />
                 <button
                   onClick={handleCreateFolder}
                   disabled={!newFolderName.trim() || isCreatingFolder}
-                  className='px-4 py-2 bg-blue-500 hover:bg-blue-600 disabled:bg-gray-600 disabled:cursor-not-allowed text-white rounded-lg font-medium transition-colors flex items-center gap-2'
+                  className='px-4 py-2 bg-blue-500 hover:bg-blue-600 disabled:bg-gray-600 disabled:cursor-not-allowed text-white dark:text-white rounded-lg font-medium transition-colors flex items-center gap-2'
                 >
                   {isCreatingFolder ? (
                     <div className='animate-spin rounded-full h-4 w-4 border-b-2 border-white' />
@@ -118,7 +118,7 @@ export default function MoveFolderDrawer({
                     setIsCreating(false);
                     setNewFolderName('');
                   }}
-                  className='px-4 py-2 bg-white/5 hover:bg-white/10 text-white rounded-lg font-medium transition-colors'
+                  className='px-4 py-2 bg-surface-primary hover:bg-interactive-hover text-text-primary rounded-lg font-medium transition-colors'
                 >
                   Cancel
                 </button>
@@ -127,12 +127,14 @@ export default function MoveFolderDrawer({
           ) : (
             <button
               onClick={() => setIsCreating(true)}
-              className='w-full mb-4 p-3 bg-white/5 hover:bg-white/10 rounded-lg border border-white/10 border-dashed transition-colors flex items-center gap-3'
+              className='w-full mb-4 p-3 bg-surface-primary hover:bg-interactive-hover rounded-lg border border-border-default border-dashed transition-colors flex items-center gap-3'
             >
               <div className='w-10 h-10 rounded-lg bg-blue-500/20 flex items-center justify-center'>
                 <Plus className='w-5 h-5 text-blue-400' />
               </div>
-              <span className='font-medium text-white'>Create New Folder</span>
+              <span className='font-medium text-text-primary'>
+                Create New Folder
+              </span>
             </button>
           )}
 
@@ -140,30 +142,30 @@ export default function MoveFolderDrawer({
           {currentFolderId !== null && (
             <button
               onClick={() => handleMove(null)}
-              className='w-full mb-2 p-3 bg-white/5 hover:bg-white/10 rounded-lg transition-colors flex items-center justify-between group'
+              className='w-full mb-2 p-3 bg-surface-primary hover:bg-interactive-hover rounded-lg transition-colors flex items-center justify-between group'
             >
               <div className='flex items-center gap-3'>
                 <div className='w-10 h-10 rounded-lg bg-blue-500/20 flex items-center justify-center'>
                   <FolderIcon className='w-5 h-5 text-blue-400' />
                 </div>
                 <div className='text-left'>
-                  <div className='font-medium text-white'>Notes</div>
-                  <div className='text-xs text-gray-400'>Default folder</div>
+                  <div className='font-medium text-text-primary'>Notes</div>
+                  <div className='text-xs text-text-muted'>Default folder</div>
                 </div>
               </div>
-              <div className='w-5 h-5 rounded-full border-2 border-white/20 group-hover:border-blue-400 transition-colors' />
+              <div className='w-5 h-5 rounded-full border-2 border-border-default group-hover:border-blue-400 transition-colors' />
             </button>
           )}
 
           {/* Show "All Notes" as disabled/info - not a move target */}
-          <div className='w-full mb-2 p-3 bg-white/5 rounded-lg opacity-50 cursor-not-allowed'>
+          <div className='w-full mb-2 p-3 bg-surface-primary rounded-lg opacity-50 cursor-not-allowed'>
             <div className='flex items-center gap-3'>
               <div className='w-10 h-10 rounded-lg bg-purple-500/20 flex items-center justify-center'>
                 <FolderOpen className='w-5 h-5 text-purple-400' />
               </div>
               <div className='text-left'>
-                <div className='font-medium text-white'>All Notes</div>
-                <div className='text-xs text-gray-400'>
+                <div className='font-medium text-text-primary'>All Notes</div>
+                <div className='text-xs text-text-muted'>
                   View only - not a folder
                 </div>
               </div>
@@ -182,7 +184,7 @@ export default function MoveFolderDrawer({
                   className={`w-full p-3 rounded-lg transition-colors flex items-center justify-between group ${
                     isCurrent
                       ? 'bg-blue-500/20 cursor-default'
-                      : 'bg-white/5 hover:bg-white/10'
+                      : 'bg-surface-primary hover:bg-interactive-hover'
                   }`}
                 >
                   <div className='flex items-center gap-3'>
@@ -198,17 +200,17 @@ export default function MoveFolderDrawer({
                       />
                     </div>
                     <div className='text-left'>
-                      <div className='font-medium text-white'>
+                      <div className='font-medium text-text-primary'>
                         {folder.title}
                       </div>
                     </div>
                   </div>
                   {isCurrent ? (
                     <div className='w-5 h-5 rounded-full bg-blue-500 flex items-center justify-center'>
-                      <Check className='w-3 h-3 text-white' />
+                      <Check className='w-3 h-3 text-text-primary' />
                     </div>
                   ) : (
-                    <div className='w-5 h-5 rounded-full border-2 border-white/20 group-hover:border-blue-400 transition-colors' />
+                    <div className='w-5 h-5 rounded-full border-2 border-border-default group-hover:border-blue-400 transition-colors' />
                   )}
                 </button>
               );
@@ -216,7 +218,7 @@ export default function MoveFolderDrawer({
           </div>
 
           {folders.length === 0 && currentFolderId === null && (
-            <div className='text-center py-8 text-gray-400'>
+            <div className='text-center py-8 text-text-muted'>
               <FolderIcon className='w-12 h-12 mx-auto mb-3 opacity-50' />
               <p className='text-sm'>No folders yet</p>
               <p className='text-xs mt-1'>

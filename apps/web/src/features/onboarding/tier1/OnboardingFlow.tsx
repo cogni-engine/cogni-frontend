@@ -330,9 +330,9 @@ export function OnboardingFlow({
             >
               <ChevronLeft className='size-6' />
             </GlassButton>
-            <div className='flex-1 h-1 bg-white/10 rounded-full overflow-hidden backdrop-blur-sm'>
+            <div className='flex-1 h-1 bg-interactive-hover rounded-full overflow-hidden dark:backdrop-blur-sm'>
               <div
-                className='h-full bg-white transition-all duration-500 ease-out'
+                className='h-full bg-text-primary transition-all duration-500 ease-out'
                 style={{ width: `${getProgress()}%` }}
               />
             </div>

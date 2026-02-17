@@ -47,13 +47,15 @@ export function DeleteAccountSection({
     <>
       <Card className='border border-red-500/30 bg-red-500/5'>
         <CardHeader>
-          <CardTitle className='text-red-200'>Danger zone</CardTitle>
+          <CardTitle className='text-red-700 dark:text-red-200'>
+            Danger zone
+          </CardTitle>
           <CardDescription>
             Permanently delete your account and all of your data.
           </CardDescription>
         </CardHeader>
         <CardContent className='flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between'>
-          <div className='text-sm text-white/70'>
+          <div className='text-sm text-text-secondary'>
             This action is irreversible. Once you delete your account, you will
             not be able to recover any of your data, including notes, tasks, and
             workspaces.
@@ -78,14 +80,16 @@ export function DeleteAccountSection({
             </DialogDescription>
           </DialogHeader>
           <div className='space-y-4'>
-            <p className='text-sm text-white/70'>Deleting your account will:</p>
-            <ul className='list-disc list-inside space-y-1 text-sm text-white/70 ml-4'>
+            <p className='text-sm text-text-secondary'>
+              Deleting your account will:
+            </p>
+            <ul className='list-disc list-inside space-y-1 text-sm text-text-secondary ml-4'>
               <li>Permanently delete all your notes and tasks</li>
               <li>Remove you from all workspaces</li>
               <li>Delete your profile and account data</li>
               <li>Ban your account from accessing the service</li>
             </ul>
-            <p className='text-sm text-red-300 font-medium'>
+            <p className='text-sm text-red-600 dark:text-red-300 font-medium'>
               This action is permanent and cannot be reversed.
             </p>
           </div>

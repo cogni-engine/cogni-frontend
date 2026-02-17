@@ -480,13 +480,13 @@ export default function CollaborativeNoteEditor({
   // Validate that noteId is a valid number
   if (!isValidId) {
     return (
-      <div className='flex flex-col h-full bg-linear-to-br from-slate-950 via-black to-slate-950 text-gray-100 items-center justify-center p-6'>
+      <div className='flex flex-col h-full bg-background text-text-primary items-center justify-center p-6'>
         <div className='bg-red-500/10 border border-red-500/20 rounded-lg p-6 text-red-300 max-w-md'>
           <h2 className='font-bold mb-2'>Invalid Note ID</h2>
           <p>The note ID must be a valid number.</p>
           <button
             onClick={() => router.push('/notes')}
-            className='mt-4 px-4 py-2 bg-white/10 rounded-lg hover:bg-white/20 transition'
+            className='mt-4 px-4 py-2 bg-interactive-hover rounded-lg hover:bg-surface-secondary transition'
           >
             Back to Notes
           </button>
@@ -502,13 +502,13 @@ export default function CollaborativeNoteEditor({
 
   if (error) {
     return (
-      <div className='flex flex-col h-full bg-linear-to-br from-slate-950 via-black to-slate-950 text-gray-100 items-center justify-center p-6'>
+      <div className='flex flex-col h-full bg-background text-text-primary items-center justify-center p-6'>
         <div className='bg-red-500/10 border border-red-500/20 rounded-lg p-6 text-red-300 max-w-md'>
           <h2 className='font-bold mb-2'>Error</h2>
           <p>{error}</p>
           <button
             onClick={() => router.push('/notes')}
-            className='mt-4 px-4 py-2 bg-white/10 rounded-lg hover:bg-white/20 transition'
+            className='mt-4 px-4 py-2 bg-interactive-hover rounded-lg hover:bg-surface-secondary transition'
           >
             Back to Notes
           </button>
@@ -519,13 +519,13 @@ export default function CollaborativeNoteEditor({
 
   if (!note && !loading) {
     return (
-      <div className='flex flex-col h-full bg-linear-to-br from-slate-950 via-black to-slate-950 text-gray-100 items-center justify-center p-6'>
+      <div className='flex flex-col h-full bg-background text-text-primary items-center justify-center p-6'>
         <div className='bg-yellow-500/10 border border-yellow-500/20 rounded-lg p-6 text-yellow-300 max-w-md'>
           <h2 className='font-bold mb-2'>Note Not Found</h2>
           <p>This note does not exist or you don&apos;t have access to it.</p>
           <button
             onClick={() => router.push('/notes')}
-            className='mt-4 px-4 py-2 bg-white/10 rounded-lg hover:bg-white/20 transition'
+            className='mt-4 px-4 py-2 bg-interactive-hover rounded-lg hover:bg-surface-secondary transition'
           >
             Back to Notes
           </button>
@@ -540,7 +540,7 @@ export default function CollaborativeNoteEditor({
   }
 
   return (
-    <div className='h-full bg-linear-to-br from-slate-950 via-black to-slate-950 text-gray-100 relative overflow-hidden animate-in fade-in duration-500'>
+    <div className='h-full bg-background text-text-primary relative overflow-hidden animate-in fade-in duration-500'>
       {/* Header + Toolbar - above layout gradient (z-50), no background */}
       <div className='absolute top-0 left-0 right-0 z-[60]'>
         <NoteEditorHeader

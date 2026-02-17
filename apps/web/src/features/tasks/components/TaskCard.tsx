@@ -31,7 +31,7 @@ export function TaskCard({ task, onEdit, onToggleActive }: TaskCardProps) {
             {formatTime(task.next_run_time)}
           </div>
           <div className='flex items-center gap-2 mt-1'>
-            <span className='text-white/50 text-sm'>
+            <span className='text-text-muted text-sm'>
               {task.title !== 'タスク' && task.title !== 'Task' && (
                 <>
                   {task.title.replace(/^タスク\s*-\s*/, '').trim()}
@@ -42,7 +42,7 @@ export function TaskCard({ task, onEdit, onToggleActive }: TaskCardProps) {
                 formatRecurrence(task.recurrence_pattern)}
             </span>
             {task.is_ai_task && (
-              <span className='px-1.5 py-0.5 text-[10px] font-medium text-blue-300/70 bg-blue-500/10 rounded'>
+              <span className='px-1.5 py-0.5 text-[10px] font-medium text-blue-600 dark:text-blue-300/70 bg-blue-500/10 rounded'>
                 AI
               </span>
             )}

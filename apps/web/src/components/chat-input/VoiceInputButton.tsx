@@ -237,7 +237,7 @@ export const VoiceInputButton = forwardRef<
       >
         <Icon
           className={`w-5 h-5 relative z-10 transition-colors duration-300 ${
-            isRecording ? 'text-white' : 'text-white/40'
+            isRecording ? 'text-text-primary' : 'text-text-muted'
           }`}
           style={isRecording ? { animationDuration: '1.5s' } : undefined}
         />

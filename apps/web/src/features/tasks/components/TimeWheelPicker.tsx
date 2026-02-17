@@ -81,7 +81,7 @@ export function TimeWheelPicker({ value, onChange }: TimeWheelPickerProps) {
   return (
     <div className='relative flex items-center justify-center gap-1 h-[220px]'>
       {/* Selection highlight */}
-      <div className='absolute left-4 right-4 h-[44px] bg-white/10 rounded-lg pointer-events-none z-0' />
+      <div className='absolute left-4 right-4 h-[44px] bg-interactive-hover rounded-lg pointer-events-none z-0' />
 
       {/* Hours */}
       <div
@@ -103,7 +103,7 @@ export function TimeWheelPicker({ value, onChange }: TimeWheelPickerProps) {
           <div
             key={idx}
             className={`h-[44px] flex items-center justify-center text-[22px] font-light snap-center transition-all duration-150 ${
-              h === value.hours ? 'text-white' : 'text-white/30'
+              h === value.hours ? 'text-text-primary' : 'text-text-muted'
             }`}
           >
             {h.toString().padStart(2, '0')}
@@ -112,7 +112,7 @@ export function TimeWheelPicker({ value, onChange }: TimeWheelPickerProps) {
       </div>
 
       {/* Separator */}
-      <div className='text-white text-[22px] font-light z-10'>:</div>
+      <div className='text-text-primary text-[22px] font-light z-10'>:</div>
 
       {/* Minutes */}
       <div
@@ -134,7 +134,7 @@ export function TimeWheelPicker({ value, onChange }: TimeWheelPickerProps) {
           <div
             key={idx}
             className={`h-[44px] flex items-center justify-center text-[22px] font-light snap-center transition-all duration-150 ${
-              m === value.minutes ? 'text-white' : 'text-white/30'
+              m === value.minutes ? 'text-text-primary' : 'text-text-muted'
             }`}
           >
             {m.toString().padStart(2, '0')}

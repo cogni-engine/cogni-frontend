@@ -13,6 +13,7 @@ import { AvatarCropDialog } from './components/AvatarCropDialog';
 import { AiSuggestionToggle } from './components/AiSuggestionToggle';
 import { DeleteAccountSection } from './components/DeleteAccountSection';
 import { PlatformInfoCard } from './components/PlatformInfoCard';
+import { ThemeToggle } from './components/ThemeToggle';
 import { useUserSettings } from './hooks/useUserSettings';
 import { useNativeImagePicker } from '@/hooks/useNativeImagePicker';
 import {
@@ -257,11 +258,11 @@ export default function UserSettingsClient() {
   return (
     <div className='flex h-full flex-col gap-6 overflow-auto p-6 py-20'>
       {isLoading ? (
-        <div className='flex flex-1 items-center justify-center text-white/60'>
+        <div className='flex flex-1 items-center justify-center text-text-secondary'>
           Loading your settings...
         </div>
       ) : !userId ? (
-        <div className='flex flex-1 items-center justify-center text-red-300'>
+        <div className='flex flex-1 items-center justify-center text-red-600 dark:text-red-300'>
           You need to be signed in to manage your settings.
         </div>
       ) : (
@@ -281,6 +282,8 @@ export default function UserSettingsClient() {
               onToggle={toggleAiSuggestion}
               saving={savingAiSuggestion}
             />
+
+            <ThemeToggle />
 
             <PlatformInfoCard />
           </div>
@@ -306,17 +309,19 @@ export default function UserSettingsClient() {
       {userId && (
         <>
           {/* Restart Tutorial Section */}
-          <div className='rounded-lg border border-white/10 bg-white/4 backdrop-blur-sm p-6 shadow-[0_8px_32px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.12)]'>
-            <h3 className='mb-2 text-lg font-medium text-white'>
+          <div className='rounded-lg border border-border-default bg-card-bg dark:backdrop-blur-sm p-6 shadow-card'>
+            <h3 className='mb-2 text-lg font-medium text-text-primary'>
               Development & Testing
             </h3>
-            <p className='mb-4 text-sm text-gray-400'>
+            <p className='mb-4 text-sm text-text-muted'>
               Restart the onboarding tutorial to test the flow. This will reset
               your onboarding status.
             </p>
             {restartError && (
-              <div className='mb-4 rounded-lg border border-red-500/50 bg-red-900/30 backdrop-blur-sm p-3'>
-                <p className='text-sm text-red-300'>{restartError}</p>
+              <div className='mb-4 rounded-lg border border-red-500/50 bg-red-50 dark:bg-red-900/30 dark:backdrop-blur-sm p-3'>
+                <p className='text-sm text-red-600 dark:text-red-300'>
+                  {restartError}
+                </p>
               </div>
             )}
             <button

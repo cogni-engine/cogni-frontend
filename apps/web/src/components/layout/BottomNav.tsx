@@ -3,7 +3,6 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { HomeIcon, Notebook } from 'lucide-react';
-import GlassCard from '../glass-design/GlassCard';
 import { CognoSvgIcon } from '../icons/CognoSvgIcon';
 
 const tabs = [
@@ -25,11 +24,11 @@ export default function BottomNav() {
   return (
     <div className='fixed bottom-0 left-0 right-0 z-50 px-4 md:px-6 py-3'>
       <div className='max-w-7xl mx-auto'>
-        <GlassCard className='rounded-full'>
+        <div className='liquid-glass rounded-full'>
           <div className='relative flex items-center justify-around p-1'>
-            {/* Sliding background indicator - positioned via CSS calc */}
+            {/* Sliding background indicator - liquid glass inner element */}
             <div
-              className='absolute h-[calc(100%-8px)] rounded-full bg-nav-indicator dark:backdrop-blur-sm transition-all duration-500 ease-out'
+              className='absolute h-[calc(100%-8px)] rounded-full liquid-glass-indicator transition-all duration-500 ease-out'
               style={{
                 width: `calc(${tabWidthPercent}% - 8px)`,
                 left: `calc(${activeIndex * tabWidthPercent}% + 4px)`,
@@ -62,7 +61,7 @@ export default function BottomNav() {
               );
             })}
           </div>
-        </GlassCard>
+        </div>
       </div>
     </div>
   );

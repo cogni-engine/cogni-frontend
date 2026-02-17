@@ -20,7 +20,6 @@ const PreBlock = ({
 }: React.HTMLAttributes<HTMLPreElement>) => {
   const [copied, setCopied] = useState(false);
 
-  // preの中のcode要素からテキストを抽出
   const extractCodeText = (node: React.ReactNode): string => {
     if (typeof node === 'string') return node;
     if (typeof node === 'number') return String(node);
@@ -51,14 +50,14 @@ const PreBlock = ({
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch (err) {
-      console.error('コピーに失敗しました:', err);
+      console.error('Failed to copy:', err);
     }
   };
 
   return (
     <div className='my-3 relative'>
       <pre
-        className='overflow-x-auto rounded-2xl border border-white/10 p-5 text-sm text-gray-400'
+        className='overflow-x-auto rounded-2xl border border-border-default p-5 text-sm text-text-muted'
         style={{ overscrollBehaviorX: 'contain', overscrollBehaviorY: 'auto' }}
         {...rest}
       >
@@ -66,7 +65,7 @@ const PreBlock = ({
       </pre>
       <button
         onClick={handleCopy}
-        className='absolute top-1 right-2 flex items-center gap-1.5 px-3 py-1.5 rounded-xl border-black text-white/70 text-sm transition-colors'
+        className='absolute top-1 right-2 flex items-center gap-1.5 px-3 py-1.5 rounded-xl border-border-default text-text-secondary text-sm transition-colors'
       >
         {copied ? <Check className='w-4 h-4' /> : <Copy className='w-4 h-4' />}
         <span>{copied ? 'Copied' : 'Copy'}</span>
@@ -78,26 +77,34 @@ const PreBlock = ({
 export const AIMessageView = ({ content, className }: AIMessageViewProps) => {
   const customComponents: Components = {
     h1: ({ children }) => (
-      <h1 className='my-3 text-lg font-semibold text-white'>{children}</h1>
+      <h1 className='my-3 text-lg font-semibold text-text-primary'>
+        {children}
+      </h1>
     ),
     h2: ({ children }) => (
-      <h2 className='my-2 text-base font-semibold text-white'>{children}</h2>
+      <h2 className='my-2 text-base font-semibold text-text-primary'>
+        {children}
+      </h2>
     ),
     h3: ({ children }) => (
-      <h3 className='my-2 text-sm font-semibold text-white'>{children}</h3>
+      <h3 className='my-2 text-sm font-semibold text-text-primary'>
+        {children}
+      </h3>
     ),
     p: ({ children }) => (
-      <p className='my-2 text-sm leading-7 text-gray-200'>{children}</p>
+      <p className='my-2 text-sm leading-7 text-text-secondary'>{children}</p>
     ),
     code: ({ children, className }) => {
       const isCodeBlock = className?.startsWith('language-');
 
       if (isCodeBlock) {
-        return <code className={`${className} text-gray-400`}>{children}</code>;
+        return (
+          <code className={`${className} text-text-muted`}>{children}</code>
+        );
       }
 
       return (
-        <code className='rounded bg-neutral-800 px-1.5 py-0.5 text-sm text-gray-200'>
+        <code className='rounded bg-surface-secondary px-1.5 py-0.5 text-sm text-text-secondary'>
           {children}
         </code>
       );
@@ -119,7 +126,7 @@ export const AIMessageView = ({ content, className }: AIMessageViewProps) => {
           href={href}
           target='_blank'
           rel='noopener noreferrer'
-          className='text-blue-400 underline hover:text-blue-300'
+          className='text-blue-600 underline hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300'
           onClick={handleClick}
         >
           {children}
@@ -127,20 +134,22 @@ export const AIMessageView = ({ content, className }: AIMessageViewProps) => {
       );
     },
     ul: ({ children }) => (
-      <ul className='my-3 ml-6 list-disc space-y-1 text-gray-200'>
+      <ul className='my-3 ml-6 list-disc space-y-1 text-text-secondary'>
         {children}
       </ul>
     ),
     ol: ({ children }) => (
-      <ol className='my-3 ml-6 list-decimal space-y-1 text-gray-200'>
+      <ol className='my-3 ml-6 list-decimal space-y-1 text-text-secondary'>
         {children}
       </ol>
     ),
-    li: ({ children }) => <li className='text-gray-200'>{children}</li>,
+    li: ({ children }) => <li className='text-text-secondary'>{children}</li>,
     strong: ({ children }) => (
-      <strong className='font-semibold text-white'>{children}</strong>
+      <strong className='font-semibold text-text-primary'>{children}</strong>
     ),
-    em: ({ children }) => <em className='italic text-gray-100'>{children}</em>,
+    em: ({ children }) => (
+      <em className='italic text-text-primary'>{children}</em>
+    ),
   };
 
   if (!content) return null;

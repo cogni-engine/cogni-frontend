@@ -101,7 +101,7 @@ export default function WorkspaceLayout({
             >
               <ArrowLeft className='w-5 h-5' />
             </GlassButton>
-            <h1 className='flex-1 min-w-0 text-md font-bold bg-linear-to-r from-white to-gray-300 bg-clip-text text-transparent truncate'>
+            <h1 className='flex-1 min-w-0 text-md font-bold bg-linear-to-r from-text-primary to-text-secondary bg-clip-text text-transparent truncate'>
               {headerTitle}
             </h1>
             {currentView === 'notes' && (
@@ -113,7 +113,7 @@ export default function WorkspaceLayout({
                 title='Activity'
                 className='size-12'
               >
-                <GitBranch className='w-5 h-5 text-white' />
+                <GitBranch className='w-5 h-5 text-text-primary' />
               </GlassButton>
             )}
             <div className='relative' ref={menuRef}>
@@ -125,7 +125,7 @@ export default function WorkspaceLayout({
                 title='More actions'
                 className='size-12'
               >
-                <EllipsisVertical className='w-5 h-5 text-white' />
+                <EllipsisVertical className='w-5 h-5 text-text-primary' />
               </GlassButton>
               {isMenuOpen && (
                 <div className='absolute right-0 mt-2 z-110'>
@@ -135,7 +135,7 @@ export default function WorkspaceLayout({
                       prefetch={true}
                       role='menuitem'
                       onClick={() => setIsMenuOpen(false)}
-                      className='w-full text-left px-3 py-2 text-sm text-gray-200 hover:bg-white/10 rounded-2xl flex items-center gap-2'
+                      className='w-full text-left px-3 py-2 text-sm text-text-secondary hover:bg-interactive-hover rounded-2xl flex items-center gap-2'
                     >
                       <Users className='w-4 h-4' />
                       Members
@@ -145,7 +145,7 @@ export default function WorkspaceLayout({
                       prefetch={true}
                       role='menuitem'
                       onClick={() => setIsMenuOpen(false)}
-                      className='w-full text-left px-3 py-2 text-sm text-gray-200 hover:bg-white/10 rounded-2xl flex items-center gap-2'
+                      className='w-full text-left px-3 py-2 text-sm text-text-secondary hover:bg-interactive-hover rounded-2xl flex items-center gap-2'
                     >
                       <Settings className='w-4 h-4' />
                       Settings
@@ -164,7 +164,7 @@ export default function WorkspaceLayout({
               <div className='relative flex items-center p-1'>
                 {/* Sliding background indicator */}
                 <div
-                  className='absolute h-[calc(100%-8px)] rounded-2xl bg-white/10 backdrop-blur-sm transition-all duration-500 ease-out'
+                  className='absolute h-[calc(100%-8px)] rounded-2xl bg-interactive-hover dark:backdrop-blur-sm transition-all duration-500 ease-out'
                   style={{
                     width: 'calc(50% - 6px)',
                     left: currentView === 'chat' ? '4px' : 'calc(50% + 2px)',
@@ -176,8 +176,8 @@ export default function WorkspaceLayout({
                   prefetch={true}
                   className={`relative z-10 flex flex-1 items-center justify-center gap-2 px-8 py-2 text-sm font-medium transition-colors duration-300 ${
                     currentView === 'chat'
-                      ? 'text-white'
-                      : 'text-gray-400 hover:text-white'
+                      ? 'text-text-primary'
+                      : 'text-text-muted hover:text-text-primary'
                   }`}
                   aria-current={currentView === 'chat' ? 'page' : undefined}
                   data-shepherd-target='workspace-chat-button'
@@ -190,8 +190,8 @@ export default function WorkspaceLayout({
                   prefetch={true}
                   className={`relative z-10 flex flex-1 items-center justify-center gap-2 px-8 py-2 text-sm font-medium transition-colors duration-300 ${
                     currentView === 'notes'
-                      ? 'text-white'
-                      : 'text-gray-400 hover:text-white'
+                      ? 'text-text-primary'
+                      : 'text-text-muted hover:text-text-primary'
                   }`}
                   aria-current={currentView === 'notes' ? 'page' : undefined}
                   data-shepherd-target='workspace-notes-button'

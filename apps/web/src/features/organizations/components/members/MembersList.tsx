@@ -30,14 +30,14 @@ export function MembersList({
     <div className='mt-8'>
       <div className='flex items-center justify-between mb-4'>
         <div className='flex items-center gap-3'>
-          <h3 className='text-lg font-semibold text-white'>Members</h3>
-          <div className='flex items-center gap-3 text-sm text-white/60'>
+          <h3 className='text-lg font-semibold text-text-primary'>Members</h3>
+          <div className='flex items-center gap-3 text-sm text-text-secondary'>
             <span className='flex items-center gap-1.5'>
               <UsersIcon className='h-4 w-4' />
               {activeMemberCount} members
             </span>
             {totalSeats > 0 && (
-              <span className='text-white/40'>• {totalSeats} seats</span>
+              <span className='text-text-muted'>• {totalSeats} seats</span>
             )}
           </div>
         </div>
@@ -60,7 +60,7 @@ export function MembersList({
 
       <div className='space-y-2'>
         {members.length === 0 ? (
-          <p className='text-white/40 text-center py-8'>No members found</p>
+          <p className='text-text-muted text-center py-8'>No members found</p>
         ) : (
           members.map(member => {
             const isCurrentUser = member.user_id === currentUserId;

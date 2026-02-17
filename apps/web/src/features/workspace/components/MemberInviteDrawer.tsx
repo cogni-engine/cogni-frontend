@@ -130,13 +130,13 @@ export default function MemberInviteDrawer({
                   type='button'
                   onClick={handleShareLink}
                   disabled={isSharing}
-                  className='w-full flex items-center justify-center gap-2 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed'
+                  className='w-full flex items-center justify-center gap-2 rounded-xl bg-surface-primary border border-border-default hover:bg-interactive-hover hover:border-border-default transition-all disabled:opacity-50 disabled:cursor-not-allowed'
                 >
                   <div className='p-3 rounded-lg'>
-                    <Share className='w-6 h-6 text-white' />
+                    <Share className='w-6 h-6 text-text-primary' />
                   </div>
                   <div className='text-center'>
-                    <p className='text-white font-medium text-lg'>
+                    <p className='text-text-primary font-medium text-lg'>
                       {isSharing ? 'Sharing...' : 'Share Link'}
                     </p>
                   </div>
@@ -145,13 +145,13 @@ export default function MemberInviteDrawer({
                 <button
                   type='button'
                   onClick={handleInviteFriends}
-                  className='w-full flex items-center justify-center gap-2 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20 transition-all'
+                  className='w-full flex items-center justify-center gap-2 rounded-xl bg-surface-primary border border-border-default hover:bg-interactive-hover hover:border-border-default transition-all'
                 >
                   <div className='p-3 rounded-lg'>
-                    <Users className='w-6 h-6 text-white' />
+                    <Users className='w-6 h-6 text-text-primary' />
                   </div>
                   <div className='text-center'>
-                    <p className='text-white font-medium text-lg'>
+                    <p className='text-text-primary font-medium text-lg'>
                       Add Friends
                     </p>
                   </div>
@@ -159,14 +159,16 @@ export default function MemberInviteDrawer({
               </div>
 
               {/* Cancel Button */}
-              <div className='pt-3 border-t border-white/10'>
+              <div className='pt-3 border-t border-border-default'>
                 <GlassButton
                   type='button'
                   onClick={handleClose}
                   variant='ghost'
                   className='w-full opacity-100'
                 >
-                  <span className='font-medium text-white text-sm'>Cancel</span>
+                  <span className='font-medium text-text-primary text-sm'>
+                    Cancel
+                  </span>
                 </GlassButton>
               </div>
             </>
@@ -182,14 +184,16 @@ export default function MemberInviteDrawer({
               />
 
               {/* Action Buttons */}
-              <div className='flex gap-3 pt-3 border-t border-white/10'>
+              <div className='flex gap-3 pt-3 border-t border-border-default'>
                 <GlassButton
                   type='button'
                   onClick={handleClose}
                   variant='ghost'
                   className='flex-1 opacity-100'
                 >
-                  <span className='font-medium text-white text-sm'>Cancel</span>
+                  <span className='font-medium text-text-primary text-sm'>
+                    Cancel
+                  </span>
                 </GlassButton>
                 <GlassButton
                   type='button'
@@ -197,7 +201,7 @@ export default function MemberInviteDrawer({
                   disabled={selectedUserIds.length === 0 || isAddingMembers}
                   className='flex-1'
                 >
-                  <span className='font-medium text-white text-sm'>
+                  <span className='font-medium text-text-primary text-sm'>
                     {isAddingMembers
                       ? 'Adding...'
                       : `Add ${selectedUserIds.length} member${

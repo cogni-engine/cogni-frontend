@@ -17,14 +17,14 @@ const roles = [
     name: 'Member',
     description: 'Basic access',
     icon: Users,
-    color: 'text-gray-400',
+    color: 'text-text-muted',
   },
   {
     id: 2,
     name: 'Admin',
     description: 'Can manage members and invitations',
     icon: Shield,
-    color: 'text-blue-400',
+    color: 'text-blue-600 dark:text-blue-400',
   },
 ];
 
@@ -62,7 +62,9 @@ export function RoleSelector({
   return (
     <div className='space-y-2'>
       {label && (
-        <label className='text-sm font-medium text-white/80'>{label}</label>
+        <label className='text-sm font-medium text-text-secondary'>
+          {label}
+        </label>
       )}
       <div className='relative' ref={dropdownRef}>
         {/* Dropdown Button */}
@@ -72,20 +74,20 @@ export function RoleSelector({
             disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer group'
           }`}
         >
-          <div className='flex items-center justify-center w-8 h-8 rounded-xl bg-white/5'>
+          <div className='flex items-center justify-center w-8 h-8 rounded-xl bg-surface-primary'>
             <Icon className={`w-4 h-4 ${selectedRole.color}`} />
           </div>
           <div className='flex-1 text-left'>
-            <span className='text-sm font-semibold text-white block'>
+            <span className='text-sm font-semibold text-text-primary block'>
               {selectedRole.name}
             </span>
-            <span className='text-xs text-white/50'>
+            <span className='text-xs text-text-muted'>
               {selectedRole.description}
             </span>
           </div>
           <ChevronRight
-            className={`w-4 h-4 text-gray-400 transition-transform duration-200 ${
-              disabled ? '' : 'group-hover:text-white'
+            className={`w-4 h-4 text-text-muted transition-transform duration-200 ${
+              disabled ? '' : 'group-hover:text-text-primary'
             } ${isOpen ? 'rotate-90' : ''}`}
           />
         </GlassCard>
@@ -93,7 +95,7 @@ export function RoleSelector({
         {/* Dropdown Menu */}
         {isOpen && !disabled && (
           <div className='absolute z-50 w-full mt-2 animate-in fade-in-0 slide-in-from-top-2 duration-200'>
-            <GlassCard className='rounded-xl p-2 bg-white/8 backdrop-blur-xl border border-white/10'>
+            <GlassCard className='rounded-xl p-2 bg-surface-secondary dark:backdrop-blur-xl border border-border-default'>
               <div className='space-y-1'>
                 {roles.map(role => {
                   const RoleIcon = role.icon;
@@ -109,26 +111,26 @@ export function RoleSelector({
                       className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors ${
                         isSelected
                           ? 'bg-blue-500/20 hover:bg-blue-500/25'
-                          : 'hover:bg-white/10'
+                          : 'hover:bg-interactive-hover'
                       }`}
                     >
                       <div
                         className={`flex items-center justify-center w-8 h-8 rounded-lg ${
-                          isSelected ? 'bg-blue-500/20' : 'bg-white/5'
+                          isSelected ? 'bg-blue-500/20' : 'bg-surface-primary'
                         }`}
                       >
                         <RoleIcon className={`w-4 h-4 ${role.color}`} />
                       </div>
                       <div className='flex-1 text-left'>
-                        <div className='text-sm font-semibold text-white'>
+                        <div className='text-sm font-semibold text-text-primary'>
                           {role.name}
                         </div>
-                        <div className='text-xs text-white/50'>
+                        <div className='text-xs text-text-muted'>
                           {role.description}
                         </div>
                       </div>
                       {isSelected && (
-                        <Check className='w-4 h-4 text-blue-400' />
+                        <Check className='w-4 h-4 text-blue-600 dark:text-blue-400' />
                       )}
                     </button>
                   );
