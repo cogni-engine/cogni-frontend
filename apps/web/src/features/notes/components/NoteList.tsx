@@ -93,14 +93,14 @@ function NoteCardComponent({
       >
         <div className='flex justify-between items-start gap-3'>
           <div className='flex-1 min-w-0'>
-            <h2 className='font-semibold text-white/90 text-[15px] leading-[1.4] line-clamp-2'>
+            <h2 className='font-semibold text-foreground text-[15px] leading-[1.4] line-clamp-2'>
               {note.title}
             </h2>
             <div className='flex items-center gap-2 mt-0.5'>
-              <span className='text-[11px] text-gray-400 whitespace-nowrap'>
+              <span className='text-[11px] text-text-muted whitespace-nowrap'>
                 {note.date}
               </span>
-              <p className='text-[13px] text-gray-400 leading-[1.6] line-clamp-1 flex-1 min-w-0'>
+              <p className='text-[13px] text-text-muted leading-[1.6] line-clamp-1 flex-1 min-w-0'>
                 {note.preview || 'No content'}
               </p>
             </div>
@@ -154,7 +154,7 @@ function NoteCardComponent({
                       {note.workspace.title.charAt(0).toUpperCase()}
                     </div>
                   )}
-                  <span className='text-[11px] text-white whitespace-nowrap'>
+                  <span className='text-[11px] text-foreground whitespace-nowrap'>
                     {note.workspace.title}
                   </span>
                 </div>
@@ -216,7 +216,7 @@ const NoteList = memo(function NoteList({
           {isRecentlyDeleted && folderNotes.length > 0 && onDeleteAll && (
             <button
               onClick={onDeleteAll}
-              className='text-sm text-gray-400 hover:text-white px-5 transition-colors'
+              className='text-sm text-text-muted hover:text-foreground px-5 transition-colors'
             >
               Delete All
             </button>
@@ -232,7 +232,7 @@ const NoteList = memo(function NoteList({
             />
           ))}
           {folderNotes.length === 0 && (
-            <div className='text-center py-12 text-gray-400'>
+            <div className='text-center py-12 text-text-muted'>
               {isRecentlyDeleted
                 ? 'No recently deleted notes'
                 : 'No notes in this folder'}
@@ -283,7 +283,7 @@ const NoteList = memo(function NoteList({
               </>
             ) : (
               <>
-                <h3 className='text-sm font-medium text-gray-400 mb-3 px-1'>
+                <h3 className='text-sm font-medium text-text-muted mb-3 px-1'>
                   {group}
                 </h3>
                 <FlatList>

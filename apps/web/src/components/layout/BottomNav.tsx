@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { HomeIcon, Notebook } from 'lucide-react';
 import { CognoSvgIcon } from '../icons/CognoSvgIcon';
+import LiquidGlassCard from '../glass-design/liquid-glass/LiquidGlassCard';
 
 const tabs = [
   {
@@ -24,7 +25,7 @@ export default function BottomNav() {
   return (
     <div className='fixed bottom-0 left-0 right-0 z-50 px-4 md:px-6 py-3'>
       <div className='max-w-7xl mx-auto'>
-        <div className='liquid-glass rounded-full'>
+        <LiquidGlassCard className='rounded-full'>
           <div className='relative flex items-center justify-around p-1'>
             {/* Sliding background indicator - liquid glass inner element */}
             <div
@@ -61,7 +62,7 @@ export default function BottomNav() {
               );
             })}
           </div>
-        </div>
+        </LiquidGlassCard>
       </div>
     </div>
   );

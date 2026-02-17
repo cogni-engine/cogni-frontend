@@ -45,7 +45,7 @@ export function NoteEditorHeader({
         value={title}
         onChange={e => onTitleChange(e.target.value)}
         placeholder='Title'
-        className='flex-1 min-w-0 text-md font-bold bg-transparent focus:outline-none text-white placeholder-gray-500 truncate'
+        className='flex-1 min-w-0 text-md font-bold bg-transparent focus:outline-none text-foreground placeholder-input-placeholder truncate'
       />
       {/* Assignment button for group notes */}
       {isGroupNote && (
@@ -58,7 +58,7 @@ export function NoteEditorHeader({
             <div className='flex items-center gap-2'>
               <Users className='w-5 h-5' />
               {hasAssignees && (
-                <span className='text-sm font-medium text-white'>
+                <span className='text-sm font-medium text-foreground'>
                   {assigneeIds.length}
                 </span>
               )}

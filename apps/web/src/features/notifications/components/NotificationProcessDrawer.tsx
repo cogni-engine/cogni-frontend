@@ -450,7 +450,7 @@ export default function NotificationProcessDrawer({
                                 <Loader2 className='w-5 h-5 text-text-muted animate-spin' />
                               </div>
                             ) : (
-                              <div className='prose prose-invert prose-sm max-w-none'>
+                              <div className='prose dark:prose-invert prose-sm max-w-none'>
                                 <TiptapRenderer
                                   content={noteContent || ''}
                                   contentType='markdown'

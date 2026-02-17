@@ -50,7 +50,7 @@ export default function LoginForm() {
           input:-webkit-autofill:focus,
           input:-webkit-autofill:active {
             transition: background-color 5000s ease-in-out 0s;
-            -webkit-text-fill-color: white !important;
+            -webkit-text-fill-color: var(--foreground) !important;
           }
         `,
         }}
@@ -109,10 +109,10 @@ export default function LoginForm() {
 
       <div className='relative my-6'>
         <div className='absolute inset-0 flex items-center'>
-          <div className='w-full border-t border-zinc-700'></div>
+          <div className='w-full border-t border-border-default'></div>
         </div>
         <div className='relative flex justify-center text-sm'>
-          <span className='px-2 bg-zinc-900/80 text-gray-400'>OR</span>
+          <span className='px-2 bg-background text-text-muted'>OR</span>
         </div>
       </div>
 
@@ -129,7 +129,7 @@ export default function LoginForm() {
             placeholder='Email'
             value={email}
             onChange={e => setEmail(e.target.value)}
-            className='w-full bg-transparent text-white text-base py-2 border-b border-zinc-700 focus:outline-none placeholder:text-gray-500 caret-white'
+            className='w-full bg-transparent text-foreground text-base py-2 border-b border-border-default focus:outline-none placeholder:text-input-placeholder caret-foreground'
             autoComplete='off'
             required
           />
@@ -140,14 +140,14 @@ export default function LoginForm() {
             placeholder='Password'
             value={password}
             onChange={e => setPassword(e.target.value)}
-            className='w-full bg-transparent text-white text-base py-2 pr-10 border-b border-zinc-700 focus:outline-none placeholder:text-gray-500 caret-white'
+            className='w-full bg-transparent text-foreground text-base py-2 pr-10 border-b border-border-default focus:outline-none placeholder:text-input-placeholder caret-foreground'
             autoComplete='off'
             required
           />
           <button
             type='button'
             onClick={() => setShowPassword(!showPassword)}
-            className='absolute right-0 bottom-2 text-gray-400 hover:text-gray-300 p-1'
+            className='absolute right-0 bottom-2 text-text-muted hover:text-text-secondary p-1'
             tabIndex={-1}
           >
             {showPassword ? (
@@ -205,7 +205,7 @@ export default function LoginForm() {
       </form>
 
       <div className='mt-8 text-center'>
-        <p className='text-gray-300'>
+        <p className='text-text-secondary'>
           Don&apos;t have an account?{' '}
           <Link
             href='/register'
@@ -215,11 +215,11 @@ export default function LoginForm() {
           </Link>
         </p>
       </div>
-      <p className='text-sm text-gray-400 text-center'>
+      <p className='text-sm text-text-muted text-center'>
         Forgot password? You can reset it{' '}
         <Link
           href='/auth/forgot-password'
-          className='text-white hover:text-gray-300 transition-colors underline'
+          className='text-foreground hover:text-text-secondary transition-colors underline'
         >
           here
         </Link>

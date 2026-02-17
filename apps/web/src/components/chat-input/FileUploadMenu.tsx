@@ -193,7 +193,7 @@ export default function FileUploadMenu({
                       disabled={disabled}
                       className='flex items-center gap-4 w-full px-4 py-3 rounded-xl bg-surface-primary text-text-primary transition-all duration-200 hover:bg-interactive-hover active:bg-interactive-active disabled:opacity-50 disabled:cursor-not-allowed'
                     >
-                      <div className='flex h-10 w-10 items-center justify-center rounded-full bg-white/10'>
+                      <div className='flex h-10 w-10 items-center justify-center rounded-full bg-interactive-hover'>
                         <FileIcon className='h-5 w-5' />
                       </div>
                       <span className='text-[17px]'>Choose files</span>
@@ -208,7 +208,7 @@ export default function FileUploadMenu({
                     disabled={disabled}
                     className='flex items-center gap-4 w-full px-4 py-3 rounded-xl bg-surface-primary text-text-primary transition-all duration-200 hover:bg-interactive-hover active:bg-interactive-active disabled:opacity-50 disabled:cursor-not-allowed'
                   >
-                    <div className='flex h-10 w-10 items-center justify-center rounded-full bg-white/10'>
+                    <div className='flex h-10 w-10 items-center justify-center rounded-full bg-interactive-hover'>
                       <ImageIcon className='h-5 w-5' />
                     </div>
                     <span className='text-[17px]'>Upload images</span>
@@ -219,7 +219,7 @@ export default function FileUploadMenu({
                     disabled={disabled}
                     className='flex items-center gap-4 w-full px-4 py-3 rounded-xl bg-surface-primary text-text-primary transition-all duration-200 hover:bg-interactive-hover active:bg-interactive-active disabled:opacity-50 disabled:cursor-not-allowed'
                   >
-                    <div className='flex h-10 w-10 items-center justify-center rounded-full bg-white/10'>
+                    <div className='flex h-10 w-10 items-center justify-center rounded-full bg-interactive-hover'>
                       <FileIcon className='h-5 w-5' />
                     </div>
                     <span className='text-[17px]'>Upload files</span>

@@ -52,9 +52,9 @@ export function NotesPageFooter({ isInputActive }: NotesPageFooterProps) {
           className='size-12 disabled:cursor-not-allowed shrink-0'
         >
           {isCreatingNote ? (
-            <div className='animate-spin rounded-full h-5 w-5 border-b-2 border-gray-300'></div>
+            <div className='animate-spin rounded-full h-5 w-5 border-b-2 border-current'></div>
           ) : (
-            <PenSquare className='w-5 h-5 text-white' />
+            <PenSquare className='w-5 h-5 text-foreground' />
           )}
         </GlassButton>
       </div>

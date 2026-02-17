@@ -70,14 +70,14 @@ export default function ThreadSidebar() {
 
   return (
     <div
-      className={`fixed top-0 left-0 h-full bg-black/80 backdrop-blur-xl transition-all duration-300 ease-in-out z-40 overflow-hidden ${
+      className={`fixed top-0 left-0 h-full bg-background/80 backdrop-blur-xl transition-all duration-300 ease-in-out z-40 overflow-hidden border-r border-border-default ${
         isThreadSidebarOpen ? 'w-60 translate-x-0' : 'w-0 -translate-x-full'
       }`}
     >
       <div className='flex flex-col h-full overflow-hidden pb-30 pl-4'>
         {/* Header */}
         <div className='flex items-center justify-between p-4'>
-          <h2 className='text-lg font-semibold text-white'></h2>
+          <h2 className='text-lg font-semibold text-foreground'></h2>
           <div className='w-5 h-5'></div>
         </div>
 
@@ -89,13 +89,13 @@ export default function ThreadSidebar() {
               <div className='flex items-center justify-between py-2'>
                 <button
                   onClick={handleNewChat}
-                  className='flex-1 text-left text-sm transition-colors text-white hover:text-white'
+                  className='flex-1 text-left text-sm transition-colors text-foreground hover:text-foreground'
                 >
                   New Chat
                 </button>
                 <button
                   onClick={handleNewChat}
-                  className='p-1 text-white hover:text-white transition-colors'
+                  className='p-1 text-foreground hover:text-foreground transition-colors'
                 >
                   <PenSquare className='w-4 h-4' />
                 </button>
@@ -103,7 +103,7 @@ export default function ThreadSidebar() {
             </div>
 
             {threads.length === 0 ? (
-              <div className='text-center py-8 text-white/40 text-sm'>
+              <div className='text-center py-8 text-text-muted text-sm'>
                 No threads
               </div>
             ) : (
@@ -124,13 +124,13 @@ export default function ThreadSidebar() {
                               setRenameValue('');
                             }
                           }}
-                          className='w-full bg-black/30 text-white text-sm px-2 py-1 rounded border border-black focus:outline-none focus:border-black'
+                          className='w-full bg-surface-primary text-foreground text-sm px-2 py-1 rounded border border-border-default focus:outline-none focus:border-border-default'
                           autoFocus
                         />
                         <div className='flex gap-2 mt-2'>
                           <button
                             onClick={() => handleRename(thread.id)}
-                            className='flex-1 text-xs bg-white/10 hover:bg-white/20 text-white py-1 rounded transition-colors'
+                            className='flex-1 text-xs bg-surface-secondary hover:bg-interactive-active text-foreground py-1 rounded transition-colors'
                           >
                             Save
                           </button>
@@ -139,7 +139,7 @@ export default function ThreadSidebar() {
                               setRenamingId(null);
                               setRenameValue('');
                             }}
-                            className='flex-1 text-xs bg-white/5 hover:bg-white/10 text-white py-1 rounded transition-colors'
+                            className='flex-1 text-xs bg-surface-primary hover:bg-surface-secondary text-foreground py-1 rounded transition-colors'
                           >
                             Cancel
                           </button>
@@ -152,8 +152,8 @@ export default function ThreadSidebar() {
                           onClick={() => handleSelectThread(thread.id)}
                           className={`flex-1 text-left text-sm transition-colors truncate ${
                             selectedThreadId === thread.id
-                              ? 'text-white hover:text-white'
-                              : 'text-white/70 hover:text-white'
+                              ? 'text-foreground hover:text-foreground'
+                              : 'text-text-secondary hover:text-foreground'
                           }`}
                         >
                           {thread.title}
@@ -167,7 +167,7 @@ export default function ThreadSidebar() {
                                 menuOpenId === thread.id ? null : thread.id
                               )
                             }
-                            className='p-1 text-white/40 hover:text-white/80 transition-colors'
+                            className='p-1 text-text-muted hover:text-text-secondary transition-colors'
                           >
                             <svg
                               xmlns='http://www.w3.org/2000/svg'
@@ -187,16 +187,16 @@ export default function ThreadSidebar() {
 
                           {/* Menu Dropdown */}
                           {menuOpenId === thread.id && (
-                            <div className='absolute right-0 mt-1 w-32 bg-black/90 backdrop-blur-xl border border-black rounded-lg shadow-xl z-100'>
+                            <div className='absolute right-0 mt-1 w-32 bg-dropdown-bg backdrop-blur-xl border border-dropdown-border rounded-lg shadow-xl z-100'>
                               <button
                                 onClick={() => startRename(thread)}
-                                className='w-full text-left px-3 py-2 text-sm text-white/80 hover:text-white hover:bg-white/10 transition-colors rounded-t-lg'
+                                className='w-full text-left px-3 py-2 text-sm text-text-secondary hover:text-foreground hover:bg-interactive-hover transition-colors rounded-t-lg'
                               >
                                 Rename
                               </button>
                               <button
                                 onClick={() => handleDelete(thread.id)}
-                                className='w-full text-left px-3 py-2 text-sm text-red-400 hover:text-red-300 hover:bg-white/10 transition-colors rounded-b-lg'
+                                className='w-full text-left px-3 py-2 text-sm text-red-400 hover:text-red-300 hover:bg-interactive-hover transition-colors rounded-b-lg'
                               >
                                 Delete
                               </button>

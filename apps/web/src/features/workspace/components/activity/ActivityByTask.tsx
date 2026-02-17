@@ -53,7 +53,8 @@ const getStatusBadge = (status: NotificationReactionStatus) => {
       return {
         icon: <X className='w-3 h-3' />,
         text: status === 'dismissed' ? 'Dismissed' : 'Ignored',
-        className: 'bg-gray-500/10 border-gray-500/20 text-gray-400/80',
+        className:
+          'bg-gray-500/10 border-gray-500/20 text-gray-500 dark:text-gray-400',
       };
     case 'rejected':
       return {

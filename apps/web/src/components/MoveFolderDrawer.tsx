@@ -102,10 +102,10 @@ export default function MoveFolderDrawer({
                 <button
                   onClick={handleCreateFolder}
                   disabled={!newFolderName.trim() || isCreatingFolder}
-                  className='px-4 py-2 bg-blue-500 hover:bg-blue-600 disabled:bg-gray-600 disabled:cursor-not-allowed text-white dark:text-white rounded-lg font-medium transition-colors flex items-center gap-2'
+                  className='px-4 py-2 bg-blue-500 hover:bg-blue-600 disabled:bg-surface-secondary disabled:cursor-not-allowed text-white dark:text-white rounded-lg font-medium transition-colors flex items-center gap-2'
                 >
                   {isCreatingFolder ? (
-                    <div className='animate-spin rounded-full h-4 w-4 border-b-2 border-white' />
+                    <div className='animate-spin rounded-full h-4 w-4 border-b-2 border-current' />
                   ) : (
                     <>
                       <Check className='w-4 h-4' />

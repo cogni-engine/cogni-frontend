@@ -12,7 +12,14 @@
       "Bash(pnpm --filter @cogni/web exec next build:*)",
       "Bash(pnpm format:*)",
       "WebFetch(domain:codepen.io)",
-      "Bash(pnpm build:*)"
+      "Bash(pnpm build:*)",
+      "Bash(git -C /Users/air13/code/cogni/cogno/cogni-frontend status --porcelain)",
+      "Bash(git -C /Users/air13/code/cogni/cogno/cogni-frontend ls-files:*)",
+      "Bash(git -C /Users/air13/code/cogni/cogno/cogni-frontend diff .claude/settings.local.json)",
+      "Bash(python3:*)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "Bash(gh api:*)",
+      "WebFetch(domain:github.com)"
     ]
   }
 }

@@ -8,7 +8,7 @@ function SkeletonPulse({ className = '' }: { className?: string }) {
       className={`rounded ${className}`}
       style={{
         background:
-          'linear-gradient(90deg, rgba(255,255,255,0.04) 25%, rgba(255,255,255,0.1) 50%, rgba(255,255,255,0.04) 75%)',
+          'linear-gradient(90deg, var(--surface-primary) 25%, var(--surface-secondary) 50%, var(--surface-primary) 75%)',
         backgroundSize: '400% 100%',
         animation: 'shimmer 2s ease-in-out infinite',
       }}

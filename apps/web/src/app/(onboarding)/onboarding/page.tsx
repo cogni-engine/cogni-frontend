@@ -86,7 +86,7 @@ export default function OnboardingPage() {
 
   // Show black loading screen while initializing
   if (isInitializing || !userId || !onboardingSessionId) {
-    return <div className='w-full h-screen bg-black' />;
+    return <div className='w-full h-screen bg-background' />;
   }
 
   // Render flow component with guaranteed valid props

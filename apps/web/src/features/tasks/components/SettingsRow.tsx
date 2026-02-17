@@ -37,7 +37,7 @@ export function SettingsRow({
   // onClickがある場合は<button>を使用
   return (
     <button onClick={onClick} className={className}>
-      <span className='text-white text-[15px]'>{label}</span>
+      <span className='text-text-primary text-[15px]'>{label}</span>
       <div className='flex items-center gap-1'>
         <span className='text-text-muted text-[15px]'>{value}</span>
         {showChevron && onClick && (
