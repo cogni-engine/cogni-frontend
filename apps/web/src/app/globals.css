@@ -3,6 +3,8 @@
 @import 'shepherd.js/dist/css/shepherd.css';
 @import '../components/tiptap/tiptap-styles.css';
 
+@variant dark (&:where(.dark, .dark *));
+
 /* Override Tippy.js default styles for mention suggestions */
 .tippy-box {
   background-color: transparent !important;
@@ -19,14 +21,164 @@
   display: none !important;
 }
 
+/* ── Light mode (default) ── */
 :root {
+  --background: #ffffff;
+  --foreground: #171717;
+
+  --surface-primary: rgba(0, 0, 0, 0.04);
+  --surface-secondary: rgba(0, 0, 0, 0.06);
+  --surface-overlay: rgba(0, 0, 0, 0.03);
+
+  --border-default: rgba(0, 0, 0, 0.12);
+  --border-subtle: rgba(0, 0, 0, 0.06);
+
+  --text-primary: #171717;
+  --text-secondary: rgba(0, 0, 0, 0.6);
+  --text-muted: rgba(0, 0, 0, 0.4);
+
+  --interactive-hover: rgba(0, 0, 0, 0.06);
+  --interactive-active: rgba(0, 0, 0, 0.1);
+
+  --ring-offset: #ffffff;
+  --ring-color: rgba(0, 0, 0, 0.2);
+
+  --gradient-from: #ffffff;
+  --gradient-via: rgba(255, 255, 255, 0.5);
+
+  --card-bg: #ffffff;
+  --card-border: rgba(0, 0, 0, 0.1);
+  --card-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.06);
+  --card-shadow-hover: 0 4px 12px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.06);
+
+  --input-bg: #ffffff;
+  --input-border: rgba(0, 0, 0, 0.15);
+  --input-placeholder: rgba(0, 0, 0, 0.4);
+
+  --dropdown-bg: #ffffff;
+  --dropdown-border: rgba(0, 0, 0, 0.12);
+
+  --dialog-bg: #ffffff;
+  --dialog-overlay: rgba(0, 0, 0, 0.5);
+
+  --drawer-bg: #f9fafb;
+  --drawer-handle: rgba(0, 0, 0, 0.2);
+
+  --nav-indicator: rgba(0, 0, 0, 0.08);
+  --nav-text-inactive: #6b7280;
+
+  --autofill-bg: #ffffff;
+  --autofill-text: #171717;
+
+  --shepherd-bg: rgba(255, 255, 255, 0.95);
+  --shepherd-border: rgba(0, 0, 0, 0.1);
+  --shepherd-text: rgba(0, 0, 0, 0.85);
+  --shepherd-btn-bg: rgba(0, 0, 0, 0.06);
+  --shepherd-btn-border: rgba(0, 0, 0, 0.12);
+  --shepherd-btn-text: rgba(0, 0, 0, 0.85);
+  --shepherd-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+}
+
+/* ── Dark mode ── */
+.dark {
   --background: #0a0a0a;
   --foreground: #ededed;
+
+  --surface-primary: rgba(255, 255, 255, 0.05);
+  --surface-secondary: rgba(255, 255, 255, 0.08);
+  --surface-overlay: rgba(255, 255, 255, 0.04);
+
+  --border-default: rgba(255, 255, 255, 0.1);
+  --border-subtle: rgba(255, 255, 255, 0.05);
+
+  --text-primary: #ffffff;
+  --text-secondary: rgba(255, 255, 255, 0.7);
+  --text-muted: rgba(255, 255, 255, 0.4);
+
+  --interactive-hover: rgba(255, 255, 255, 0.1);
+  --interactive-active: rgba(255, 255, 255, 0.2);
+
+  --ring-offset: #000000;
+  --ring-color: rgba(255, 255, 255, 0.3);
+
+  --gradient-from: #000000;
+  --gradient-via: rgba(0, 0, 0, 0.5);
+
+  --card-bg: rgba(255, 255, 255, 0.05);
+  --card-border: rgba(255, 255, 255, 0.1);
+  --card-shadow: none;
+  --card-shadow-hover: none;
+
+  --input-bg: rgba(255, 255, 255, 0.05);
+  --input-border: rgba(255, 255, 255, 0.1);
+  --input-placeholder: rgba(255, 255, 255, 0.4);
+
+  --dropdown-bg: rgba(0, 0, 0, 0.9);
+  --dropdown-border: rgba(255, 255, 255, 0.1);
+
+  --dialog-bg: #171717;
+  --dialog-overlay: rgba(0, 0, 0, 0.8);
+
+  --drawer-bg: rgba(255, 255, 255, 0.04);
+  --drawer-handle: rgba(255, 255, 255, 0.2);
+
+  --nav-indicator: rgba(255, 255, 255, 0.1);
+  --nav-text-inactive: #9ca3af;
+
+  --autofill-bg: #0a0a0a;
+  --autofill-text: #ffffff;
+
+  --shepherd-bg: rgba(255, 255, 255, 0.08);
+  --shepherd-border: rgba(255, 255, 255, 0.12);
+  --shepherd-text: rgba(255, 255, 255, 0.95);
+  --shepherd-btn-bg: rgba(255, 255, 255, 0.18);
+  --shepherd-btn-border: rgba(255, 255, 255, 0.18);
+  --shepherd-btn-text: rgba(255, 255, 255, 0.95);
+  --shepherd-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+
+  --color-surface-primary: var(--surface-primary);
+  --color-surface-secondary: var(--surface-secondary);
+  --color-surface-overlay: var(--surface-overlay);
+
+  --color-border-default: var(--border-default);
+  --color-border-subtle: var(--border-subtle);
+
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-text-muted: var(--text-muted);
+
+  --color-interactive-hover: var(--interactive-hover);
+  --color-interactive-active: var(--interactive-active);
+
+  --color-ring-offset: var(--ring-offset);
+  --color-ring: var(--ring-color);
+
+  --color-card-bg: var(--card-bg);
+  --color-card-border: var(--card-border);
+  --shadow-card: var(--card-shadow);
+  --shadow-card-hover: var(--card-shadow-hover);
+
+  --color-input-bg: var(--input-bg);
+  --color-input-border: var(--input-border);
+  --color-input-placeholder: var(--input-placeholder);
+
+  --color-dropdown-bg: var(--dropdown-bg);
+  --color-dropdown-border: var(--dropdown-border);
+
+  --color-dialog-bg: var(--dialog-bg);
+  --color-dialog-overlay: var(--dialog-overlay);
+
+  --color-drawer-bg: var(--drawer-bg);
+  --color-drawer-handle: var(--drawer-handle);
+
+  --color-nav-indicator: var(--nav-indicator);
+  --color-nav-text-inactive: var(--nav-text-inactive);
+
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
@@ -88,32 +240,44 @@ body {
   }
 }
 
-/* Override browser autofill styles for dark theme */
+/* Override browser autofill styles */
 input:-webkit-autofill,
 input:-webkit-autofill:hover,
 input:-webkit-autofill:focus,
 input:-webkit-autofill:active {
-  -webkit-box-shadow: 0 0 0 30px #0a0a0a inset !important;
-  -webkit-text-fill-color: #ffffff !important;
-  caret-color: #ffffff !important;
+  -webkit-box-shadow: 0 0 0 30px var(--autofill-bg) inset !important;
+  -webkit-text-fill-color: var(--autofill-text) !important;
+  caret-color: var(--autofill-text) !important;
 }
 
 /* Shepherd.js Custom Theme - Glassmorphism Design */
 .shepherd-element {
-  background: rgba(255, 255, 255, 0.08) !important;
+  background: var(--shepherd-bg) !important;
   backdrop-filter: blur(10px) !important;
-  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  border: 1px solid var(--shepherd-border) !important;
   border-radius: 1.5rem !important;
   box-shadow:
-    0 8px 32px rgba(0, 0, 0, 0.2),
+    var(--shepherd-shadow),
     inset 0 1px 0 rgba(255, 255, 255, 0.15) !important;
   transition: all 0.3s ease !important;
-  color: rgba(255, 255, 255, 0.95) !important;
+  color: var(--shepherd-text) !important;
   font-family: Arial, Helvetica, sans-serif !important;
   max-width: calc(100vw - 6rem) !important;
   z-index: 100 !important;
   margin: 1rem !important;
   pointer-events: auto !important;
+}
+
+:root .shepherd-element {
+  backdrop-filter: none !important;
+  box-shadow: var(--shepherd-shadow) !important;
+}
+
+.dark .shepherd-element {
+  backdrop-filter: blur(10px) !important;
+  box-shadow:
+    var(--shepherd-shadow),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15) !important;
 }
 
 /* Prevent focus trap on mobile - critical for keyboard input */
@@ -141,7 +305,7 @@ textarea,
 }
 
 .shepherd-text {
-  color: rgba(255, 255, 255, 0.9) !important;
+  color: var(--shepherd-text) !important;
   font-size: 1rem !important;
   line-height: 1.5 !important;
   margin: 0 !important;
@@ -155,7 +319,7 @@ textarea,
 }
 
 .shepherd-title {
-  color: rgba(255, 255, 255, 0.95) !important;
+  color: var(--shepherd-text) !important;
   font-size: 1.125rem !important;
   font-weight: 600 !important;
   margin: 0 !important;
@@ -171,44 +335,42 @@ textarea,
 }
 
 .shepherd-button {
-  background: rgba(255, 255, 255, 0.18) !important;
-  backdrop-filter: blur(8px) !important;
-  -webkit-backdrop-filter: blur(8px) !important;
-  border: 1px solid rgba(255, 255, 255, 0.18) !important;
+  background: var(--shepherd-btn-bg) !important;
+  border: 1px solid var(--shepherd-btn-border) !important;
   border-radius: 0.5rem !important;
-  color: rgba(255, 255, 255, 0.95) !important;
+  color: var(--shepherd-btn-text) !important;
   font-size: 0.875rem !important;
   font-weight: 500 !important;
   padding: 0.5rem 1rem !important;
   transition: all 0.2s ease !important;
+  box-shadow:
+    0 4px 16px rgba(0, 0, 0, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1) !important;
+}
+
+.dark .shepherd-button {
+  backdrop-filter: blur(8px) !important;
+  -webkit-backdrop-filter: blur(8px) !important;
   box-shadow:
     0 4px 16px rgba(0, 0, 0, 0.2),
     inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
 }
 
 .shepherd-button:hover {
-  background: rgba(255, 255, 255, 0.25) !important;
-  box-shadow:
-    0 6px 24px rgba(0, 0, 0, 0.25),
-    inset 0 1px 0 rgba(255, 255, 255, 0.28) !important;
+  opacity: 0.85 !important;
   transform: translateY(-1px) !important;
 }
 
 .shepherd-button:active {
   transform: translateY(0) scale(0.98) !important;
-  box-shadow:
-    0 2px 8px rgba(0, 0, 0, 0.3),
-    inset 0 2px 4px rgba(0, 0, 0, 0.3) !important;
 }
 
 .shepherd-button.shepherd-button-secondary {
-  background: rgba(255, 255, 255, 0.12) !important;
-  color: rgba(255, 255, 255, 0.8) !important;
+  opacity: 0.75 !important;
 }
 
 .shepherd-button.shepherd-button-secondary:hover {
-  background: rgba(255, 255, 255, 0.2) !important;
-  color: rgba(255, 255, 255, 0.95) !important;
+  opacity: 0.9 !important;
 }
 
 .shepherd-cancel-icon {
@@ -296,7 +458,6 @@ textarea,
   position: relative !important;
   animation: shepherd-pulse 2s ease-in-out infinite !important;
   transition: filter 0.2s ease-out !important;
-  /* isolation: isolate !important; */
 }
 
 .shepherd-target::before {
@@ -322,13 +483,6 @@ textarea,
 .shepherd-target:focus-within::before {
   animation-play-state: paused !important;
 }
-
-/* Hide shepherd tooltip when target has focus */
-/* body:has(.shepherd-target:focus-within) .shepherd-element {
-  opacity: 0 !important;
-  pointer-events: none !important;
-  transition: opacity 0.15s ease-out !important;
-} */
 
 /* Center tooltip variant - positions tooltip in center of screen */
 .shepherd-element.center-tooltip {
@@ -370,11 +524,11 @@ textarea,
 .thinking-shine {
   background: linear-gradient(
     90deg,
-    rgba(255, 255, 255, 0.9) 0%,
-    rgba(255, 255, 255, 0.9) 40%,
-    rgba(255, 255, 255, 0.3) 50%,
-    rgba(255, 255, 255, 0.9) 60%,
-    rgba(255, 255, 255, 0.9) 100%
+    var(--text-primary) 0%,
+    var(--text-primary) 40%,
+    var(--text-muted) 50%,
+    var(--text-primary) 60%,
+    var(--text-primary) 100%
   );
   background-size: 800px 100%;
   background-clip: text;

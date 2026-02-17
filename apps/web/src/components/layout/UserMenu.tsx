@@ -118,7 +118,7 @@ export function UserMenu() {
             <Button
               variant='ghost'
               size='icon'
-              className='h-10 w-10 rounded-full border border-white/10 bg-white/5 text-white hover:bg-white/15'
+              className='h-10 w-10 rounded-full border border-border-default bg-surface-primary text-text-primary hover:bg-interactive-hover'
               aria-label='Open user menu'
             >
               <Avatar className='h-9 w-9'>
@@ -143,7 +143,7 @@ export function UserMenu() {
                 <span className='text-sm font-semibold'>
                   {profile?.name || initials}
                 </span>
-                <span className='text-xs text-white/60'>{email}</span>
+                <span className='text-xs text-text-secondary'>{email}</span>
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuItem
@@ -183,7 +183,7 @@ export function UserMenu() {
                     handleSelectSubscriptions();
                   }}
                   className={`flex items-center gap-2 ${
-                    isProOrBusiness ? '' : 'text-blue-400 hover:text-blue-300'
+                    isProOrBusiness ? '' : 'text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300'
                   }`}
                 >
                   <ArrowUpCircle className='h-4 w-4' />
@@ -200,7 +200,7 @@ export function UserMenu() {
                     handleSignOut();
                   }
                 }}
-                className='flex items-center gap-2 text-red-300 hover:text-red-200'
+                className='flex items-center gap-2 text-red-600 hover:text-red-500 dark:text-red-300 dark:hover:text-red-200'
               >
                 <LogOut className='h-4 w-4' />
                 <span>{isSigningOut ? 'Signing out…' : 'Log out'}</span>

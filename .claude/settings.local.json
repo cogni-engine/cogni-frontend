@@ -4,7 +4,12 @@
       "Bash(ls:*)",
       "Bash(find:*)",
       "Bash(pnpm install:*)",
-      "Bash(npx tsc:*)"
+      "Bash(npx tsc:*)",
+      "Bash(cat:*)",
+      "Bash(head:*)",
+      "Bash(sort:*)",
+      "Bash(pnpm add:*)",
+      "Bash(pnpm --filter @cogni/web exec next build:*)"
     ]
   }
 }

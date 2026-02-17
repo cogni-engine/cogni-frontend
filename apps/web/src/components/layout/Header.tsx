@@ -165,18 +165,18 @@ export default function Header() {
                   size='icon'
                   className='size-12'
                 >
-                  <TextAlignStart className='w-5 h-5 text-white' />
+                  <TextAlignStart className='w-5 h-5 text-text-primary' />
                 </GlassButton>
               </div>
             )}
 
             {/* Logo */}
             <h1
-              className={`text-lg font-semibold text-white ${pathname === '/workspace' || pathname === '/notes' || pathname === '/user/tasks' ? 'ml-2' : ''}`}
+              className={`text-lg font-semibold text-text-primary ${pathname === '/workspace' || pathname === '/notes' || pathname === '/user/tasks' ? 'ml-2' : ''}`}
             >
               Cogno
               {pageTitle && (
-                <span className='text-base text-white/60 font-normal'>
+                <span className='text-base text-text-secondary font-normal'>
                   {' '}
                   | {pageTitle}
                 </span>
@@ -200,9 +200,9 @@ export default function Header() {
                   className='size-12'
                   data-shepherd-target='notification-bell'
                 >
-                  <BellIcon className='w-5 h-5 text-white' />
+                  <BellIcon className='w-5 h-5 text-text-primary' />
                   {unreadCount > 0 && (
-                    <span className='absolute -top-1 -right-1 h-2 w-2 rounded-full bg-red-500 border border-black/50' />
+                    <span className='absolute -top-1 -right-1 h-2 w-2 rounded-full bg-red-500 border border-border-default' />
                   )}
                 </GlassButton>
               )}

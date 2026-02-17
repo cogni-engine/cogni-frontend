@@ -29,7 +29,7 @@ export default function BottomNav() {
           <div className='relative flex items-center justify-around p-1'>
             {/* Sliding background indicator - positioned via CSS calc */}
             <div
-              className='absolute h-[calc(100%-8px)] rounded-full bg-white/10 backdrop-blur-sm transition-all duration-500 ease-out'
+              className='absolute h-[calc(100%-8px)] rounded-full bg-nav-indicator dark:backdrop-blur-sm transition-all duration-500 ease-out'
               style={{
                 width: `calc(${tabWidthPercent}% - 8px)`,
                 left: `calc(${activeIndex * tabWidthPercent}% + 4px)`,
@@ -49,12 +49,12 @@ export default function BottomNav() {
                   data-nav-link={tab.path}
                 >
                   <div
-                    className={`transition-colors duration-300 ${isActive ? 'text-white' : 'text-gray-400 group-hover:text-white'}`}
+                    className={`transition-colors duration-300 ${isActive ? 'text-text-primary' : 'text-nav-text-inactive group-hover:text-text-primary'}`}
                   >
                     {tab.icon}
                   </div>
                   <span
-                    className={`text-xs font-medium transition-colors duration-300 ${isActive ? 'text-white' : 'text-gray-400 group-hover:text-white'}`}
+                    className={`text-xs font-medium transition-colors duration-300 ${isActive ? 'text-text-primary' : 'text-nav-text-inactive group-hover:text-text-primary'}`}
                   >
                     {tab.name}
                   </span>
