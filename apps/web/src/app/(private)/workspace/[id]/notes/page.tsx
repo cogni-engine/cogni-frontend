@@ -421,7 +421,7 @@ export default function WorkspaceNotesPage() {
     };
 
     return (
-      <GlassCard
+      <div
         key={note.id}
         data-shepherd-target={
           tutorialNoteId === note.id ? 'tutorial-note' : undefined
@@ -508,7 +508,7 @@ export default function WorkspaceNotesPage() {
               </div>
             )}
         </div>
-      </GlassCard>
+      </div>
     );
   };
 

@@ -10,7 +10,6 @@ import {
 } from 'react';
 import { useEditor, EditorContent } from '@tiptap/react';
 import { ArrowUp, Square, Loader2 } from 'lucide-react';
-import { VoiceInputButton } from './VoiceInputButton';
 import { useTiptapExtensions } from '@/components/tiptap/extensions/useTiptapExtensions';
 import {
   extractMemberMentions,
@@ -18,6 +17,8 @@ import {
 } from '@/lib/tiptap/extractMentions';
 import type { WorkspaceMember } from '@/types/workspace';
 import type { Note } from '@/types/note';
+import GlassCard from '../glass-design/GlassCard';
+import GlassButton from '../glass-design/GlassButton';
 
 interface TiptapChatInputProps {
   onSend: (
@@ -399,13 +400,13 @@ const TiptapChatInput = forwardRef<TiptapChatInputRef, TiptapChatInputProps>(
 
     return (
       <div className='flex-1 relative min-w-0'>
-        <div
+        <GlassCard
           ref={editorRef}
-          className='w-full bg-surface-overlay dark:backdrop-blur-sm rounded-4xl border border-border-default focus-within:shadow-card-hover transition-all duration-300 shadow-card'
+          className='w-full dark:backdrop-blur-sm rounded-4xl'
         >
           {topContent}
           <EditorContent editor={editor} />
-        </div>
+        </GlassCard>
         {/* マイクボタン - 送信ボタンの左 */}
         {/* <div className='absolute right-[50px] bottom-1.5 z-10'>
           <VoiceInputButton
@@ -417,7 +418,7 @@ const TiptapChatInput = forwardRef<TiptapChatInputRef, TiptapChatInputProps>(
         </div> */}
 
         {/* 送信ボタン / 停止ボタン */}
-        <button
+        <GlassButton
           type='button'
           onClick={isLoading && canStop ? handleStop : handleSend}
           onMouseDown={e => e.preventDefault()}
@@ -447,7 +448,7 @@ const TiptapChatInput = forwardRef<TiptapChatInputRef, TiptapChatInputProps>(
           ) : (
             <ArrowUp className='w-4 h-4' />
           )}
-        </button>
+        </GlassButton>
       </div>
     );
   }

@@ -10,6 +10,7 @@ import {
 } from '@/components/ui/drawer';
 import { useNativeImagePicker } from '@/hooks/useNativeImagePicker';
 import { useNativeDocumentPicker } from '@/hooks/useNativeDocumentPicker';
+import GlassButton from '../glass-design/GlassButton';
 
 type FileUploadMenuProps = {
   onFilesSelected: (files: File[]) => void;
@@ -108,7 +109,7 @@ export default function FileUploadMenu({
   return (
     <>
       <div className='flex flex-col items-center gap-3'>
-        <button
+        <GlassButton
           type='button'
           onClick={() => {
             if (disabled) return;
@@ -132,7 +133,7 @@ export default function FileUploadMenu({
             <line x1='12' y1='5' x2='12' y2='19'></line>
             <line x1='5' y1='12' x2='19' y2='12'></line>
           </svg>
-        </button>
+        </GlassButton>
 
         {/* Hidden file inputs */}
         <input

@@ -13,12 +13,12 @@ import {
   GitBranch,
 } from 'lucide-react';
 import GlassCard from '@/components/glass-design/GlassCard';
-import GlassButton from '@/components/glass-design/GlassButton';
 import { useWorkspace, useWorkspaceMembers } from '@/hooks/useWorkspace';
 import { getCurrentUserId } from '@/lib/cookies';
 import FolderActionButton from '@/components/FolderActionButton';
 import WorkspaceActivityDrawer from '@/features/workspace/components/activity/WorkspaceActivityDrawer';
 import { WorkspaceProvider } from '@/features/workspace/contexts/WorkspaceContext';
+import GlassButton from '@/components/glass-design/GlassButton';
 
 type ViewType = 'chat' | 'notes' | 'members' | 'menu';
 
@@ -95,7 +95,6 @@ export default function WorkspaceLayout({
             <GlassButton
               onClick={handleBackNavigation}
               title='Go back'
-              size='icon'
               className='size-12'
               data-shepherd-target='workspace-back-button'
             >
@@ -160,11 +159,11 @@ export default function WorkspaceLayout({
         {/* Navigation Tabs - Absolutely Positioned */}
         {(currentView === 'chat' || currentView === 'notes') && (
           <div className='absolute w-full top-17 left-1/2 -translate-x-1/2 z-50 px-2 md:px-6 pointer-events-none'>
-            <GlassCard className='overflow-hidden rounded-3xl border backdrop-blur-md shadow-[0_8px_32px_rgba(0,0,0,0.15)] pointer-events-auto'>
+            <GlassCard className='overflow-hidden rounded-3xl backdrop-blur-md pointer-events-auto'>
               <div className='relative flex items-center p-1'>
-                {/* Sliding background indicator */}
+                {/* Sliding background indicator — glass-on-glass */}
                 <div
-                  className='absolute h-[calc(100%-8px)] rounded-2xl bg-interactive-hover dark:backdrop-blur-sm transition-all duration-500 ease-out'
+                  className='absolute h-[calc(100%-8px)] rounded-2xl liquid-glass-indicator transition-all duration-500 ease-out'
                   style={{
                     width: 'calc(50% - 6px)',
                     left: currentView === 'chat' ? '4px' : 'calc(50% + 2px)',

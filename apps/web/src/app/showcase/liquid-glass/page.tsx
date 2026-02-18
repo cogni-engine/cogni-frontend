@@ -3,7 +3,6 @@
 import { Plus, Search, Star } from 'lucide-react';
 import LiquidGlassButton from '@/components/glass-design/liquid-glass/LiquidGlassButton';
 import LiquidGlassCard from '@/components/glass-design/liquid-glass/LiquidGlassCard';
-import LiquidGlassFilters from '@/components/glass-design/liquid-glass/LiquidGlassFilters';
 
 export default function LiquidGlassShowcasePage() {
   return (
@@ -16,8 +15,6 @@ export default function LiquidGlassShowcasePage() {
         animation: 'scrollBg 60s linear infinite',
       }}
     >
-      <LiquidGlassFilters />
-
       {/* Card showcase */}
       <LiquidGlassCard className='rounded-[24px] p-8 w-[340px]'>
         <h2 className='text-white text-xl font-semibold mb-2'>

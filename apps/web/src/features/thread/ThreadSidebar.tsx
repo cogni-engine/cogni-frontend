@@ -70,7 +70,7 @@ export default function ThreadSidebar() {
 
   return (
     <div
-      className={`fixed top-0 left-0 h-full bg-background/80 backdrop-blur-xl transition-all duration-300 ease-in-out z-40 overflow-hidden border-r border-border-default ${
+      className={`fixed top-0 left-0 h-full bg-background backdrop-blur-xl transition-all duration-300 ease-in-out z-40 overflow-hidden border-r border-border-default ${
         isThreadSidebarOpen ? 'w-60 translate-x-0' : 'w-0 -translate-x-full'
       }`}
     >

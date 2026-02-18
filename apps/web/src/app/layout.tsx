@@ -52,6 +52,7 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
+        <LiquidGlassFilters />
         <ThemeProvider>
           <QueryProvider>{children}</QueryProvider>
         </ThemeProvider>
