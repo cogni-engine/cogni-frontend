@@ -516,7 +516,7 @@ function WorkspaceMessageItem({
                     />
                   )}
                   {message.text && (
-                    <div className='text-sm text-white'>
+                    <div className='text-sm text-text-primary'>
                       {isEditing ? (
                         <div className='flex flex-col gap-2'>
                           <textarea
@@ -524,15 +524,13 @@ function WorkspaceMessageItem({
                             value={editText}
                             onChange={e => setEditText(e.target.value)}
                             onKeyDown={handleEditKeyDown}
-                            className='w-full min-h-[60px] bg-white/10 border border-white/20 rounded-xl px-3 py-2 text-sm text-white resize-none focus:outline-none focus:border-white/40'
-                            rows={Math.min(
-                              editText.split('\n').length + 1,
-                              6
-                            )}
+                            className='w-full min-h-[60px] bg-white/10 border border-white/20 rounded-xl px-3 py-2 text-sm text-text-primary resize-none focus:outline-none focus:border-white/40'
+                            rows={Math.min(editText.split('\n').length + 1, 6)}
                           />
                           {(() => {
                             const trimmed = editText.trim();
-                            const canSubmit = !!trimmed && trimmed !== message.text;
+                            const canSubmit =
+                              !!trimmed && trimmed !== message.text;
                             return (
                               <div className='flex items-center gap-2 justify-end'>
                                 <button
@@ -589,7 +587,7 @@ function WorkspaceMessageItem({
                           {isOverflowing && !isOptimistic && (
                             <button
                               onClick={() => openChatMessageDrawer(message)}
-                              className='mt-1 text-xs text-blue-400 hover:underline'
+                              className='mt-1 text-xs text-blue-600 dark:text-blue-400 hover:underline'
                             >
                               See All
                             </button>
