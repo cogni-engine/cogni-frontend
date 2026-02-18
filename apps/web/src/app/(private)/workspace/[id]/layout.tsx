@@ -122,12 +122,10 @@ export default function WorkspaceLayout({
               <GlassButton
                 onClick={() => setIsInviteDrawerOpen(true)}
                 title='Invite'
-                className='px-4'
+                className='gap-2 px-4 flex items-center'
               >
-                <span className='flex items-center gap-2'>
-                  <Plus className='w-5 h-5 text-text-primary' />
-                  Invite
-                </span>
+                <Plus className='w-5 h-5 text-text-primary' />
+                Invite
               </GlassButton>
             )}
             <div className='relative' ref={menuRef}>

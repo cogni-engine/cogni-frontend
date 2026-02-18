@@ -34,7 +34,7 @@ const LiquidGlassButton = React.forwardRef<
     <div className='liquid-glass-border liquid-glass-button-border absolute inset-0 rounded-full overflow-hidden pointer-events-none' />
 
     {/* Content */}
-    <span className='relative z-10'>{children}</span>
+    <span className='relative z-10 flex items-center gap-2'>{children}</span>
   </button>
 ));
 
