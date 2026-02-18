@@ -7,29 +7,68 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 import { FlatList, FlatListItem } from '@/components/FlatList';
 
-/** [text](url) をリンクとして表示（生の []() を表示しない） */
+/**
+ * メンション記法・Markdownリンクをパースしてプレビュー用テキストに変換する。
+ * - メンバーメンション [@ id="..." label="..." workspaceMemberId="..."] → @label
+ * - ノートメンション   [# id="..." label="..." noteId="..."]             → #label
+ * - Markdownリンク     [text](url)                                        → リンク表示
+ */
 function TextWithParsedLinks({ text }: { text: string }) {
-  const regex = /\[([^\]]*)\]\(([^)]*)\)/g;
+  // 統合正規表現: メンバーメンション | ノートメンション | Markdownリンク
+  const regex =
+    /\[@\s+id="[^"]*"\s+label="([^"]*)"(?:\s+workspaceMemberId="[^"]*")?\]|\[#\s+id="[^"]*"\s+label="([^"]*)"(?:\s+noteId="[^"]*")?\]|\[([^\]]*)\]\(([^)]*)\)/g;
+
   const parts: React.ReactNode[] = [];
   let lastIndex = 0;
   let match;
   while ((match = regex.exec(text)) !== null) {
-    parts.push(text.slice(lastIndex, match.index));
-    parts.push(
-      <a
-        key={match.index}
-        href={match[2]}
-        target='_blank'
-        rel='noopener noreferrer'
-        className='text-blue-600 dark:text-blue-400 underline hover:text-blue-500 dark:hover:text-blue-300'
-        onClick={e => e.stopPropagation()}
-      >
-        {match[1]}
-      </a>
-    );
+    // テキスト部分を追加
+    if (match.index > lastIndex) {
+      parts.push(text.slice(lastIndex, match.index));
+    }
+
+    if (match[1] !== undefined) {
+      // メンバーメンション → @label
+      parts.push(
+        <span
+          key={match.index}
+          className='text-blue-600 dark:text-blue-400 font-medium'
+        >
+          @{match[1]}
+        </span>
+      );
+    } else if (match[2] !== undefined) {
+      // ノートメンション → #label
+      parts.push(
+        <span
+          key={match.index}
+          className='text-blue-600 dark:text-blue-400 font-medium'
+        >
+          #{match[2]}
+        </span>
+      );
+    } else if (match[3] !== undefined) {
+      // Markdownリンク
+      parts.push(
+        <a
+          key={match.index}
+          href={match[4]}
+          target='_blank'
+          rel='noopener noreferrer'
+          className='text-blue-600 dark:text-blue-400 underline hover:text-blue-500 dark:hover:text-blue-300'
+          onClick={e => e.stopPropagation()}
+        >
+          {match[3]}
+        </a>
+      );
+    }
+
     lastIndex = regex.lastIndex;
   }
-  parts.push(text.slice(lastIndex));
+  // 残りのテキスト
+  if (lastIndex < text.length) {
+    parts.push(text.slice(lastIndex));
+  }
   return <>{parts}</>;
 }
 
