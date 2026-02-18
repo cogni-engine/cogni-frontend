@@ -75,12 +75,12 @@ export function UpdateMemberRoleDialog({
           <form onSubmit={handleUpdateRole} className='space-y-6 px-4'>
             {member && (
               <>
-                <div className='p-4 bg-white/5 rounded-xl border border-white/10'>
-                  <p className='text-white font-medium'>
+                <div className='p-4 bg-surface-primary rounded-xl border border-border-default'>
+                  <p className='text-text-primary font-medium'>
                     {getMemberDisplayName(member)}
                   </p>
-                  <p className='text-sm text-white/60'>{member.email}</p>
-                  <p className='text-xs text-white/40 mt-2'>
+                  <p className='text-sm text-text-secondary'>{member.email}</p>
+                  <p className='text-xs text-text-muted mt-2'>
                     Current role:{' '}
                     <span className='capitalize'>
                       {member.role_name || 'Member'}

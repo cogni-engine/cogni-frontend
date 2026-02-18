@@ -101,10 +101,10 @@ export default function NoteDrawer({
           {note && (
             <button
               onClick={handleNavigateToNote}
-              className='p-2 hover:bg-white/10 rounded-lg transition-colors shrink-0'
+              className='p-2 hover:bg-interactive-hover rounded-lg transition-colors shrink-0'
               title='Open note in full page'
             >
-              <SquareArrowOutUpRight className='w-5 h-5 text-gray-400 hover:text-white transition-colors' />
+              <SquareArrowOutUpRight className='w-5 h-5 text-text-muted hover:text-foreground transition-colors' />
             </button>
           )}
         </DrawerHeader>
@@ -119,13 +119,13 @@ export default function NoteDrawer({
 
           {error && (
             <div className='flex flex-col items-center justify-center py-12 text-center'>
-              <FileText className='w-12 h-12 text-gray-400 opacity-50 mb-3' />
-              <p className='text-gray-400'>{error}</p>
+              <FileText className='w-12 h-12 text-text-muted opacity-50 mb-3' />
+              <p className='text-text-muted'>{error}</p>
             </div>
           )}
 
           {note && !loading && !error && (
-            <div className='prose prose-invert max-w-none'>
+            <div className='prose dark:prose-invert max-w-none'>
               <TiptapRenderer
                 content={getNoteContent(note.text)}
                 contentType='markdown'

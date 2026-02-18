@@ -385,7 +385,7 @@ export default function WorkspaceForm({
               <div className='space-y-2'>
                 <label
                   htmlFor='workspace-title'
-                  className='text-sm font-medium text-white/80'
+                  className='text-sm font-medium text-text-secondary'
                 >
                   Workspace name
                 </label>
@@ -398,16 +398,16 @@ export default function WorkspaceForm({
                   disabled={isSubmitting}
                   autoComplete='organization'
                   autoFocus
-                  className='w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-white/20 transition-all'
+                  className='w-full px-4 py-3 bg-surface-primary border border-border-default rounded-xl text-text-primary placeholder-text-muted focus:outline-none focus:border-border-default transition-all'
                 />
               </div>
 
               <div className='space-y-3'>
-                <label className='text-sm font-medium text-white/80'>
+                <label className='text-sm font-medium text-text-secondary'>
                   Workspace icon
                 </label>
                 <div className='flex items-center gap-4'>
-                  <Avatar className='h-16 w-16 border border-white/10 text-xl'>
+                  <Avatar className='h-16 w-16 border border-border-default text-xl'>
                     {iconPreviewUrl ? (
                       <AvatarImage
                         src={iconPreviewUrl}
@@ -417,7 +417,7 @@ export default function WorkspaceForm({
                       <AvatarFallback>{initials}</AvatarFallback>
                     )}
                   </Avatar>
-                  <div className='text-sm text-white/60 flex-1'>
+                  <div className='text-sm text-text-secondary flex-1'>
                     <p>Recommended: square image, at least 256×256px.</p>
                     <p>Supported formats: PNG or JPG.</p>
                   </div>
@@ -460,12 +460,14 @@ export default function WorkspaceForm({
                   onChange={handleFileChange}
                 />
                 {iconError && (
-                  <p className='text-sm text-red-300'>{iconError}</p>
+                  <p className='text-sm text-red-600 dark:text-red-300'>
+                    {iconError}
+                  </p>
                 )}
               </div>
 
               {error && (
-                <div className='rounded-xl border border-red-500/40 bg-red-500/10 p-3 text-sm text-red-200'>
+                <div className='rounded-xl border border-red-500/40 bg-red-500/10 p-3 text-sm text-red-600 dark:text-red-200'>
                   {error}
                 </div>
               )}
@@ -474,10 +476,10 @@ export default function WorkspaceForm({
             {/* DM section - only in create mode */}
             {isCreateMode && unconnectedMembers.length > 0 && (
               <div className='mt-6 px-4'>
-                <div className='border-t border-white/10 pt-5'>
+                <div className='border-t border-border-default pt-5'>
                   <div className='flex items-center gap-2 mb-3'>
-                    <MessageCircle className='w-3.5 h-3.5 text-gray-500' />
-                    <h3 className='text-xs font-medium text-gray-500 uppercase tracking-wider'>
+                    <MessageCircle className='w-3.5 h-3.5 text-text-muted' />
+                    <h3 className='text-xs font-medium text-text-muted uppercase tracking-wider'>
                       Direct Message
                     </h3>
                   </div>
@@ -496,25 +498,25 @@ export default function WorkspaceForm({
                             member.user_id && handleDmSelect(member.user_id)
                           }
                           disabled={!!dmLoadingUserId}
-                          className='w-full flex items-center gap-3 p-3 rounded-xl hover:bg-white/5 transition-colors disabled:opacity-50'
+                          className='w-full flex items-center gap-3 p-3 rounded-xl hover:bg-surface-primary transition-colors disabled:opacity-50'
                         >
-                          <Avatar className='h-10 w-10 border border-white/10 bg-white/5 text-sm'>
+                          <Avatar className='h-10 w-10 border border-border-default bg-surface-primary text-sm'>
                             {profile?.avatar_url ? (
                               <AvatarImage
                                 src={profile.avatar_url}
                                 alt={profile.name ?? 'User'}
                               />
                             ) : (
-                              <AvatarFallback className='bg-white/5 text-white/70'>
+                              <AvatarFallback className='bg-surface-primary text-text-secondary'>
                                 {initial || <User className='w-4 h-4' />}
                               </AvatarFallback>
                             )}
                           </Avatar>
-                          <span className='text-white text-sm font-medium flex-1 text-left'>
+                          <span className='text-text-primary text-sm font-medium flex-1 text-left'>
                             {profile?.name ?? 'Unknown'}
                           </span>
                           {isDmLoading && (
-                            <Loader2 className='w-4 h-4 text-gray-400 animate-spin' />
+                            <Loader2 className='w-4 h-4 text-text-muted animate-spin' />
                           )}
                         </button>
                       );

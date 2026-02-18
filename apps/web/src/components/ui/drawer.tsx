@@ -116,7 +116,7 @@ const DrawerOverlay = React.forwardRef<HTMLDivElement, DrawerOverlayProps>(
       <div
         ref={ref}
         className={cn(
-          'fixed inset-0 bg-black/50 backdrop-blur-sm animate-in fade-in-0',
+          'fixed inset-0 bg-dialog-overlay backdrop-blur-sm animate-in fade-in-0',
           className
         )}
         style={{ zIndex }}
@@ -246,8 +246,8 @@ const DrawerContent = React.forwardRef<HTMLDivElement, DrawerContentProps>(
           ref={mergedRef}
           className={cn(
             'fixed inset-x-0 bottom-0 flex flex-col z-110',
-            'bg-white/4 backdrop-blur-sm border border-black/10',
-            'shadow-[0_8px_32px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.12)]',
+            'bg-drawer-bg dark:backdrop-blur-sm border border-border-default',
+            'shadow-card',
             'rounded-t-3xl',
             'animate-[slide-up_0.3s_ease-out]',
             className
@@ -286,7 +286,7 @@ const DrawerHandle = React.forwardRef<HTMLDivElement, DrawerHandleProps>(
         )}
         {...props}
       >
-        <div className='w-12 h-1 bg-white/20 rounded-full mx-auto' />
+        <div className='w-12 h-1 bg-drawer-handle rounded-full mx-auto' />
       </div>
     );
   }
@@ -305,7 +305,7 @@ const DrawerHeader = React.forwardRef<HTMLDivElement, DrawerHeaderProps>(
       <div
         ref={ref}
         className={cn(
-          'flex items-center justify-between px-4 py-3 border-b border-white/10',
+          'flex items-center justify-between px-4 py-3 border-b border-border-default',
           className
         )}
         {...props}
@@ -326,7 +326,7 @@ const DrawerTitle = React.forwardRef<HTMLHeadingElement, DrawerTitleProps>(
     return (
       <h3
         ref={ref}
-        className={cn('text-lg font-semibold text-white', className)}
+        className={cn('text-lg font-semibold text-text-primary', className)}
         {...props}
       />
     );
@@ -382,7 +382,7 @@ const DrawerFooter = React.forwardRef<HTMLDivElement, DrawerFooterProps>(
       <div
         ref={ref}
         className={cn(
-          'flex items-center justify-end gap-2 px-4 py-3 border-t border-white/10',
+          'flex items-center justify-end gap-2 px-4 py-3 border-t border-border-default',
           className
         )}
         {...props}
@@ -412,7 +412,7 @@ const DrawerClose = React.forwardRef<HTMLButtonElement, DrawerCloseProps>(
         ref={ref}
         type='button'
         className={cn(
-          'p-2 hover:bg-white/10 rounded-lg transition-colors',
+          'p-2 hover:bg-interactive-hover rounded-lg transition-colors',
           className
         )}
         onClick={handleClick}

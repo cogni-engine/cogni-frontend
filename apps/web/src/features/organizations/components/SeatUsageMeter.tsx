@@ -23,10 +23,10 @@ export function SeatUsageMeter({ organization }: SeatUsageMeterProps) {
   };
 
   return (
-    <div className='py-4 border-b border-white/10'>
+    <div className='py-4 border-b border-border-default'>
       <div className='flex items-center justify-between mb-3'>
         <div>
-          <div className='text-sm text-white/60 mt-1'>
+          <div className='text-sm text-text-secondary mt-1'>
             {activeCount} of {seatCount} seats used
           </div>
         </div>
@@ -36,7 +36,7 @@ export function SeatUsageMeter({ organization }: SeatUsageMeterProps) {
       </div>
 
       {/* Progress Bar */}
-      <div className='w-full bg-white/10 rounded-full h-2 overflow-hidden'>
+      <div className='w-full bg-interactive-hover rounded-full h-2 overflow-hidden'>
         <div
           className={`h-full transition-all duration-300 ${getStatusColor()}`}
           style={{

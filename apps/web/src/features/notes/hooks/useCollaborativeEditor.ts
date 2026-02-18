@@ -191,7 +191,7 @@ export function useCollaborativeEditor({
       editorProps: {
         attributes: {
           class:
-            'prose prose-invert prose-sm sm:prose-base lg:prose-lg xl:prose-xl focus:outline-none max-w-none min-h-full text-gray-300',
+            'prose dark:prose-invert prose-sm sm:prose-base lg:prose-lg xl:prose-xl focus:outline-none max-w-none min-h-full text-foreground',
         },
       },
       onCreate: ({ editor }) => {

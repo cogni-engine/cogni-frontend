@@ -41,13 +41,15 @@ const getStatusDisplay = (status: string) => {
       return {
         icon: <X className='w-3 h-3' />,
         text: 'Dismissed',
-        className: 'bg-gray-500/10 border-gray-500/20 text-gray-400/80',
+        className:
+          'bg-gray-500/10 border-gray-500/20 text-gray-500 dark:text-gray-400',
       };
     case 'ignored':
       return {
         icon: <X className='w-3 h-3' />,
         text: 'Ignored',
-        className: 'bg-gray-500/10 border-gray-500/20 text-gray-400/80',
+        className:
+          'bg-gray-500/10 border-gray-500/20 text-gray-500 dark:text-gray-400',
       };
     case 'rejected':
       return {
@@ -65,7 +67,8 @@ const getStatusDisplay = (status: string) => {
       return {
         icon: null,
         text: status,
-        className: 'bg-white/5 border-white/10 text-white/70',
+        className:
+          'bg-surface-primary border-border-default text-text-secondary',
       };
   }
 };
@@ -109,7 +112,9 @@ export default function ActivityItem({
         </div>
 
         {/* Connecting line to next item */}
-        {!isLast && <div className='w-px bg-white/10 flex-1 min-h-[40px]' />}
+        {!isLast && (
+          <div className='w-px bg-border-default flex-1 min-h-[40px]' />
+        )}
       </div>
 
       {/* Right: Content */}
@@ -125,7 +130,7 @@ export default function ActivityItem({
         {/* Header: Avatar, Name, timestamp, and View Note button */}
         <div className='flex items-center justify-between mb-2'>
           <div className='flex items-center gap-2'>
-            <Avatar className='h-6 w-6 border border-white/20 bg-white/10 text-xs'>
+            <Avatar className='h-6 w-6 border border-border-default bg-interactive-hover text-xs'>
               {activity.member_avatar_url ? (
                 <AvatarImage
                   src={activity.member_avatar_url}
@@ -137,7 +142,7 @@ export default function ActivityItem({
                 </AvatarFallback>
               )}
             </Avatar>
-            <span className='font-medium text-sm text-white'>
+            <span className='font-medium text-sm text-text-primary'>
               {activity.member_name}
             </span>
           </div>
@@ -149,7 +154,7 @@ export default function ActivityItem({
               }}
               disabled={!activity.note_id}
               className={cn(
-                'flex items-center gap-1.5 px-2 py-1 text-xs text-white/60 hover:text-white/90 hover:bg-white/10 rounded-md transition-colors',
+                'flex items-center gap-1.5 px-2 py-1 text-xs text-text-secondary hover:text-text-primary hover:bg-interactive-hover rounded-md transition-colors',
                 !activity.note_id && 'opacity-50 cursor-not-allowed'
               )}
               title={
@@ -161,7 +166,7 @@ export default function ActivityItem({
               <FileText className='w-3.5 h-3.5' />
               <span>{activity.note_title || 'View Note'}</span>
             </button>
-            <span className='text-[11px] text-white/40'>
+            <span className='text-[11px] text-text-muted'>
               {formatTimestamp(activity.updated_at)}
             </span>
           </div>
@@ -169,10 +174,10 @@ export default function ActivityItem({
 
         {/* Notification title with chevron */}
         <div className='flex items-center justify-between mb-1'>
-          <p className='text-sm text-white/90 flex-1'>{activity.title}</p>
+          <p className='text-sm text-text-primary flex-1'>{activity.title}</p>
           <ChevronDown
             className={cn(
-              'w-4 h-4 text-white/40 transition-transform duration-200',
+              'w-4 h-4 text-text-muted transition-transform duration-200',
               isExpanded && 'transform rotate-180'
             )}
           />
@@ -180,7 +185,9 @@ export default function ActivityItem({
 
         {/* Reaction text */}
         {activity.reaction_text && (
-          <p className='text-sm text-white/70 mb-2'>{activity.reaction_text}</p>
+          <p className='text-sm text-text-secondary mb-2'>
+            {activity.reaction_text}
+          </p>
         )}
 
         {/* Expandable section */}
@@ -191,29 +198,29 @@ export default function ActivityItem({
           )}
         >
           <div className='overflow-hidden'>
-            <div className='mt-3 pt-3 border-t border-white/10 space-y-3'>
+            <div className='mt-3 pt-3 border-t border-border-default space-y-3'>
               {/* Body text if available */}
               {activity.body && (
                 <div>
-                  <div className='text-xs text-white/40 uppercase tracking-wide mb-1'>
+                  <div className='text-xs text-text-muted uppercase tracking-wide mb-1'>
                     Description
                   </div>
-                  <p className='text-sm text-white/80'>{activity.body}</p>
+                  <p className='text-sm text-text-secondary'>{activity.body}</p>
                 </div>
               )}
 
               {/* Dates */}
               <div className='grid grid-cols-2 gap-3 text-xs'>
                 <div>
-                  <div className='text-white/40 mb-0.5'>Created</div>
-                  <div className='text-white/70'>
+                  <div className='text-text-muted mb-0.5'>Created</div>
+                  <div className='text-text-secondary'>
                     {formatTimestamp(activity.created_at)}
                   </div>
                 </div>
                 {activity.due_date && (
                   <div>
-                    <div className='text-white/40 mb-0.5'>Due Date</div>
-                    <div className='text-white/70'>
+                    <div className='text-text-muted mb-0.5'>Due Date</div>
+                    <div className='text-text-secondary'>
                       {formatTimestamp(activity.due_date)}
                     </div>
                   </div>

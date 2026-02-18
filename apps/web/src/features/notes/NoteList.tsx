@@ -300,7 +300,7 @@ export default function NoteList({
       >
         <div className='flex justify-between items-start gap-3 mb-1'>
           <div className='flex-1 min-w-0'>
-            <h2 className='font-semibold text-white text-[17px] leading-[1.4] line-clamp-2'>
+            <h2 className='font-semibold text-foreground text-[17px] leading-[1.4] line-clamp-2'>
               {note.title}
             </h2>
             {note.isGroupNote && note.workspace?.title && (
@@ -318,17 +318,17 @@ export default function NoteList({
                     {note.workspace.title.charAt(0).toUpperCase()}
                   </div>
                 )}
-                <span className='text-[11px] text-purple-300'>
+                <span className='text-[11px] text-purple-600 dark:text-purple-300'>
                   {note.workspace.title}
                 </span>
               </div>
             )}
           </div>
-          <span className='text-[11px] text-gray-400 whitespace-nowrap mt-0.5'>
+          <span className='text-[11px] text-text-muted whitespace-nowrap mt-0.5'>
             {note.date}
           </span>
         </div>
-        <p className='text-[13px] text-gray-400 leading-[1.6] line-clamp-1'>
+        <p className='text-[13px] text-text-muted leading-[1.6] line-clamp-1'>
           {note.preview || 'No Content'}
         </p>
       </GlassCard>
@@ -372,7 +372,7 @@ export default function NoteList({
             ) : (
               <>
                 {/* Time Group Header */}
-                <h3 className='text-sm font-medium text-gray-400 mb-3 px-1'>
+                <h3 className='text-sm font-medium text-text-muted mb-3 px-1'>
                   {group}
                 </h3>
                 <div className='flex flex-col gap-[14px]'>

@@ -153,8 +153,8 @@ export default function CheckoutPage() {
     return (
       <div className='flex items-center justify-center min-h-screen'>
         <div className='flex flex-col items-center gap-4'>
-          <Loader2 className='h-8 w-8 animate-spin text-white' />
-          <p className='text-white/60'>Loading checkout...</p>
+          <Loader2 className='h-8 w-8 animate-spin text-foreground' />
+          <p className='text-text-secondary'>Loading checkout...</p>
         </div>
       </div>
     );
@@ -165,8 +165,8 @@ export default function CheckoutPage() {
       <div className='flex items-center justify-center min-h-screen px-4'>
         <GlassCard className='max-w-md w-full p-6'>
           <div className='space-y-4'>
-            <h1 className='text-2xl font-semibold text-white'>Error</h1>
-            <p className='text-white/60'>{error || 'Plan not found'}</p>
+            <h1 className='text-2xl font-semibold text-foreground'>Error</h1>
+            <p className='text-text-secondary'>{error || 'Plan not found'}</p>
             <Button
               onClick={() => router.push('/workspace')}
               variant='outline'
@@ -199,10 +199,12 @@ export default function CheckoutPage() {
               <GlassCard className='p-6 md:p-8'>
                 <div className='space-y-6'>
                   <div>
-                    <h1 className='text-3xl font-bold text-white mb-2'>
+                    <h1 className='text-3xl font-bold text-foreground mb-2'>
                       Complete Your Purchase
                     </h1>
-                    <p className='text-white/60'>Upgrade to {plan.name} plan</p>
+                    <p className='text-text-secondary'>
+                      Upgrade to {plan.name} plan
+                    </p>
                   </div>
                 </div>
               </GlassCard>
@@ -213,7 +215,7 @@ export default function CheckoutPage() {
               <GlassCard className='p-6 md:p-8'>
                 <div className='space-y-4'>
                   <div className='lg:hidden'>
-                    <h2 className='text-xl font-semibold text-white mb-2'>
+                    <h2 className='text-xl font-semibold text-foreground mb-2'>
                       Payment Details
                     </h2>
                   </div>

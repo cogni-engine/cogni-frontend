@@ -20,17 +20,19 @@ function CheckoutSuccessContent() {
         </div>
 
         <div className='space-y-2'>
-          <h1 className='text-3xl font-bold text-white'>Payment Successful!</h1>
-          <p className='text-white/60'>
+          <h1 className='text-3xl font-bold text-foreground'>
+            Payment Successful!
+          </h1>
+          <p className='text-text-secondary'>
             Your subscription has been activated successfully.
           </p>
         </div>
 
         {subscriptionPlan && (
-          <div className='rounded-lg border border-white/10 bg-white/5 p-4'>
-            <p className='text-sm text-white/60 mb-1'>Current Plan</p>
+          <div className='rounded-lg border border-border-default bg-surface-primary p-4'>
+            <p className='text-sm text-text-secondary mb-1'>Current Plan</p>
             <div className='flex items-center justify-center gap-2'>
-              <p className='text-xl font-semibold text-white capitalize'>
+              <p className='text-xl font-semibold text-foreground capitalize'>
                 {subscriptionPlan}
               </p>
               <Sparkles className='h-5 w-5 text-purple-400' />
@@ -70,10 +72,10 @@ export default function CheckoutSuccessPage() {
               </div>
             </div>
             <div className='space-y-2'>
-              <h1 className='text-3xl font-bold text-white'>
+              <h1 className='text-3xl font-bold text-foreground'>
                 Payment Successful!
               </h1>
-              <p className='text-white/60'>Loading...</p>
+              <p className='text-text-secondary'>Loading...</p>
             </div>
           </div>
         </div>

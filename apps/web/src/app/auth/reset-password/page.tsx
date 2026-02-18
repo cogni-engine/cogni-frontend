@@ -21,7 +21,6 @@ export default function ResetPasswordPage() {
       async (event, session) => {
         if (event === 'PASSWORD_RECOVERY') {
           console.log('Password recovery event received');
-          // User has clicked the reset link and is ready to set a new password
         }
       }
     );
@@ -48,27 +47,13 @@ export default function ResetPasswordPage() {
     const result = await handleUpdatePassword(password);
 
     if (result.success) {
-      // Redirect to login with success message
       router.push('/login?message=password-updated');
     }
   };
 
   return (
-    <div className='min-h-screen flex items-center justify-center bg-black px-4'>
-      <div className='w-full max-w-md bg-zinc-900/50 rounded-3xl p-8 shadow-2xl backdrop-blur-sm border border-white/10'>
-        <style
-          dangerouslySetInnerHTML={{
-            __html: `
-            input:-webkit-autofill,
-            input:-webkit-autofill:hover,
-            input:-webkit-autofill:focus,
-            input:-webkit-autofill:active {
-              transition: background-color 5000s ease-in-out 0s;
-              -webkit-text-fill-color: white !important;
-            }
-          `,
-          }}
-        />
+    <div className='min-h-screen flex items-center justify-center bg-background px-4'>
+      <div className='w-full max-w-md bg-dialog-bg rounded-3xl p-8 shadow-2xl dark:backdrop-blur-sm border border-border-default'>
         <div className='flex flex-col items-center mb-8'>
           <Image
             src='/favicon.svg'
@@ -77,10 +62,10 @@ export default function ResetPasswordPage() {
             height={40}
             className='rounded-xl mb-6'
           />
-          <h1 className='text-2xl font-semibold text-center text-white mb-2'>
+          <h1 className='text-2xl font-semibold text-center text-text-primary mb-2'>
             Set new password
           </h1>
-          <p className='text-gray-400 text-center text-sm'>
+          <p className='text-text-muted text-center text-sm'>
             Enter your new password below
           </p>
         </div>
@@ -92,7 +77,7 @@ export default function ResetPasswordPage() {
               placeholder='New password'
               value={password}
               onChange={e => setPassword(e.target.value)}
-              className='w-full bg-transparent text-white text-base py-2 pr-10 border-b border-zinc-700 focus:outline-none placeholder:text-gray-500 caret-white'
+              className='w-full bg-transparent text-text-primary text-base py-2 pr-10 border-b border-border-default focus:outline-none placeholder:text-input-placeholder caret-text-primary'
               autoComplete='new-password'
               required
             />
@@ -104,14 +89,14 @@ export default function ResetPasswordPage() {
               placeholder='Confirm password'
               value={confirmPassword}
               onChange={e => setConfirmPassword(e.target.value)}
-              className='w-full bg-transparent text-white text-base py-2 pr-10 border-b border-zinc-700 focus:outline-none placeholder:text-gray-500 caret-white'
+              className='w-full bg-transparent text-text-primary text-base py-2 pr-10 border-b border-border-default focus:outline-none placeholder:text-input-placeholder caret-text-primary'
               autoComplete='new-password'
               required
             />
             <button
               type='button'
               onClick={() => setShowPassword(!showPassword)}
-              className='absolute right-0 bottom-2 text-gray-400 hover:text-gray-300 p-1'
+              className='absolute right-0 bottom-2 text-text-muted hover:text-text-secondary p-1'
               tabIndex={-1}
             >
               {showPassword ? (
@@ -159,11 +144,11 @@ export default function ResetPasswordPage() {
           <button
             type='submit'
             disabled={loading}
-            className='w-full inline-flex items-center justify-center rounded-full bg-white px-6 py-2 font-medium text-black transition hover:bg-gray-100 active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed'
+            className='w-full inline-flex items-center justify-center rounded-full bg-foreground px-6 py-2 font-medium text-background transition hover:opacity-90 active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed'
           >
             {loading ? (
               <span className='inline-flex items-center gap-2'>
-                <span className='h-4 w-4 animate-spin rounded-full border-2 border-black/40 border-t-black' />
+                <span className='h-4 w-4 animate-spin rounded-full border-2 border-background/40 border-t-background' />
                 <span>Updating password...</span>
               </span>
             ) : (

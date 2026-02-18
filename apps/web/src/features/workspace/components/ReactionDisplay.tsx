@@ -59,8 +59,8 @@ export default function ReactionDisplay({
               }
               className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-sm transition-colors ${
                 hasCurrentUser
-                  ? 'bg-white/20 text-white'
-                  : 'text-white/80 hover:bg-white/10'
+                  ? 'bg-interactive-active text-text-primary'
+                  : 'text-text-secondary hover:bg-interactive-hover'
               }`}
             >
               <span>{emoji}</span>
@@ -70,9 +70,9 @@ export default function ReactionDisplay({
             </button>
             {/* クリック時にリアクションした人の一覧を表示 */}
             {isOpen && (
-              <div className='absolute bottom-full left-0 mb-1 min-w-[160px] max-w-[240px] rounded-lg bg-black/90 backdrop-blur-xl border border-white/10 shadow-xl z-50 overflow-hidden'>
-                <div className='px-3 py-2 border-b border-white/10'>
-                  <span className='text-xs text-white/60'>
+              <div className='absolute bottom-full left-0 mb-1 min-w-[160px] max-w-[240px] rounded-lg bg-dropdown-bg dark:backdrop-blur-xl border border-border-default shadow-xl z-50 overflow-hidden'>
+                <div className='px-3 py-2 border-b border-border-default'>
+                  <span className='text-xs text-text-secondary'>
                     {emoji} のリアクション
                   </span>
                 </div>
@@ -87,7 +87,7 @@ export default function ReactionDisplay({
                     return (
                       <li
                         key={r.id}
-                        className='flex items-center gap-2 px-3 py-1.5 hover:bg-white/5'
+                        className='flex items-center gap-2 px-3 py-1.5 hover:bg-surface-primary'
                       >
                         <Avatar className='h-6 w-6 shrink-0'>
                           {avatarUrl ? (
@@ -98,10 +98,12 @@ export default function ReactionDisplay({
                             </AvatarFallback>
                           )}
                         </Avatar>
-                        <span className='text-sm text-white truncate flex-1'>
+                        <span className='text-sm text-text-primary truncate flex-1'>
                           {name}
                           {isCurrentUser && (
-                            <span className='text-white/50 ml-1'>(あなた)</span>
+                            <span className='text-text-muted ml-1'>
+                              (あなた)
+                            </span>
                           )}
                         </span>
                       </li>
@@ -109,7 +111,7 @@ export default function ReactionDisplay({
                   })}
                 </ul>
                 {hasCurrentUser && (
-                  <div className='border-t border-white/10 p-2'>
+                  <div className='border-t border-border-default p-2'>
                     <button
                       type='button'
                       onClick={() => {

@@ -12,10 +12,10 @@ export const AIInitiatedMessageWrapper = ({
   return (
     <div
       className='
-      border border-white/20 
-      shadow-[0_0_5px_rgba(255,255,255,0.4)]
-      bg-white/3
-      backdrop-blur-md
+      border border-border-default
+      shadow-card
+      bg-surface-overlay
+      dark:backdrop-blur-md
       rounded-[1.618rem]
       px-6
       py-2

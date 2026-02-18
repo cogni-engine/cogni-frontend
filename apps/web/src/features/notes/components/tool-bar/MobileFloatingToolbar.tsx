@@ -239,7 +239,7 @@ export function MobileFloatingToolbar({
             {!isEditorFocused ? (
               // AI Input Mode (when keyboard is not shown)
               <div className='flex items-center px-2'>
-                <Sparkles className='mr-2 size-5 text-gray-400 shrink-0' />
+                <Sparkles className='mr-2 size-5 text-text-muted shrink-0' />
                 <input
                   type='text'
                   value={aiInstruction}
@@ -259,7 +259,7 @@ export function MobileFloatingToolbar({
                     }
                   }}
                   placeholder='Ask AI to edit this note...'
-                  className='flex-1 bg-transparent text-white text-base outline-none placeholder-white/50'
+                  className='flex-1 bg-transparent text-foreground text-base outline-none placeholder-input-placeholder'
                   disabled={aiLoading}
                 />
                 <GlassButton
@@ -288,8 +288,8 @@ export function MobileFloatingToolbar({
                   title='Back to toolbar'
                   variant='minimal'
                 />
-                <div className='w-px h-6 bg-white/20 shrink-0 mx-1' />
-                <Sparkles className='mr-2 size-5 text-gray-400 shrink-0' />
+                <div className='w-px h-6 bg-border-default shrink-0 mx-1' />
+                <Sparkles className='mr-2 size-5 text-text-muted shrink-0' />
                 <input
                   type='text'
                   value={aiInstruction}
@@ -309,7 +309,7 @@ export function MobileFloatingToolbar({
                     }
                   }}
                   placeholder='Ask AI to edit...'
-                  className='flex-1 bg-transparent text-white text-base outline-none placeholder-white/50 min-w-0'
+                  className='flex-1 bg-transparent text-foreground text-base outline-none placeholder-input-placeholder min-w-0'
                   disabled={aiLoading}
                 />
                 <GlassButton
@@ -335,7 +335,7 @@ export function MobileFloatingToolbar({
                     isActive={false}
                     disabled={false}
                     icon={createElement(Sparkles, {
-                      className: 'w-5 h-5 text-gray-400',
+                      className: 'w-5 h-5 text-text-muted',
                     })}
                     title='AI Assistant'
                     variant='minimal'
@@ -343,7 +343,7 @@ export function MobileFloatingToolbar({
                 </div>
 
                 {/* Divider */}
-                <div className='w-px h-6 bg-white/20 shrink-0 mr-1' />
+                <div className='w-px h-6 bg-border-default shrink-0 mr-1' />
 
                 {/* CENTER: Scrollable Toolbar Items */}
                 <div className='flex-1 overflow-x-auto scrollbar-hide touch-pan-x'>
@@ -398,7 +398,7 @@ export function MobileFloatingToolbar({
                 </div>
 
                 {/* Divider */}
-                <div className='w-px h-6 bg-white/20 shrink-0' />
+                <div className='w-px h-6 bg-border-default shrink-0' />
 
                 {/* RIGHT: Close Button (Fixed) */}
                 <div className='shrink-0'>

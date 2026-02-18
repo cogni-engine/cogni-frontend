@@ -34,7 +34,7 @@ export function MemberCard({
   const showActions = canManage && !isCurrentUser && !memberIsOwner;
 
   return (
-    <div className='p-4 bg-white/5 rounded-lg border border-white/10 flex items-center justify-between'>
+    <div className='p-4 bg-surface-primary rounded-lg border border-border-default flex items-center justify-between'>
       <div className='flex items-center gap-3'>
         {/* Avatar */}
         <Avatar className='h-10 w-10'>
@@ -53,27 +53,27 @@ export function MemberCard({
         {/* User Info */}
         <div>
           <div className='flex items-center gap-2'>
-            <p className='text-white font-medium'>
+            <p className='text-text-primary font-medium'>
               {getMemberDisplayName(member)}
             </p>
             {isCurrentUser && (
-              <span className='text-xs text-white/40'>(You)</span>
+              <span className='text-xs text-text-muted'>(You)</span>
             )}
           </div>
-          <p className='text-sm text-white/60'>{member.email}</p>
+          <p className='text-sm text-text-secondary'>{member.email}</p>
         </div>
       </div>
 
       {/* Role & Actions */}
       <div className='flex items-center gap-3'>
-        <span className='text-sm text-white/60 capitalize'>
+        <span className='text-sm text-text-secondary capitalize'>
           {member.role_name || 'Member'}
         </span>
 
         {showActions && (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <button className='h-8 w-8 flex items-center justify-center rounded-lg hover:bg-white/10 transition-colors text-white/60 hover:text-white'>
+              <button className='h-8 w-8 flex items-center justify-center rounded-lg hover:bg-interactive-hover transition-colors text-text-secondary hover:text-text-primary'>
                 <MoreVertical className='h-4 w-4' />
               </button>
             </DropdownMenuTrigger>
@@ -82,7 +82,7 @@ export function MemberCard({
               sideOffset={8}
               className='w-48 z-110 p-0 border-0 bg-transparent shadow-none'
             >
-              <GlassCard className='rounded-3xl p-2 bg-white/4'>
+              <GlassCard className='rounded-3xl p-2 bg-surface-primary'>
                 <DropdownMenuItem
                   onClick={() => onUpdateRole(member)}
                   className='cursor-pointer flex items-center gap-2 rounded-full'

@@ -12,7 +12,7 @@ import { AvatarCard } from './components/AvatarCard';
 import { AvatarCropDialog } from './components/AvatarCropDialog';
 import { AiSuggestionToggle } from './components/AiSuggestionToggle';
 import { DeleteAccountSection } from './components/DeleteAccountSection';
-import { PlatformInfoCard } from './components/PlatformInfoCard';
+import { ThemeToggle } from './components/ThemeToggle';
 import { useUserSettings } from './hooks/useUserSettings';
 import { useNativeImagePicker } from '@/hooks/useNativeImagePicker';
 import {
@@ -183,7 +183,6 @@ export default function UserSettingsClient() {
   }, [resetFileInput]);
 
   const handleUploadClick = useCallback(async () => {
-    // Use native picker if available (mobile webview)
     if (isNativeAvailable) {
       try {
         const file = await pickImage({
@@ -191,7 +190,6 @@ export default function UserSettingsClient() {
           quality: 0.9,
         });
 
-        // Convert File to data URL for cropping
         if (!Array.isArray(file)) {
           setAvatarStatus(null);
           const dataUrl = await readFileAsDataUrl(file);
@@ -203,10 +201,8 @@ export default function UserSettingsClient() {
         }
       } catch (error) {
         console.error('Failed to pick avatar image:', error);
-        // User probably canceled, no need to show error
       }
     } else {
-      // Fallback to file input
       fileInputRef.current?.click();
     }
   }, [isNativeAvailable, pickImage, setAvatarStatus]);
@@ -222,12 +218,10 @@ export default function UserSettingsClient() {
   const handleDeleteAccount = useCallback(async () => {
     try {
       await deleteAccount();
-      // Sign out and redirect to login after successful deletion
       await signOut();
       router.push('/login');
     } catch (error) {
       console.error('Failed to delete account', error);
-      // Error is already handled in DeleteAccountSection
       throw error;
     }
   }, [deleteAccount, router]);
@@ -244,9 +238,8 @@ export default function UserSettingsClient() {
         throw new Error('Failed to restart onboarding');
       }
 
-      // Redirect to onboarding
       router.push('/onboarding');
-      router.refresh(); // Refresh to update middleware
+      router.refresh();
     } catch (error) {
       console.error('Failed to restart tutorial:', error);
       setRestartError('Failed to restart tutorial. Please try again.');
@@ -255,36 +248,17 @@ export default function UserSettingsClient() {
   }, [router, supabase]);
 
   return (
-    <div className='flex h-full flex-col gap-6 overflow-auto p-6 py-20'>
+    <div className='flex h-full flex-col gap-8 overflow-auto p-6 py-20 max-w-2xl lg:max-w-3xl mx-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden'>
       {isLoading ? (
-        <div className='flex flex-1 items-center justify-center text-white/60'>
-          Loading your settings...
+        <div className='flex flex-1 items-center justify-center text-text-secondary'>
+          Loading...
         </div>
       ) : !userId ? (
-        <div className='flex flex-1 items-center justify-center text-red-300'>
-          You need to be signed in to manage your settings.
+        <div className='flex flex-1 items-center justify-center text-red-600 dark:text-red-300'>
+          Sign in to manage settings.
         </div>
       ) : (
-        <div className='grid grid-cols-1 gap-6 lg:grid-cols-[1fr,auto]'>
-          <div className='flex flex-col gap-6'>
-            <ProfileInfoForm
-              name={name}
-              onNameChange={handleNameChange}
-              onSubmit={handleNameSubmit}
-              saving={savingName}
-              disableSave={disableNameSave}
-              status={nameStatus}
-            />
-
-            <AiSuggestionToggle
-              enabled={enableAiSuggestion}
-              onToggle={toggleAiSuggestion}
-              saving={savingAiSuggestion}
-            />
-
-            <PlatformInfoCard />
-          </div>
-
+        <>
           <AvatarCard
             avatarUrl={profile?.avatar_url}
             avatarAlt={profile?.name ?? 'User avatar'}
@@ -300,33 +274,56 @@ export default function UserSettingsClient() {
             onGenerate={handleGenerateAvatar}
             generatingAvatar={generatingAvatar}
           />
-        </div>
-      )}
 
-      {userId && (
-        <>
-          {/* Restart Tutorial Section */}
-          <div className='rounded-lg border border-white/10 bg-white/4 backdrop-blur-sm p-6 shadow-[0_8px_32px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.12)]'>
-            <h3 className='mb-2 text-lg font-medium text-white'>
-              Development & Testing
-            </h3>
-            <p className='mb-4 text-sm text-gray-400'>
-              Restart the onboarding tutorial to test the flow. This will reset
-              your onboarding status.
-            </p>
-            {restartError && (
-              <div className='mb-4 rounded-lg border border-red-500/50 bg-red-900/30 backdrop-blur-sm p-3'>
-                <p className='text-sm text-red-300'>{restartError}</p>
-              </div>
-            )}
-            <button
-              onClick={handleRestartTutorial}
-              disabled={restartingTutorial}
-              className='rounded-lg bg-yellow-500 px-4 py-2 font-medium text-white transition-colors hover:bg-yellow-600 disabled:cursor-not-allowed disabled:opacity-50 shadow-lg'
-            >
-              {restartingTutorial ? 'Restarting...' : 'Restart Tutorial'}
-            </button>
+          <div className='h-px bg-border-default' />
+
+          <ProfileInfoForm
+            name={name}
+            onNameChange={handleNameChange}
+            onSubmit={handleNameSubmit}
+            saving={savingName}
+            disableSave={disableNameSave}
+            status={nameStatus}
+          />
+
+          <div className='h-px bg-border-default' />
+
+          <ThemeToggle />
+
+          <div className='h-px bg-border-default' />
+
+          {/* <AiSuggestionToggle
+            enabled={enableAiSuggestion}
+            onToggle={toggleAiSuggestion}
+            saving={savingAiSuggestion}
+          />
+
+          <div className='h-px bg-border-default' /> */}
+
+          {/* Dev / Testing */}
+          <div className='flex items-center justify-between lg:grid lg:grid-cols-[200px_1fr] lg:gap-10'>
+            <div>
+              <h3 className='text-base font-semibold text-text-primary'>
+                Developer
+              </h3>
+              {restartError && (
+                <p className='text-sm text-red-600 dark:text-red-300 mt-1'>
+                  {restartError}
+                </p>
+              )}
+            </div>
+            <div className='lg:flex lg:justify-end'>
+              <button
+                onClick={handleRestartTutorial}
+                disabled={restartingTutorial}
+                className='rounded-lg bg-yellow-500 px-4 py-2 font-medium text-white transition-colors hover:bg-yellow-600 disabled:cursor-not-allowed disabled:opacity-50 shadow-lg'
+              >
+                {restartingTutorial ? 'Restarting...' : 'Restart Tutorial'}
+              </button>
+            </div>
           </div>
+
+          <div className='h-px bg-border-default' />
 
           <DeleteAccountSection
             onDelete={handleDeleteAccount}

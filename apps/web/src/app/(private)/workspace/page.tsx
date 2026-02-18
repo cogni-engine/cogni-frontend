@@ -87,12 +87,12 @@ export default function WorkspacePage() {
 
   if (error) {
     return (
-      <div className='min-h-screen bg-black flex items-center justify-center'>
+      <div className='min-h-screen bg-background flex items-center justify-center'>
         <div className='text-center'>
-          <div className='text-red-400 text-xl mb-2'>
+          <div className='text-red-500 dark:text-red-400 text-xl mb-2'>
             Failed to load workspaces
           </div>
-          <div className='text-gray-400 text-sm'>
+          <div className='text-text-muted text-sm'>
             {error instanceof Error ? error.message : 'Unknown error'}
           </div>
         </div>
@@ -111,14 +111,14 @@ export default function WorkspacePage() {
         {/* mounted まで固定のプレースホルダーでハイドレーションエラーを回避 */}
         {!mounted ? (
           <div className='flex justify-center py-12'>
-            <div className='animate-spin rounded-full h-8 w-8 border-b-2 border-white' />
+            <div className='animate-spin rounded-full h-8 w-8 border-b-2 border-text-primary' />
           </div>
         ) : (
           <>
             {/* Only show loading spinner when we have no data at all (no cache) */}
             {!workspaces && isLoading && (
               <div className='flex items-center justify-center py-12'>
-                <div className='animate-spin rounded-full h-8 w-8 border-b-2 border-white'></div>
+                <div className='animate-spin rounded-full h-8 w-8 border-b-2 border-text-primary'></div>
               </div>
             )}
 
@@ -129,7 +129,7 @@ export default function WorkspacePage() {
 
             {/* Show "no results" message only when we have data but search yields nothing */}
             {workspaces && filteredWorkspaces.length === 0 && isSearching && (
-              <div className='rounded-2xl border border-white/10 bg-white/5 p-8 text-center text-white/70'>
+              <div className='rounded-2xl border border-border-default bg-surface-primary p-8 text-center text-text-secondary'>
                 No workspaces found matching &quot;{searchQuery.trim()}&quot;.
               </div>
             )}

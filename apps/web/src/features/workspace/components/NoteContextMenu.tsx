@@ -94,9 +94,9 @@ export default function NoteContextMenu({
           {onRestore && (
             <button
               onClick={() => handleAction(onRestore)}
-              className='w-full p-2 text-left text-sm text-white hover:bg-white/5 flex items-center gap-2 transition-colors rounded-xl mb-1'
+              className='w-full p-2 text-left text-sm text-text-primary hover:bg-surface-primary flex items-center gap-2 transition-colors rounded-xl mb-1'
             >
-              <RotateCcw className='w-4 h-4 text-white' />
+              <RotateCcw className='w-4 h-4 text-text-primary' />
               <span>Restore</span>
             </button>
           )}
@@ -104,9 +104,9 @@ export default function NoteContextMenu({
           {onHardDelete && (
             <button
               onClick={() => handleAction(onHardDelete)}
-              className='w-full p-2 text-left text-sm text-white hover:bg-white/5 flex items-center gap-2 transition-colors rounded-xl'
+              className='w-full p-2 text-left text-sm text-text-primary hover:bg-surface-primary flex items-center gap-2 transition-colors rounded-xl'
             >
-              <Trash className='w-4 h-4 text-white' />
+              <Trash className='w-4 h-4 text-text-primary' />
               <span>Delete Permanently</span>
             </button>
           )}
@@ -117,9 +117,9 @@ export default function NoteContextMenu({
           {onDuplicate && (
             <button
               onClick={() => handleAction(onDuplicate)}
-              className='w-full p-2 text-left text-sm text-white hover:bg-white/5 flex items-center gap-2 transition-colors rounded-xl mb-1'
+              className='w-full p-2 text-left text-sm text-text-primary hover:bg-surface-primary flex items-center gap-2 transition-colors rounded-xl mb-1'
             >
-              <Copy className='w-4 h-4 text-white' />
+              <Copy className='w-4 h-4 text-text-primary' />
               <span>Duplicate</span>
             </button>
           )}
@@ -127,21 +127,21 @@ export default function NoteContextMenu({
           {onMove && (
             <button
               onClick={() => handleAction(onMove)}
-              className='w-full p-2 text-left text-sm text-white hover:bg-white/5 flex items-center gap-2 transition-colors rounded-xl mb-1'
+              className='w-full p-2 text-left text-sm text-text-primary hover:bg-surface-primary flex items-center gap-2 transition-colors rounded-xl mb-1'
             >
-              <FolderInput className='w-4 h-4 text-white' />
+              <FolderInput className='w-4 h-4 text-text-primary' />
               <span>Move to Folder</span>
             </button>
           )}
           {/* Soft delete option for active notes */}
           {onSoftDelete && (
             <>
-              <div className='h-px bg-white/10 my-2' />
+              <div className='h-px bg-border-default my-2' />
               <button
                 onClick={() => handleAction(onSoftDelete)}
-                className='w-full p-2 text-left text-sm text-white hover:bg-white/5 flex items-center gap-2 transition-colors rounded-xl'
+                className='w-full p-2 text-left text-sm text-text-primary hover:bg-surface-primary flex items-center gap-2 transition-colors rounded-xl'
               >
-                <Trash2 className='w-4 h-4 text-white' />
+                <Trash2 className='w-4 h-4 text-text-primary' />
                 <span>Delete</span>
               </button>
             </>

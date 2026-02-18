@@ -218,20 +218,20 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
     !isUserSettingsPage;
 
   return (
-    <div className='relative h-screen bg-black px-2'>
+    <div className='relative h-screen bg-background px-2'>
       {/* Header - Absolutely Positioned, Transparent */}
       {showTopLevelChrome && <Header />}
 
       {/* Main Content - Full height, scrolls under transparent header and bottom nav */}
       <main className='h-screen min-h-0 overflow-hidden relative flex flex-col'>
         {/* Top darkening gradient */}
-        <div className='absolute top-0 left-0 right-0 h-32 bg-linear-to-b from-black via-black/50 to-transparent pointer-events-none z-50' />
+        <div className='absolute top-0 left-0 right-0 h-32 bg-linear-to-b from-[var(--gradient-from)] via-[var(--gradient-via)] to-transparent pointer-events-none z-50' />
 
         {children}
 
         {/* Bottom darkening gradient */}
         {!isDrawerOpen && (
-          <div className='absolute bottom-0 left-0 right-0 h-32 bg-linear-to-t from-black via-black/50 to-transparent pointer-events-none z-50' />
+          <div className='absolute bottom-0 left-0 right-0 h-32 bg-linear-to-t from-[var(--gradient-from)] via-[var(--gradient-via)] to-transparent pointer-events-none z-50' />
         )}
       </main>
 

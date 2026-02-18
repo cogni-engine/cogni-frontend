@@ -121,7 +121,7 @@ export default function ReactionPicker({ onSelect, onClose, position }: Props) {
   return (
     <div
       ref={menuRef}
-      className='fixed z-50 bg-white/15 backdrop-blur-xl border border-black/20 rounded-2xl shadow-[0_8px_32px_rgba(0,0,0,0.25)] overflow-hidden'
+      className='fixed z-50 bg-surface-secondary dark:backdrop-blur-xl border border-border-default rounded-2xl shadow-card overflow-hidden'
       style={{
         left: `${adjustedPosition.x}px`,
         top: `${adjustedPosition.y}px`,
@@ -134,18 +134,18 @@ export default function ReactionPicker({ onSelect, onClose, position }: Props) {
             key={emoji}
             type='button'
             onClick={() => handleSelect(emoji)}
-            className='w-10 h-10 flex items-center justify-center text-xl rounded-lg hover:bg-white/20 transition-colors'
+            className='w-10 h-10 flex items-center justify-center text-xl rounded-lg hover:bg-interactive-active transition-colors'
           >
             {emoji}
           </button>
         ))}
       </div>
-      <div className='border-t border-white/10 px-2 pb-2 pt-1'>
+      <div className='border-t border-border-default px-2 pb-2 pt-1'>
         {showAll ? (
           <button
             type='button'
             onClick={() => setShowAll(false)}
-            className='w-full py-2 text-sm text-white/80 hover:bg-white/10 rounded-lg transition-colors'
+            className='w-full py-2 text-sm text-text-secondary hover:bg-interactive-hover rounded-lg transition-colors'
           >
             Close
           </button>
@@ -153,7 +153,7 @@ export default function ReactionPicker({ onSelect, onClose, position }: Props) {
           <button
             type='button'
             onClick={() => setShowAll(true)}
-            className='w-full py-2 text-sm text-white/80 hover:bg-white/10 rounded-lg transition-colors'
+            className='w-full py-2 text-sm text-text-secondary hover:bg-interactive-hover rounded-lg transition-colors'
           >
             More
           </button>

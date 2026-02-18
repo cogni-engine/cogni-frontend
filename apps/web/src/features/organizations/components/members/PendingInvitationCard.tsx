@@ -14,10 +14,12 @@ export function PendingInvitationCard({
   onCancel,
 }: PendingInvitationCardProps) {
   return (
-    <div className='p-4 bg-white/5 rounded-3xl border border-white/10 flex items-center justify-between'>
+    <div className='p-4 bg-surface-primary rounded-3xl border border-border-default flex items-center justify-between'>
       <div>
-        <p className='text-white font-medium'>{invitation.invitee_email}</p>
-        <p className='text-sm text-white/60'>
+        <p className='text-text-primary font-medium'>
+          {invitation.invitee_email}
+        </p>
+        <p className='text-sm text-text-secondary'>
           Invited {new Date(invitation.created_at).toLocaleDateString()}
           {' • Expires '}
           {new Date(invitation.expires_at).toLocaleDateString()}

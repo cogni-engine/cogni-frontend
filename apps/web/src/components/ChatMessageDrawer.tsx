@@ -70,9 +70,9 @@ export default function ChatMessageDrawer({
       (repliedMessage.text.length > 100 ? '...' : '');
 
     return (
-      <div className='mb-4 p-3 bg-white/5 border border-white/10 rounded-lg'>
+      <div className='mb-4 p-3 bg-surface-primary border border-border-default rounded-lg'>
         <div className='flex items-start gap-2'>
-          <Avatar className='h-6 w-6 border border-white/15 bg-white/10 text-[10px] font-medium shrink-0'>
+          <Avatar className='h-6 w-6 border border-border-default bg-interactive-hover text-[10px] font-medium shrink-0'>
             {repliedProfile?.avatar_url ? (
               <AvatarImage src={repliedProfile.avatar_url} alt={repliedName} />
             ) : (
@@ -82,10 +82,10 @@ export default function ChatMessageDrawer({
             )}
           </Avatar>
           <div className='min-w-0 flex-1'>
-            <p className='text-xs text-white/50 mb-1'>
+            <p className='text-xs text-text-muted mb-1'>
               Replying to {repliedName}
             </p>
-            <div className='text-xs text-white/40'>
+            <div className='text-xs text-text-muted'>
               <TiptapRenderer
                 content={repliedText}
                 contentType='markdown'
@@ -115,7 +115,7 @@ export default function ChatMessageDrawer({
 
         <DrawerHeader>
           <div className='flex items-center gap-3 w-full'>
-            <Avatar className='h-10 w-10 border border-white/15 bg-white/10'>
+            <Avatar className='h-10 w-10 border border-border-default bg-interactive-hover'>
               {avatarUrl ? (
                 <AvatarImage src={avatarUrl} alt={name} />
               ) : (
@@ -125,10 +125,10 @@ export default function ChatMessageDrawer({
               )}
             </Avatar>
             <div className='flex-1 min-w-0'>
-              <h3 className='text-sm font-medium text-white truncate'>
+              <h3 className='text-sm font-medium text-text-primary truncate'>
                 {name}
               </h3>
-              <p className='text-xs text-gray-400'>
+              <p className='text-xs text-text-muted'>
                 {format(new Date(message.created_at), 'MMM d, yyyy • HH:mm')}
               </p>
             </div>
@@ -141,7 +141,7 @@ export default function ChatMessageDrawer({
           )}
 
           {message.text && (
-            <div className='text-sm text-white leading-relaxed'>
+            <div className='text-sm text-text-primary leading-relaxed'>
               <TiptapRenderer
                 content={message.text}
                 contentType='markdown'
@@ -156,8 +156,8 @@ export default function ChatMessageDrawer({
           )}
 
           {readCount > 0 && (
-            <div className='pt-2 border-t border-white/10'>
-              <p className='text-xs text-gray-400'>
+            <div className='pt-2 border-t border-border-default'>
+              <p className='text-xs text-text-muted'>
                 Read by {readCount} {readCount === 1 ? 'person' : 'people'}
               </p>
             </div>

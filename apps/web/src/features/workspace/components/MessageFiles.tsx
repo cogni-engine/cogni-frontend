@@ -238,20 +238,20 @@ const AudioPlayer = ({ src, filename }: { src: string; filename?: string }) => {
       onMouseEnter={() => (isHoveringRef.current = true)}
       onMouseLeave={() => (isHoveringRef.current = false)}
     >
-      <div className='relative overflow-hidden rounded-2xl bg-white/5 backdrop-blur-md border border-white/10 shadow-sm'>
+      <div className='relative overflow-hidden rounded-2xl bg-surface-primary dark:backdrop-blur-md border border-border-default shadow-sm'>
         <div className='relative p-6 flex flex-col gap-5 z-10'>
           <div className='flex items-center justify-between'>
             <div className='flex items-center gap-3 min-w-0 flex-1'>
               <div
                 className={`w-11 h-11 rounded-full bg-blue-500/90 flex items-center justify-center shadow-md flex-shrink-0 transition-transform duration-700 ${isPlaying ? 'animate-spin-slow' : ''}`}
               >
-                <Disc size={22} className='text-white' />
+                <Disc size={22} className='text-text-primary' />
               </div>
               <div className='flex flex-col min-w-0'>
-                <h3 className='text-white font-semibold tracking-tight text-sm leading-tight truncate'>
+                <h3 className='text-text-primary font-semibold tracking-tight text-sm leading-tight truncate'>
                   {filename || 'Audio Track'}
                 </h3>
-                <p className='text-neutral-500 text-[11px] tracking-wide font-medium mt-0.5'>
+                <p className='text-text-muted text-[11px] tracking-wide font-medium mt-0.5'>
                   {isLoading ? 'Loading...' : `${formatTime(duration)}`}
                 </p>
               </div>
@@ -284,7 +284,7 @@ const AudioPlayer = ({ src, filename }: { src: string; filename?: string }) => {
               onMouseEnter={() => setIsProgressHovering(true)}
               onMouseLeave={() => setIsProgressHovering(false)}
             >
-              <div className='relative w-full h-1 rounded-full bg-white/[0.08] overflow-hidden'>
+              <div className='relative w-full h-1 rounded-full bg-surface-secondary overflow-hidden'>
                 <div className='absolute inset-0 bg-gradient-to-r from-white/5 to-transparent' />
 
                 <div
@@ -323,8 +323,8 @@ const AudioPlayer = ({ src, filename }: { src: string; filename?: string }) => {
               </div>
             </div>
 
-            <div className='flex justify-between text-[11px] font-medium text-neutral-500 font-mono px-0.5'>
-              <span className='text-white/60 tabular-nums'>
+            <div className='flex justify-between text-[11px] font-medium text-text-muted font-mono px-0.5'>
+              <span className='text-text-secondary tabular-nums'>
                 {formatTime(currentTime)}
               </span>
               <span className='tabular-nums'>{formatTime(duration)}</span>
@@ -339,7 +339,7 @@ const AudioPlayer = ({ src, filename }: { src: string; filename?: string }) => {
             >
               <button
                 onClick={toggleMute}
-                className='text-neutral-400 hover:text-white transition-colors p-1.5 hover:bg-white/5 rounded-lg flex-shrink-0'
+                className='text-text-muted hover:text-text-primary transition-colors p-1.5 hover:bg-surface-primary rounded-lg flex-shrink-0'
               >
                 {isMuted || volume === 0 ? (
                   <VolumeX size={18} />
@@ -349,7 +349,7 @@ const AudioPlayer = ({ src, filename }: { src: string; filename?: string }) => {
               </button>
 
               <div className='relative w-20 h-8 flex items-center cursor-pointer'>
-                <div className='absolute w-full h-1 bg-white/[0.08] rounded-full overflow-hidden'>
+                <div className='absolute w-full h-1 bg-surface-secondary rounded-full overflow-hidden'>
                   <div
                     className='h-full bg-gradient-to-r from-neutral-400 to-neutral-300 rounded-full'
                     style={{
@@ -389,7 +389,7 @@ const AudioPlayer = ({ src, filename }: { src: string; filename?: string }) => {
             <div className='flex items-center justify-center gap-2 w-[180px]'>
               <button
                 onClick={() => skip(-15)}
-                className='relative flex items-center justify-center w-10 h-10 rounded-full text-neutral-400 hover:text-white hover:bg-white/5 transition-all duration-200 active:scale-90 flex-shrink-0'
+                className='relative flex items-center justify-center w-10 h-10 rounded-full text-text-muted hover:text-text-primary hover:bg-surface-primary transition-all duration-200 active:scale-90 flex-shrink-0'
                 title='Back 15s'
               >
                 <RotateCcw size={25} className='relative z-10' />
@@ -401,7 +401,7 @@ const AudioPlayer = ({ src, filename }: { src: string; filename?: string }) => {
               <button
                 onClick={togglePlay}
                 disabled={isLoading}
-                className='relative flex items-center justify-center w-14 h-14 rounded-full bg-white hover:bg-white/95 text-black transition-all duration-200 shadow-lg shadow-white/10 hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0'
+                className='relative flex items-center justify-center w-14 h-14 rounded-full bg-text-primary hover:opacity-95 text-background transition-all duration-200 shadow-lg shadow-card hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0'
               >
                 {isPlaying ? (
                   <Pause size={22} className='fill-black' />
@@ -412,7 +412,7 @@ const AudioPlayer = ({ src, filename }: { src: string; filename?: string }) => {
 
               <button
                 onClick={() => skip(15)}
-                className='relative flex items-center justify-center w-10 h-10 rounded-full text-neutral-400 hover:text-white hover:bg-white/5 transition-all duration-200 active:scale-90 flex-shrink-0'
+                className='relative flex items-center justify-center w-10 h-10 rounded-full text-text-muted hover:text-text-primary hover:bg-surface-primary transition-all duration-200 active:scale-90 flex-shrink-0'
                 title='Forward 15s'
               >
                 <RotateCw size={25} className='relative z-10' />
@@ -426,14 +426,14 @@ const AudioPlayer = ({ src, filename }: { src: string; filename?: string }) => {
             <div className='flex items-center justify-end gap-2 w-[140px]'>
               <button
                 onClick={togglePlaybackRate}
-                className='px-3 py-1.5 rounded-lg text-[11px] font-semibold text-neutral-400 hover:text-white hover:bg-white/5 transition-all duration-200 active:scale-95 tabular-nums min-w-[44px] text-center'
+                className='px-3 py-1.5 rounded-lg text-[11px] font-semibold text-text-muted hover:text-text-primary hover:bg-surface-primary transition-all duration-200 active:scale-95 tabular-nums min-w-[44px] text-center'
               >
                 {playbackRate}×
               </button>
 
               <button
                 onClick={handleDownload}
-                className='p-2 rounded-lg text-neutral-400 hover:text-white hover:bg-white/5 transition-all duration-200 active:scale-95 flex-shrink-0'
+                className='p-2 rounded-lg text-text-muted hover:text-text-primary hover:bg-surface-primary transition-all duration-200 active:scale-95 flex-shrink-0'
                 title='Download'
               >
                 <Download size={16} />
@@ -487,7 +487,7 @@ function VideoPlayer({ src }: { src: string }) {
   };
 
   return (
-    <div className='relative group rounded-xl overflow-hidden border border-white/10 bg-black/40 max-w-sm'>
+    <div className='relative group rounded-xl overflow-hidden border border-border-default bg-dialog-overlay max-w-sm'>
       <video
         ref={videoRef}
         src={src}
@@ -498,11 +498,14 @@ function VideoPlayer({ src }: { src: string }) {
       />
       {!isPlaying && (
         <div
-          className='absolute inset-0 flex items-center justify-center bg-black/30 backdrop-blur-[2px] cursor-pointer group-hover:bg-black/40 transition-all duration-300'
+          className='absolute inset-0 flex items-center justify-center bg-dialog-overlay dark:backdrop-blur-[2px] cursor-pointer group-hover:bg-dialog-overlay transition-all duration-300'
           onClick={togglePlay}
         >
-          <div className='w-14 h-14 rounded-full bg-white/10 border border-white/20 backdrop-blur-md flex items-center justify-center group-hover:scale-110 group-hover:bg-white/20 transition-all duration-300'>
-            <Play className='w-7 h-7 text-white ml-1' fill='currentColor' />
+          <div className='w-14 h-14 rounded-full bg-interactive-hover border border-border-default dark:backdrop-blur-md flex items-center justify-center group-hover:scale-110 group-hover:bg-interactive-active transition-all duration-300'>
+            <Play
+              className='w-7 h-7 text-text-primary ml-1'
+              fill='currentColor'
+            />
           </div>
         </div>
       )}
@@ -637,9 +640,9 @@ export default function MessageFiles({
             return (
               <div
                 key={file.id}
-                className='relative rounded-xl overflow-hidden border border-white/10 bg-black/40 w-full max-w-sm aspect-video flex items-center justify-center'
+                className='relative rounded-xl overflow-hidden border border-border-default bg-dialog-overlay w-full max-w-sm aspect-video flex items-center justify-center'
               >
-                <div className='animate-pulse w-12 h-12 rounded-full bg-white/10' />
+                <div className='animate-pulse w-12 h-12 rounded-full bg-interactive-hover' />
               </div>
             );
           }
@@ -653,12 +656,12 @@ export default function MessageFiles({
             return (
               <div
                 key={file.id}
-                className='flex items-center gap-3 bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl px-4 py-3 min-w-[300px] md:min-w-[360px] max-w-full shadow-lg h-[86px]'
+                className='flex items-center gap-3 bg-interactive-hover dark:backdrop-blur-md border border-border-default rounded-2xl px-4 py-3 min-w-[300px] md:min-w-[360px] max-w-full shadow-lg h-[86px]'
               >
                 <div className='w-10 h-10 rounded-full bg-blue-500/10 animate-pulse shrink-0' />
                 <div className='flex-1 space-y-2'>
-                  <div className='h-2 w-24 bg-white/5 rounded animate-pulse' />
-                  <div className='h-8 w-full bg-white/5 rounded-full animate-pulse' />
+                  <div className='h-2 w-24 bg-surface-primary rounded animate-pulse' />
+                  <div className='h-8 w-full bg-surface-primary rounded-full animate-pulse' />
                 </div>
               </div>
             );
@@ -732,13 +735,13 @@ export default function MessageFiles({
         createPortal(
           <div className='fixed inset-0 z-10000 flex items-center justify-center p-4 md:p-10'>
             <div
-              className='absolute inset-0 bg-black/90 backdrop-blur-sm transition-opacity duration-300'
+              className='absolute inset-0 bg-dialog-overlay dark:backdrop-blur-sm transition-opacity duration-300'
               onClick={() => setSelectedImage(null)}
             />
 
             <button
               onClick={() => setSelectedImage(null)}
-              className='absolute top-6 right-6 z-10 p-2 rounded-full bg-white/10 hover:bg-white/20 text-white transition-all shadow-xl'
+              className='absolute top-6 right-6 z-10 p-2 rounded-full bg-interactive-hover hover:bg-interactive-active text-text-primary transition-all shadow-xl'
             >
               <X className='w-6 h-6' />
             </button>

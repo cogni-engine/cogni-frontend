@@ -3,8 +3,8 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { HomeIcon, Notebook } from 'lucide-react';
-import GlassCard from '../glass-design/GlassCard';
 import { CognoSvgIcon } from '../icons/CognoSvgIcon';
+import GlassCard from '../glass-design/GlassCard';
 
 const tabs = [
   {
@@ -18,7 +18,6 @@ const tabs = [
 
 export default function BottomNav() {
   const pathname = usePathname();
-
   const activeIndex = tabs.findIndex(tab => pathname.startsWith(tab.path));
   const tabWidthPercent = 100 / tabs.length;
 
@@ -27,12 +26,13 @@ export default function BottomNav() {
       <div className='max-w-7xl mx-auto'>
         <GlassCard className='rounded-full'>
           <div className='relative flex items-center justify-around p-1'>
-            {/* Sliding background indicator - positioned via CSS calc */}
+            {/* Sliding background indicator - liquid glass inner element */}
             <div
-              className='absolute h-[calc(100%-8px)] rounded-full bg-white/10 backdrop-blur-sm transition-all duration-500 ease-out'
+              className='absolute h-[calc(100%-8px)] rounded-full liquid-glass-indicator transition-transform duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] will-change-transform'
               style={{
                 width: `calc(${tabWidthPercent}% - 8px)`,
-                left: `calc(${activeIndex * tabWidthPercent}% + 4px)`,
+                left: '4px',
+                transform: `translateX(calc(${activeIndex} * (100% + 8px)))`,
                 opacity: activeIndex === -1 ? 0 : 1,
               }}
             />
@@ -49,12 +49,12 @@ export default function BottomNav() {
                   data-nav-link={tab.path}
                 >
                   <div
-                    className={`transition-colors duration-300 ${isActive ? 'text-white' : 'text-gray-400 group-hover:text-white'}`}
+                    className={`transition-colors duration-300 ${isActive ? 'text-text-primary' : 'text-nav-text-inactive group-hover:text-text-primary'}`}
                   >
                     {tab.icon}
                   </div>
                   <span
-                    className={`text-xs font-medium transition-colors duration-300 ${isActive ? 'text-white' : 'text-gray-400 group-hover:text-white'}`}
+                    className={`text-xs font-medium transition-colors duration-300 ${isActive ? 'text-text-primary' : 'text-nav-text-inactive group-hover:text-text-primary'}`}
                   >
                     {tab.name}
                   </span>

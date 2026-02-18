@@ -33,7 +33,7 @@ export default function TasksClient() {
   };
 
   return (
-    <div className='flex flex-col h-full text-white relative overflow-hidden'>
+    <div className='flex flex-col h-full text-text-primary relative overflow-hidden'>
       {/* Task List */}
       <ScrollableView className='px-4 pt-20 pb-32 md:pb-24'>
         {loading && (
@@ -73,7 +73,7 @@ export default function TasksClient() {
           size='icon'
           className='w-14 h-14 rounded-full'
         >
-          <Plus className='w-6 h-6 text-white' />
+          <Plus className='w-6 h-6 text-text-primary' />
         </GlassButton>
       </div>
 

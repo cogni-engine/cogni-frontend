@@ -83,13 +83,15 @@ export const MentionList = forwardRef<MentionListRef, MentionListProps>(
           props.items.map((item, index) => (
             <button
               className={`flex items-center gap-3 w-full px-4 py-2.5 text-left transition-colors ${
-                index === selectedIndex ? 'bg-white/20' : 'hover:bg-white/10'
+                index === selectedIndex
+                  ? 'bg-interactive-active'
+                  : 'hover:bg-interactive-hover'
               }`}
               key={item.id}
               onClick={() => selectItem(index)}
               type='button'
             >
-              <Avatar className='h-8 w-8 border border-white/20 bg-white/10'>
+              <Avatar className='h-8 w-8 border border-border-default bg-interactive-hover'>
                 {item.user_profile?.avatar_url ? (
                   <AvatarImage
                     src={item.user_profile.avatar_url}
@@ -97,22 +99,22 @@ export const MentionList = forwardRef<MentionListRef, MentionListProps>(
                   />
                 ) : (
                   <AvatarFallback>
-                    <User className='w-4 h-4 text-gray-300' />
+                    <User className='w-4 h-4 text-text-secondary' />
                   </AvatarFallback>
                 )}
               </Avatar>
               <div>
-                <div className='text-white font-medium'>
+                <div className='text-text-primary font-medium'>
                   {item.user_profile?.name || 'Unknown'}
                 </div>
-                <div className='text-xs text-gray-400 capitalize'>
+                <div className='text-xs text-text-muted capitalize'>
                   {item.role}
                 </div>
               </div>
             </button>
           ))
         ) : (
-          <div className='px-4 py-3 text-sm text-gray-400'>
+          <div className='px-4 py-3 text-sm text-text-muted'>
             No members found
           </div>
         )}

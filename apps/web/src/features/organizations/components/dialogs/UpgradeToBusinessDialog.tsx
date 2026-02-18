@@ -49,16 +49,16 @@ export function UpgradeToBusinessDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
         className={cn(
-          'bg-white/4 backdrop-blur-xl border border-white/10 text-white rounded-3xl',
-          'shadow-[0_8px_32px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.12)]',
+          'bg-surface-primary dark:backdrop-blur-xl border border-border-default text-text-primary rounded-3xl',
+          'shadow-card',
           'p-8 max-w-lg'
         )}
       >
         <DialogHeader className='space-y-3'>
-          <DialogTitle className='text-2xl font-semibold text-white'>
+          <DialogTitle className='text-2xl font-semibold text-text-primary'>
             Upgrade to Business Plan
           </DialogTitle>
-          <DialogDescription className='text-white/70 text-base leading-relaxed'>
+          <DialogDescription className='text-text-secondary text-base leading-relaxed'>
             Upgrading to Business plan will:
             <ul className='list-disc list-inside mt-3 space-y-2 text-sm'>
               <li>Unlock team collaboration features</li>
@@ -71,7 +71,7 @@ export function UpgradeToBusinessDialog({
 
         <div className='space-y-6 py-6'>
           <div className='space-y-3'>
-            <label className='text-sm font-medium text-white/90 block'>
+            <label className='text-sm font-medium text-text-primary block'>
               Number of seats
             </label>
             <GlassInput
@@ -84,19 +84,21 @@ export function UpgradeToBusinessDialog({
               disabled={isUpgrading}
               className='w-full'
             />
-            <p className='text-xs text-white/50'>
+            <p className='text-xs text-text-muted'>
               Minimum: {currentOrg?.organization.active_member_count || 1}{' '}
               (current members)
             </p>
           </div>
 
           <GlassCard className='p-4 rounded-xl'>
-            <p className='text-sm text-white/90'>
-              <span className='font-semibold text-white'>Monthly cost:</span>{' '}
+            <p className='text-sm text-text-primary'>
+              <span className='font-semibold text-text-primary'>
+                Monthly cost:
+              </span>{' '}
               <span className='text-purple-400 font-medium'>
                 ${(15 * upgradeSeats).toFixed(2)}
               </span>{' '}
-              <span className='text-white/60'>
+              <span className='text-text-secondary'>
                 ($15 × {upgradeSeats} {upgradeSeats === 1 ? 'seat' : 'seats'})
               </span>
             </p>
@@ -122,7 +124,7 @@ export function UpgradeToBusinessDialog({
               'border-purple-400/30',
               'shadow-[0_4px_16px_rgba(139,92,246,0.3)]',
               'hover:shadow-[0_6px_20px_rgba(139,92,246,0.4)]',
-              'text-white font-medium'
+              'text-text-primary font-medium'
             )}
           >
             {isUpgrading ? (

@@ -1,13 +1,5 @@
 'use client';
 
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
-import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 
 type AiSuggestionToggleProps = {
@@ -22,28 +14,23 @@ export function AiSuggestionToggle({
   saving,
 }: AiSuggestionToggleProps) {
   return (
-    <Card className='h-fit'>
-      <CardHeader>
-        <CardTitle>AI Suggestions</CardTitle>
-        <CardDescription>
-          Enable AI-powered suggestions and recommendations.
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <div className='flex items-center justify-between'>
-          <div className='space-y-0.5'>
-            <Label htmlFor='ai-suggestion' className='text-base'>
-              Enable AI suggestions
-            </Label>
-          </div>
-          <Switch
-            id='ai-suggestion'
-            checked={enabled}
-            onCheckedChange={onToggle}
-            disabled={saving}
-          />
-        </div>
-      </CardContent>
-    </Card>
+    <div className='flex items-center justify-between lg:grid lg:grid-cols-[200px_1fr] lg:gap-10'>
+      <div>
+        <h3 className='text-base font-semibold text-text-primary'>
+          Smart Assist
+        </h3>
+        <p className='text-sm text-text-muted'>
+          Cogno suggests ideas as you work.
+        </p>
+      </div>
+      <div className='lg:flex lg:items-center'>
+        <Switch
+          id='ai-suggestion'
+          checked={enabled}
+          onCheckedChange={onToggle}
+          disabled={saving}
+        />
+      </div>
+    </div>
   );
 }

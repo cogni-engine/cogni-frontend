@@ -131,8 +131,8 @@ export default function MessageItem({
 
         {/* Text content */}
         {message.content && (
-          <div className='rounded-3xl px-4 py-2.5 bg-white/8 backdrop-blur-xl border border-black shadow-[0_8px_32px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.12)]'>
-            <div className='text-sm md:text-sm text-white'>
+          <div className='rounded-3xl px-4 py-2.5 bg-surface-secondary dark:backdrop-blur-xl border border-border-default shadow-card'>
+            <div className='text-sm md:text-sm text-text-primary'>
               <TiptapRenderer
                 content={message.content}
                 contentType='markdown'
@@ -149,7 +149,7 @@ export default function MessageItem({
 
         {/* Timestamp - only show when showTimestamp is true */}
         {showTimestamp && timestamp && (
-          <p className='text-xs text-gray-500 mt-0.5'>
+          <p className='text-xs text-text-muted mt-0.5'>
             {format(new Date(timestamp), 'HH:mm')}
           </p>
         )}

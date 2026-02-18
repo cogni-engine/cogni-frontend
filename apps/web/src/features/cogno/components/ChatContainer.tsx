@@ -38,7 +38,7 @@ const ChatContainer = forwardRef<HTMLDivElement, ChatContainerProps>(
     const isInputActive = useIsInputActive();
 
     return (
-      <div className='flex flex-col flex-1 bg-linear-to-br from-slate-950 via-black to-slate-950 relative overflow-hidden'>
+      <div className='flex flex-col flex-1 bg-linear-to-br from-gray-50 via-white to-gray-50 dark:from-slate-950 dark:via-black dark:to-slate-950 relative overflow-hidden'>
         <ScrollableView
           ref={ref}
           className={`pt-20 md:px-8 ${

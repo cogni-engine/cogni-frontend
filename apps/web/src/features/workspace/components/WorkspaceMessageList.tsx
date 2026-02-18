@@ -134,7 +134,7 @@ function WorkspaceMessageList({
     return (
       <div className='flex-1 flex items-center justify-center'>
         <div className='text-center'>
-          <p className='text-gray-400'>
+          <p className='text-text-muted'>
             No messages yet. Start the conversation!
           </p>
         </div>
@@ -148,8 +148,8 @@ function WorkspaceMessageList({
         <div key={group.dateKey} className='relative'>
           {/* Sticky date indicator - stays pinned for all messages in this date group */}
           <div className='sticky top-0 z-20 flex justify-center pb-2'>
-            <div className='px-3 rounded-full bg-white/5 backdrop-blur-md border border-white/10 shadow-lg'>
-              <span className='text-xs font-medium text-white/60'>
+            <div className='px-3 rounded-full bg-surface-primary dark:backdrop-blur-md border border-border-default shadow-lg'>
+              <span className='text-xs font-medium text-text-secondary'>
                 {group.dateLabel}
               </span>
             </div>

@@ -32,10 +32,10 @@ export function AssignmentDropdown({
       {/* Dropdown menu */}
       <GlassCard className='absolute right-0 top-full mt-2 w-64 rounded-3xl z-40'>
         <div className='p-2'>
-          <div className='px-3 py-2 text-xs font-semibold tracking-wider text-gray-400'>
+          <div className='px-3 py-2 text-xs font-semibold tracking-wider text-text-muted'>
             ASSIGNEE
           </div>
-          <div className='h-px bg-white/10 mb-2' />
+          <div className='h-px bg-border-default mb-2' />
 
           {/* Select All option */}
           {members.length > 0 && onSelectAll && (
@@ -43,18 +43,20 @@ export function AssignmentDropdown({
               <button
                 type='button'
                 onClick={onSelectAll}
-                className='w-full py-1.5 pl-3 pr-2 text-left text-sm hover:bg-white/5 rounded-xl transition-colors flex items-center justify-between'
+                className='w-full py-1.5 pl-3 pr-2 text-left text-sm hover:bg-interactive-hover rounded-xl transition-colors flex items-center justify-between'
               >
-                <span className='text-white'>Select All</span>
-                {allSelected && <Check className='w-4 h-4 text-white' />}
+                <span className='text-foreground'>Select All</span>
+                {allSelected && <Check className='w-4 h-4 text-foreground' />}
               </button>
-              <div className='h-px bg-white/10 my-2' />
+              <div className='h-px bg-border-default my-2' />
             </>
           )}
 
           <div className='max-h-64 overflow-y-auto'>
             {members.length === 0 ? (
-              <div className='px-3 py-2 text-sm text-gray-400'>No members</div>
+              <div className='px-3 py-2 text-sm text-text-muted'>
+                No members
+              </div>
             ) : (
               members.map(member => {
                 const isSelected = assigneeIds.includes(member.id);
@@ -63,7 +65,7 @@ export function AssignmentDropdown({
                     key={member.id}
                     type='button'
                     onClick={() => onToggleAssignee(member.id)}
-                    className='w-full p-2 text-left text-sm hover:bg-white/5 rounded-xl transition-colors flex items-center justify-between'
+                    className='w-full p-2 text-left text-sm hover:bg-interactive-hover rounded-xl transition-colors flex items-center justify-between'
                   >
                     <div className='flex items-center gap-3'>
                       <Avatar className='h-6 w-6 text-[10px]'>
@@ -81,11 +83,13 @@ export function AssignmentDropdown({
                           </AvatarFallback>
                         )}
                       </Avatar>
-                      <span className='text-white'>
+                      <span className='text-foreground'>
                         {member.user_profile?.name || 'Unknown'}
                       </span>
                     </div>
-                    {isSelected && <Check className='w-4 h-4 text-white' />}
+                    {isSelected && (
+                      <Check className='w-4 h-4 text-foreground' />
+                    )}
                   </button>
                 );
               })

@@ -67,7 +67,7 @@ export default function NewDmDrawer({ open, onOpenChange }: NewDmDrawerProps) {
         <DrawerHeader>
           <DrawerTitle>New Message</DrawerTitle>
           <DrawerClose>
-            <X className='w-5 h-5 text-gray-400' />
+            <X className='w-5 h-5 text-text-muted' />
           </DrawerClose>
         </DrawerHeader>
         <div className='px-4 py-2'>
@@ -76,18 +76,18 @@ export default function NewDmDrawer({ open, onOpenChange }: NewDmDrawerProps) {
             placeholder='Search members...'
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
-            className='w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-white/20'
+            className='w-full bg-surface-primary border border-border-default rounded-xl px-4 py-2.5 text-sm text-text-primary placeholder-text-muted focus:outline-none focus:border-border-default'
             autoFocus
           />
         </div>
         <DrawerBody>
           {isLoading && (
             <div className='flex justify-center py-8'>
-              <div className='animate-spin rounded-full h-6 w-6 border-b-2 border-white' />
+              <div className='animate-spin rounded-full h-6 w-6 border-b-2 border-text-primary' />
             </div>
           )}
           {!isLoading && filteredMembers.length === 0 && (
-            <div className='text-center py-8 text-gray-400 text-sm'>
+            <div className='text-center py-8 text-text-muted text-sm'>
               No members found
             </div>
           )}
@@ -102,9 +102,9 @@ export default function NewDmDrawer({ open, onOpenChange }: NewDmDrawerProps) {
                     member.user_id && handleSelectUser(member.user_id)
                   }
                   disabled={!!loadingUserId}
-                  className='w-full flex items-center gap-3 p-3 rounded-xl hover:bg-white/5 transition-colors disabled:opacity-50'
+                  className='w-full flex items-center gap-3 p-3 rounded-xl hover:bg-surface-primary transition-colors disabled:opacity-50'
                 >
-                  <Avatar className='h-10 w-10 border border-white/20 bg-white/10 text-sm'>
+                  <Avatar className='h-10 w-10 border border-border-default bg-interactive-hover text-sm'>
                     {profile?.avatar_url ? (
                       <AvatarImage
                         src={profile.avatar_url}
@@ -112,15 +112,15 @@ export default function NewDmDrawer({ open, onOpenChange }: NewDmDrawerProps) {
                       />
                     ) : (
                       <AvatarFallback>
-                        <User className='w-4 h-4 text-gray-300' />
+                        <User className='w-4 h-4 text-text-secondary' />
                       </AvatarFallback>
                     )}
                   </Avatar>
-                  <span className='text-white text-sm font-medium flex-1 text-left'>
+                  <span className='text-text-primary text-sm font-medium flex-1 text-left'>
                     {profile?.name ?? 'Unknown'}
                   </span>
                   {isLoading && (
-                    <Loader2 className='w-4 h-4 text-gray-400 animate-spin' />
+                    <Loader2 className='w-4 h-4 text-text-muted animate-spin' />
                   )}
                 </button>
               );
