@@ -21,7 +21,7 @@ export function useRealtimeEvents(tables: string[]) {
       config: { broadcast: { self: true } },
     });
 
-    tables.forEach((table) => {
+    tables.forEach(table => {
       channel.on(
         'postgres_changes' as 'system',
         { event: '*', schema: 'public', table } as Record<string, string>,
@@ -35,7 +35,7 @@ export function useRealtimeEvents(tables: string[]) {
             timestamp: new Date().toISOString(),
           };
 
-          setEvents((prev) => [event, ...prev].slice(0, MAX_EVENTS));
+          setEvents(prev => [event, ...prev].slice(0, MAX_EVENTS));
         }
       );
     });

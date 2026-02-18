@@ -14,12 +14,12 @@ export default function TablesPage() {
   return (
     <div>
       <PageHeader
-        title="Tables"
+        title='Tables'
         description={`${tables.length} tables in public schema`}
         actions={
           <button
             onClick={() => refresh()}
-            className="flex items-center gap-1.5 rounded-md border border-border px-3 py-1.5 text-xs text-muted transition-colors hover:bg-surface-hover hover:text-foreground"
+            className='flex items-center gap-1.5 rounded-md border border-border px-3 py-1.5 text-xs text-muted transition-colors hover:bg-surface-hover hover:text-foreground'
           >
             <RefreshCw size={12} />
             Refresh
@@ -28,12 +28,12 @@ export default function TablesPage() {
       />
 
       {isLoading && tables.length === 0 ? (
-        <div className="flex h-60 items-center justify-center text-sm text-muted">
+        <div className='flex h-60 items-center justify-center text-sm text-muted'>
           Loading tables...
         </div>
       ) : (
-        <div className="flex gap-6">
-          <div className="w-80 shrink-0 overflow-auto rounded-lg border border-border bg-surface p-2">
+        <div className='flex gap-6'>
+          <div className='w-80 shrink-0 overflow-auto rounded-lg border border-border bg-surface p-2'>
             <TableList
               tables={tables}
               selectedTable={selectedTable}
@@ -41,16 +41,16 @@ export default function TablesPage() {
             />
           </div>
 
-          <div className="min-w-0 flex-1">
+          <div className='min-w-0 flex-1'>
             {selectedTable ? (
-              <div className="rounded-lg border border-border bg-surface p-4">
-                <h3 className="mb-4 text-base font-semibold text-accent">
+              <div className='rounded-lg border border-border bg-surface p-4'>
+                <h3 className='mb-4 text-base font-semibold text-accent'>
                   {selectedTable}
                 </h3>
                 <TableDetail tableName={selectedTable} />
               </div>
             ) : (
-              <div className="flex h-60 items-center justify-center rounded-lg border border-border text-sm text-muted">
+              <div className='flex h-60 items-center justify-center rounded-lg border border-border text-sm text-muted'>
                 Select a table to view details
               </div>
             )}

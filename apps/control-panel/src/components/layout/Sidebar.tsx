@@ -13,12 +13,12 @@ export function Sidebar() {
   const pathname = usePathname();
 
   return (
-    <aside className="flex w-56 flex-col border-r border-border bg-surface">
-      <div className="border-b border-border px-4 py-4">
-        <h1 className="text-sm font-semibold text-accent">Control Panel</h1>
-        <p className="mt-0.5 text-xs text-muted">Supabase Monitor</p>
+    <aside className='flex w-56 flex-col border-r border-border bg-surface'>
+      <div className='border-b border-border px-4 py-4'>
+        <h1 className='text-sm font-semibold text-accent'>Control Panel</h1>
+        <p className='mt-0.5 text-xs text-muted'>Supabase Monitor</p>
       </div>
-      <nav className="flex-1 p-2">
+      <nav className='flex-1 p-2'>
         {navItems.map(({ href, label, icon: Icon }) => {
           const active = pathname.startsWith(href);
           return (

@@ -36,23 +36,23 @@ export function EventCard({ event }: EventCardProps) {
     >
       <button
         onClick={() => setExpanded(!expanded)}
-        className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm"
+        className='flex w-full items-center gap-2 px-3 py-2 text-left text-sm'
       >
         {expanded ? (
-          <ChevronDown size={14} className="text-muted" />
+          <ChevronDown size={14} className='text-muted' />
         ) : (
-          <ChevronRight size={14} className="text-muted" />
+          <ChevronRight size={14} className='text-muted' />
         )}
         <span className={`font-semibold ${colorClass.split(' ')[1]}`}>
           {event.event_type}
         </span>
-        <span className="text-foreground">{event.table}</span>
-        <span className="ml-auto text-xs text-muted">{time}</span>
+        <span className='text-foreground'>{event.table}</span>
+        <span className='ml-auto text-xs text-muted'>{time}</span>
       </button>
 
       {expanded && payload && (
-        <div className="border-t border-border px-3 py-2">
-          <pre className="max-h-60 overflow-auto text-xs text-muted">
+        <div className='border-t border-border px-3 py-2'>
+          <pre className='max-h-60 overflow-auto text-xs text-muted'>
             {JSON.stringify(payload, null, 2)}
           </pre>
         </div>
