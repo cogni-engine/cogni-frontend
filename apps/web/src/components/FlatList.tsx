@@ -50,16 +50,16 @@ const FlatListItem = React.forwardRef<HTMLDivElement, FlatListItemProps>(
             // Base state
             'bg-transparent',
             // Hover state
-            hoverable && 'hover:bg-white/5',
+            hoverable && 'hover:bg-surface-primary',
             // Active/Clicked state
-            active && 'bg-white/10 shadow-inner',
+            active && 'bg-interactive-hover shadow-inner',
             className
           )}
           {...props}
         >
           {children}
         </div>
-        {showDivider && <div className='mx-5 border-b border-white/10' />}
+        {showDivider && <div className='mx-5 border-b border-border-default' />}
       </React.Fragment>
     );
   }

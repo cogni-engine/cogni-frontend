@@ -11,14 +11,16 @@ import {
   Users,
   Settings,
   GitBranch,
+  Plus,
 } from 'lucide-react';
 import GlassCard from '@/components/glass-design/GlassCard';
-import GlassButton from '@/components/glass-design/GlassButton';
 import { useWorkspace, useWorkspaceMembers } from '@/hooks/useWorkspace';
 import { getCurrentUserId } from '@/lib/cookies';
 import FolderActionButton from '@/components/FolderActionButton';
 import WorkspaceActivityDrawer from '@/features/workspace/components/activity/WorkspaceActivityDrawer';
+import MemberInviteDrawer from '@/features/workspace/components/MemberInviteDrawer';
 import { WorkspaceProvider } from '@/features/workspace/contexts/WorkspaceContext';
+import GlassButton from '@/components/glass-design/GlassButton';
 
 type ViewType = 'chat' | 'notes' | 'members' | 'menu';
 
@@ -64,6 +66,7 @@ export default function WorkspaceLayout({
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);
   const menuRef = React.useRef<HTMLDivElement | null>(null);
   const [isActivityDrawerOpen, setIsActivityDrawerOpen] = React.useState(false);
+  const [isInviteDrawerOpen, setIsInviteDrawerOpen] = React.useState(false);
 
   React.useEffect(() => {
     const handleKey = (e: KeyboardEvent) => {
@@ -95,13 +98,12 @@ export default function WorkspaceLayout({
             <GlassButton
               onClick={handleBackNavigation}
               title='Go back'
-              size='icon'
               className='size-12'
               data-shepherd-target='workspace-back-button'
             >
               <ArrowLeft className='w-5 h-5' />
             </GlassButton>
-            <h1 className='flex-1 min-w-0 text-md font-bold bg-linear-to-r from-white to-gray-300 bg-clip-text text-transparent truncate'>
+            <h1 className='flex-1 min-w-0 text-md font-bold bg-linear-to-r from-text-primary to-text-secondary bg-clip-text text-transparent truncate'>
               {headerTitle}
             </h1>
             {currentView === 'notes' && (
@@ -113,7 +115,17 @@ export default function WorkspaceLayout({
                 title='Activity'
                 className='size-12'
               >
-                <GitBranch className='w-5 h-5 text-white' />
+                <GitBranch className='w-5 h-5 text-text-primary' />
+              </GlassButton>
+            )}
+            {currentView === 'members' && (
+              <GlassButton
+                onClick={() => setIsInviteDrawerOpen(true)}
+                title='Invite'
+                className='gap-2 px-4 flex items-center'
+              >
+                <Plus className='w-5 h-5 text-text-primary' />
+                Invite
               </GlassButton>
             )}
             <div className='relative' ref={menuRef}>
@@ -125,7 +137,7 @@ export default function WorkspaceLayout({
                 title='More actions'
                 className='size-12'
               >
-                <EllipsisVertical className='w-5 h-5 text-white' />
+                <EllipsisVertical className='w-5 h-5 text-text-primary' />
               </GlassButton>
               {isMenuOpen && (
                 <div className='absolute right-0 mt-2 z-110'>
@@ -135,7 +147,7 @@ export default function WorkspaceLayout({
                       prefetch={true}
                       role='menuitem'
                       onClick={() => setIsMenuOpen(false)}
-                      className='w-full text-left px-3 py-2 text-sm text-gray-200 hover:bg-white/10 rounded-2xl flex items-center gap-2'
+                      className='w-full text-left px-3 py-2 text-sm text-text-secondary hover:bg-interactive-hover rounded-2xl flex items-center gap-2'
                     >
                       <Users className='w-4 h-4' />
                       Members
@@ -145,7 +157,7 @@ export default function WorkspaceLayout({
                       prefetch={true}
                       role='menuitem'
                       onClick={() => setIsMenuOpen(false)}
-                      className='w-full text-left px-3 py-2 text-sm text-gray-200 hover:bg-white/10 rounded-2xl flex items-center gap-2'
+                      className='w-full text-left px-3 py-2 text-sm text-text-secondary hover:bg-interactive-hover rounded-2xl flex items-center gap-2'
                     >
                       <Settings className='w-4 h-4' />
                       Settings
@@ -160,14 +172,18 @@ export default function WorkspaceLayout({
         {/* Navigation Tabs - Absolutely Positioned */}
         {(currentView === 'chat' || currentView === 'notes') && (
           <div className='absolute w-full top-17 left-1/2 -translate-x-1/2 z-50 px-2 md:px-6 pointer-events-none'>
-            <GlassCard className='overflow-hidden rounded-3xl border backdrop-blur-md shadow-[0_8px_32px_rgba(0,0,0,0.15)] pointer-events-auto'>
+            <GlassCard className='overflow-hidden rounded-3xl backdrop-blur-md pointer-events-auto'>
               <div className='relative flex items-center p-1'>
-                {/* Sliding background indicator */}
+                {/* Sliding background indicator — glass-on-glass */}
                 <div
-                  className='absolute h-[calc(100%-8px)] rounded-2xl bg-white/10 backdrop-blur-sm transition-all duration-500 ease-out'
+                  className='absolute h-[calc(100%-8px)] rounded-2xl liquid-glass-indicator will-change-transform'
                   style={{
                     width: 'calc(50% - 6px)',
-                    left: currentView === 'chat' ? '4px' : 'calc(50% + 2px)',
+                    left: '4px',
+                    transform:
+                      currentView === 'chat'
+                        ? 'translateX(0)'
+                        : 'translateX(calc(100% + 4px))',
                   }}
                 />
 
@@ -176,8 +192,8 @@ export default function WorkspaceLayout({
                   prefetch={true}
                   className={`relative z-10 flex flex-1 items-center justify-center gap-2 px-8 py-2 text-sm font-medium transition-colors duration-300 ${
                     currentView === 'chat'
-                      ? 'text-white'
-                      : 'text-gray-400 hover:text-white'
+                      ? 'text-text-primary'
+                      : 'text-text-muted hover:text-text-primary'
                   }`}
                   aria-current={currentView === 'chat' ? 'page' : undefined}
                   data-shepherd-target='workspace-chat-button'
@@ -190,8 +206,8 @@ export default function WorkspaceLayout({
                   prefetch={true}
                   className={`relative z-10 flex flex-1 items-center justify-center gap-2 px-8 py-2 text-sm font-medium transition-colors duration-300 ${
                     currentView === 'notes'
-                      ? 'text-white'
-                      : 'text-gray-400 hover:text-white'
+                      ? 'text-text-primary'
+                      : 'text-text-muted hover:text-text-primary'
                   }`}
                   aria-current={currentView === 'notes' ? 'page' : undefined}
                   data-shepherd-target='workspace-notes-button'
@@ -211,6 +227,13 @@ export default function WorkspaceLayout({
         <WorkspaceActivityDrawer
           open={isActivityDrawerOpen}
           onOpenChange={setIsActivityDrawerOpen}
+          workspaceId={workspaceId}
+        />
+
+        {/* Member Invite Drawer */}
+        <MemberInviteDrawer
+          isOpen={isInviteDrawerOpen}
+          onClose={() => setIsInviteDrawerOpen(false)}
           workspaceId={workspaceId}
         />
       </div>

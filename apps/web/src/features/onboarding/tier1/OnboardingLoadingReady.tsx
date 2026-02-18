@@ -184,7 +184,7 @@ export function OnboardingLoadingReady({
               cx={size / 2}
               cy={size / 2}
               r={radius}
-              stroke='rgba(255, 255, 255, 0.1)'
+              className='stroke-foreground/10'
               strokeWidth={strokeWidth}
               fill='none'
             />
@@ -201,7 +201,7 @@ export function OnboardingLoadingReady({
               cx={size / 2}
               cy={size / 2}
               r={radius}
-              stroke='url(#gradient)'
+              className='stroke-foreground/70'
               strokeWidth={strokeWidth}
               fill='none'
               strokeDasharray={circumference}
@@ -211,12 +211,6 @@ export function OnboardingLoadingReady({
                 transition: 'stroke-dashoffset 0.3s ease-out',
               }}
             />
-            <defs>
-              <linearGradient id='gradient' x1='0%' y1='0%' x2='100%' y2='100%'>
-                <stop offset='0%' stopColor='rgba(255, 255, 255, 0.8)' />
-                <stop offset='100%' stopColor='rgba(255, 255, 255, 0.6)' />
-              </linearGradient>
-            </defs>
           </svg>
 
           {/* Animated Checkmark - drawn with SVG path animation */}
@@ -231,7 +225,7 @@ export function OnboardingLoadingReady({
               >
                 <path
                   d='M20 42L32 54L60 26'
-                  stroke='rgba(255, 255, 255, 0.9)'
+                  className='stroke-foreground/90'
                   strokeWidth='6'
                   strokeLinecap='round'
                   strokeLinejoin='round'
@@ -250,19 +244,19 @@ export function OnboardingLoadingReady({
         <div className='text-center space-y-3 mt-12 animate-in fade-in duration-700 delay-200'>
           {isComplete ? (
             <>
-              <h2 className='text-2xl md:text-3xl font-semibold text-white'>
+              <h2 className='text-2xl md:text-3xl font-semibold text-text-primary'>
                 You&apos;re all set!
               </h2>
               {userName && (
-                <p className='text-lg text-gray-400'>Welcome, {userName}</p>
+                <p className='text-lg text-text-muted'>Welcome, {userName}</p>
               )}
             </>
           ) : (
             <>
-              <h2 className='text-2xl md:text-3xl font-semibold text-white'>
+              <h2 className='text-2xl md:text-3xl font-semibold text-text-primary'>
                 {getLoadingMessage(progress)}
               </h2>
-              <p className='text-lg text-gray-400'>
+              <p className='text-lg text-text-muted'>
                 This will only take a moment
               </p>
             </>
@@ -275,7 +269,7 @@ export function OnboardingLoadingReady({
             {[...Array(5)].map((_, i) => (
               <div
                 key={i}
-                className='w-2 h-2 rounded-full bg-white/20'
+                className='w-2 h-2 rounded-full bg-interactive-active'
                 style={{
                   animation: `pulse 1.5s ease-in-out ${i * 0.15}s infinite`,
                 }}
@@ -286,13 +280,13 @@ export function OnboardingLoadingReady({
 
         {/* Error Message */}
         {error && (
-          <div className='mt-8 bg-red-900/30 border border-red-500/50 rounded-lg p-4 backdrop-blur-sm max-w-md text-center'>
-            <p className='text-red-300 text-sm mb-3'>
+          <div className='mt-8 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-500/50 rounded-lg p-4 dark:backdrop-blur-sm max-w-md text-center'>
+            <p className='text-red-600 dark:text-red-300 text-sm mb-3'>
               Something went wrong. Please try again.
             </p>
             <button
               onClick={() => window.location.reload()}
-              className='text-sm text-white/70 hover:text-white underline'
+              className='text-sm text-text-secondary hover:text-text-primary underline'
             >
               Retry
             </button>

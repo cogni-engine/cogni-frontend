@@ -166,7 +166,7 @@ export default function OrganizationsPage() {
   if (isLoading) {
     return (
       <div className='flex items-center justify-center min-h-screen'>
-        <div className='text-white'>Loading organization data...</div>
+        <div className='text-foreground'>Loading organization data...</div>
       </div>
     );
   }
@@ -175,8 +175,10 @@ export default function OrganizationsPage() {
     return (
       <div className='h-full overflow-y-auto pt-20 pb-24 px-4 md:px-6'>
         <div className='max-w-7xl mx-auto py-8'>
-          <h1 className='text-3xl font-bold text-white mb-2'>Organizations</h1>
-          <p className='text-white/60'>No organizations found.</p>
+          <h1 className='text-3xl font-bold text-foreground mb-2'>
+            Organizations
+          </h1>
+          <p className='text-text-secondary'>No organizations found.</p>
         </div>
       </div>
     );
@@ -225,14 +227,16 @@ export default function OrganizationsPage() {
         {/* Success Message */}
         {successMessage && (
           <div className='mt-4 p-4 bg-green-500/10 border border-green-500/50 rounded-lg'>
-            <p className='text-green-300 text-sm'>{successMessage}</p>
+            <p className='text-green-600 dark:text-green-300 text-sm'>
+              {successMessage}
+            </p>
           </div>
         )}
 
         {/* Error Message */}
         {error && (
           <div className='mt-4 p-4 bg-red-500/10 border border-red-500/50 rounded-lg'>
-            <p className='text-red-300 text-sm'>{error}</p>
+            <p className='text-red-600 dark:text-red-300 text-sm'>{error}</p>
           </div>
         )}
       </div>

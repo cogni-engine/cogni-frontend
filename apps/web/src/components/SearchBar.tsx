@@ -18,12 +18,12 @@ const SearchBar = React.forwardRef<HTMLInputElement, SearchBarProps>(
         containerClassName
       )}
     >
-      <SearchIcon className='mr-2 size-5 text-gray-400' />
+      <SearchIcon className='mr-2 size-5 text-text-muted' />
       <input
         ref={ref}
         type={type}
         className={cn(
-          'w-full bg-transparent text-base text-white outline-none placeholder-white/50',
+          'w-full bg-transparent text-base text-text-primary outline-none placeholder-text-muted',
           className
         )}
         {...inputProps}

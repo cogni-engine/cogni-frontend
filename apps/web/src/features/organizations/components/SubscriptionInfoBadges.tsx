@@ -13,8 +13,8 @@ export function SubscriptionInfoBadges({
     : 'Free';
 
   return (
-    <div className='py-4 border-b border-white/10'>
-      <div className='text-xl text-white'>
+    <div className='py-4 border-b border-border-default'>
+      <div className='text-xl text-text-primary'>
         Plan: <span className='font-semibold'>{planName}</span>
       </div>
     </div>

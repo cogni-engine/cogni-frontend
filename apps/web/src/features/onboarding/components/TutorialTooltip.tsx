@@ -39,11 +39,11 @@ export default function TutorialTooltip({
       <GlassCard className='max-w-md p-6 space-y-4 rounded-3xl'>
         {/* Header with title and skip button */}
         <div className='flex items-start justify-between gap-4'>
-          <h3 className='text-xl font-semibold text-white'>{title}</h3>
+          <h3 className='text-xl font-semibold text-text-primary'>{title}</h3>
           {onSkip && (
             <button
               onClick={onSkip}
-              className='text-gray-400 hover:text-white transition-colors'
+              className='text-text-muted hover:text-text-primary transition-colors'
               title='Skip tutorial'
             >
               <X className='w-5 h-5' />
@@ -52,7 +52,7 @@ export default function TutorialTooltip({
         </div>
 
         {/* Description */}
-        <p className='text-gray-300 leading-relaxed'>{description}</p>
+        <p className='text-text-secondary leading-relaxed'>{description}</p>
 
         {/* Action buttons */}
         {onNext && (
@@ -65,7 +65,7 @@ export default function TutorialTooltip({
       </GlassCard>
 
       {/* Overlay backdrop */}
-      <div className='fixed inset-0 bg-black/50 -z-10' />
+      <div className='fixed inset-0 bg-dialog-overlay -z-10' />
     </div>
   );
 }

@@ -30,7 +30,7 @@ export default function AspectImage({
       <div
         data-image-clickable
         onClick={onClick}
-        className='relative w-full h-full rounded-lg overflow-hidden border border-white/10 bg-white/5 hover:border-white/20 transition-all'
+        className='relative w-full h-full rounded-lg overflow-hidden border border-border-default bg-surface-primary hover:border-border-default transition-all'
         style={{
           aspectRatio,
           minWidth: size ? `${size}px` : 'auto',
@@ -50,15 +50,15 @@ export default function AspectImage({
           />
         ) : isLoading ? (
           <div className='w-full h-full flex items-center justify-center'>
-            <div className='animate-spin rounded-full h-6 w-6 border-b-2 border-white/40'></div>
+            <div className='animate-spin rounded-full h-6 w-6 border-b-2 border-text-muted'></div>
           </div>
         ) : (
           <div className='w-full h-full flex items-center justify-center'>
-            <ImageIcon className='w-8 h-8 text-white/40' />
+            <ImageIcon className='w-8 h-8 text-text-muted' />
           </div>
         )}
-        <div className='absolute inset-0 bg-black/0 hover:bg-black/20 transition-colors flex items-center justify-center pointer-events-none'>
-          <ImageIcon className='w-6 h-6 text-white/60 opacity-0 group-hover:opacity-100 transition-opacity' />
+        <div className='absolute inset-0 bg-transparent hover:bg-background/20 transition-colors flex items-center justify-center pointer-events-none'>
+          <ImageIcon className='w-6 h-6 text-text-secondary opacity-0 group-hover:opacity-100 transition-opacity' />
         </div>
       </div>
     </div>

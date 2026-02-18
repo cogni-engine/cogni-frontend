@@ -70,7 +70,7 @@ export const FileList = forwardRef<FileListRef, FileListProps>((props, ref) => {
 
   if (props.items.length === 0) {
     return (
-      <GlassCard className='rounded-xl p-3 text-sm text-gray-400'>
+      <GlassCard className='rounded-xl p-3 text-sm text-text-muted'>
         No files found
       </GlassCard>
     );
@@ -108,17 +108,19 @@ export const FileList = forwardRef<FileListRef, FileListProps>((props, ref) => {
           key={item.id}
           onClick={() => selectItem(index)}
           className={`w-full text-left px-4 py-2.5 transition-colors flex items-start gap-3 ${
-            index === selectedIndex ? 'bg-white/20' : 'hover:bg-white/10'
+            index === selectedIndex
+              ? 'bg-interactive-active'
+              : 'hover:bg-interactive-hover'
           }`}
         >
           <span className='text-lg shrink-0'>
             {getFileIcon(item.mime_type)}
           </span>
           <div className='flex-1 min-w-0'>
-            <div className='text-sm font-medium text-white truncate'>
+            <div className='text-sm font-medium text-text-primary truncate'>
               {item.original_filename}
             </div>
-            <div className='text-xs text-gray-400'>
+            <div className='text-xs text-text-muted'>
               {formatFileSize(item.file_size)}
             </div>
           </div>

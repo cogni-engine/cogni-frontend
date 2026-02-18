@@ -40,14 +40,14 @@ export function SubscriptionDetails({
       {/* Seat Usage Section - Only for Business plan */}
       {subscriptionPlan === 'business' && (
         <div className='mb-8'>
-          <h2 className='text-xl font-bold text-white'>Seat Usage</h2>
+          <h2 className='text-xl font-bold text-text-primary'>Seat Usage</h2>
           <SeatUsageMeter organization={currentOrg.organization} />
         </div>
       )}
 
       {/* Billing Information Section */}
       <div className='mb-8'>
-        <h2 className='text-xl font-bold text-white mb-6'>
+        <h2 className='text-xl font-bold text-text-primary mb-6'>
           Billing Information
         </h2>
         {/* Renewal/Cancellation Info */}
@@ -58,7 +58,7 @@ export function SubscriptionDetails({
 
       {/* Manage Subscription Section */}
       <div className='mb-8'>
-        <h2 className='text-xl font-bold text-white mb-6'>
+        <h2 className='text-xl font-bold text-text-primary mb-6'>
           Manage Subscription
         </h2>
         {/* Action Buttons */}

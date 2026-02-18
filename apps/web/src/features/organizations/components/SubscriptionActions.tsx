@@ -30,26 +30,26 @@ export function SubscriptionActions({
         <button
           onClick={onManageBilling}
           disabled={isOpeningPortal}
-          className='w-full py-4 flex items-center justify-between border-b border-white/10 hover:bg-white/5 transition-colors disabled:opacity-50 disabled:cursor-not-allowed'
+          className='w-full py-4 flex items-center justify-between border-b border-border-default hover:bg-surface-primary transition-colors disabled:opacity-50 disabled:cursor-not-allowed'
           data-manage-billing
         >
           <div className='flex items-center gap-3'>
-            <CreditCard className='h-5 w-5 text-white/60' />
+            <CreditCard className='h-5 w-5 text-text-secondary' />
             <div className='text-left'>
-              <div className='text-base text-white font-medium'>
+              <div className='text-base text-text-primary font-medium'>
                 {currentOrg.organization.cancel_at_period_end
                   ? 'Reactivate or manage billing'
                   : 'Manage billing'}
               </div>
-              <div className='text-sm text-white/60 mt-0.5'>
+              <div className='text-sm text-text-secondary mt-0.5'>
                 Update payment method, invoices, and more
               </div>
             </div>
           </div>
           {isOpeningPortal ? (
-            <Loader2 className='h-5 w-5 text-white/40 animate-spin' />
+            <Loader2 className='h-5 w-5 text-text-muted animate-spin' />
           ) : (
-            <ChevronRight className='h-5 w-5 text-white/40' />
+            <ChevronRight className='h-5 w-5 text-text-muted' />
           )}
         </button>
       )}
@@ -57,40 +57,40 @@ export function SubscriptionActions({
       {subscriptionPlan === 'pro' && (
         <button
           onClick={onUpgrade}
-          className='w-full py-4 flex items-center justify-between border-b border-white/10 hover:bg-white/5 transition-colors'
+          className='w-full py-4 flex items-center justify-between border-b border-border-default hover:bg-surface-primary transition-colors'
         >
           <div className='flex items-center gap-3'>
-            <ArrowUpCircle className='h-5 w-5 text-blue-400' />
+            <ArrowUpCircle className='h-5 w-5 text-blue-600 dark:text-blue-400' />
             <div className='text-left'>
-              <div className='text-base text-white font-medium'>
+              <div className='text-base text-text-primary font-medium'>
                 Upgrade to Business
               </div>
-              <div className='text-sm text-white/60 mt-0.5'>
+              <div className='text-sm text-text-secondary mt-0.5'>
                 Add team members and collaboration features
               </div>
             </div>
           </div>
-          <ChevronRight className='h-5 w-5 text-white/40' />
+          <ChevronRight className='h-5 w-5 text-text-muted' />
         </button>
       )}
 
       {subscriptionPlan === 'business' && (
         <button
           onClick={onUpdateSeats}
-          className='w-full py-4 flex items-center justify-between border-b border-white/10 hover:bg-white/5 transition-colors'
+          className='w-full py-4 flex items-center justify-between border-b border-border-default hover:bg-surface-primary transition-colors'
         >
           <div className='flex items-center gap-3'>
-            <Users className='h-5 w-5 text-blue-400' />
+            <Users className='h-5 w-5 text-blue-600 dark:text-blue-400' />
             <div className='text-left'>
-              <div className='text-base text-white font-medium'>
+              <div className='text-base text-text-primary font-medium'>
                 Update seats
               </div>
-              <div className='text-sm text-white/60 mt-0.5'>
+              <div className='text-sm text-text-secondary mt-0.5'>
                 Add or remove team member seats
               </div>
             </div>
           </div>
-          <ChevronRight className='h-5 w-5 text-white/40' />
+          <ChevronRight className='h-5 w-5 text-text-muted' />
         </button>
       )}
     </div>

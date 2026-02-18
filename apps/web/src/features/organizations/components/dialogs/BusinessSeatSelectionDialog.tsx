@@ -63,7 +63,7 @@ export function BusinessSeatSelectionDialog({
             <div className='space-y-2'>
               <label
                 htmlFor='seat-count'
-                className='text-sm font-medium text-white/80'
+                className='text-sm font-medium text-text-secondary'
               >
                 Number of seats
               </label>
@@ -75,30 +75,34 @@ export function BusinessSeatSelectionDialog({
                 onChange={e =>
                   setSeatCount(Math.max(1, parseInt(e.target.value) || 1))
                 }
-                className='w-full px-4 py-3.5 bg-white/5 border border-white/10 rounded-xl text-white focus:outline-none focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/20 transition-all'
+                className='w-full px-4 py-3.5 bg-surface-primary border border-border-default rounded-xl text-text-primary focus:outline-none focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/20 transition-all'
                 autoFocus
               />
-              <p className='text-xs text-white/50'>
+              <p className='text-xs text-text-muted'>
                 You can add or remove seats anytime after subscribing
               </p>
             </div>
 
-            <GlassCard className='p-4 rounded-xl bg-white/5'>
+            <GlassCard className='p-4 rounded-xl bg-surface-primary'>
               <div className='space-y-2'>
                 <div className='flex justify-between text-sm'>
-                  <span className='text-white/70'>Price per seat:</span>
-                  <span className='text-white font-medium'>$15/month</span>
+                  <span className='text-text-secondary'>Price per seat:</span>
+                  <span className='text-text-primary font-medium'>
+                    $15/month
+                  </span>
                 </div>
                 <div className='flex justify-between text-sm'>
-                  <span className='text-white/70'>Number of seats:</span>
-                  <span className='text-white font-medium'>{seatCount}</span>
+                  <span className='text-text-secondary'>Number of seats:</span>
+                  <span className='text-text-primary font-medium'>
+                    {seatCount}
+                  </span>
                 </div>
-                <div className='h-px bg-white/10 my-2' />
+                <div className='h-px bg-border-default my-2' />
                 <div className='flex justify-between'>
-                  <span className='text-white font-semibold'>
+                  <span className='text-text-primary font-semibold'>
                     Total monthly cost:
                   </span>
-                  <span className='text-blue-400 font-bold text-lg'>
+                  <span className='text-blue-600 dark:text-blue-400 font-bold text-lg'>
                     ${(15 * seatCount).toFixed(2)}
                   </span>
                 </div>

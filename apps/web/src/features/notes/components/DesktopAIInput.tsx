@@ -33,14 +33,14 @@ export function DesktopAIInput({
           className='flex items-center rounded-4xl px-4 py-3'
           data-shepherd-target='note-ai-input'
         >
-          <Sparkles className='mr-2 size-5 text-gray-400 shrink-0' />
+          <Sparkles className='mr-2 size-5 text-text-muted shrink-0' />
           <input
             type='text'
             value={aiInstruction}
             onChange={e => onInstructionChange(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder='Ask AI to edit this note...'
-            className='flex-1 bg-transparent text-white text-base outline-none placeholder-white/50'
+            className='flex-1 bg-transparent text-foreground text-base outline-none placeholder-input-placeholder'
             disabled={aiLoading}
           />
           <GlassButton

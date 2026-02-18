@@ -12,10 +12,7 @@ export async function GET(
   const { name } = await params;
 
   if (!TABLE_NAME_RE.test(name)) {
-    return NextResponse.json(
-      { error: 'Invalid table name' },
-      { status: 400 }
-    );
+    return NextResponse.json({ error: 'Invalid table name' }, { status: 400 });
   }
 
   try {

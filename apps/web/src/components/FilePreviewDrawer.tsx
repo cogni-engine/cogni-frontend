@@ -224,7 +224,7 @@ export default function FilePreviewDrawer({
       return <FileSpreadsheet className='w-5 h-5 text-green-400' />;
     if (mimeType.includes('zip') || mimeType.includes('compressed'))
       return <Archive className='w-5 h-5 text-yellow-400' />;
-    return <FileIcon className='w-5 h-5 text-gray-400' />;
+    return <FileIcon className='w-5 h-5 text-text-muted' />;
   };
 
   const handleDownload = async () => {
@@ -279,8 +279,8 @@ export default function FilePreviewDrawer({
     if (error) {
       return (
         <div className='flex flex-col items-center justify-center py-12 text-center'>
-          <FileIcon className='w-12 h-12 text-gray-400 opacity-50 mb-3' />
-          <p className='text-gray-400'>{error}</p>
+          <FileIcon className='w-12 h-12 text-text-muted opacity-50 mb-3' />
+          <p className='text-text-muted'>{error}</p>
         </div>
       );
     }
@@ -288,7 +288,7 @@ export default function FilePreviewDrawer({
     // Image preview
     if (isImage(file.mime_type) && fileUrl) {
       return (
-        <div className='relative w-full aspect-square max-h-[50vh] rounded-lg overflow-hidden bg-white/5'>
+        <div className='relative w-full aspect-square max-h-[50vh] rounded-lg overflow-hidden bg-surface-primary'>
           <Image
             src={fileUrl}
             alt={file.original_filename}
@@ -304,7 +304,7 @@ export default function FilePreviewDrawer({
     // Video preview
     if (isVideo(file.mime_type) && fileUrl) {
       return (
-        <div className='relative w-full aspect-video max-h-[50vh] rounded-lg overflow-hidden bg-white/5'>
+        <div className='relative w-full aspect-video max-h-[50vh] rounded-lg overflow-hidden bg-surface-primary'>
           <video
             src={fileUrl}
             controls
@@ -318,16 +318,16 @@ export default function FilePreviewDrawer({
     // Audio preview
     if (isAudio(file.mime_type) && fileUrl) {
       return (
-        <div className='p-6 rounded-lg bg-white/5'>
+        <div className='p-6 rounded-lg bg-surface-primary'>
           <div className='flex items-center gap-4 mb-4'>
             <div className='w-16 h-16 rounded-lg bg-pink-500/20 flex items-center justify-center'>
               <Music className='w-8 h-8 text-pink-400' />
             </div>
             <div className='flex-1 min-w-0'>
-              <p className='text-white font-medium truncate'>
+              <p className='text-text-primary font-medium truncate'>
                 {file.original_filename}
               </p>
-              <p className='text-sm text-gray-400'>
+              <p className='text-sm text-text-muted'>
                 {formatFileSize(file.file_size)}
               </p>
             </div>
@@ -340,7 +340,7 @@ export default function FilePreviewDrawer({
     // PDF preview
     if (isPdf(file.mime_type) && fileUrl) {
       return (
-        <div className='relative w-full h-[50vh] rounded-lg overflow-hidden bg-white/5'>
+        <div className='relative w-full h-[50vh] rounded-lg overflow-hidden bg-surface-primary'>
           <iframe
             src={`${fileUrl}#toolbar=0`}
             className='w-full h-full'
@@ -353,8 +353,8 @@ export default function FilePreviewDrawer({
     // Text file preview
     if (isTextFile(file.mime_type, file.original_filename) && textContent) {
       return (
-        <div className='relative w-full max-h-[60vh] rounded-lg overflow-hidden bg-white/5'>
-          <pre className='p-4 text-sm text-gray-200 whitespace-pre-wrap break-words overflow-y-auto max-h-[60vh] font-mono'>
+        <div className='relative w-full max-h-[60vh] rounded-lg overflow-hidden bg-surface-primary'>
+          <pre className='p-4 text-sm text-text-secondary whitespace-pre-wrap break-words overflow-y-auto max-h-[60vh] font-mono'>
             {textContent}
           </pre>
         </div>
@@ -363,17 +363,17 @@ export default function FilePreviewDrawer({
 
     // Generic file preview
     return (
-      <div className='flex flex-col items-center justify-center py-12 px-6 rounded-lg bg-white/5'>
-        <div className='w-20 h-20 rounded-2xl bg-white/10 flex items-center justify-center mb-4'>
+      <div className='flex flex-col items-center justify-center py-12 px-6 rounded-lg bg-surface-primary'>
+        <div className='w-20 h-20 rounded-2xl bg-interactive-hover flex items-center justify-center mb-4'>
           {getFileIcon(file.mime_type)}
         </div>
-        <p className='text-white font-medium text-center mb-1'>
+        <p className='text-text-primary font-medium text-center mb-1'>
           {file.original_filename}
         </p>
-        <p className='text-sm text-gray-400'>
+        <p className='text-sm text-text-muted'>
           {formatFileSize(file.file_size)}
         </p>
-        <p className='text-xs text-gray-500 mt-2'>{file.mime_type}</p>
+        <p className='text-xs text-text-muted mt-2'>{file.mime_type}</p>
       </div>
     );
   };
@@ -386,7 +386,7 @@ export default function FilePreviewDrawer({
         {/* Header */}
         <DrawerHeader className='px-4 pb-2 pt-0'>
           <div className='flex items-center gap-2 flex-1 min-w-0'>
-            <div className='w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center shrink-0'>
+            <div className='w-8 h-8 rounded-lg bg-interactive-hover flex items-center justify-center shrink-0'>
               {file && getFileIcon(file.mime_type)}
             </div>
             <DrawerTitle className='truncate'>
@@ -397,13 +397,13 @@ export default function FilePreviewDrawer({
             <button
               onClick={handleDownload}
               disabled={downloading}
-              className='p-2 hover:bg-white/10 rounded-lg transition-colors disabled:opacity-50 shrink-0'
+              className='p-2 hover:bg-interactive-hover rounded-lg transition-colors disabled:opacity-50 shrink-0'
               title='Download'
             >
               {downloading ? (
-                <Loader2 className='w-5 h-5 animate-spin text-gray-400' />
+                <Loader2 className='w-5 h-5 animate-spin text-text-muted' />
               ) : (
-                <Download className='w-5 h-5 text-gray-400 hover:text-white transition-colors' />
+                <Download className='w-5 h-5 text-text-muted hover:text-text-primary transition-colors' />
               )}
             </button>
           )}

@@ -112,13 +112,13 @@ export function OnboardingLoading({
                 {/* Checkmark with glow effect */}
                 <div className='absolute inset-0 bg-green-500 rounded-full blur-xl opacity-50 scale-150' />
                 <div className='relative bg-linear-to-br from-green-400 to-green-600 rounded-full p-6'>
-                  <Check className='size-12 text-white stroke-3' />
+                  <Check className='size-12 text-text-primary stroke-3' />
                 </div>
               </div>
             </div>
           ) : (
             <div className='text-center'>
-              <div className='text-4xl font-bold text-white'>
+              <div className='text-4xl font-bold text-text-primary'>
                 {Math.round(progress)}%
               </div>
             </div>
@@ -128,11 +128,11 @@ export function OnboardingLoading({
 
       {/* Loading Text */}
       <div className='text-center space-y-3 mt-12 animate-in fade-in duration-700 delay-200'>
-        <h2 className='text-2xl md:text-3xl font-semibold text-white'>
+        <h2 className='text-2xl md:text-3xl font-semibold text-text-primary'>
           {isComplete ? 'All set!' : 'Setting up your workspace'}
         </h2>
         {userName && !isComplete && (
-          <p className='text-lg text-gray-400'>
+          <p className='text-lg text-text-muted'>
             Personalizing your experience, {userName}
           </p>
         )}
@@ -149,7 +149,7 @@ export function OnboardingLoading({
           {[...Array(5)].map((_, i) => (
             <div
               key={i}
-              className='w-2 h-2 rounded-full bg-white/20'
+              className='w-2 h-2 rounded-full bg-interactive-active'
               style={{
                 animation: `pulse 1.5s ease-in-out ${i * 0.15}s infinite`,
               }}

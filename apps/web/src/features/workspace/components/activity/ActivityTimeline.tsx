@@ -22,7 +22,7 @@ export default function ActivityTimeline({
   if (loading) {
     return (
       <div className='flex items-center justify-center py-12'>
-        <div className='animate-spin rounded-full h-6 w-6 border-b-2 border-white' />
+        <div className='animate-spin rounded-full h-6 w-6 border-b-2 border-text-primary' />
       </div>
     );
   }
@@ -30,7 +30,7 @@ export default function ActivityTimeline({
   if (activities.length === 0) {
     return (
       <div className='flex items-center justify-center py-12'>
-        <p className='text-white/60 text-center'>No activity yet</p>
+        <p className='text-text-secondary text-center'>No activity yet</p>
       </div>
     );
   }

@@ -29,10 +29,10 @@ export function FolderGroupHeader({
               e.stopPropagation();
               onBack();
             }}
-            className='p-1 hover:bg-white/10 rounded-lg transition-colors'
+            className='p-1 hover:bg-interactive-hover rounded-lg transition-colors'
             aria-label='Go back'
           >
-            <ChevronLeft className='w-4 h-4 text-white' />
+            <ChevronLeft className='w-4 h-4 text-foreground' />
           </button>
         )}
         <div
@@ -55,9 +55,11 @@ export function FolderGroupHeader({
                   {folderName.charAt(0).toUpperCase()}
                 </div>
               ))}
-            <h3 className='text-lg font-medium text-white'>{folderName}</h3>
+            <h3 className='text-lg font-medium text-foreground'>
+              {folderName}
+            </h3>
           </div>
-          <div className='text-gray-400 hover:text-white transition-colors pointer-events-none'>
+          <div className='text-text-muted hover:text-foreground transition-colors pointer-events-none'>
             {isCollapsed ? (
               <ChevronRight className='w-4 h-4' />
             ) : (

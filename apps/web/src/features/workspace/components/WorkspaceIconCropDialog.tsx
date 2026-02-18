@@ -53,7 +53,7 @@ export function WorkspaceIconCropDialog({
             square.
           </DialogDescription>
         </DialogHeader>
-        <div className='relative h-80 w-full overflow-hidden rounded-lg bg-black/40'>
+        <div className='relative h-80 w-full overflow-hidden rounded-lg bg-dialog-overlay'>
           {imageSrc ? (
             <Cropper
               image={imageSrc}
@@ -66,7 +66,7 @@ export function WorkspaceIconCropDialog({
               onCropComplete={onCropComplete}
             />
           ) : (
-            <div className='flex h-full items-center justify-center text-white/60'>
+            <div className='flex h-full items-center justify-center text-text-secondary'>
               No image selected.
             </div>
           )}

@@ -51,11 +51,11 @@ export default function SortDropdown({
         <div className='flex items-center justify-center w-8 h-8 rounded-xl bg-transparent transition-colors'>
           <ArrowUpDown className='w-4 h-4 text-blue-400' />
         </div>
-        <span className='flex-1 text-left text-sm font-semibold text-white truncate transition-colors group-hover:text-white group-focus-visible:text-white'>
+        <span className='flex-1 text-left text-sm font-semibold text-text-primary truncate transition-colors group-hover:text-text-primary group-focus-visible:text-text-primary'>
           {getSelectedLabel()}
         </span>
         <ChevronRight
-          className={`w-4 h-4 text-gray-400 transition-transform duration-200 group-hover:text-white ${isOpen ? 'rotate-90' : ''}`}
+          className={`w-4 h-4 text-text-muted transition-transform duration-200 group-hover:text-text-primary ${isOpen ? 'rotate-90' : ''}`}
         />
       </GlassCard>
 
@@ -70,20 +70,26 @@ export default function SortDropdown({
                 setIsOpen(false);
               }}
               className={`w-full flex items-center justify-between px-3 py-2 rounded-xl transition-all duration-200 group ${
-                sortBy === 'time' ? 'bg-white/10' : 'hover:bg-white/5'
+                sortBy === 'time'
+                  ? 'bg-interactive-hover'
+                  : 'hover:bg-surface-primary'
               }`}
             >
               <div className='flex items-center gap-3'>
                 <div
                   className={`flex items-center justify-center w-9 h-9 rounded-lg transition-colors ${
                     sortBy === 'time'
-                      ? 'bg-white/10'
-                      : 'bg-white/5 group-hover:bg-white/10'
+                      ? 'bg-interactive-hover'
+                      : 'bg-surface-primary group-hover:bg-interactive-hover'
                   }`}
                 ></div>
-                <span className='text-sm font-medium text-white'>by time</span>
+                <span className='text-sm font-medium text-text-primary'>
+                  by time
+                </span>
               </div>
-              {sortBy === 'time' && <Check className='w-5 h-5 text-white' />}
+              {sortBy === 'time' && (
+                <Check className='w-5 h-5 text-text-primary' />
+              )}
             </button>
 
             {/* Folder Sort */}
@@ -93,22 +99,26 @@ export default function SortDropdown({
                 setIsOpen(false);
               }}
               className={`w-full flex items-center justify-between px-3 py-2 rounded-xl transition-all duration-200 group mt-1 ${
-                sortBy === 'folder' ? 'bg-white/10' : 'hover:bg-white/5'
+                sortBy === 'folder'
+                  ? 'bg-interactive-hover'
+                  : 'hover:bg-surface-primary'
               }`}
             >
               <div className='flex items-center gap-3'>
                 <div
                   className={`flex items-center justify-center w-9 h-9 rounded-lg transition-colors ${
                     sortBy === 'folder'
-                      ? 'bg-white/10'
-                      : 'bg-white/5 group-hover:bg-white/10'
+                      ? 'bg-interactive-hover'
+                      : 'bg-surface-primary group-hover:bg-interactive-hover'
                   }`}
                 ></div>
-                <span className='text-sm font-medium text-white'>
+                <span className='text-sm font-medium text-text-primary'>
                   by folder
                 </span>
               </div>
-              {sortBy === 'folder' && <Check className='w-5 h-5 text-white' />}
+              {sortBy === 'folder' && (
+                <Check className='w-5 h-5 text-text-primary' />
+              )}
             </button>
           </div>
         </GlassCard>

@@ -61,7 +61,7 @@ export function PricingModal({ open, onOpenChange }: PricingModalProps) {
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className='max-w-full max-h-[80vh] overflow-y-auto z-110 rounded-3xl bg-black/60 backdrop-blur-xl border-white/10'>
+        <DialogContent className='max-w-full max-h-[80vh] overflow-y-auto z-110 rounded-3xl bg-dialog-overlay dark:backdrop-blur-xl border-border-default'>
           <DialogHeader>
             <DialogTitle className='text-3xl text-center mb-2'>
               {DEFAULT_PRICING_JA.title}
@@ -78,7 +78,7 @@ export function PricingModal({ open, onOpenChange }: PricingModalProps) {
                 <div key={plan.id} className='relative'>
                   {isCurrentPlan && (
                     <div className='absolute -top-3 left-1/2 transform -translate-x-1/2 z-10'>
-                      <span className='bg-white/20 backdrop-blur-sm text-white text-xs font-semibold px-3 py-1 rounded-full border border-white/10'>
+                      <span className='bg-interactive-active dark:backdrop-blur-sm text-text-primary text-xs font-semibold px-3 py-1 rounded-full border border-border-default'>
                         Current Plan
                       </span>
                     </div>
@@ -86,8 +86,8 @@ export function PricingModal({ open, onOpenChange }: PricingModalProps) {
                   <PricingCard
                     plan={plan}
                     bestValueLabel={DEFAULT_PRICING_JA.bestValueLabel}
-                    className={`border-white/10 ${
-                      isCurrentPlan ? 'ring-2 ring-white/30' : ''
+                    className={`border-border-default ${
+                      isCurrentPlan ? 'ring-2 ring-ring' : ''
                     }`}
                     featureClassName='gap-2'
                     priceClassName='text-5xl'
@@ -97,7 +97,7 @@ export function PricingModal({ open, onOpenChange }: PricingModalProps) {
                         className={`w-full rounded-full ${
                           plan.isBestValue
                             ? 'bg-white hover:bg-white/90 text-black border-transparent'
-                            : 'bg-white/10 border-white/20 hover:bg-white/20 text-white'
+                            : 'bg-interactive-hover border-border-default hover:bg-interactive-active text-text-primary'
                         }`}
                         onClick={() => handleButtonClick(plan.id)}
                         disabled={isLoading || isCurrentPlan}

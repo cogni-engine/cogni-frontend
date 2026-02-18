@@ -86,7 +86,7 @@ export function PaymentStatusBanner({
           <h4 className={`font-semibold ${config.iconColor} mb-1`}>
             {config.title}
           </h4>
-          <p className='text-sm text-white/80 leading-relaxed'>
+          <p className='text-sm text-text-secondary leading-relaxed'>
             {config.message}
           </p>
           {(status === 'past_due' || status === 'restricted') && (

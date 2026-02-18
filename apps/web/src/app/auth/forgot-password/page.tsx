@@ -20,8 +20,8 @@ export default function ForgotPasswordPage() {
 
   if (success) {
     return (
-      <div className='min-h-screen flex items-center justify-center bg-black px-4'>
-        <div className='w-full max-w-md bg-zinc-900/50 rounded-3xl p-8 shadow-2xl backdrop-blur-sm border border-white/10'>
+      <div className='min-h-screen flex items-center justify-center bg-background px-4'>
+        <div className='w-full max-w-md bg-dialog-bg rounded-3xl p-8 shadow-2xl dark:backdrop-blur-sm border border-border-default'>
           <div className='flex flex-col items-center mb-8'>
             <Image
               src='/favicon.svg'
@@ -30,19 +30,19 @@ export default function ForgotPasswordPage() {
               height={40}
               className='rounded-xl mb-6'
             />
-            <h1 className='text-2xl font-semibold text-center text-white mb-2'>
+            <h1 className='text-2xl font-semibold text-center text-text-primary mb-2'>
               Check your email
             </h1>
-            <p className='text-gray-400 text-center'>
+            <p className='text-text-muted text-center'>
               We&apos;ve sent a password reset link to{' '}
-              <span className='text-white font-medium'>{email}</span>
+              <span className='text-text-primary font-medium'>{email}</span>
             </p>
           </div>
 
           <div className='text-center'>
             <Link
               href='/login'
-              className='text-blue-400 hover:text-blue-300 transition-colors font-medium'
+              className='text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300 transition-colors font-medium'
             >
               Back to login
             </Link>
@@ -53,21 +53,8 @@ export default function ForgotPasswordPage() {
   }
 
   return (
-    <div className='min-h-screen flex items-center justify-center bg-black px-4'>
-      <div className='w-full max-w-md bg-zinc-900/50 rounded-3xl p-8 shadow-2xl backdrop-blur-sm border border-white/10'>
-        <style
-          dangerouslySetInnerHTML={{
-            __html: `
-            input:-webkit-autofill,
-            input:-webkit-autofill:hover,
-            input:-webkit-autofill:focus,
-            input:-webkit-autofill:active {
-              transition: background-color 5000s ease-in-out 0s;
-              -webkit-text-fill-color: white !important;
-            }
-          `,
-          }}
-        />
+    <div className='min-h-screen flex items-center justify-center bg-background px-4'>
+      <div className='w-full max-w-md bg-dialog-bg rounded-3xl p-8 shadow-2xl dark:backdrop-blur-sm border border-border-default'>
         <div className='flex flex-col items-center mb-8'>
           <Image
             src='/favicon.svg'
@@ -76,10 +63,10 @@ export default function ForgotPasswordPage() {
             height={40}
             className='rounded-xl mb-6'
           />
-          <h1 className='text-2xl font-semibold text-center text-white mb-2'>
+          <h1 className='text-2xl font-semibold text-center text-text-primary mb-2'>
             Reset your password
           </h1>
-          <p className='text-gray-400 text-center text-sm'>
+          <p className='text-text-muted text-center text-sm'>
             Enter your email address and we&apos;ll send you a link to reset
             your password
           </p>
@@ -92,7 +79,7 @@ export default function ForgotPasswordPage() {
               placeholder='Email'
               value={email}
               onChange={e => setEmail(e.target.value)}
-              className='w-full bg-transparent text-white text-base py-2 border-b border-zinc-700 focus:outline-none placeholder:text-gray-500 caret-white'
+              className='w-full bg-transparent text-text-primary text-base py-2 border-b border-border-default focus:outline-none placeholder:text-input-placeholder caret-text-primary'
               autoComplete='email'
               required
             />
@@ -103,11 +90,11 @@ export default function ForgotPasswordPage() {
           <button
             type='submit'
             disabled={loading}
-            className='w-full inline-flex items-center justify-center rounded-full bg-white px-6 py-2 font-medium text-black transition hover:bg-gray-100 active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed'
+            className='w-full inline-flex items-center justify-center rounded-full bg-foreground px-6 py-2 font-medium text-background transition hover:opacity-90 active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed'
           >
             {loading ? (
               <span className='inline-flex items-center gap-2'>
-                <span className='h-4 w-4 animate-spin rounded-full border-2 border-black/40 border-t-black' />
+                <span className='h-4 w-4 animate-spin rounded-full border-2 border-background/40 border-t-background' />
                 <span>Sending...</span>
               </span>
             ) : (
@@ -118,7 +105,7 @@ export default function ForgotPasswordPage() {
           <div className='text-center'>
             <Link
               href='/login'
-              className='text-gray-400 hover:text-white transition-colors text-sm'
+              className='text-text-muted hover:text-text-primary transition-colors text-sm'
             >
               Back to login
             </Link>

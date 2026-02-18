@@ -15,8 +15,8 @@ export function ToolbarButton({
       title={title}
       className={`p-2 rounded-lg transition-all ${
         isActive
-          ? 'bg-white/20 text-white'
-          : 'bg-white/5 text-gray-400 hover:bg-white/10 hover:text-gray-300'
+          ? 'bg-interactive-active text-foreground'
+          : 'bg-surface-primary text-text-muted hover:bg-interactive-hover hover:text-text-secondary'
       } ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
     >
       {icon}

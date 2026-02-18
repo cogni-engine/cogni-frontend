@@ -121,7 +121,7 @@ const AiAugmentedInput = forwardRef<AiAugmentedInputRef, TextInputProps>(
           autoFocus
           disabled={isLoading || isUploading}
           rows={1}
-          className='w-full bg-white/8 backdrop-blur-xl text-white px-5 py-3.5 pr-[140px] rounded-4xl border border-black focus:outline-none resize-none shadow-[0_8px_32px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.12)] focus:shadow-[0_12px_40px_rgba(0,0,0,0.25),inset_0_1px_0_rgba(255,255,255,0.18)] transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed overflow-y-auto'
+          className='w-full bg-surface-secondary dark:backdrop-blur-xl text-text-primary px-5 py-3.5 pr-[140px] rounded-4xl border border-border-default focus:outline-none resize-none shadow-card focus:shadow-card-hover transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed overflow-y-auto'
         />
         {/* マイクボタン - 送信ボタンの左 */}
         {/* <div className='absolute right-[50px] bottom-1.5 z-110'>
@@ -138,7 +138,7 @@ const AiAugmentedInput = forwardRef<AiAugmentedInputRef, TextInputProps>(
           disabled={
             isLoading || isUploading || (!input.trim() && !hasAttachments)
           }
-          className='absolute right-2.5 bottom-1.5 w-10 h-10 rounded-full bg-white/10 backdrop-blur-xl border border-black text-white flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed hover:bg-white/15 hover:scale-102 transition-all duration-300 shadow-[0_8px_32px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.12)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.25),inset_0_1px_0_rgba(255,255,255,0.18)]'
+          className='absolute right-2.5 bottom-1.5 w-10 h-10 rounded-full bg-interactive-hover dark:backdrop-blur-xl border border-border-default text-text-primary flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed hover:bg-interactive-active hover:scale-102 transition-all duration-300 shadow-card hover:shadow-card-hover'
         >
           {isLoading && canStop ? (
             <Square className='w-4 h-4 fill-current' />

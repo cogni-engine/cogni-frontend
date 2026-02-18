@@ -53,7 +53,8 @@ const getStatusBadge = (status: NotificationReactionStatus) => {
       return {
         icon: <X className='w-3 h-3' />,
         text: status === 'dismissed' ? 'Dismissed' : 'Ignored',
-        className: 'bg-gray-500/10 border-gray-500/20 text-gray-400/80',
+        className:
+          'bg-gray-500/10 border-gray-500/20 text-gray-500 dark:text-gray-400',
       };
     case 'rejected':
       return {
@@ -71,7 +72,8 @@ const getStatusBadge = (status: NotificationReactionStatus) => {
       return {
         icon: null,
         text: status,
-        className: 'bg-white/5 border-white/10 text-white/70',
+        className:
+          'bg-surface-primary border-border-default text-text-secondary',
       };
   }
 };
@@ -132,7 +134,7 @@ export default function ActivityByTask({
   if (loading) {
     return (
       <div className='flex items-center justify-center py-12'>
-        <div className='animate-spin rounded-full h-6 w-6 border-b-2 border-white' />
+        <div className='animate-spin rounded-full h-6 w-6 border-b-2 border-text-primary' />
       </div>
     );
   }
@@ -140,7 +142,7 @@ export default function ActivityByTask({
   if (taskGroups.length === 0) {
     return (
       <div className='flex items-center justify-center py-12'>
-        <p className='text-white/60 text-center'>No activity yet</p>
+        <p className='text-text-secondary text-center'>No activity yet</p>
       </div>
     );
   }
@@ -157,12 +159,12 @@ export default function ActivityByTask({
             key={group.taskId}
             className={cn(
               'rounded-2xl',
-              'border border-white/[0.08]',
-              'bg-white/[0.02] backdrop-blur-sm',
-              'shadow-[0_4px_24px_rgba(0,0,0,0.12),inset_0_1px_0_rgba(255,255,255,0.06)]',
+              'border border-border-subtle',
+              'bg-surface-primary dark:backdrop-blur-sm',
+              'shadow-card',
               'transition-all duration-200',
-              'hover:bg-white/[0.04] hover:border-white/[0.12]',
-              isExpanded && 'bg-white/[0.04] border-white/[0.12]'
+              'hover:bg-surface-secondary hover:border-border-default',
+              isExpanded && 'bg-surface-secondary border-border-default'
             )}
           >
             {/* Card Header */}
@@ -176,14 +178,14 @@ export default function ActivityByTask({
                 <div className='flex-1 min-w-0'>
                   {/* Title */}
                   <div className='flex items-center gap-2 mb-2'>
-                    <h3 className='text-sm font-medium text-white truncate'>
+                    <h3 className='text-sm font-medium text-text-primary truncate'>
                       {group.latestActivity.title}
                     </h3>
                   </div>
 
                   {/* Note title */}
                   {group.noteTitle && (
-                    <p className='text-xs text-white/40 truncate mb-2'>
+                    <p className='text-xs text-text-muted truncate mb-2'>
                       {group.noteTitle}
                     </p>
                   )}
@@ -195,7 +197,7 @@ export default function ActivityByTask({
                       {group.memberAvatars.slice(0, 3).map((avatar, i) => (
                         <Avatar
                           key={i}
-                          className='h-5 w-5 border border-black/50 bg-white/10 text-[8px]'
+                          className='h-5 w-5 border border-border-default bg-interactive-hover text-[8px]'
                         >
                           {avatar ? (
                             <AvatarImage
@@ -210,19 +212,19 @@ export default function ActivityByTask({
                         </Avatar>
                       ))}
                       {group.memberNames.length > 3 && (
-                        <div className='h-5 w-5 rounded-full bg-white/10 border border-black/50 flex items-center justify-center text-[8px] text-white/60'>
+                        <div className='h-5 w-5 rounded-full bg-interactive-hover border border-border-default flex items-center justify-center text-[8px] text-text-secondary'>
                           +{group.memberNames.length - 3}
                         </div>
                       )}
                     </div>
 
-                    <span className='text-[11px] text-white/40'>
+                    <span className='text-[11px] text-text-muted'>
                       {formatTimestamp(group.latestActivity.updated_at)}
                     </span>
 
                     {/* Activity count */}
                     {group.activities.length > 1 && (
-                      <span className='text-[11px] text-white/30'>
+                      <span className='text-[11px] text-text-muted'>
                         {group.activities.length} reactions
                       </span>
                     )}
@@ -243,7 +245,7 @@ export default function ActivityByTask({
 
                   <ChevronDown
                     className={cn(
-                      'w-4 h-4 text-white/30 transition-transform duration-200',
+                      'w-4 h-4 text-text-muted transition-transform duration-200',
                       isExpanded && 'rotate-180'
                     )}
                   />
@@ -259,7 +261,7 @@ export default function ActivityByTask({
               )}
             >
               <div className='overflow-hidden'>
-                <div className='px-5 pb-4 space-y-3 border-t border-white/[0.06] pt-3'>
+                <div className='px-5 pb-4 space-y-3 border-t border-border-subtle pt-3'>
                   {group.activities.map(activity => {
                     const status = getStatusBadge(activity.reaction_status);
                     return (
@@ -278,7 +280,7 @@ export default function ActivityByTask({
 
                         <div className='flex-1 min-w-0'>
                           <div className='flex items-center gap-2 mb-0.5'>
-                            <Avatar className='h-4 w-4 border border-white/20 bg-white/10'>
+                            <Avatar className='h-4 w-4 border border-border-default bg-interactive-hover'>
                               {activity.member_avatar_url ? (
                                 <AvatarImage
                                   src={activity.member_avatar_url}
@@ -290,16 +292,16 @@ export default function ActivityByTask({
                                 </AvatarFallback>
                               )}
                             </Avatar>
-                            <span className='text-xs font-medium text-white/80'>
+                            <span className='text-xs font-medium text-text-secondary'>
                               {activity.member_name}
                             </span>
-                            <span className='text-[10px] text-white/30'>
+                            <span className='text-[10px] text-text-muted'>
                               {formatTimestamp(activity.updated_at)}
                             </span>
                           </div>
 
                           {activity.reaction_text && (
-                            <p className='text-xs text-white/60 mt-1'>
+                            <p className='text-xs text-text-secondary mt-1'>
                               {activity.reaction_text}
                             </p>
                           )}
@@ -315,7 +317,7 @@ export default function ActivityByTask({
                         e.stopPropagation();
                         openNoteDrawer(group.noteId!);
                       }}
-                      className='flex items-center gap-1.5 px-3 py-1.5 text-xs text-white/50 hover:text-white/80 hover:bg-white/5 rounded-lg transition-colors'
+                      className='flex items-center gap-1.5 px-3 py-1.5 text-xs text-text-muted hover:text-text-secondary hover:bg-surface-primary rounded-lg transition-colors'
                     >
                       <FileText className='w-3.5 h-3.5' />
                       <span>View Note</span>

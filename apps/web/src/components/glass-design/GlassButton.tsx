@@ -2,50 +2,36 @@
 
 import * as React from 'react';
 
-import { Button, type ButtonProps } from '@/components/ui/button';
+import type { ButtonProps } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import LiquidGlassButton from './liquid-glass/LiquidGlassButton';
 
 export type GlassButtonProps = ButtonProps;
 
+const sizeClasses: Record<string, string> = {
+  default: 'h-9 px-4 py-2 text-sm font-medium',
+  sm: 'h-8 px-3 text-sm font-medium',
+  lg: 'h-10 px-8 text-sm font-medium',
+  icon: 'h-9 w-9',
+};
+
+const variantClasses: Record<string, string> = {
+  default: '',
+  secondary: '',
+  outline: 'border border-border-default',
+  ghost:
+    'shadow-none [&>div:first-child]:bg-transparent [&>div:first-child]:backdrop-saturate-100 [&>div:first-child]:[filter:none]',
+  destructive: 'text-red-400',
+};
+
 const GlassButton = React.forwardRef<HTMLButtonElement, GlassButtonProps>(
-  ({ className, ...props }, ref) => (
-    <Button
+  ({ className, size, variant, asChild: _asChild, ...props }, ref) => (
+    <LiquidGlassButton
       ref={ref}
       className={cn(
-        `
-        bg-white/5
-        backdrop-blur-sm
-        border border-black/10
-        rounded-full
-        p-2
-        !text-white
-      
-        transition-all
-        duration-200
-        ease-out
-      
-        shadow-[0_8px_32px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.12)]
-      
-        hover:bg-white/10
-        hover:shadow-[0_12px_40px_rgba(0,0,0,0.25),inset_0_1px_0_rgba(255,255,255,0.18)]
-      
-        active:bg-white/8
-        active:translate-y-px
-        active:scale-[0.97]
-        active:shadow-[0_4px_16px_rgba(0,0,0,0.2),inset_0_2px_4px_rgba(0,0,0,0.25)]
-      
-        focus-visible:outline-none
-        focus-visible:ring-2
-        focus-visible:ring-white/30
-        focus-visible:ring-offset-2
-        focus-visible:ring-offset-transparent
-      
-        disabled:bg-white/2
-        disabled:border-white/5
-        disabled:pointer-events-none
-        disabled:shadow-none
-        disabled:cursor-not-allowed
-        `,
+        sizeClasses[size ?? 'default'],
+        variantClasses[variant ?? 'default'],
+        'disabled:pointer-events-none disabled:opacity-50',
         className
       )}
       {...props}

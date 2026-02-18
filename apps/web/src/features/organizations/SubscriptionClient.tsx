@@ -181,18 +181,22 @@ export default function SubscriptionClient() {
   if (isLoading) {
     return (
       <div className='flex items-center justify-center min-h-screen'>
-        <div className='text-white'>Loading subscription information...</div>
+        <div className='text-text-primary'>
+          Loading subscription information...
+        </div>
       </div>
     );
   }
 
   return (
-    <div className='h-full overflow-y-auto pt-20 pb-24'>
+    <div className='h-full overflow-y-auto pt-20 pb-24 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden'>
       <div className='max-w-3xl mx-auto px-4 md:px-6'>
         {/* Organization Selector - Show if multiple organizations */}
         {managedOrgs && managedOrgs.length > 1 && currentOrg && (
           <div className='mb-8'>
-            <h2 className='text-xl font-bold text-white mb-6'>Organization</h2>
+            <h2 className='text-xl font-bold text-text-primary mb-6'>
+              Organization
+            </h2>
             <button
               onClick={() => {
                 const trigger = document.querySelector(
@@ -200,20 +204,20 @@ export default function SubscriptionClient() {
                 ) as HTMLElement;
                 trigger?.click();
               }}
-              className='w-full py-4 flex items-center justify-between border-b border-white/10 hover:bg-white/5 transition-colors'
+              className='w-full py-4 flex items-center justify-between border-b border-border-default hover:bg-surface-primary transition-colors'
             >
               <div className='text-left'>
-                <div className='text-base text-white font-medium'>
+                <div className='text-base text-text-primary font-medium'>
                   {currentOrg.organization.name}
                 </div>
-                <div className='text-sm text-white/60 mt-1'>
+                <div className='text-sm text-text-secondary mt-1'>
                   Role: {currentOrg.role}
                 </div>
               </div>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <div data-radix-dropdown-trigger>
-                    <ChevronDown className='h-5 w-5 text-white/40' />
+                    <ChevronDown className='h-5 w-5 text-text-muted' />
                   </div>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent
@@ -254,7 +258,7 @@ export default function SubscriptionClient() {
         {/* Pricing Cards Grid - Only show if user's overall plan is free */}
         {planType !== 'business' && (
           <div className='mb-8'>
-            <h2 className='text-xl font-bold text-white mb-6'>
+            <h2 className='text-xl font-bold text-text-primary mb-6'>
               Available Plans
             </h2>
             <PricingCardsGrid

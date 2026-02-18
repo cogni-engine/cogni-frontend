@@ -82,19 +82,19 @@ export function InviteMemberDialog({
             <div className='space-y-2'>
               <label
                 htmlFor='invite-email'
-                className='text-sm font-medium text-white/80'
+                className='text-sm font-medium text-text-secondary'
               >
                 Email address
               </label>
               <div className='relative'>
-                <Mail className='absolute left-4 top-1/2 transform -translate-y-1/2 h-4 w-4 text-white/40' />
+                <Mail className='absolute left-4 top-1/2 transform -translate-y-1/2 h-4 w-4 text-text-muted' />
                 <input
                   id='invite-email'
                   type='email'
                   value={inviteEmail}
                   onChange={e => setInviteEmail(e.target.value)}
                   placeholder='member@example.com'
-                  className='w-full pl-11 pr-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-white/20 transition-all'
+                  className='w-full pl-11 pr-4 py-3 bg-surface-primary border border-border-default rounded-xl text-text-primary placeholder-text-muted focus:outline-none focus:border-border-default transition-all'
                   disabled={createInvitation.isPending}
                   autoFocus
                 />
@@ -107,7 +107,7 @@ export function InviteMemberDialog({
               disabled={createInvitation.isPending}
               label='Role'
             />
-            <div className='flex items-start gap-2 text-xs text-white/50'>
+            <div className='flex items-start gap-2 text-xs text-text-muted'>
               <Info className='h-3 w-3 mt-0.5 shrink-0' />
               <p>
                 Admins can invite and remove members. Owner role cannot be

@@ -18,11 +18,11 @@ export function Toggle({ checked, onChange, disabled }: ToggleProps) {
       }}
       disabled={disabled}
       className={`relative w-[51px] h-[31px] rounded-full transition-colors duration-200 ${
-        checked ? 'bg-emerald-500' : 'bg-white/20'
+        checked ? 'bg-emerald-500' : 'bg-interactive-active'
       } ${disabled ? 'opacity-50' : ''}`}
     >
       <div
-        className={`absolute top-[2px] w-[27px] h-[27px] bg-white rounded-full shadow-md transition-transform duration-200 ${
+        className={`absolute top-[2px] w-[27px] h-[27px] bg-white dark:bg-white rounded-full shadow-md transition-transform duration-200 ${
           checked ? 'translate-x-[22px]' : 'translate-x-[2px]'
         }`}
       />

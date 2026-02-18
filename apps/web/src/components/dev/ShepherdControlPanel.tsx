@@ -49,12 +49,12 @@ export function ShepherdControlPanel() {
       {isOpen && (
         <GlassCard className='fixed bottom-20 right-4 z-9999 rounded-3xl p-6 min-w-[320px] max-w-[400px]'>
           <div className='flex items-center justify-between mb-4'>
-            <h3 className='text-white font-semibold text-lg'>
+            <h3 className='text-text-primary font-semibold text-lg'>
               Shepherd Control Panel
             </h3>
             <button
               onClick={() => setIsOpen(false)}
-              className='text-gray-400 hover:text-white transition-colors'
+              className='text-text-muted hover:text-text-primary transition-colors'
             >
               <X className='w-5 h-5' />
             </button>
@@ -72,7 +72,9 @@ export function ShepherdControlPanel() {
           )}
 
           <div className='space-y-2'>
-            <p className='text-gray-300 text-sm mb-3'>Test individual steps:</p>
+            <p className='text-text-secondary text-sm mb-3'>
+              Test individual steps:
+            </p>
             <div className='max-h-[300px] overflow-y-auto space-y-2'>
               {allSteps.map(({ tourId, stepIndex, step }, idx) => (
                 <GlassButton
@@ -83,10 +85,10 @@ export function ShepherdControlPanel() {
                 >
                   <Zap className='w-4 h-4 mr-2' />
                   <div className='flex flex-col items-start'>
-                    <span className='text-xs text-gray-400'>
+                    <span className='text-xs text-text-muted'>
                       {tourId.replace(/([A-Z])/g, ' $1')} - Step {stepIndex + 1}
                     </span>
-                    <span className='text-xs text-gray-300 truncate max-w-[200px]'>
+                    <span className='text-xs text-text-secondary truncate max-w-[200px]'>
                       {step.text.substring(0, 40)}
                       {step.text.length > 40 ? '...' : ''}
                     </span>
@@ -158,7 +160,7 @@ export function ShepherdControlPanel() {
             {isActive && (
               <GlassButton
                 onClick={cancelTour}
-                className='w-full mt-4 px-4 py-2.5 text-sm bg-red-500/10 border-red-500/30 hover:bg-red-500/20 text-red-300'
+                className='w-full mt-4 px-4 py-2.5 text-sm bg-red-500/10 border-red-500/30 hover:bg-red-500/20 text-red-600 dark:text-red-300'
               >
                 <Square className='w-4 h-4 mr-2' />
                 Cancel Active Step
@@ -167,14 +169,14 @@ export function ShepherdControlPanel() {
           </div>
 
           {/* XState Tutorial Machine Monitor */}
-          <div className='mt-4 pt-4 border-t border-white/10'>
-            <p className='text-gray-300 text-sm mb-3 flex items-center gap-2'>
+          <div className='mt-4 pt-4 border-t border-border-default'>
+            <p className='text-text-secondary text-sm mb-3 flex items-center gap-2'>
               <Activity className='w-4 h-4' />
               Tutorial XState Monitor
             </p>
             {!tutorialState ? (
               <GlassCard className='p-3 bg-gray-500/10 border-gray-500/30 rounded-xl mb-3'>
-                <div className='text-xs text-gray-400'>
+                <div className='text-xs text-text-muted'>
                   No active tutorial session
                 </div>
               </GlassCard>
@@ -183,40 +185,42 @@ export function ShepherdControlPanel() {
                 <GlassCard className='p-3 bg-blue-500/10 border-blue-500/30 rounded-xl mb-3'>
                   <div className='space-y-2 text-xs'>
                     <div>
-                      <span className='text-gray-400'>State:</span>{' '}
-                      <span className='text-blue-300 font-mono font-semibold'>
+                      <span className='text-text-muted'>State:</span>{' '}
+                      <span className='text-blue-600 dark:text-blue-300 font-mono font-semibold'>
                         {String(tutorialState.value)}
                       </span>
                     </div>
                     <div>
-                      <span className='text-gray-400'>Session ID:</span>{' '}
-                      <span className='text-white font-mono'>
+                      <span className='text-text-muted'>Session ID:</span>{' '}
+                      <span className='text-text-primary font-mono'>
                         {tutorialState.context.onboardingSessionId || 'none'}
                       </span>
                     </div>
                     <div>
-                      <span className='text-gray-400'>
+                      <span className='text-text-muted'>
                         Tutorial Workspace ID:
                       </span>{' '}
-                      <span className='text-white font-mono'>
+                      <span className='text-text-primary font-mono'>
                         {tutorialState.context.tutorialWorkspaceId || 'none'}
                       </span>
                     </div>
                     <div>
-                      <span className='text-gray-400'>Current Step:</span>{' '}
-                      <span className='text-white'>
+                      <span className='text-text-muted'>Current Step:</span>{' '}
+                      <span className='text-text-primary'>
                         {tutorialState.context.currentStep}
                       </span>
                     </div>
                     <div>
-                      <span className='text-gray-400'>Completed Steps:</span>{' '}
-                      <span className='text-white'>
+                      <span className='text-text-muted'>Completed Steps:</span>{' '}
+                      <span className='text-text-primary'>
                         {`[${tutorialState.context.completedSteps.join(', ') || 'none'}]`}
                       </span>
                     </div>
                     <div>
-                      <span className='text-gray-400'>Onboarding Context:</span>{' '}
-                      <span className='text-white font-mono text-[10px] break-all'>
+                      <span className='text-text-muted'>
+                        Onboarding Context:
+                      </span>{' '}
+                      <span className='text-text-primary font-mono text-[10px] break-all'>
                         {tutorialState.context.onboardingContext
                           ? JSON.stringify(
                               tutorialState.context.onboardingContext,
@@ -274,8 +278,8 @@ export function ShepherdControlPanel() {
             )}
           </div>
 
-          <div className='mt-4 pt-4 border-t border-white/10'>
-            <p className='text-gray-400 text-xs'>
+          <div className='mt-4 pt-4 border-t border-border-default'>
+            <p className='text-text-muted text-xs'>
               Development tool for testing Shepherd.js tours
             </p>
           </div>

@@ -60,7 +60,7 @@ export function WorkspaceInfoForm({
               disabled={saving}
               autoComplete='organization'
             />
-            <p className='text-xs text-white/50'>
+            <p className='text-xs text-text-muted'>
               This is how the workspace is shown to members.
             </p>
           </div>
@@ -72,8 +72,8 @@ export function WorkspaceInfoForm({
               <span
                 className={
                   status.type === 'success'
-                    ? 'text-sm text-emerald-300'
-                    : 'text-sm text-red-300'
+                    ? 'text-sm text-emerald-600 dark:text-emerald-300'
+                    : 'text-sm text-red-600 dark:text-red-300'
                 }
               >
                 {status.message}

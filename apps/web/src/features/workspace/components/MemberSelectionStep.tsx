@@ -89,7 +89,7 @@ export default function MemberSelectionStep({
   return (
     <div className='flex flex-col flex-1 min-h-0 relative'>
       {/* Search Bar fixed at top */}
-      <div className='shrink-0 pb-4 border-b border-white/10 mb-4'>
+      <div className='shrink-0 pb-4 border-b border-border-default mb-4'>
         <SearchBar
           placeholder='Search members...'
           value={searchQuery}
@@ -99,8 +99,8 @@ export default function MemberSelectionStep({
 
       {/* Selected Members - Display below search */}
       {selectedMembers.length > 0 && (
-        <div className='shrink-0 mb-4 pb-4 border-b border-white/10'>
-          <p className='text-sm text-gray-400 mb-3'>
+        <div className='shrink-0 mb-4 pb-4 border-b border-border-default'>
+          <p className='text-sm text-text-muted mb-3'>
             Selected ({selectedMembers.length})
           </p>
           <div className='flex flex-wrap gap-2.5'>
@@ -120,10 +120,10 @@ export default function MemberSelectionStep({
                         alt={displayName}
                         width={48}
                         height={48}
-                        className='w-12 h-12 rounded-full object-cover border-2 border-white/20'
+                        className='w-12 h-12 rounded-full object-cover border-2 border-border-default'
                       />
                     ) : (
-                      <div className='w-12 h-12 rounded-full bg-white/20 flex items-center justify-center text-sm text-white font-medium border-2 border-white/20'>
+                      <div className='w-12 h-12 rounded-full bg-interactive-active flex items-center justify-center text-sm text-text-primary font-medium border-2 border-border-default'>
                         {displayName.charAt(0).toUpperCase()}
                       </div>
                     )}
@@ -132,13 +132,13 @@ export default function MemberSelectionStep({
                       onClick={() =>
                         handleRemoveSelectedMember(member.user_id!)
                       }
-                      className='absolute -top-1 -right-1 w-5 h-5 rounded-full bg-red-500 hover:bg-red-600 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-lg'
+                      className='absolute -top-1 -right-1 w-5 h-5 rounded-full bg-red-500 hover:bg-red-600 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-lg text-white'
                       title='Remove'
                     >
                       <X className='w-3 h-3 text-white' />
                     </button>
                   </div>
-                  <p className='text-white text-xs text-center max-w-[60px] truncate font-medium'>
+                  <p className='text-text-primary text-xs text-center max-w-[60px] truncate font-medium'>
                     {displayName}
                   </p>
                 </div>
@@ -151,19 +151,19 @@ export default function MemberSelectionStep({
       {/* Member List - scrollable */}
       <ScrollableView ref={scrollContainerRef} className='pr-2'>
         {error && (
-          <div className='bg-red-500/10 border border-red-500/20 rounded-lg p-4 text-red-300'>
+          <div className='bg-red-500/10 border border-red-500/20 rounded-lg p-4 text-red-600 dark:text-red-300'>
             Failed to load members
           </div>
         )}
 
         {isLoading && (
           <div className='flex justify-center py-8'>
-            <div className='animate-spin rounded-full h-6 w-6 border-b-2 border-white'></div>
+            <div className='animate-spin rounded-full h-6 w-6 border-b-2 border-text-primary'></div>
           </div>
         )}
 
         {!isLoading && !error && filteredMembers.length === 0 && (
-          <div className='text-center py-8 text-gray-400'>
+          <div className='text-center py-8 text-text-muted'>
             {searchQuery.trim()
               ? 'No members found matching your search'
               : 'No members available from other workspaces'}
@@ -184,7 +184,7 @@ export default function MemberSelectionStep({
                 key={member.user_id}
                 type='button'
                 onClick={() => handleToggleMember(member.user_id!)}
-                className='w-full p-2 text-left text-sm hover:bg-white/5 rounded-xl transition-colors flex items-center justify-between'
+                className='w-full p-2 text-left text-sm hover:bg-surface-primary rounded-xl transition-colors flex items-center justify-between'
               >
                 <div className='flex items-center gap-3'>
                   {member.user_profile.avatar_url ? (
@@ -196,13 +196,13 @@ export default function MemberSelectionStep({
                       className='w-6 h-6 rounded-full object-cover'
                     />
                   ) : (
-                    <div className='w-6 h-6 rounded-full bg-white/20 flex items-center justify-center text-xs text-white font-medium'>
+                    <div className='w-6 h-6 rounded-full bg-interactive-active flex items-center justify-center text-xs text-text-primary font-medium'>
                       {displayName.charAt(0).toUpperCase()}
                     </div>
                   )}
-                  <span className='text-white'>{displayName}</span>
+                  <span className='text-text-primary'>{displayName}</span>
                 </div>
-                {isSelected && <Check className='w-4 h-4 text-white' />}
+                {isSelected && <Check className='w-4 h-4 text-text-primary' />}
               </button>
             );
           })}

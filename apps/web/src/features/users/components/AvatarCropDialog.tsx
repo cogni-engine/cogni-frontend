@@ -44,15 +44,15 @@ export function AvatarCropDialog({
 }: AvatarCropDialogProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className='max-w-2xl rounded-3xl bg-white/2 backdrop-blur-sm border border-black shadow-[0_8px_32px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.12)]'>
+      <DialogContent className='max-w-2xl rounded-3xl bg-dialog-bg backdrop-blur-sm border border-border-default shadow-card'>
         <DialogHeader>
-          <DialogTitle className='text-white'>Crop avatar</DialogTitle>
-          <DialogDescription className='text-white/70'>
+          <DialogTitle className='text-foreground'>Crop avatar</DialogTitle>
+          <DialogDescription className='text-text-secondary'>
             Adjust the crop to center your face. The result will be a square
             image.
           </DialogDescription>
         </DialogHeader>
-        <div className='relative h-80 w-full overflow-hidden rounded-3xl bg-black/40 border border-white/10'>
+        <div className='relative h-80 w-full overflow-hidden rounded-3xl bg-surface-secondary border border-border-default'>
           {imageSrc ? (
             <Cropper
               image={imageSrc}
@@ -65,13 +65,13 @@ export function AvatarCropDialog({
               onCropComplete={onCropComplete}
             />
           ) : (
-            <div className='flex h-full items-center justify-center text-white/60'>
+            <div className='flex h-full items-center justify-center text-text-secondary'>
               No image selected.
             </div>
           )}
         </div>
         <div className='space-y-2'>
-          <Label htmlFor='zoom' className='text-white'>
+          <Label htmlFor='zoom' className='text-foreground'>
             Zoom
           </Label>
           <input
@@ -91,7 +91,7 @@ export function AvatarCropDialog({
               type='button'
               disabled={saving}
               onClick={onCancel}
-              className='flex items-center justify-center px-6 py-2.5 text-sm font-medium bg-white/8 backdrop-blur-xl text-white rounded-3xl border border-white/10 hover:border-white/15 hover:bg-white/12 hover:scale-[1.01] transition-all duration-300 shadow-[0_8px_32px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.12)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.25),inset_0_1px_0_rgba(255,255,255,0.18)] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100'
+              className='flex items-center justify-center px-6 py-2.5 text-sm font-medium bg-surface-secondary backdrop-blur-xl text-foreground rounded-3xl border border-border-default hover:border-border-default hover:bg-interactive-hover hover:scale-[1.01] transition-all duration-300 shadow-card hover:shadow-card-hover disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100'
             >
               Cancel
             </button>
@@ -100,7 +100,7 @@ export function AvatarCropDialog({
             type='button'
             onClick={onSave}
             disabled={saving || !canSave}
-            className='flex items-center justify-center px-6 py-2.5 text-sm font-medium bg-white/8 backdrop-blur-xl text-white rounded-3xl border border-white/10 hover:border-white/15 hover:bg-white/12 hover:scale-[1.01] transition-all duration-300 shadow-[0_8px_32px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.12)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.25),inset_0_1px_0_rgba(255,255,255,0.18)] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100'
+            className='flex items-center justify-center px-6 py-2.5 text-sm font-medium bg-surface-secondary backdrop-blur-xl text-foreground rounded-3xl border border-border-default hover:border-border-default hover:bg-interactive-hover hover:scale-[1.01] transition-all duration-300 shadow-card hover:shadow-card-hover disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100'
           >
             {saving ? 'Saving…' : 'Save avatar'}
           </button>

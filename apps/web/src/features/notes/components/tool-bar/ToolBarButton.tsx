@@ -11,16 +11,16 @@ export const ToolbarButton = ({
   // Default variant: has background
   const defaultClasses = `shrink-0 p-2.5 rounded-xl transition-all ${
     isActive
-      ? 'bg-white/25 text-white shadow-inner'
-      : 'bg-white/8 text-gray-300 active:bg-white/15'
+      ? 'bg-interactive-active text-foreground shadow-inner'
+      : 'bg-surface-secondary text-text-secondary active:bg-interactive-active'
   } ${disabled ? 'opacity-40 cursor-not-allowed' : ''}`;
 
   // Minimal variant: no background, text color indicates state
   const minimalClasses = `shrink-0 p-2.5 rounded-xl transition-all ${
     isActive
-      ? 'text-white'
-      : 'text-gray-400 hover:text-gray-200 active:text-white'
-  } ${disabled ? 'opacity-40 cursor-not-allowed text-gray-600' : ''}`;
+      ? 'text-foreground'
+      : 'text-text-muted hover:text-text-secondary active:text-foreground'
+  } ${disabled ? 'opacity-40 cursor-not-allowed text-text-muted' : ''}`;
 
   return (
     <button

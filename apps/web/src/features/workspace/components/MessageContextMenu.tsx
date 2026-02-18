@@ -104,9 +104,9 @@ export default function MessageContextMenu({
           onReply();
           onClose();
         }}
-        className='w-full p-2 text-left text-sm text-white hover:bg-white/5 flex items-center gap-2 transition-colors rounded-xl mb-1'
+        className='w-full p-2 text-left text-sm text-text-primary hover:bg-surface-primary flex items-center gap-2 transition-colors rounded-xl mb-1'
       >
-        <Reply className='w-4 h-4 text-white' />
+        <Reply className='w-4 h-4 text-text-primary' />
         <span>Reply</span>
       </button>
       {onReact && (
@@ -115,7 +115,7 @@ export default function MessageContextMenu({
             onReact();
             onClose();
           }}
-          className='w-full px-4 py-3 flex items-center gap-3 text-white hover:bg-white/10 transition-colors text-sm border-b border-white/10'
+          className='w-full px-4 py-3 flex items-center gap-3 text-text-primary hover:bg-interactive-hover transition-colors text-sm border-b border-border-default'
         >
           <Smile className='w-4 h-4' />
           <span>React</span>
@@ -123,16 +123,16 @@ export default function MessageContextMenu({
       )}
       <button
         onClick={handleCopy}
-        className='w-full p-2 text-left text-sm text-white hover:bg-white/5 flex items-center gap-2 transition-colors rounded-xl'
+        className='w-full p-2 text-left text-sm text-text-primary hover:bg-surface-primary flex items-center gap-2 transition-colors rounded-xl'
       >
         {copied ? (
           <>
-            <Check className='w-4 h-4 text-white' />
+            <Check className='w-4 h-4 text-text-primary' />
             <span>Copied!</span>
           </>
         ) : (
           <>
-            <Copy className='w-4 h-4 text-white' />
+            <Copy className='w-4 h-4 text-text-primary' />
             <span>Copy</span>
           </>
         )}

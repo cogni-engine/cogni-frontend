@@ -220,15 +220,15 @@ export function AboutCognoApp({
         >
           {/* Centered Title */}
           <div className='flex-1 flex items-center justify-center'>
-            <h1 className='text-3xl md:text-4xl font-bold text-white leading-tight text-center animate-in fade-in duration-500'>
+            <h1 className='text-3xl md:text-4xl font-bold text-text-primary leading-tight text-center animate-in fade-in duration-500'>
               Welcome to Cogno
             </h1>
           </div>
 
           {/* Error Message */}
           {error && (
-            <div className='bg-red-900/30 border border-red-500/50 rounded-lg p-4 backdrop-blur-sm mt-4'>
-              <p className='text-red-300 text-sm'>{error}</p>
+            <div className='bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-500/50 rounded-lg p-4 dark:backdrop-blur-sm mt-4'>
+              <p className='text-red-600 dark:text-red-300 text-sm'>{error}</p>
             </div>
           )}
 
@@ -350,10 +350,10 @@ export function AboutCognoApp({
                         : 'opacity 0.3s, transform 0.3s',
                     }}
                   >
-                    <h1 className='text-xl md:text-2xl font-bold text-white leading-tight whitespace-pre-line'>
+                    <h1 className='text-xl md:text-2xl font-bold text-text-primary leading-tight whitespace-pre-line'>
                       {slideData.title}
                     </h1>
-                    <p className='text-sm md:text-base text-gray-300 max-w-md mx-auto mt-4'>
+                    <p className='text-sm md:text-base text-text-secondary max-w-md mx-auto mt-4'>
                       {slideData.description}
                     </p>
                   </div>
@@ -363,14 +363,16 @@ export function AboutCognoApp({
 
             {/* Pagination Dots */}
             <div className='flex items-center justify-center pt-4'>
-              <div className='flex items-center gap-2 px-3 py-1.5 bg-white/10 backdrop-blur-sm rounded-full'>
+              <div className='flex items-center gap-2 px-3 py-1.5 bg-interactive-hover dark:backdrop-blur-sm rounded-full'>
                 {onboardingSlides.map((_, index) => (
                   <button
                     key={index}
                     type='button'
                     onClick={() => goToSlide(index)}
                     className={`w-2.5 h-2.5 rounded-full transition-all duration-300 focus:outline-none ${
-                      index === currentSlide ? 'bg-white' : 'bg-white/30'
+                      index === currentSlide
+                        ? 'bg-text-primary'
+                        : 'bg-interactive-active'
                     }`}
                     aria-label={`Go to slide ${index + 1}`}
                   />
@@ -381,8 +383,8 @@ export function AboutCognoApp({
 
           {/* Error Message */}
           {error && (
-            <div className='bg-red-900/30 border border-red-500/50 rounded-lg p-4 backdrop-blur-sm mt-4'>
-              <p className='text-red-300 text-sm'>{error}</p>
+            <div className='bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-500/50 rounded-lg p-4 dark:backdrop-blur-sm mt-4'>
+              <p className='text-red-600 dark:text-red-300 text-sm'>{error}</p>
             </div>
           )}
 

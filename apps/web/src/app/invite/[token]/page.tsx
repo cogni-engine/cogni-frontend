@@ -122,10 +122,10 @@ export default function InvitePage() {
 
   if (loading || status === 'checking') {
     return (
-      <div className='min-h-screen bg-linear-to-br from-slate-950 via-black to-slate-950 text-gray-100 flex items-center justify-center'>
+      <div className='min-h-screen bg-background text-text-primary flex items-center justify-center'>
         <div className='text-center'>
-          <div className='animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4'></div>
-          <p className='text-gray-400'>Loading invitation...</p>
+          <div className='animate-spin rounded-full h-12 w-12 border-b-2 border-text-primary mx-auto mb-4'></div>
+          <p className='text-text-muted'>Loading invitation...</p>
         </div>
       </div>
     );
@@ -133,13 +133,13 @@ export default function InvitePage() {
 
   if (status === 'ready' || status === 'accepting') {
     return (
-      <div className='min-h-screen bg-linear-to-br from-slate-950 via-black to-slate-950 text-gray-100 flex items-center justify-center'>
+      <div className='min-h-screen bg-background text-text-primary flex items-center justify-center'>
         <div className='text-center max-w-md mx-auto p-6'>
-          <div className='animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4'></div>
-          <h1 className='text-2xl font-bold text-white mb-2'>
+          <div className='animate-spin rounded-full h-12 w-12 border-b-2 border-text-primary mx-auto mb-4'></div>
+          <h1 className='text-2xl font-bold text-text-primary mb-2'>
             {status === 'ready' ? 'Processing...' : 'Joining Workspace...'}
           </h1>
-          <p className='text-gray-400'>
+          <p className='text-text-muted'>
             Please wait while we add you to the workspace
           </p>
         </div>
@@ -149,15 +149,17 @@ export default function InvitePage() {
 
   if (status === 'success') {
     return (
-      <div className='min-h-screen bg-linear-to-br from-slate-950 via-black to-slate-950 text-gray-100 flex items-center justify-center'>
+      <div className='min-h-screen bg-background text-text-primary flex items-center justify-center'>
         <div className='text-center max-w-md mx-auto p-6'>
           <CheckCircle className='w-16 h-16 text-green-400 mx-auto mb-4' />
-          <h1 className='text-2xl font-bold text-white mb-2'>Welcome!</h1>
-          <p className='text-gray-400 mb-6'>
+          <h1 className='text-2xl font-bold text-text-primary mb-2'>
+            Welcome!
+          </h1>
+          <p className='text-text-muted mb-6'>
             You&apos;ve successfully joined the workspace. Redirecting you
             now...
           </p>
-          <div className='animate-spin rounded-full h-6 w-6 border-b-2 border-white mx-auto'></div>
+          <div className='animate-spin rounded-full h-6 w-6 border-b-2 border-text-primary mx-auto'></div>
         </div>
       </div>
     );
@@ -165,13 +167,13 @@ export default function InvitePage() {
 
   // Error state
   return (
-    <div className='min-h-screen bg-linear-to-br from-slate-950 via-black to-slate-950 text-gray-100 flex items-center justify-center'>
+    <div className='min-h-screen bg-background text-text-primary flex items-center justify-center'>
       <div className='text-center max-w-md mx-auto p-6'>
         <XCircle className='w-16 h-16 text-red-400 mx-auto mb-4' />
-        <h1 className='text-2xl font-bold text-white mb-2'>
+        <h1 className='text-2xl font-bold text-text-primary mb-2'>
           Unable to Process Invitation
         </h1>
-        <p className='text-gray-400 mb-6'>
+        <p className='text-text-muted mb-6'>
           {error || 'This invitation link is invalid or has expired.'}
         </p>
         <button

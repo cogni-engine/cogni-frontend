@@ -56,14 +56,14 @@ export function WorkspaceIconCard({
         </CardDescription>
       </CardHeader>
       <CardContent className='flex flex-col items-center gap-6'>
-        <Avatar className='h-24 w-24 border-white/20 text-2xl'>
+        <Avatar className='h-24 w-24 border-border-default text-2xl'>
           {iconUrl ? (
             <AvatarImage src={iconUrl} alt={iconAlt ?? 'Workspace icon'} />
           ) : (
             <AvatarFallback className='text-lg'>{initials}</AvatarFallback>
           )}
         </Avatar>
-        <div className='flex flex-col gap-2 text-center text-sm text-white/60'>
+        <div className='flex flex-col gap-2 text-center text-sm text-text-secondary'>
           <span>Recommended: square image, at least 256×256px.</span>
           <span>Supported formats: PNG or JPG.</span>
         </div>
@@ -108,8 +108,8 @@ export function WorkspaceIconCard({
           <span
             className={
               status.type === 'success'
-                ? 'text-sm text-emerald-300'
-                : 'text-sm text-red-300'
+                ? 'text-sm text-emerald-600 dark:text-emerald-300'
+                : 'text-sm text-red-600 dark:text-red-300'
             }
           >
             {status.message}

@@ -57,7 +57,8 @@ const getStatusBadge = (status: NotificationReactionStatus) => {
       return {
         icon: <X className='w-3 h-3' />,
         text: status === 'dismissed' ? 'Dismissed' : 'Ignored',
-        className: 'bg-gray-500/10 border-gray-500/20 text-gray-400/80',
+        className:
+          'bg-gray-500/10 border-gray-500/20 text-gray-500 dark:text-gray-400',
       };
     case 'rejected':
       return {
@@ -75,7 +76,8 @@ const getStatusBadge = (status: NotificationReactionStatus) => {
       return {
         icon: null,
         text: status,
-        className: 'bg-white/5 border-white/10 text-white/70',
+        className:
+          'bg-surface-primary border-border-default text-text-secondary',
       };
   }
 };
@@ -168,7 +170,7 @@ export default function ActivityByPerson({
   if (loading) {
     return (
       <div className='flex items-center justify-center py-12'>
-        <div className='animate-spin rounded-full h-6 w-6 border-b-2 border-white' />
+        <div className='animate-spin rounded-full h-6 w-6 border-b-2 border-text-primary' />
       </div>
     );
   }
@@ -176,7 +178,7 @@ export default function ActivityByPerson({
   if (personGroups.length === 0) {
     return (
       <div className='flex items-center justify-center py-12'>
-        <p className='text-white/60 text-center'>No activity yet</p>
+        <p className='text-text-secondary text-center'>No activity yet</p>
       </div>
     );
   }
@@ -191,12 +193,12 @@ export default function ActivityByPerson({
             key={person.memberName}
             className={cn(
               'rounded-2xl',
-              'border border-white/[0.08]',
-              'bg-white/[0.02] backdrop-blur-sm',
-              'shadow-[0_4px_24px_rgba(0,0,0,0.12),inset_0_1px_0_rgba(255,255,255,0.06)]',
+              'border border-border-subtle',
+              'bg-surface-primary dark:backdrop-blur-sm',
+              'shadow-card',
               'transition-all duration-200',
-              'hover:bg-white/[0.04] hover:border-white/[0.12]',
-              isExpanded && 'bg-white/[0.04] border-white/[0.12]'
+              'hover:bg-surface-secondary hover:border-border-default',
+              isExpanded && 'bg-surface-secondary border-border-default'
             )}
           >
             {/* Person Header */}
@@ -208,7 +210,7 @@ export default function ActivityByPerson({
             >
               <div className='flex items-center justify-between gap-3'>
                 <div className='flex items-center gap-3'>
-                  <Avatar className='h-9 w-9 border border-white/20 bg-white/10'>
+                  <Avatar className='h-9 w-9 border border-border-default bg-interactive-hover'>
                     {person.memberAvatar ? (
                       <AvatarImage
                         src={person.memberAvatar}
@@ -222,10 +224,10 @@ export default function ActivityByPerson({
                   </Avatar>
 
                   <div>
-                    <h3 className='text-sm font-medium text-white'>
+                    <h3 className='text-sm font-medium text-text-primary'>
                       {person.memberName}
                     </h3>
-                    <p className='text-[11px] text-white/40'>
+                    <p className='text-[11px] text-text-muted'>
                       {person.taskGroups.length} task
                       {person.taskGroups.length > 1 ? 's' : ''} /{' '}
                       {person.totalActivities} reaction
@@ -235,12 +237,12 @@ export default function ActivityByPerson({
                 </div>
 
                 <div className='flex items-center gap-2'>
-                  <span className='text-[11px] text-white/30'>
+                  <span className='text-[11px] text-text-muted'>
                     {formatTimestamp(person.latestUpdated)}
                   </span>
                   <ChevronDown
                     className={cn(
-                      'w-4 h-4 text-white/30 transition-transform duration-200',
+                      'w-4 h-4 text-text-muted transition-transform duration-200',
                       isExpanded && 'rotate-180'
                     )}
                   />
@@ -256,16 +258,16 @@ export default function ActivityByPerson({
               )}
             >
               <div className='overflow-hidden'>
-                <div className='px-5 pb-4 space-y-3 border-t border-white/[0.06] pt-3'>
+                <div className='px-5 pb-4 space-y-3 border-t border-border-subtle pt-3'>
                   {person.taskGroups.map(taskGroup => (
                     <div
                       key={taskGroup.taskId}
-                      className='rounded-xl bg-white/[0.03] border border-white/[0.06] p-3'
+                      className='rounded-xl bg-surface-primary border border-border-subtle p-3'
                     >
                       {/* Task header */}
                       <div className='flex items-center justify-between mb-2'>
                         <div className='flex items-center gap-2 min-w-0 flex-1'>
-                          <h4 className='text-xs font-medium text-white/80 truncate'>
+                          <h4 className='text-xs font-medium text-text-secondary truncate'>
                             {taskGroup.latestActivity.title}
                           </h4>
                         </div>
@@ -275,7 +277,7 @@ export default function ActivityByPerson({
                               e.stopPropagation();
                               openNoteDrawer(taskGroup.noteId!);
                             }}
-                            className='flex items-center gap-1 px-2 py-0.5 text-[10px] text-white/40 hover:text-white/70 hover:bg-white/5 rounded transition-colors shrink-0'
+                            className='flex items-center gap-1 px-2 py-0.5 text-[10px] text-text-muted hover:text-text-secondary hover:bg-surface-primary rounded transition-colors shrink-0'
                           >
                             <FileText className='w-3 h-3' />
                             <span>Note</span>
@@ -304,7 +306,7 @@ export default function ActivityByPerson({
                               </div>
                               <div className='flex-1 min-w-0'>
                                 <div className='flex items-center gap-2'>
-                                  <span className='text-[11px] text-white/50'>
+                                  <span className='text-[11px] text-text-muted'>
                                     {formatTimestamp(activity.updated_at)}
                                   </span>
                                   <span
@@ -317,7 +319,7 @@ export default function ActivityByPerson({
                                   </span>
                                 </div>
                                 {activity.reaction_text && (
-                                  <p className='text-[11px] text-white/50 mt-0.5'>
+                                  <p className='text-[11px] text-text-muted mt-0.5'>
                                     {activity.reaction_text}
                                   </p>
                                 )}

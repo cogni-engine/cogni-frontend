@@ -13,7 +13,7 @@ function WorkspaceNotesContent() {
   const isInputActive = useIsInputActive();
 
   return (
-    <div className='flex flex-col h-full min-h-0 text-gray-100 relative overflow-hidden'>
+    <div className='flex flex-col h-full min-h-0 text-text-secondary relative overflow-hidden'>
       <NotesPageHeader />
       <ScrollableView className='pt-20 pb-36 md:px-6'>
         <NotesPageContent />

@@ -34,9 +34,11 @@ export const NotesView = memo(function NotesView({
   if (!hasAnyNotes && !searchQuery) {
     return (
       <div className='text-center py-12'>
-        <PenSquare className='w-12 h-12 text-gray-600 mx-auto mb-3' />
-        <h3 className='text-lg font-medium text-white mb-2'>No notes yet</h3>
-        <p className='text-gray-400 mb-6'>
+        <PenSquare className='w-12 h-12 text-text-muted mx-auto mb-3' />
+        <h3 className='text-lg font-medium text-foreground mb-2'>
+          No notes yet
+        </h3>
+        <p className='text-text-muted mb-6'>
           Create your first note to get started
         </p>
         <GlassButton onClick={onCreateNote} className='px-6 py-2.5 rounded-xl'>
@@ -49,11 +51,11 @@ export const NotesView = memo(function NotesView({
   if (notes.length === 0 && searchQuery) {
     return (
       <div className='text-center py-12'>
-        <PenSquare className='w-12 h-12 text-gray-600 mx-auto mb-3' />
-        <h3 className='text-lg font-medium text-white mb-2'>
+        <PenSquare className='w-12 h-12 text-text-muted mx-auto mb-3' />
+        <h3 className='text-lg font-medium text-foreground mb-2'>
           No matching notes
         </h3>
-        <p className='text-gray-400 mb-6'>
+        <p className='text-text-muted mb-6'>
           {`No notes match "${searchQuery}"`}
         </p>
       </div>
