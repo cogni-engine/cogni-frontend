@@ -211,7 +211,7 @@ export function OnboardingIcon({
                 type='button'
                 onClick={() => fileInputRef.current?.click()}
                 disabled={uploading || loading || generating}
-                className='w-full py-2 px-1 dark:backdrop-blur-xl text-text-primary rounded-3xl hover:border-border-default transition-all duration-300 shadow-card hover:shadow-card-hover disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center justify-center gap-2 font-medium'
+                className='w-full py-2 px-1 border border-foreground bg-transparent text-foreground hover:bg-foreground/5 dark:border-none dark:bg-white dark:text-black dark:hover:bg-gray-100 rounded-3xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center justify-center gap-2 font-medium'
               >
                 <Upload className='size-4' />
                 {uploading ? 'Uploading...' : 'Upload Photo'}
@@ -220,7 +220,7 @@ export function OnboardingIcon({
 
             {/* Error Messages */}
             {(error || localError) && (
-              <div className='mt-4 bg-red-900/30 border border-red-500/50 rounded-lg p-4 dark:backdrop-blur-sm max-w-md mx-auto'>
+              <div className='mt-4 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-500/50 rounded-lg p-4 dark:backdrop-blur-sm max-w-md mx-auto'>
                 <p className='text-red-600 dark:text-red-300 text-sm'>
                   {error || localError}
                 </p>

@@ -22,8 +22,10 @@ interface NextStepButtonProps {
 }
 
 const variantStyles: Record<ButtonVariant, string> = {
-  primary: 'bg-white hover:bg-gray-100 text-black disabled:hover:bg-white',
-  secondary: 'bg-white hover:bg-gray-100 text-black disabled:hover:bg-white',
+  primary:
+    'border border-foreground bg-transparent text-foreground hover:bg-foreground/5 disabled:hover:bg-transparent dark:border-none dark:bg-white dark:text-black dark:hover:bg-gray-100 dark:disabled:hover:bg-white',
+  secondary:
+    'border border-foreground bg-transparent text-foreground hover:bg-foreground/5 disabled:hover:bg-transparent dark:border-none dark:bg-white dark:text-black dark:hover:bg-gray-100 dark:disabled:hover:bg-white',
   glass:
     'bg-interactive-hover dark:backdrop-blur-sm border border-interactive-active text-text-primary hover:bg-interactive-active hover:border-border-default disabled:hover:bg-interactive-hover',
 };

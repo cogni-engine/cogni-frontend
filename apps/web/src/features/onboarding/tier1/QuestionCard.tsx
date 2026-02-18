@@ -1,4 +1,5 @@
 import { useState } from 'react';
+
 import type { QuestionConfig } from '../types';
 import { NextStepButton } from '../components/NextStepButton';
 
@@ -111,7 +112,7 @@ export function QuestionCard({
                     disabled={loading}
                     className={`w-full py-3 px-4 text-left rounded-xl bg-surface-primary border transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed ${
                       isSelected
-                        ? 'text-text-primary border-border-default'
+                        ? 'text-text-primary border-foreground/50 dark:border-foreground/60'
                         : 'text-text-secondary border-transparent'
                     }`}
                   >
@@ -135,7 +136,7 @@ export function QuestionCard({
                     disabled={loading}
                     className={`w-full py-3 px-4 text-left rounded-xl bg-surface-primary border transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed ${
                       isSelected
-                        ? 'text-text-primary border-border-default'
+                        ? 'text-text-primary border-foreground/50 dark:border-foreground/60'
                         : 'text-text-secondary border-transparent'
                     }`}
                   >
@@ -162,7 +163,7 @@ export function QuestionCard({
 
         {/* Error Message */}
         {error && (
-          <div className='mt-4 bg-red-900/30 border border-red-500/50 rounded-lg p-4 dark:backdrop-blur-sm'>
+          <div className='mt-4 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-500/50 rounded-lg p-4 dark:backdrop-blur-sm'>
             <p className='text-red-600 dark:text-red-300 text-sm'>{error}</p>
           </div>
         )}

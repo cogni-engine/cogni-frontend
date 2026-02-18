@@ -227,7 +227,7 @@ export function AboutCognoApp({
 
           {/* Error Message */}
           {error && (
-            <div className='bg-red-900/30 border border-red-500/50 rounded-lg p-4 dark:backdrop-blur-sm mt-4'>
+            <div className='bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-500/50 rounded-lg p-4 dark:backdrop-blur-sm mt-4'>
               <p className='text-red-600 dark:text-red-300 text-sm'>{error}</p>
             </div>
           )}
@@ -383,7 +383,7 @@ export function AboutCognoApp({
 
           {/* Error Message */}
           {error && (
-            <div className='bg-red-900/30 border border-red-500/50 rounded-lg p-4 dark:backdrop-blur-sm mt-4'>
+            <div className='bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-500/50 rounded-lg p-4 dark:backdrop-blur-sm mt-4'>
               <p className='text-red-600 dark:text-red-300 text-sm'>{error}</p>
             </div>
           )}
