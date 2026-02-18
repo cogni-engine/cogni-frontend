@@ -99,6 +99,7 @@ type Props = {
   messages: WorkspaceMessage[];
   currentUserId: string;
   onReply?: (messageId: number) => void;
+  onEdit?: (messageId: number, newText: string) => void;
   onJumpToMessage?: (messageId: number) => void;
   highlightedMessageId?: number | null;
   workspaceMembers?: WorkspaceMember[];
@@ -113,6 +114,7 @@ function WorkspaceMessageList({
   messages,
   currentUserId,
   onReply,
+  onEdit,
   onJumpToMessage,
   highlightedMessageId,
   workspaceMembers = [],
@@ -163,6 +165,7 @@ function WorkspaceMessageList({
                     currentUserId === message.workspace_member?.user_id
                   }
                   onReply={onReply}
+                  onEdit={onEdit}
                   onJumpToMessage={onJumpToMessage}
                   isHighlighted={highlightedMessageId === message.id}
                   workspaceMembers={workspaceMembers}

@@ -59,6 +59,7 @@ export default function WorkspaceChatPage() {
   const {
     messages,
     sendMessage: originalSendMessage,
+    editMessage,
     addReaction,
     removeReaction,
     isLoading,
@@ -413,6 +414,7 @@ export default function WorkspaceChatPage() {
             messages={messages}
             currentUserId={currentUserId}
             onReply={handleReply}
+            onEdit={editMessage}
             onJumpToMessage={scrollToMessage}
             highlightedMessageId={highlightedMessageId}
             workspaceMembers={members}

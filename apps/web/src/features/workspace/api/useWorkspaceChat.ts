@@ -7,6 +7,7 @@ import type { WorkspaceMessage, WorkspaceMember } from '@/types/workspace';
 import {
   getWorkspaceMessages,
   sendWorkspaceMessage,
+  updateWorkspaceMessage,
   getCurrentWorkspaceMember,
   markWorkspaceMessagesAsRead,
   type CurrentWorkspaceMember,
@@ -727,6 +728,54 @@ export function useWorkspaceChat(
     );
   }, []);
 
+  // Edit message (optimistic)
+  const editMessage = useCallback(
+    async (messageId: number, newText: string) => {
+      if (!workspaceMember?.id) return;
+      if (!newText.trim()) return;
+
+      // Capture previous state for rollback using ref-free approach
+      let previousText: string | undefined;
+      let previousUpdatedAt: string | undefined;
+
+      // Optimistic update — also capture previous values from prev state
+      setLocalMessages(prev => {
+        const target = prev.find(m => m.id === messageId);
+        if (target) {
+          previousText = target.text;
+          previousUpdatedAt = target.updated_at;
+        }
+        return prev.map(msg =>
+          msg.id === messageId
+            ? { ...msg, text: newText, updated_at: new Date().toISOString() }
+            : msg
+        );
+      });
+
+      // If message wasn't found, bail out
+      if (previousText === undefined) return;
+
+      try {
+        await updateWorkspaceMessage(messageId, newText);
+      } catch (err) {
+        console.error('Error editing message:', err);
+        // Rollback on failure
+        setLocalMessages(prev =>
+          prev.map(msg =>
+            msg.id === messageId
+              ? {
+                  ...msg,
+                  text: previousText!,
+                  updated_at: previousUpdatedAt!,
+                }
+              : msg
+          )
+        );
+      }
+    },
+    [workspaceMember]
+  );
+
   // Combine errors
   const error =
     memberError || messagesError
@@ -738,6 +787,7 @@ export function useWorkspaceChat(
   return {
     messages: localMessages,
     sendMessage,
+    editMessage,
     addReaction,
     removeReaction,
     isLoading,

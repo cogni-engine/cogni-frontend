@@ -2,23 +2,27 @@
 
 import { useEffect, useRef, useState, useLayoutEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { Reply, Copy, Check, Smile } from 'lucide-react';
+import { Reply, Copy, Check, Smile, Pencil } from 'lucide-react';
 import GlassCard from '@/components/glass-design/GlassCard';
 
 type MessageContextMenuProps = {
   messageText: string;
   onReply: () => void;
+  onEdit?: () => void;
   onReact?: () => void;
   onClose: () => void;
   position: { x: number; y: number };
+  isOwnMessage?: boolean;
 };
 
 export default function MessageContextMenu({
   messageText,
   onReply,
+  onEdit,
   onReact,
   onClose,
   position,
+  isOwnMessage = false,
 }: MessageContextMenuProps) {
   const menuRef = useRef<HTMLDivElement>(null);
   const [copied, setCopied] = useState(false);
@@ -109,6 +113,18 @@ export default function MessageContextMenu({
         <Reply className='w-4 h-4 text-white' />
         <span>Reply</span>
       </button>
+      {isOwnMessage && onEdit && (
+        <button
+          onClick={() => {
+            onEdit();
+            onClose();
+          }}
+          className='w-full p-2 text-left text-sm text-white hover:bg-white/5 flex items-center gap-2 transition-colors rounded-xl mb-1'
+        >
+          <Pencil className='w-4 h-4 text-white' />
+          <span>Edit</span>
+        </button>
+      )}
       {onReact && (
         <button
           onClick={() => {
