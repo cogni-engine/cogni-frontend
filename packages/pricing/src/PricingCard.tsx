@@ -42,14 +42,19 @@ export function PricingCard({
     <div
       className={`relative flex h-full flex-col rounded-3xl p-6 transition-all backdrop-blur-md ${
         isBestValue
-          ? 'border-2 border-white bg-white/10'
-          : 'border border-white/10 bg-white/5'
+          ? 'border-2 border-foreground/20 dark:border-white bg-foreground/5 dark:bg-white/10'
+          : 'border border-foreground/10 dark:border-white/10 bg-foreground/[0.03] dark:bg-white/5'
       } ${className}`}
     >
       {/* Header section - fixed height */}
       <div className='mb-4' style={{ height: '80px' }}>
-        <h3 className='mb-2 text-2xl font-semibold text-white'>{name}</h3>
-        <p className='text-sm text-slate-300' style={{ height: '48px' }}>
+        <h3 className='mb-2 text-2xl font-semibold text-foreground'>
+          {name}
+        </h3>
+        <p
+          className='text-sm text-foreground/60 dark:text-slate-300'
+          style={{ height: '48px' }}
+        >
           {description}
         </p>
       </div>
@@ -58,11 +63,13 @@ export function PricingCard({
       <div className='mb-6 flex items-end' style={{ height: '60px' }}>
         {price && (
           <div className='flex items-baseline gap-2'>
-            <span className={`font-bold text-white ${priceClassName}`}>
+            <span className={`font-bold text-foreground ${priceClassName}`}>
               {price}
             </span>
             {priceNote && (
-              <span className='text-lg text-slate-400'>{priceNote}</span>
+              <span className='text-lg text-foreground/40 dark:text-slate-400'>
+                {priceNote}
+              </span>
             )}
           </div>
         )}
@@ -84,13 +91,15 @@ export function PricingCard({
               className={`flex items-start gap-3 ${featureClassName}`}
             >
               {feature.included ? (
-                <Check className='mt-0.5 h-5 w-5 flex-shrink-0 text-white' />
+                <Check className='mt-0.5 h-5 w-5 flex-shrink-0 text-foreground dark:text-white' />
               ) : (
-                <X className='mt-0.5 h-5 w-5 flex-shrink-0 text-slate-500' />
+                <X className='mt-0.5 h-5 w-5 flex-shrink-0 text-foreground/30 dark:text-slate-500' />
               )}
               <span
                 className={`text-sm leading-relaxed ${
-                  feature.included ? 'text-slate-200' : 'text-slate-500'
+                  feature.included
+                    ? 'text-foreground/70 dark:text-slate-200'
+                    : 'text-foreground/30 dark:text-slate-500'
                 }`}
               >
                 {feature.label}

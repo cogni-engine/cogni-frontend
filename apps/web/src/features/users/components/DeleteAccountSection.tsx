@@ -1,13 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -36,61 +29,48 @@ export function DeleteAccountSection({
   const handleConfirmDelete = async () => {
     try {
       await onDelete();
-      // The parent component will handle signOut and redirect
     } catch (error) {
       console.error('Failed to delete account', error);
-      // Keep dialog open on error so user can try again
     }
   };
 
   return (
     <>
-      <Card className='border border-red-500/30 bg-red-500/5'>
-        <CardHeader>
-          <CardTitle className='text-red-700 dark:text-red-200'>
-            Danger zone
-          </CardTitle>
-          <CardDescription>
-            Permanently delete your account and all of your data.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className='flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between'>
-          <div className='text-sm text-text-secondary'>
-            This action is irreversible. Once you delete your account, you will
-            not be able to recover any of your data, including notes, tasks, and
-            workspaces.
-          </div>
+      <div className='flex items-center justify-between lg:grid lg:grid-cols-[200px_1fr] lg:gap-10'>
+        <div>
+          <h3 className='text-base font-semibold text-red-700 dark:text-red-200'>
+            Delete Account
+          </h3>
+          <p className='text-sm text-text-muted'>Permanent and irreversible.</p>
+        </div>
+        <div className='lg:flex lg:justify-end'>
           <Button
             variant='destructive'
             onClick={handleDeleteClick}
             disabled={isDeleting}
           >
-            {isDeleting ? 'Deleting…' : 'Delete account'}
+            {isDeleting ? 'Deleting...' : 'Delete account'}
           </Button>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
       <Dialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Delete account</DialogTitle>
             <DialogDescription>
-              Are you sure you want to delete your account? This action cannot
-              be undone.
+              Are you sure? This cannot be undone.
             </DialogDescription>
           </DialogHeader>
-          <div className='space-y-4'>
-            <p className='text-sm text-text-secondary'>
-              Deleting your account will:
-            </p>
+          <div className='space-y-3'>
+            <p className='text-sm text-text-secondary'>This will:</p>
             <ul className='list-disc list-inside space-y-1 text-sm text-text-secondary ml-4'>
-              <li>Permanently delete all your notes and tasks</li>
+              <li>Delete all your notes and tasks</li>
               <li>Remove you from all workspaces</li>
-              <li>Delete your profile and account data</li>
-              <li>Ban your account from accessing the service</li>
+              <li>Delete your profile data</li>
             </ul>
             <p className='text-sm text-red-600 dark:text-red-300 font-medium'>
-              This action is permanent and cannot be reversed.
+              This action is permanent.
             </p>
           </div>
           <DialogFooter>
@@ -106,7 +86,7 @@ export function DeleteAccountSection({
               onClick={handleConfirmDelete}
               disabled={isDeleting}
             >
-              {isDeleting ? 'Deleting…' : 'Yes, delete my account'}
+              {isDeleting ? 'Deleting...' : 'Yes, delete my account'}
             </Button>
           </DialogFooter>
         </DialogContent>

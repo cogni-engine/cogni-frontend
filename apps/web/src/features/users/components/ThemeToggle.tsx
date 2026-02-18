@@ -3,17 +3,11 @@
 import { useTheme } from 'next-themes';
 import { useEffect, useState } from 'react';
 import { Monitor, Sun, Moon } from 'lucide-react';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
+import GlassCard from '@/components/glass-design/GlassCard';
 import { cn } from '@/lib/utils';
 
 const themes = [
-  { value: 'system', label: 'System', icon: Monitor },
+  { value: 'system', label: 'Auto', icon: Monitor },
   { value: 'light', label: 'Light', icon: Sun },
   { value: 'dark', label: 'Dark', icon: Moon },
 ] as const;
@@ -26,61 +20,65 @@ export function ThemeToggle() {
     setMounted(true);
   }, []);
 
-  if (!mounted) {
-    return (
-      <Card className='h-fit'>
-        <CardHeader>
-          <CardTitle>Appearance</CardTitle>
-          <CardDescription>Choose how Cogno looks to you.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className='grid grid-cols-3 gap-2'>
-            {themes.map(t => (
-              <div
-                key={t.value}
-                className='flex flex-col items-center gap-2 rounded-lg border border-border-default p-3'
-              >
-                <t.icon className='h-5 w-5 text-text-muted' />
-                <span className='text-xs font-medium text-text-muted'>
-                  {t.label}
-                </span>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
+  const activeIndex = mounted ? themes.findIndex(t => t.value === theme) : -1;
+  const tabWidthPercent = 100 / themes.length;
 
   return (
-    <Card className='h-fit'>
-      <CardHeader>
-        <CardTitle>Appearance</CardTitle>
-        <CardDescription>Choose how Cogno looks to you.</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <div className='grid grid-cols-3 gap-2'>
+    <div className='space-y-3 lg:grid lg:grid-cols-[200px_1fr] lg:gap-10 lg:space-y-0'>
+      <div className='lg:pt-2'>
+        <h3 className='text-base font-semibold text-text-primary'>Theme</h3>
+      </div>
+
+      <GlassCard className='rounded-full'>
+        <div className='relative flex items-center justify-around p-1'>
+          {/* Sliding indicator */}
+          <div
+            className='absolute h-[calc(100%-8px)] rounded-full liquid-glass-indicator will-change-[transform,opacity]'
+            style={{
+              width: `calc(${tabWidthPercent}% - 8px)`,
+              left: '4px',
+              transform: `translateX(calc(${activeIndex} * (100% + 8px)))`,
+              opacity: activeIndex === -1 ? 0 : 1,
+              transition:
+                'transform 500ms cubic-bezier(0.4, 0, 0.2, 1), opacity 300ms ease',
+            }}
+          />
+
           {themes.map(t => {
-            const isActive = theme === t.value;
+            const isActive = mounted && theme === t.value;
+
             return (
               <button
                 key={t.value}
                 type='button'
                 onClick={() => setTheme(t.value)}
-                className={cn(
-                  'flex flex-col items-center gap-2 rounded-lg border p-3 transition-colors',
-                  isActive
-                    ? 'border-emerald-500 bg-emerald-500/10 text-text-primary'
-                    : 'border-border-default text-text-secondary hover:bg-interactive-hover hover:text-text-primary'
-                )}
+                className='liquid-glass-button relative z-10 flex flex-col items-center gap-0.5 px-4 py-2 transition-all duration-300 group flex-1 bg-transparent border-none outline-none cursor-pointer'
               >
-                <t.icon className='h-5 w-5' />
-                <span className='text-xs font-medium'>{t.label}</span>
+                <div
+                  className={cn(
+                    'transition-colors duration-300',
+                    isActive
+                      ? 'text-text-primary'
+                      : 'text-nav-text-inactive group-hover:text-text-primary'
+                  )}
+                >
+                  <t.icon className='w-5 h-5' />
+                </div>
+                <span
+                  className={cn(
+                    'text-xs font-medium transition-colors duration-300',
+                    isActive
+                      ? 'text-text-primary'
+                      : 'text-nav-text-inactive group-hover:text-text-primary'
+                  )}
+                >
+                  {t.label}
+                </span>
               </button>
             );
           })}
         </div>
-      </CardContent>
-    </Card>
+      </GlassCard>
+    </div>
   );
 }

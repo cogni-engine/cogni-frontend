@@ -21,6 +21,16 @@
   display: none !important;
 }
 
+/* ── Theme transition ──
+   :where(*) has zero specificity so any component with its own
+   transition (Tailwind utilities, glass components, buttons) wins. */
+:where(*, *::before, *::after) {
+  transition:
+    background-color 400ms ease,
+    color 400ms ease,
+    border-color 400ms ease;
+}
+
 /* ── Light mode (default) ── */
 :root {
   --background: #ffffff;
@@ -733,7 +743,497 @@ textarea,
       );
   transition:
     background-color 400ms cubic-bezier(1, 0, 0.4, 1),
-    box-shadow 400ms cubic-bezier(1, 0, 0.4, 1);
+    box-shadow 400ms cubic-bezier(1, 0, 0.4, 1),
+    transform 500ms cubic-bezier(0.4, 0, 0.2, 1),
+    opacity 300ms ease;
+}
+
+/* ── Liquid Glass Button states ── */
+
+.liquid-glass-button {
+  transform: scale(1);
+  transition: transform 260ms cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: transform;
+}
+
+.liquid-glass-button-tint {
+  transition: background-color 260ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.liquid-glass-button-blur {
+  transition: backdrop-filter 260ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.liquid-glass-button-border {
+  transition:
+    box-shadow 260ms cubic-bezier(0.4, 0, 0.2, 1),
+    background-color 260ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Hover */
+.liquid-glass-button:hover {
+  transform: scale(1.04);
+}
+
+.liquid-glass-button:hover .liquid-glass-button-tint {
+  background-color: rgba(255, 255, 255, 0.12);
+}
+
+.liquid-glass-button:hover .liquid-glass-button-blur {
+  backdrop-filter: blur(4px) saturate(2.2);
+}
+
+.liquid-glass-button:hover .liquid-glass-button-border {
+  box-shadow:
+    inset 0 0 0 1px
+      color-mix(
+        in srgb,
+        var(--glass-light) calc(var(--glass-reflex-light) * 14%),
+        transparent
+      ),
+    inset 1.8px 3px 0px -2px
+      color-mix(
+        in srgb,
+        var(--glass-light) calc(var(--glass-reflex-light) * 100%),
+        transparent
+      ),
+    inset -2px -2px 0px -2px
+      color-mix(
+        in srgb,
+        var(--glass-light) calc(var(--glass-reflex-light) * 90%),
+        transparent
+      ),
+    inset -3px -8px 1px -6px
+      color-mix(
+        in srgb,
+        var(--glass-light) calc(var(--glass-reflex-light) * 70%),
+        transparent
+      ),
+    inset -0.3px -1px 4px 0px
+      color-mix(
+        in srgb,
+        var(--glass-dark) calc(var(--glass-reflex-dark) * 12%),
+        transparent
+      ),
+    inset -1.5px 2.5px 0px -2px
+      color-mix(
+        in srgb,
+        var(--glass-dark) calc(var(--glass-reflex-dark) * 20%),
+        transparent
+      ),
+    inset 0px 3px 4px -2px
+      color-mix(
+        in srgb,
+        var(--glass-dark) calc(var(--glass-reflex-dark) * 20%),
+        transparent
+      ),
+    inset 2px -6.5px 1px -4px
+      color-mix(
+        in srgb,
+        var(--glass-dark) calc(var(--glass-reflex-dark) * 10%),
+        transparent
+      ),
+    0px 2px 8px 0px
+      color-mix(
+        in srgb,
+        var(--glass-dark) calc(var(--glass-reflex-dark) * 14%),
+        transparent
+      ),
+    0px 8px 20px 0px
+      color-mix(
+        in srgb,
+        var(--glass-dark) calc(var(--glass-reflex-dark) * 12%),
+        transparent
+      );
+}
+
+/* Pressed / Active — desktop: scale down */
+@media (min-width: 768px) {
+  .liquid-glass-button:active {
+    transform: scale(0.96);
+  }
+
+  .liquid-glass-button:active .liquid-glass-button-tint {
+    background-color: rgba(255, 255, 255, 0.04);
+  }
+
+  .liquid-glass-button:active .liquid-glass-button-blur {
+    backdrop-filter: blur(2px) saturate(1.6);
+  }
+
+  .liquid-glass-button:active .liquid-glass-button-border {
+    box-shadow:
+      inset 0 0 0 1px
+        color-mix(
+          in srgb,
+          var(--glass-light) calc(var(--glass-reflex-light) * 8%),
+          transparent
+        ),
+      inset 1.8px 3px 0px -2px
+        color-mix(
+          in srgb,
+          var(--glass-light) calc(var(--glass-reflex-light) * 70%),
+          transparent
+        ),
+      inset -2px -2px 0px -2px
+        color-mix(
+          in srgb,
+          var(--glass-light) calc(var(--glass-reflex-light) * 60%),
+          transparent
+        ),
+      inset -3px -8px 1px -6px
+        color-mix(
+          in srgb,
+          var(--glass-light) calc(var(--glass-reflex-light) * 40%),
+          transparent
+        ),
+      inset -0.3px -1px 6px 0px
+        color-mix(
+          in srgb,
+          var(--glass-dark) calc(var(--glass-reflex-dark) * 18%),
+          transparent
+        ),
+      inset -1.5px 2.5px 0px -2px
+        color-mix(
+          in srgb,
+          var(--glass-dark) calc(var(--glass-reflex-dark) * 28%),
+          transparent
+        ),
+      inset 0px 3px 6px -2px
+        color-mix(
+          in srgb,
+          var(--glass-dark) calc(var(--glass-reflex-dark) * 28%),
+          transparent
+        ),
+      inset 2px -6.5px 1px -4px
+        color-mix(
+          in srgb,
+          var(--glass-dark) calc(var(--glass-reflex-dark) * 14%),
+          transparent
+        ),
+      0px 0px 3px 0px
+        color-mix(
+          in srgb,
+          var(--glass-dark) calc(var(--glass-reflex-dark) * 6%),
+          transparent
+        ),
+      0px 2px 8px 0px
+        color-mix(
+          in srgb,
+          var(--glass-dark) calc(var(--glass-reflex-dark) * 5%),
+          transparent
+        );
+  }
+}
+
+/* Pressed / Active — mobile: scale up */
+@media (max-width: 767px) {
+  .liquid-glass-button:active {
+    transform: scale(1.08);
+  }
+
+  .liquid-glass-button:active .liquid-glass-button-tint {
+    background-color: rgba(255, 255, 255, 0.15);
+  }
+
+  .liquid-glass-button:active .liquid-glass-button-blur {
+    backdrop-filter: blur(5px) saturate(2.4);
+  }
+
+  .liquid-glass-button:active .liquid-glass-button-border {
+    box-shadow:
+      inset 0 0 0 1px
+        color-mix(
+          in srgb,
+          var(--glass-light) calc(var(--glass-reflex-light) * 16%),
+          transparent
+        ),
+      inset 1.8px 3px 0px -2px
+        color-mix(
+          in srgb,
+          var(--glass-light) calc(var(--glass-reflex-light) * 100%),
+          transparent
+        ),
+      inset -2px -2px 0px -2px
+        color-mix(
+          in srgb,
+          var(--glass-light) calc(var(--glass-reflex-light) * 95%),
+          transparent
+        ),
+      inset -3px -8px 1px -6px
+        color-mix(
+          in srgb,
+          var(--glass-light) calc(var(--glass-reflex-light) * 75%),
+          transparent
+        ),
+      inset -0.3px -1px 4px 0px
+        color-mix(
+          in srgb,
+          var(--glass-dark) calc(var(--glass-reflex-dark) * 10%),
+          transparent
+        ),
+      inset -1.5px 2.5px 0px -2px
+        color-mix(
+          in srgb,
+          var(--glass-dark) calc(var(--glass-reflex-dark) * 16%),
+          transparent
+        ),
+      inset 0px 3px 4px -2px
+        color-mix(
+          in srgb,
+          var(--glass-dark) calc(var(--glass-reflex-dark) * 16%),
+          transparent
+        ),
+      inset 2px -6.5px 1px -4px
+        color-mix(
+          in srgb,
+          var(--glass-dark) calc(var(--glass-reflex-dark) * 8%),
+          transparent
+        ),
+      0px 3px 10px 0px
+        color-mix(
+          in srgb,
+          var(--glass-dark) calc(var(--glass-reflex-dark) * 16%),
+          transparent
+        ),
+      0px 10px 24px 0px
+        color-mix(
+          in srgb,
+          var(--glass-dark) calc(var(--glass-reflex-dark) * 14%),
+          transparent
+        );
+  }
+}
+
+/* ── Liquid Glass Card pressable states ── */
+
+.liquid-glass-card-pressable {
+  transform: scale(1);
+  cursor: pointer;
+  transition:
+    transform 260ms cubic-bezier(0.4, 0, 0.2, 1),
+    background-color 260ms cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: transform;
+}
+
+.liquid-glass-card-border {
+  transition:
+    box-shadow 260ms cubic-bezier(0.4, 0, 0.2, 1),
+    background-color 260ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Hover */
+.liquid-glass-card-pressable:hover {
+  transform: scale(1.02);
+  background-color: rgba(255, 255, 255, 0.09);
+}
+
+.liquid-glass-card-pressable:hover .liquid-glass-card-border {
+  box-shadow:
+    inset 0 0 0 1px
+      color-mix(
+        in srgb,
+        var(--glass-light) calc(var(--glass-reflex-light) * 14%),
+        transparent
+      ),
+    inset 1.8px 3px 0px -2px
+      color-mix(
+        in srgb,
+        var(--glass-light) calc(var(--glass-reflex-light) * 100%),
+        transparent
+      ),
+    inset -2px -2px 0px -2px
+      color-mix(
+        in srgb,
+        var(--glass-light) calc(var(--glass-reflex-light) * 90%),
+        transparent
+      ),
+    inset -3px -8px 1px -6px
+      color-mix(
+        in srgb,
+        var(--glass-light) calc(var(--glass-reflex-light) * 70%),
+        transparent
+      ),
+    inset -0.3px -1px 4px 0px
+      color-mix(
+        in srgb,
+        var(--glass-dark) calc(var(--glass-reflex-dark) * 12%),
+        transparent
+      ),
+    inset -1.5px 2.5px 0px -2px
+      color-mix(
+        in srgb,
+        var(--glass-dark) calc(var(--glass-reflex-dark) * 20%),
+        transparent
+      ),
+    inset 0px 3px 4px -2px
+      color-mix(
+        in srgb,
+        var(--glass-dark) calc(var(--glass-reflex-dark) * 20%),
+        transparent
+      ),
+    inset 2px -6.5px 1px -4px
+      color-mix(
+        in srgb,
+        var(--glass-dark) calc(var(--glass-reflex-dark) * 10%),
+        transparent
+      ),
+    0px 2px 8px 0px
+      color-mix(
+        in srgb,
+        var(--glass-dark) calc(var(--glass-reflex-dark) * 14%),
+        transparent
+      ),
+    0px 8px 20px 0px
+      color-mix(
+        in srgb,
+        var(--glass-dark) calc(var(--glass-reflex-dark) * 12%),
+        transparent
+      );
+}
+
+/* Pressed / Active — desktop: scale down */
+@media (min-width: 768px) {
+  .liquid-glass-card-pressable:active {
+    transform: scale(0.98);
+    background-color: rgba(255, 255, 255, 0.03);
+  }
+
+  .liquid-glass-card-pressable:active .liquid-glass-card-border {
+    box-shadow:
+      inset 0 0 0 1px
+        color-mix(
+          in srgb,
+          var(--glass-light) calc(var(--glass-reflex-light) * 8%),
+          transparent
+        ),
+      inset 1.8px 3px 0px -2px
+        color-mix(
+          in srgb,
+          var(--glass-light) calc(var(--glass-reflex-light) * 70%),
+          transparent
+        ),
+      inset -2px -2px 0px -2px
+        color-mix(
+          in srgb,
+          var(--glass-light) calc(var(--glass-reflex-light) * 60%),
+          transparent
+        ),
+      inset -3px -8px 1px -6px
+        color-mix(
+          in srgb,
+          var(--glass-light) calc(var(--glass-reflex-light) * 40%),
+          transparent
+        ),
+      inset -0.3px -1px 6px 0px
+        color-mix(
+          in srgb,
+          var(--glass-dark) calc(var(--glass-reflex-dark) * 18%),
+          transparent
+        ),
+      inset -1.5px 2.5px 0px -2px
+        color-mix(
+          in srgb,
+          var(--glass-dark) calc(var(--glass-reflex-dark) * 28%),
+          transparent
+        ),
+      inset 0px 3px 6px -2px
+        color-mix(
+          in srgb,
+          var(--glass-dark) calc(var(--glass-reflex-dark) * 28%),
+          transparent
+        ),
+      inset 2px -6.5px 1px -4px
+        color-mix(
+          in srgb,
+          var(--glass-dark) calc(var(--glass-reflex-dark) * 14%),
+          transparent
+        ),
+      0px 0px 3px 0px
+        color-mix(
+          in srgb,
+          var(--glass-dark) calc(var(--glass-reflex-dark) * 6%),
+          transparent
+        ),
+      0px 2px 8px 0px
+        color-mix(
+          in srgb,
+          var(--glass-dark) calc(var(--glass-reflex-dark) * 5%),
+          transparent
+        );
+  }
+}
+
+/* Pressed / Active — mobile: scale up */
+@media (max-width: 767px) {
+  .liquid-glass-card-pressable:active {
+    transform: scale(1.03);
+    background-color: rgba(255, 255, 255, 0.12);
+  }
+
+  .liquid-glass-card-pressable:active .liquid-glass-card-border {
+    box-shadow:
+      inset 0 0 0 1px
+        color-mix(
+          in srgb,
+          var(--glass-light) calc(var(--glass-reflex-light) * 16%),
+          transparent
+        ),
+      inset 1.8px 3px 0px -2px
+        color-mix(
+          in srgb,
+          var(--glass-light) calc(var(--glass-reflex-light) * 100%),
+          transparent
+        ),
+      inset -2px -2px 0px -2px
+        color-mix(
+          in srgb,
+          var(--glass-light) calc(var(--glass-reflex-light) * 95%),
+          transparent
+        ),
+      inset -3px -8px 1px -6px
+        color-mix(
+          in srgb,
+          var(--glass-light) calc(var(--glass-reflex-light) * 75%),
+          transparent
+        ),
+      inset -0.3px -1px 4px 0px
+        color-mix(
+          in srgb,
+          var(--glass-dark) calc(var(--glass-reflex-dark) * 10%),
+          transparent
+        ),
+      inset -1.5px 2.5px 0px -2px
+        color-mix(
+          in srgb,
+          var(--glass-dark) calc(var(--glass-reflex-dark) * 16%),
+          transparent
+        ),
+      inset 0px 3px 4px -2px
+        color-mix(
+          in srgb,
+          var(--glass-dark) calc(var(--glass-reflex-dark) * 16%),
+          transparent
+        ),
+      inset 2px -6.5px 1px -4px
+        color-mix(
+          in srgb,
+          var(--glass-dark) calc(var(--glass-reflex-dark) * 8%),
+          transparent
+        ),
+      0px 3px 10px 0px
+        color-mix(
+          in srgb,
+          var(--glass-dark) calc(var(--glass-reflex-dark) * 16%),
+          transparent
+        ),
+      0px 10px 24px 0px
+        color-mix(
+          in srgb,
+          var(--glass-dark) calc(var(--glass-reflex-dark) * 14%),
+          transparent
+        );
+  }
 }
 
 @keyframes liquid-glass-scale {

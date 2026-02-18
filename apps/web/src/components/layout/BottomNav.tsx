@@ -18,7 +18,6 @@ const tabs = [
 
 export default function BottomNav() {
   const pathname = usePathname();
-
   const activeIndex = tabs.findIndex(tab => pathname.startsWith(tab.path));
   const tabWidthPercent = 100 / tabs.length;
 
@@ -29,10 +28,11 @@ export default function BottomNav() {
           <div className='relative flex items-center justify-around p-1'>
             {/* Sliding background indicator - liquid glass inner element */}
             <div
-              className='absolute h-[calc(100%-8px)] rounded-full liquid-glass-indicator transition-all duration-500 ease-out'
+              className='absolute h-[calc(100%-8px)] rounded-full liquid-glass-indicator transition-transform duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] will-change-transform'
               style={{
                 width: `calc(${tabWidthPercent}% - 8px)`,
-                left: `calc(${activeIndex * tabWidthPercent}% + 4px)`,
+                left: '4px',
+                transform: `translateX(calc(${activeIndex} * (100% + 8px)))`,
                 opacity: activeIndex === -1 ? 0 : 1,
               }}
             />

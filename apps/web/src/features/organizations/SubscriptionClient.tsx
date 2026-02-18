@@ -189,7 +189,7 @@ export default function SubscriptionClient() {
   }
 
   return (
-    <div className='h-full overflow-y-auto pt-20 pb-24'>
+    <div className='h-full overflow-y-auto pt-20 pb-24 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden'>
       <div className='max-w-3xl mx-auto px-4 md:px-6'>
         {/* Organization Selector - Show if multiple organizations */}
         {managedOrgs && managedOrgs.length > 1 && currentOrg && (

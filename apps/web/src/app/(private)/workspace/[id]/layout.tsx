@@ -11,12 +11,14 @@ import {
   Users,
   Settings,
   GitBranch,
+  Plus,
 } from 'lucide-react';
 import GlassCard from '@/components/glass-design/GlassCard';
 import { useWorkspace, useWorkspaceMembers } from '@/hooks/useWorkspace';
 import { getCurrentUserId } from '@/lib/cookies';
 import FolderActionButton from '@/components/FolderActionButton';
 import WorkspaceActivityDrawer from '@/features/workspace/components/activity/WorkspaceActivityDrawer';
+import MemberInviteDrawer from '@/features/workspace/components/MemberInviteDrawer';
 import { WorkspaceProvider } from '@/features/workspace/contexts/WorkspaceContext';
 import GlassButton from '@/components/glass-design/GlassButton';
 
@@ -64,6 +66,7 @@ export default function WorkspaceLayout({
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);
   const menuRef = React.useRef<HTMLDivElement | null>(null);
   const [isActivityDrawerOpen, setIsActivityDrawerOpen] = React.useState(false);
+  const [isInviteDrawerOpen, setIsInviteDrawerOpen] = React.useState(false);
 
   React.useEffect(() => {
     const handleKey = (e: KeyboardEvent) => {
@@ -115,6 +118,18 @@ export default function WorkspaceLayout({
                 <GitBranch className='w-5 h-5 text-text-primary' />
               </GlassButton>
             )}
+            {currentView === 'members' && (
+              <GlassButton
+                onClick={() => setIsInviteDrawerOpen(true)}
+                title='Invite'
+                className='px-4'
+              >
+                <span className='flex items-center gap-2'>
+                  <Plus className='w-5 h-5 text-text-primary' />
+                  Invite
+                </span>
+              </GlassButton>
+            )}
             <div className='relative' ref={menuRef}>
               <GlassButton
                 onClick={() => setIsMenuOpen(prev => !prev)}
@@ -163,10 +178,14 @@ export default function WorkspaceLayout({
               <div className='relative flex items-center p-1'>
                 {/* Sliding background indicator — glass-on-glass */}
                 <div
-                  className='absolute h-[calc(100%-8px)] rounded-2xl liquid-glass-indicator transition-all duration-500 ease-out'
+                  className='absolute h-[calc(100%-8px)] rounded-2xl liquid-glass-indicator will-change-transform'
                   style={{
                     width: 'calc(50% - 6px)',
-                    left: currentView === 'chat' ? '4px' : 'calc(50% + 2px)',
+                    left: '4px',
+                    transform:
+                      currentView === 'chat'
+                        ? 'translateX(0)'
+                        : 'translateX(calc(100% + 4px))',
                   }}
                 />
 
@@ -210,6 +229,13 @@ export default function WorkspaceLayout({
         <WorkspaceActivityDrawer
           open={isActivityDrawerOpen}
           onOpenChange={setIsActivityDrawerOpen}
+          workspaceId={workspaceId}
+        />
+
+        {/* Member Invite Drawer */}
+        <MemberInviteDrawer
+          isOpen={isInviteDrawerOpen}
+          onClose={() => setIsInviteDrawerOpen(false)}
           workspaceId={workspaceId}
         />
       </div>

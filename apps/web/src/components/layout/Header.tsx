@@ -1,10 +1,10 @@
 'use client';
 
 import { useState, useEffect, useMemo, useCallback } from 'react';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { useNotifications } from '@/features/notifications/hooks/useNotifications';
 import { UserMenu } from '@/components/layout/UserMenu';
-import { BellIcon, TextAlignStart } from 'lucide-react';
+import { ArrowLeft, BellIcon, TextAlignStart } from 'lucide-react';
 import {
   dispatchHeaderEvent,
   HEADER_EVENTS,
@@ -19,8 +19,10 @@ import { useUserId } from '@/stores/useUserProfileStore';
 
 export default function Header() {
   const pathname = usePathname();
+  const router = useRouter();
   const isHomePage = pathname === '/home' || pathname === '/cogno';
   const isNotesPage = pathname === '/notes';
+  const isUserPage = pathname.startsWith('/user/');
   const pageTitleMap: Record<string, string> = {
     '/notes': 'Note',
     '/workspace': 'Workspace',
@@ -156,6 +158,16 @@ export default function Header() {
         <div className='flex items-center justify-between'>
           {/* Left Side - Thread Controls + Logo */}
           <div className='flex items-center gap-4'>
+            {isUserPage && isMounted && (
+              <GlassButton
+                onClick={() => router.back()}
+                title='Go back'
+                size='icon'
+                className='size-12'
+              >
+                <ArrowLeft className='w-5 h-5 text-text-primary' />
+              </GlassButton>
+            )}
             {isHomePage && isMounted && (
               <div>
                 {/* Thread Sidebar Toggle */}

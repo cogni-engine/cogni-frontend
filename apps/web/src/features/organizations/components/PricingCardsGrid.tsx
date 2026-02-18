@@ -54,7 +54,7 @@ export function PricingCardsGrid({
                   className={`w-full rounded-full ${
                     plan.isBestValue
                       ? 'bg-purple-500 hover:bg-purple-600 text-white border-transparent'
-                      : 'bg-white border-border-default hover:bg-white/80 text-black'
+                      : 'bg-foreground/5 dark:bg-white border-border-default hover:bg-foreground/10 dark:hover:bg-white/80 text-foreground dark:text-black'
                   }`}
                   onClick={() => onPlanClick(plan.id)}
                   disabled={isDisabled}

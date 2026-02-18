@@ -25,11 +25,13 @@ function NoteCardComponent({
   onContextMenu,
   showWorkspaceBadge = true,
   inRecentlyDeleted = false,
+  showDivider = false,
 }: {
   note: FormattedNote;
   onContextMenu?: (e: React.MouseEvent, id: string, isDeleted: boolean) => void;
   showWorkspaceBadge?: boolean;
   inRecentlyDeleted?: boolean;
+  showDivider?: boolean;
 }) {
   const touchTimerRef = useRef<NodeJS.Timeout | null>(null);
   const touchStartRef = useRef<{ x: number; y: number } | null>(null);
@@ -85,6 +87,7 @@ function NoteCardComponent({
     <Link href={`/notes/${note.id}`} prefetch={true} className='block'>
       <FlatListItem
         className={isDeleted && !inRecentlyDeleted ? 'opacity-60' : ''}
+        showDivider={showDivider}
         onContextMenu={handleContextMenuEvent}
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
@@ -223,12 +226,13 @@ const NoteList = memo(function NoteList({
           )}
         </div>
         <FlatList>
-          {folderNotes.map(note => (
+          {folderNotes.map((note, i) => (
             <NoteCard
               key={note.id}
               note={note}
               onContextMenu={onContextMenu}
               inRecentlyDeleted={isRecentlyDeleted}
+              showDivider={i < folderNotes.length - 1}
             />
           ))}
           {folderNotes.length === 0 && (
@@ -271,11 +275,12 @@ const NoteList = memo(function NoteList({
                 />
                 {!isCollapsed && (
                   <FlatList>
-                    {groups[group].map(note => (
+                    {groups[group].map((note, i) => (
                       <NoteCard
                         key={note.id}
                         note={note}
                         onContextMenu={onContextMenu}
+                        showDivider={i < groups[group].length - 1}
                       />
                     ))}
                   </FlatList>
@@ -287,11 +292,12 @@ const NoteList = memo(function NoteList({
                   {group}
                 </h3>
                 <FlatList>
-                  {groups[group].map(note => (
+                  {groups[group].map((note, i) => (
                     <NoteCard
                       key={note.id}
                       note={note}
                       onContextMenu={onContextMenu}
+                      showDivider={i < groups[group].length - 1}
                     />
                   ))}
                 </FlatList>
@@ -316,12 +322,13 @@ const NoteList = memo(function NoteList({
               />
               {!isCollapsed && (
                 <FlatList>
-                  {wsInfo.notes.map(note => (
+                  {wsInfo.notes.map((note, i) => (
                     <NoteCard
                       key={note.id}
                       note={note}
                       onContextMenu={onContextMenu}
                       showWorkspaceBadge={false}
+                      showDivider={i < wsInfo.notes.length - 1}
                     />
                   ))}
                 </FlatList>
