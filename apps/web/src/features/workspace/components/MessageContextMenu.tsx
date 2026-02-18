@@ -119,9 +119,9 @@ export default function MessageContextMenu({
             onEdit();
             onClose();
           }}
-          className='w-full p-2 text-left text-sm text-white hover:bg-white/5 flex items-center gap-2 transition-colors rounded-xl mb-1'
+          className='w-full p-2 text-left text-sm text-text-primary hover:bg-surface-primary flex items-center gap-2 transition-colors rounded-xl mb-1'
         >
-          <Pencil className='w-4 h-4 text-white' />
+          <Pencil className='w-4 h-4 text-text-primary' />
           <span>Edit</span>
         </button>
       )}

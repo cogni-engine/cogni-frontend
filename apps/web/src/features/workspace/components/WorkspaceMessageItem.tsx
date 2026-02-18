@@ -518,13 +518,13 @@ function WorkspaceMessageItem({
                   {message.text && (
                     <div className='text-sm text-text-primary'>
                       {isEditing ? (
-                        <div className='flex flex-col gap-2'>
+                        <div className='flex flex-col gap-1'>
                           <textarea
                             ref={editTextareaRef}
                             value={editText}
                             onChange={e => setEditText(e.target.value)}
                             onKeyDown={handleEditKeyDown}
-                            className='w-full min-h-[60px] bg-white/10 border border-white/20 rounded-xl px-3 py-2 text-sm text-text-primary resize-none focus:outline-none focus:border-white/40'
+                            className='w-full min-h-[40px] bg-transparent border-b border-border-default rounded-none px-0 py-1 text-base text-text-primary resize-none focus:outline-none focus:border-text-secondary'
                             rows={Math.min(editText.split('\n').length + 1, 6)}
                           />
                           {(() => {
@@ -535,22 +535,22 @@ function WorkspaceMessageItem({
                               <div className='flex items-center gap-2 justify-end'>
                                 <button
                                   onClick={handleCancelEdit}
-                                  className='p-1 rounded-lg hover:bg-white/10 transition-colors'
+                                  className='p-1 rounded-lg hover:bg-surface-primary transition-colors'
                                   aria-label='Cancel edit'
                                 >
-                                  <X className='w-4 h-4 text-white/60' />
+                                  <X className='w-4 h-4 text-text-muted' />
                                 </button>
                                 <button
                                   onClick={handleConfirmEdit}
-                                  className='p-1 rounded-lg hover:bg-white/10 transition-colors'
+                                  className='p-1 rounded-lg hover:bg-surface-primary transition-colors'
                                   aria-label='Confirm edit'
                                   disabled={!canSubmit}
                                 >
                                   <Check
                                     className={`w-4 h-4 ${
                                       canSubmit
-                                        ? 'text-blue-400'
-                                        : 'text-white/30'
+                                        ? 'text-blue-500 dark:text-blue-400'
+                                        : 'text-text-muted/50'
                                     }`}
                                   />
                                 </button>
