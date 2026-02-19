@@ -1,3 +1,5 @@
+import { TextWithParsedMentions } from '@/components/TextWithParsedMentions';
+
 export const ReplyIndicator = ({
   replyingTo,
   onCancelReply,
@@ -11,7 +13,9 @@ export const ReplyIndicator = ({
         <p className='text-xs text-text-secondary mb-1'>
           Replying to {replyingTo.authorName || 'message'}
         </p>
-        <p className='text-xs text-text-muted truncate'>{replyingTo.text}</p>
+        <p className='text-xs text-text-muted truncate'>
+          <TextWithParsedMentions text={replyingTo.text} />
+        </p>
       </div>
       <button
         onClick={onCancelReply}
