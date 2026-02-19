@@ -1,7 +1,7 @@
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import type { WorkspaceMessage } from '@/types/workspace';
 import { format } from 'date-fns';
-import { User, Reply, AlertCircle } from 'lucide-react';
+import { User, Reply, AlertCircle, Check, X } from 'lucide-react';
 import { useState, useRef, useEffect, useCallback, useMemo, memo } from 'react';
 import { useDrag } from '@use-gesture/react';
 import MessageContextMenu from './MessageContextMenu';
@@ -18,6 +18,7 @@ type Props = {
   message: WorkspaceMessage | OptimisticMessage;
   isOwnMessage: boolean;
   onReply?: (messageId: number) => void;
+  onEdit?: (messageId: number, newText: string) => void;
   onJumpToMessage?: (messageId: number) => void;
   isHighlighted?: boolean;
   workspaceMembers?: WorkspaceMember[];
@@ -40,6 +41,7 @@ function WorkspaceMessageItem({
   message,
   isOwnMessage,
   onReply,
+  onEdit,
   onJumpToMessage,
   isHighlighted = false,
   workspaceMembers = [],
@@ -60,6 +62,19 @@ function WorkspaceMessageItem({
   const openChatMessageDrawer = useGlobalUIStore(
     state => state.openChatMessageDrawer
   );
+  const [isEditing, setIsEditing] = useState(false);
+  const [editText, setEditText] = useState('');
+  const editTextareaRef = useRef<HTMLTextAreaElement>(null);
+
+  // Focus textarea when entering edit mode
+  useEffect(() => {
+    if (isEditing && editTextareaRef.current) {
+      editTextareaRef.current.focus();
+      const len = editTextareaRef.current.value.length;
+      editTextareaRef.current.setSelectionRange(len, len);
+    }
+  }, [isEditing]);
+
   const [contextMenu, setContextMenu] = useState<{
     x: number;
     y: number;
@@ -117,6 +132,40 @@ function WorkspaceMessageItem({
     }
     setContextMenu(null);
   }, [onReply, message.id]);
+
+  const handleStartEdit = useCallback(() => {
+    setEditText(message.text);
+    setIsEditing(true);
+    setContextMenu(null);
+    // Focus is handled by the useEffect watching isEditing
+  }, [message.text]);
+
+  const handleCancelEdit = useCallback(() => {
+    setIsEditing(false);
+    setEditText('');
+  }, []);
+
+  const handleConfirmEdit = useCallback(() => {
+    const trimmed = editText.trim();
+    if (trimmed && trimmed !== message.text && onEdit) {
+      onEdit(message.id, trimmed);
+    }
+    setIsEditing(false);
+    setEditText('');
+  }, [editText, message.text, message.id, onEdit]);
+
+  const handleEditKeyDown = useCallback(
+    (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        handleConfirmEdit();
+      } else if (e.key === 'Escape') {
+        e.preventDefault();
+        handleCancelEdit();
+      }
+    },
+    [handleConfirmEdit, handleCancelEdit]
+  );
 
   const handleReactionClick = useCallback(
     (emoji: string) => {
@@ -468,37 +517,82 @@ function WorkspaceMessageItem({
                   )}
                   {message.text && (
                     <div className='text-sm text-text-primary'>
-                      <div
-                        ref={contentRef}
-                        className={`relative transition-all ${
-                          isOverflowing ? 'overflow-hidden' : ''
-                        }`}
-                        style={{
-                          maxHeight: isOverflowing
-                            ? MAX_COLLAPSED_HEIGHT
-                            : 'none',
-                        }}
-                      >
-                        <TiptapRenderer
-                          content={message.text}
-                          contentType='markdown'
-                          enableMemberMentions
-                          enableNoteMentions
-                          workspaceMembers={workspaceMembers}
-                          workspaceNotes={workspaceNotes}
-                          className='tiptap-message-content'
-                          onNoteMentionClick={handleNoteMentionClick}
-                        />
-                      </div>
+                      {isEditing ? (
+                        <div className='flex flex-col gap-1'>
+                          <textarea
+                            ref={editTextareaRef}
+                            value={editText}
+                            onChange={e => setEditText(e.target.value)}
+                            onKeyDown={handleEditKeyDown}
+                            className='w-full min-h-[40px] bg-transparent border-b border-border-default rounded-none px-0 py-1 text-base text-text-primary resize-none focus:outline-none focus:border-text-secondary'
+                            rows={Math.min(editText.split('\n').length + 1, 6)}
+                          />
+                          {(() => {
+                            const trimmed = editText.trim();
+                            const canSubmit =
+                              !!trimmed && trimmed !== message.text;
+                            return (
+                              <div className='flex items-center gap-2 justify-end'>
+                                <button
+                                  onClick={handleCancelEdit}
+                                  className='p-1 rounded-lg hover:bg-surface-primary transition-colors'
+                                  aria-label='Cancel edit'
+                                >
+                                  <X className='w-4 h-4 text-text-muted' />
+                                </button>
+                                <button
+                                  onClick={handleConfirmEdit}
+                                  className='p-1 rounded-lg hover:bg-surface-primary transition-colors'
+                                  aria-label='Confirm edit'
+                                  disabled={!canSubmit}
+                                >
+                                  <Check
+                                    className={`w-4 h-4 ${
+                                      canSubmit
+                                        ? 'text-blue-500 dark:text-blue-400'
+                                        : 'text-text-muted/50'
+                                    }`}
+                                  />
+                                </button>
+                              </div>
+                            );
+                          })()}
+                        </div>
+                      ) : (
+                        <>
+                          <div
+                            ref={contentRef}
+                            className={`relative transition-all ${
+                              isOverflowing ? 'overflow-hidden' : ''
+                            }`}
+                            style={{
+                              maxHeight: isOverflowing
+                                ? MAX_COLLAPSED_HEIGHT
+                                : 'none',
+                            }}
+                          >
+                            <TiptapRenderer
+                              content={message.text}
+                              contentType='markdown'
+                              enableMemberMentions
+                              enableNoteMentions
+                              workspaceMembers={workspaceMembers}
+                              workspaceNotes={workspaceNotes}
+                              className='tiptap-message-content'
+                              onNoteMentionClick={handleNoteMentionClick}
+                            />
+                          </div>
 
-                      {/* Toggle the thing  */}
-                      {isOverflowing && !isOptimistic && (
-                        <button
-                          onClick={() => openChatMessageDrawer(message)}
-                          className='mt-1 text-xs text-blue-600 dark:text-blue-400 hover:underline'
-                        >
-                          See All
-                        </button>
+                          {/* Toggle the thing  */}
+                          {isOverflowing && !isOptimistic && (
+                            <button
+                              onClick={() => openChatMessageDrawer(message)}
+                              className='mt-1 text-xs text-blue-600 dark:text-blue-400 hover:underline'
+                            >
+                              See All
+                            </button>
+                          )}
+                        </>
                       )}
                     </div>
                   )}
@@ -526,12 +620,14 @@ function WorkspaceMessageItem({
           <MessageContextMenu
             messageText={message.text}
             onReply={handleReply}
+            onEdit={onEdit ? handleStartEdit : undefined}
             onReact={() => {
               setContextMenu(null);
               handleAddReaction();
             }}
             onClose={() => setContextMenu(null)}
             position={contextMenu}
+            isOwnMessage={isOwnMessage}
           />
         )}
         {reactionPicker && (
@@ -676,6 +772,7 @@ function WorkspaceMessageItem({
           }}
           onClose={() => setContextMenu(null)}
           position={contextMenu}
+          isOwnMessage={isOwnMessage}
         />
       )}
       {reactionPicker && (
