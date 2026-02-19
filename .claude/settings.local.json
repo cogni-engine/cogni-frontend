@@ -20,7 +20,8 @@
       "WebFetch(domain:raw.githubusercontent.com)",
       "Bash(gh api:*)",
       "WebFetch(domain:github.com)",
-      "Bash(grep:*)"
+      "Bash(grep:*)",
+      "Bash(npx next build:*)"
     ]
   }
 }

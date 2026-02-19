@@ -4,10 +4,9 @@ import { format } from 'date-fns';
 import { User, Reply, AlertCircle, Check, X } from 'lucide-react';
 import { useState, useRef, useEffect, useCallback, useMemo, memo } from 'react';
 import { useDrag } from '@use-gesture/react';
-import MessageContextMenu from './MessageContextMenu';
+import MessageContextMenuOverlay from './MessageContextMenuOverlay';
 import MessageFiles from './MessageFiles';
 import ReactionDisplay from './ReactionDisplay';
-import ReactionPicker from './ReactionPicker';
 import { TiptapRenderer } from '@/components/tiptap/TiptapRenderer';
 import type { WorkspaceMember } from '@/types/workspace';
 import type { Note } from '@/types/note';
@@ -76,14 +75,10 @@ function WorkspaceMessageItem({
     }
   }, [isEditing]);
 
-  const [contextMenu, setContextMenu] = useState<{
-    x: number;
-    y: number;
-  } | null>(null);
-  const [reactionPicker, setReactionPicker] = useState<{
-    x: number;
-    y: number;
-  } | null>(null);
+  const openUserProfileDrawer = useGlobalUIStore(
+    state => state.openUserProfileDrawer
+  );
+  const [contextMenuRect, setContextMenuRect] = useState<DOMRect | null>(null);
   const [swipeOffset, setSwipeOffset] = useState(0);
   const [showSwipeIndicator, setShowSwipeIndicator] = useState(false);
   const messageRef = useRef<HTMLDivElement>(null);
@@ -107,7 +102,7 @@ function WorkspaceMessageItem({
 
   // Close context menu on scroll
   useEffect(() => {
-    const handleScroll = () => setContextMenu(null);
+    const handleScroll = () => setContextMenuRect(null);
     window.addEventListener('scroll', handleScroll, true);
     return () => window.removeEventListener('scroll', handleScroll, true);
   }, []);
@@ -121,23 +116,28 @@ function WorkspaceMessageItem({
     };
   }, []);
 
-  // Handle right-click (desktop)
+  // Handle right-click (desktop) — capture bubble DOMRect
   const handleContextMenu = (e: React.MouseEvent) => {
     e.preventDefault();
-    setContextMenu({ x: e.clientX, y: e.clientY });
+    const bubble = (e.currentTarget as HTMLElement).querySelector<HTMLElement>(
+      '[data-message-bubble]'
+    );
+    if (bubble) {
+      setContextMenuRect(bubble.getBoundingClientRect());
+    }
   };
 
   const handleReply = useCallback(() => {
     if (onReply) {
       onReply(message.id);
     }
-    setContextMenu(null);
+    setContextMenuRect(null);
   }, [onReply, message.id]);
 
   const handleStartEdit = useCallback(() => {
     setEditText(message.text);
     setIsEditing(true);
-    setContextMenu(null);
+    setContextMenuRect(null);
     // Focus is handled by the useEffect watching isEditing
   }, [message.text]);
 
@@ -190,20 +190,9 @@ function WorkspaceMessageItem({
     ]
   );
 
-  const handleAddReaction = useCallback(() => {
-    const rect = messageRef.current?.getBoundingClientRect();
-    if (rect) {
-      setReactionPicker({
-        x: Math.min(rect.left, window.innerWidth - 200),
-        y: rect.top - 180,
-      });
-    }
-  }, []);
-
-  const handleReactionPickerSelect = useCallback(
+  const handleOverlayAddReaction = useCallback(
     (emoji: string) => {
       onAddReaction?.(message.id, emoji);
-      setReactionPicker(null);
     },
     [message.id, onAddReaction]
   );
@@ -225,9 +214,11 @@ function WorkspaceMessageItem({
   const scheduleLongPress = useCallback(() => {
     cancelLongPress();
     longPressTimer.current = setTimeout(() => {
-      const start = pointerStartRef.current;
-      if (start) {
-        setContextMenu({ x: start.x, y: start.y });
+      const bubble = messageRef.current?.querySelector<HTMLElement>(
+        '[data-message-bubble]'
+      );
+      if (bubble) {
+        setContextMenuRect(bubble.getBoundingClientRect());
       }
     }, 500);
   }, [cancelLongPress]);
@@ -493,139 +484,141 @@ function WorkspaceMessageItem({
               </div>
             )}
             <div className='flex flex-col gap-2 items-end'>
-              {(message.text || message.replied_message) && (
-                <div
-                  className={`inline-block max-w-[75vw] dark:backdrop-blur-xl border rounded-3xl px-4 py-2.5 shadow-card ${
-                    isFailed
-                      ? 'bg-red-500/20 border-red-500/30'
-                      : 'bg-surface-secondary border-border-default'
-                  }`}
-                >
-                  {message.replied_message && (
-                    <RepliedMessagePreview
-                      repliedMessage={message.replied_message}
-                    />
-                  )}
-                  {message.text && (
-                    <div className='text-sm text-text-primary'>
-                      {isEditing ? (
-                        <div className='flex flex-col gap-1'>
-                          <textarea
-                            ref={editTextareaRef}
-                            value={editText}
-                            onChange={e => setEditText(e.target.value)}
-                            onKeyDown={handleEditKeyDown}
-                            className='w-full min-h-[40px] bg-transparent border-b border-border-default rounded-none px-0 py-1 text-base text-text-primary resize-none focus:outline-none focus:border-text-secondary'
-                            rows={Math.min(editText.split('\n').length + 1, 6)}
-                          />
-                          {(() => {
-                            const trimmed = editText.trim();
-                            const canSubmit =
-                              !!trimmed && trimmed !== message.text;
-                            return (
-                              <div className='flex items-center gap-2 justify-end'>
-                                <button
-                                  onClick={handleCancelEdit}
-                                  className='p-1 rounded-lg hover:bg-surface-primary transition-colors'
-                                  aria-label='Cancel edit'
-                                >
-                                  <X className='w-4 h-4 text-text-muted' />
-                                </button>
-                                <button
-                                  onClick={handleConfirmEdit}
-                                  className='p-1 rounded-lg hover:bg-surface-primary transition-colors'
-                                  aria-label='Confirm edit'
-                                  disabled={!canSubmit}
-                                >
-                                  <Check
-                                    className={`w-4 h-4 ${
-                                      canSubmit
-                                        ? 'text-blue-500 dark:text-blue-400'
-                                        : 'text-text-muted/50'
-                                    }`}
-                                  />
-                                </button>
-                              </div>
-                            );
-                          })()}
-                        </div>
-                      ) : (
-                        <>
-                          <div
-                            ref={contentRef}
-                            className={`relative transition-all ${
-                              isOverflowing ? 'overflow-hidden' : ''
-                            }`}
-                            style={{
-                              maxHeight: isOverflowing
-                                ? MAX_COLLAPSED_HEIGHT
-                                : 'none',
-                            }}
-                          >
-                            <TiptapRenderer
-                              content={message.text}
-                              contentType='markdown'
-                              enableMemberMentions
-                              enableNoteMentions
-                              workspaceMembers={workspaceMembers}
-                              workspaceNotes={workspaceNotes}
-                              className='tiptap-message-content'
-                              onNoteMentionClick={handleNoteMentionClick}
+              <div
+                className={`relative ${!isOptimistic && message.reactions && message.reactions.length > 0 ? 'mb-2.5' : ''}`}
+              >
+                {(message.text || message.replied_message) && (
+                  <div
+                    data-message-bubble
+                    className={`inline-block max-w-[75vw] dark:backdrop-blur-xl border rounded-3xl px-4 py-2.5 shadow-card ${
+                      isFailed
+                        ? 'bg-red-500/20 border-red-500/30'
+                        : 'bg-surface-secondary border-border-default'
+                    }`}
+                  >
+                    {message.replied_message && (
+                      <RepliedMessagePreview
+                        repliedMessage={message.replied_message}
+                      />
+                    )}
+                    {message.text && (
+                      <div className='text-sm text-text-primary'>
+                        {isEditing ? (
+                          <div className='flex flex-col gap-1'>
+                            <textarea
+                              ref={editTextareaRef}
+                              value={editText}
+                              onChange={e => setEditText(e.target.value)}
+                              onKeyDown={handleEditKeyDown}
+                              className='w-full min-h-[40px] bg-transparent border-b border-border-default rounded-none px-0 py-1 text-base text-text-primary resize-none focus:outline-none focus:border-text-secondary'
+                              rows={Math.min(
+                                editText.split('\n').length + 1,
+                                6
+                              )}
                             />
+                            {(() => {
+                              const trimmed = editText.trim();
+                              const canSubmit =
+                                !!trimmed && trimmed !== message.text;
+                              return (
+                                <div className='flex items-center gap-2 justify-end'>
+                                  <button
+                                    onClick={handleCancelEdit}
+                                    className='p-1 rounded-lg hover:bg-surface-primary transition-colors'
+                                    aria-label='Cancel edit'
+                                  >
+                                    <X className='w-4 h-4 text-text-muted' />
+                                  </button>
+                                  <button
+                                    onClick={handleConfirmEdit}
+                                    className='p-1 rounded-lg hover:bg-surface-primary transition-colors'
+                                    aria-label='Confirm edit'
+                                    disabled={!canSubmit}
+                                  >
+                                    <Check
+                                      className={`w-4 h-4 ${
+                                        canSubmit
+                                          ? 'text-blue-500 dark:text-blue-400'
+                                          : 'text-text-muted/50'
+                                      }`}
+                                    />
+                                  </button>
+                                </div>
+                              );
+                            })()}
                           </div>
-
-                          {/* Toggle the thing  */}
-                          {isOverflowing && !isOptimistic && (
-                            <button
-                              onClick={() => openChatMessageDrawer(message)}
-                              className='mt-1 text-xs text-blue-600 dark:text-blue-400 hover:underline'
+                        ) : (
+                          <>
+                            <div
+                              ref={contentRef}
+                              className={`relative transition-all ${
+                                isOverflowing ? 'overflow-hidden' : ''
+                              }`}
+                              style={{
+                                maxHeight: isOverflowing
+                                  ? MAX_COLLAPSED_HEIGHT
+                                  : 'none',
+                              }}
                             >
-                              See All
-                            </button>
-                          )}
-                        </>
-                      )}
+                              <TiptapRenderer
+                                content={message.text}
+                                contentType='markdown'
+                                enableMemberMentions
+                                enableNoteMentions
+                                workspaceMembers={workspaceMembers}
+                                workspaceNotes={workspaceNotes}
+                                className='tiptap-message-content'
+                                onNoteMentionClick={handleNoteMentionClick}
+                              />
+                            </div>
+
+                            {/* Toggle the thing  */}
+                            {isOverflowing && !isOptimistic && (
+                              <button
+                                onClick={() => openChatMessageDrawer(message)}
+                                className='mt-1 text-xs text-blue-600 dark:text-blue-400 hover:underline'
+                              >
+                                See All
+                              </button>
+                            )}
+                          </>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )}
+                {!isOptimistic &&
+                  message.reactions &&
+                  message.reactions.length > 0 &&
+                  currentMemberId != null && (
+                    <div className='absolute -bottom-3 right-2'>
+                      <ReactionDisplay
+                        reactions={message.reactions ?? []}
+                        currentMemberId={currentMemberId}
+                        onReactionClick={handleReactionClick}
+                      />
                     </div>
                   )}
-                </div>
-              )}
+              </div>
               {message.files && message.files.length > 0 && (
                 <MessageFiles files={message.files} />
               )}
-              {!isOptimistic &&
-                message.reactions &&
-                message.reactions.length > 0 &&
-                currentMemberId != null && (
-                  <div className='mt-1'>
-                    <ReactionDisplay
-                      reactions={message.reactions ?? []}
-                      currentMemberId={currentMemberId}
-                      onReactionClick={handleReactionClick}
-                    />
-                  </div>
-                )}
             </div>
           </div>
         </div>
-        {contextMenu && (
-          <MessageContextMenu
+        {contextMenuRect && (
+          <MessageContextMenuOverlay
             messageText={message.text}
+            messageRect={contextMenuRect}
+            isOwnMessage={isOwnMessage}
             onReply={handleReply}
             onEdit={onEdit ? handleStartEdit : undefined}
-            onReact={() => {
-              setContextMenu(null);
-              handleAddReaction();
-            }}
-            onClose={() => setContextMenu(null)}
-            position={contextMenu}
-            isOwnMessage={isOwnMessage}
-          />
-        )}
-        {reactionPicker && (
-          <ReactionPicker
-            onSelect={handleReactionPickerSelect}
-            onClose={() => setReactionPicker(null)}
-            position={reactionPicker}
+            onAddReaction={handleOverlayAddReaction}
+            onClose={() => setContextMenuRect(null)}
+            workspaceMembers={workspaceMembers}
+            workspaceNotes={workspaceNotes}
+            reactions={message.reactions}
+            currentMemberId={currentMemberId}
           />
         )}
       </>
@@ -663,7 +656,23 @@ function WorkspaceMessageItem({
           }}
         >
           {showAvatar ? (
-            <Avatar className='h-8 w-8 border border-border-subtle bg-interactive-hover text-xs font-medium'>
+            <Avatar
+              className='h-8 w-8 border border-white/15 bg-white/10 text-xs font-medium cursor-pointer'
+              onClick={e => {
+                e.stopPropagation();
+                const member = message.workspace_member;
+                if (!member?.user_id || member.agent_id) return;
+                const memberRole = workspaceMembers.find(
+                  m => m.user_id === member.user_id
+                )?.role;
+                openUserProfileDrawer({
+                  userId: member.user_id,
+                  name: name,
+                  avatarUrl: avatarUrl,
+                  role: memberRole,
+                });
+              }}
+            >
               {avatarUrl ? (
                 <AvatarImage src={avatarUrl} alt={name} />
               ) : (
@@ -686,64 +695,71 @@ function WorkspaceMessageItem({
           {showAvatar && <p className='text-xs text-text-muted mb-1'>{name}</p>}
           <div className='flex items-end'>
             <div className='flex flex-col gap-2 min-w-0'>
-              {(message.text || message.replied_message) && (
-                <div className='inline-block max-w-[75vw] bg-surface-secondary dark:backdrop-blur-xl border border-border-default rounded-3xl px-4 py-2.5 shadow-card'>
-                  {message.replied_message && (
-                    <RepliedMessagePreview
-                      repliedMessage={message.replied_message}
-                    />
-                  )}
-                  {message.text && (
-                    <div className='text-sm text-text-primary'>
-                      <div
-                        ref={contentRef}
-                        className={`relative transition-all ${
-                          isOverflowing ? 'overflow-hidden' : ''
-                        }`}
-                        style={{
-                          maxHeight: isOverflowing
-                            ? MAX_COLLAPSED_HEIGHT
-                            : 'none',
-                        }}
-                      >
-                        <TiptapRenderer
-                          content={message.text}
-                          contentType='markdown'
-                          enableMemberMentions
-                          enableNoteMentions
-                          workspaceMembers={workspaceMembers}
-                          workspaceNotes={workspaceNotes}
-                          className='tiptap-message-content'
-                          onNoteMentionClick={handleNoteMentionClick}
-                        />
-                      </div>
-
-                      {/* Toggle */}
-                      {isOverflowing && (
-                        <button
-                          onClick={() => openChatMessageDrawer(message)}
-                          className='mt-1 text-xs text-blue-600 dark:text-blue-400 hover:underline'
+              <div
+                className={`relative inline-block ${(message.reactions?.length ?? 0) > 0 ? 'mb-2.5' : ''}`}
+              >
+                {(message.text || message.replied_message) && (
+                  <div
+                    data-message-bubble
+                    className='inline-block max-w-[75vw] bg-surface-secondary dark:backdrop-blur-xl border border-border-default rounded-3xl px-4 py-2.5 shadow-card'
+                  >
+                    {message.replied_message && (
+                      <RepliedMessagePreview
+                        repliedMessage={message.replied_message}
+                      />
+                    )}
+                    {message.text && (
+                      <div className='text-sm text-text-primary'>
+                        <div
+                          ref={contentRef}
+                          className={`relative transition-all ${
+                            isOverflowing ? 'overflow-hidden' : ''
+                          }`}
+                          style={{
+                            maxHeight: isOverflowing
+                              ? MAX_COLLAPSED_HEIGHT
+                              : 'none',
+                          }}
                         >
-                          See All
-                        </button>
-                      )}
+                          <TiptapRenderer
+                            content={message.text}
+                            contentType='markdown'
+                            enableMemberMentions
+                            enableNoteMentions
+                            workspaceMembers={workspaceMembers}
+                            workspaceNotes={workspaceNotes}
+                            className='tiptap-message-content'
+                            onNoteMentionClick={handleNoteMentionClick}
+                          />
+                        </div>
+
+                        {/* Toggle */}
+                        {isOverflowing && (
+                          <button
+                            onClick={() => openChatMessageDrawer(message)}
+                            className='mt-1 text-xs text-blue-600 dark:text-blue-400 hover:underline'
+                          >
+                            See All
+                          </button>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )}
+                {(message.reactions?.length ?? 0) > 0 &&
+                  currentMemberId != null && (
+                    <div className='absolute -bottom-3 right-2'>
+                      <ReactionDisplay
+                        reactions={message.reactions ?? []}
+                        currentMemberId={currentMemberId}
+                        onReactionClick={handleReactionClick}
+                      />
                     </div>
                   )}
-                </div>
-              )}
+              </div>
               {message.files && message.files.length > 0 && (
                 <MessageFiles files={message.files} align='left' />
               )}
-              {(message.reactions?.length ?? 0) > 0 &&
-                currentMemberId != null && (
-                  <div className='mt-1'>
-                    <ReactionDisplay
-                      reactions={message.reactions ?? []}
-                      currentMemberId={currentMemberId}
-                      onReactionClick={handleReactionClick}
-                    />
-                  </div>
-                )}
             </div>
             {showTimestamp && (
               <p className='text-xs text-text-muted mt-1'>
@@ -753,24 +769,18 @@ function WorkspaceMessageItem({
           </div>
         </div>
       </div>
-      {contextMenu && (
-        <MessageContextMenu
+      {contextMenuRect && (
+        <MessageContextMenuOverlay
           messageText={message.text}
-          onReply={handleReply}
-          onReact={() => {
-            setContextMenu(null);
-            handleAddReaction();
-          }}
-          onClose={() => setContextMenu(null)}
-          position={contextMenu}
+          messageRect={contextMenuRect}
           isOwnMessage={isOwnMessage}
-        />
-      )}
-      {reactionPicker && (
-        <ReactionPicker
-          onSelect={handleReactionPickerSelect}
-          onClose={() => setReactionPicker(null)}
-          position={reactionPicker}
+          onReply={handleReply}
+          onAddReaction={handleOverlayAddReaction}
+          onClose={() => setContextMenuRect(null)}
+          workspaceMembers={workspaceMembers}
+          workspaceNotes={workspaceNotes}
+          reactions={message.reactions}
+          currentMemberId={currentMemberId}
         />
       )}
     </>

@@ -2,7 +2,6 @@
 
 import { useState, useCallback, useEffect, useRef } from 'react';
 import {
-  ChevronsRight,
   Check,
   X,
   Share2,
@@ -23,8 +22,7 @@ import {
 import GlassButton from '@/components/glass-design/GlassButton';
 import {
   type AINotification,
-  completeNotification,
-  postponeNotification,
+  reactToNotification,
 } from '@/features/notifications/api/aiNotificationsApi';
 import { AIMessageView } from '@/features/cogno/components/AIMessageView';
 import { getNote } from '@/features/notes/api/notesApi';
@@ -49,9 +47,9 @@ export default function NotificationProcessDrawer({
   isLoading = false,
 }: NotificationProcessDrawerProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [drawerMode, setDrawerMode] = useState<
-    'notification' | 'choices' | 'custom-input'
-  >('notification');
+  const [drawerMode, setDrawerMode] = useState<'notification' | 'custom-input'>(
+    'notification'
+  );
   const [noteText, setNoteText] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
   const [showFullScreenResult, setShowFullScreenResult] = useState(false);
@@ -140,21 +138,13 @@ export default function NotificationProcessDrawer({
     [onNotificationProcessed]
   );
 
-  const handleComplete = useCallback(async () => {
-    if (!currentNotification || isProcessing) return;
-    setIsProcessing(true);
-    await processNotificationWithFade(async () => {
-      await completeNotification(currentNotification.id);
-    });
-  }, [currentNotification, isProcessing, processNotificationWithFade]);
-
   const handleReactWithChoice = useCallback(
     async (choice: string) => {
       if (!currentNotification || isProcessing) return;
       setIsProcessing(true);
       setSelectedChoice(choice);
       await processNotificationWithFade(async () => {
-        await postponeNotification(currentNotification.id, choice);
+        await reactToNotification(currentNotification.id, choice);
       });
       setSelectedChoice(null);
     },
@@ -167,17 +157,6 @@ export default function NotificationProcessDrawer({
       textareaRef.current?.focus();
     }, 350);
   }, []);
-
-  const handleSkip = useCallback(() => {
-    if (hasReactionChoices) {
-      setDrawerMode('choices');
-    } else {
-      setDrawerMode('custom-input');
-      setTimeout(() => {
-        textareaRef.current?.focus();
-      }, 350);
-    }
-  }, [hasReactionChoices]);
 
   const maxRows = 10;
   const adjustTextareaHeight = useCallback((el: HTMLTextAreaElement | null) => {
@@ -230,13 +209,13 @@ export default function NotificationProcessDrawer({
     await new Promise(resolve => setTimeout(resolve, FADE_ANIMATION_DURATION));
 
     try {
-      await postponeNotification(currentNotification.id, noteText || '');
+      await reactToNotification(currentNotification.id, noteText || '');
       setNoteText('');
       resetTextareaHeight();
       setDrawerMode('notification');
       await onNotificationProcessed?.();
     } catch (error) {
-      console.error('Failed to postpone notification:', error);
+      console.error('Failed to react to notification:', error);
     } finally {
       setIsProcessing(false);
       setIsSlideOut(false);
@@ -250,16 +229,6 @@ export default function NotificationProcessDrawer({
   ]);
 
   const handleNoteCancel = useCallback(() => {
-    if (hasReactionChoices) {
-      setDrawerMode('choices');
-    } else {
-      setDrawerMode('notification');
-    }
-    setNoteText('');
-    resetTextareaHeight();
-  }, [resetTextareaHeight, hasReactionChoices]);
-
-  const handleBackToNotification = useCallback(() => {
     setDrawerMode('notification');
     setNoteText('');
     resetTextareaHeight();
@@ -323,9 +292,8 @@ export default function NotificationProcessDrawer({
     [onOpenChange, resetTextareaHeight]
   );
 
-  // Determine which slide to show (3 panels: notification, choices, custom-input)
-  const slideIndex =
-    drawerMode === 'notification' ? 0 : drawerMode === 'choices' ? 1 : 2;
+  // Determine which slide to show (2 panels: notification, custom-input)
+  const slideIndex = drawerMode === 'notification' ? 0 : 1;
 
   return (
     <>
@@ -361,14 +329,14 @@ export default function NotificationProcessDrawer({
             <div
               className='flex transition-transform duration-200 ease-out'
               style={{
-                width: '300%',
-                transform: `translateX(-${(slideIndex * 100) / 3}%)`,
+                width: '200%',
+                transform: `translateX(-${slideIndex * 50}%)`,
               }}
             >
-              {/* Panel 1: Notification Content */}
+              {/* Panel 1: Notification Content + Inline Reaction Choices */}
               <div
                 className={cn(
-                  'w-1/3 flex-shrink-0 px-6 py-4 transition-opacity duration-150',
+                  'w-1/2 shrink-0 px-6 py-4 transition-opacity duration-150',
                   isSlideOut && 'opacity-0'
                 )}
               >
@@ -419,6 +387,60 @@ export default function NotificationProcessDrawer({
                       </p>
                     )}
 
+                    {/* Inline Reaction Choices */}
+                    {hasReactionChoices && (
+                      <div className='space-y-2 pt-2'>
+                        {currentNotification.reaction_choices!.map(
+                          (choice, index) => (
+                            <button
+                              key={index}
+                              onClick={() => handleReactWithChoice(choice)}
+                              disabled={isProcessing}
+                              className={cn(
+                                'w-full px-5 py-3.5 rounded-2xl text-left',
+                                'border border-border-default bg-surface-primary',
+                                'hover:bg-surface-secondary hover:border-border-default',
+                                'active:scale-[0.98]',
+                                'transition-all duration-200',
+                                'text-sm text-text-primary',
+                                selectedChoice === choice &&
+                                  'bg-interactive-hover border-border-default',
+                                isProcessing && 'opacity-50 pointer-events-none'
+                              )}
+                            >
+                              {isProcessing && selectedChoice === choice ? (
+                                <span className='flex items-center gap-2'>
+                                  <Loader2 className='w-4 h-4 animate-spin' />
+                                  {choice}
+                                </span>
+                              ) : (
+                                choice
+                              )}
+                            </button>
+                          )
+                        )}
+
+                        {/* Other - custom input option */}
+                        <button
+                          onClick={handleShowCustomInput}
+                          disabled={isProcessing}
+                          className={cn(
+                            'w-full px-5 py-3.5 rounded-2xl text-left',
+                            'border border-dashed border-border-default bg-transparent',
+                            'hover:bg-surface-primary hover:border-border-default',
+                            'active:scale-[0.98]',
+                            'transition-all duration-200',
+                            'text-sm text-text-muted',
+                            'flex items-center gap-2',
+                            isProcessing && 'opacity-50 pointer-events-none'
+                          )}
+                        >
+                          <MessageSquare className='w-4 h-4' />
+                          <span>Other...</span>
+                        </button>
+                      </div>
+                    )}
+
                     {/* Note Section - Collapsible */}
                     {currentNotification.note && (
                       <div>
@@ -465,74 +487,10 @@ export default function NotificationProcessDrawer({
                 ) : null}
               </div>
 
-              {/* Panel 2: Reaction Choices */}
+              {/* Panel 2: Custom Text Input */}
               <div
                 className={cn(
-                  'w-1/3 flex-shrink-0 px-6 py-4 transition-opacity duration-150',
-                  isSlideOut && 'opacity-0'
-                )}
-              >
-                {hasReactionChoices && (
-                  <div className='space-y-3'>
-                    <p className='text-sm text-text-muted mb-4'>
-                      How would you like to respond?
-                    </p>
-                    {currentNotification.reaction_choices!.map(
-                      (choice, index) => (
-                        <button
-                          key={index}
-                          onClick={() => handleReactWithChoice(choice)}
-                          disabled={isProcessing}
-                          className={cn(
-                            'w-full px-5 py-3.5 rounded-2xl text-left',
-                            'border border-border-default bg-surface-primary',
-                            'hover:bg-surface-secondary hover:border-border-default',
-                            'active:scale-[0.98]',
-                            'transition-all duration-200',
-                            'text-sm text-text-primary',
-                            selectedChoice === choice &&
-                              'bg-interactive-hover border-border-default',
-                            isProcessing && 'opacity-50 pointer-events-none'
-                          )}
-                        >
-                          {isProcessing && selectedChoice === choice ? (
-                            <span className='flex items-center gap-2'>
-                              <Loader2 className='w-4 h-4 animate-spin' />
-                              {choice}
-                            </span>
-                          ) : (
-                            choice
-                          )}
-                        </button>
-                      )
-                    )}
-
-                    {/* Custom input option */}
-                    <button
-                      onClick={handleShowCustomInput}
-                      disabled={isProcessing}
-                      className={cn(
-                        'w-full px-5 py-3.5 rounded-2xl text-left',
-                        'border border-dashed border-border-default bg-transparent',
-                        'hover:bg-surface-primary hover:border-border-default',
-                        'active:scale-[0.98]',
-                        'transition-all duration-200',
-                        'text-sm text-text-muted',
-                        'flex items-center gap-2',
-                        isProcessing && 'opacity-50 pointer-events-none'
-                      )}
-                    >
-                      <MessageSquare className='w-4 h-4' />
-                      <span>Write your own response...</span>
-                    </button>
-                  </div>
-                )}
-              </div>
-
-              {/* Panel 3: Custom Text Input */}
-              <div
-                className={cn(
-                  'w-1/3 flex-shrink-0 px-6 py-4 transition-opacity duration-150',
+                  'w-1/2 shrink-0 px-6 py-4 transition-opacity duration-150',
                   isSlideOut && 'opacity-0'
                 )}
               >
@@ -558,59 +516,20 @@ export default function NotificationProcessDrawer({
           </DrawerBody>
 
           {notifications.length > 0 && (
-            <DrawerFooter className='sticky bottom-0 bg-dialog-overlay dark:backdrop-blur-md z-10'>
+            <DrawerFooter className='sticky bottom-0 z-10'>
               {drawerMode === 'notification' ? (
-                <div className='flex gap-3 w-full'>
-                  <GlassButton
-                    onClick={handleSkip}
-                    className='h-12 px-4 flex items-center justify-center gap-2'
-                    disabled={isProcessing}
-                  >
-                    <ChevronsRight className='w-5 h-5' />
-                    <span>Skip</span>
-                  </GlassButton>
-
-                  <GlassButton
-                    onClick={handleComplete}
-                    className='flex-1 h-12 flex items-center justify-center gap-2'
-                    disabled={isProcessing}
-                  >
-                    {isProcessing ? (
-                      <Loader2 className='w-5 h-5 animate-spin' />
-                    ) : (
-                      <>
-                        <Check className='w-5 h-5' />
-                        <span>Complete</span>
-                      </>
-                    )}
-                  </GlassButton>
-                </div>
-              ) : drawerMode === 'choices' ? (
-                <div className='flex gap-3 w-full'>
-                  <GlassButton
-                    onClick={handleBackToNotification}
-                    size='icon'
-                    className='size-12'
-                    disabled={isProcessing}
-                  >
-                    <X className='w-5 h-5' />
-                  </GlassButton>
-
-                  <GlassButton
-                    onClick={handleComplete}
-                    className='flex-1 h-12 flex items-center justify-center gap-2'
-                    disabled={isProcessing}
-                  >
-                    {isProcessing && !selectedChoice ? (
-                      <Loader2 className='w-5 h-5 animate-spin' />
-                    ) : (
-                      <>
-                        <Check className='w-5 h-5' />
-                        <span>Complete</span>
-                      </>
-                    )}
-                  </GlassButton>
-                </div>
+                !hasReactionChoices && (
+                  <div className='flex gap-3 w-full'>
+                    <GlassButton
+                      onClick={handleShowCustomInput}
+                      className='flex-1 h-12 flex items-center justify-center gap-2'
+                      disabled={isProcessing}
+                    >
+                      <MessageSquare className='w-5 h-5' />
+                      <span>Reply</span>
+                    </GlassButton>
+                  </div>
+                )
               ) : (
                 <div className='flex gap-3 w-full'>
                   <GlassButton

@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/browserClient';
 
 const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL || 'http://0.0.0.0:8000';
+  process.env.NEXT_PUBLIC_COGNO_CORE_URL || 'http://localhost:8001';
 
 const supabase = createClient();
 
@@ -36,14 +36,8 @@ export interface AINotification {
   } | null;
 }
 
-export interface CompleteNotificationResponse {
-  completed_notification_id: number;
-  resolved_notification_ids: number[];
-  message: string;
-}
-
-export interface PostponeNotificationResponse {
-  postponed_notification_id: number;
+export interface ReactNotificationResponse {
+  reacted_notification_id: number;
   resolved_notification_ids: number[];
   message: string;
 }
@@ -108,50 +102,12 @@ export async function getPastDueNotifications(): Promise<AINotification[]> {
 }
 
 /**
- * Complete a notification and resolve all previous notifications from the same task
+ * React to a notification and resolve all previous notifications from the same task
  */
-export async function completeNotification(
-  notificationId: number
-): Promise<CompleteNotificationResponse> {
-  // Get the current session to access the JWT token
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
-
-  if (!session) {
-    throw new Error('Not authenticated');
-  }
-
-  const response = await fetch(
-    `${API_BASE_URL}/api/ai-notifications/${notificationId}/complete`,
-    {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${session.access_token}`,
-        'Content-Type': 'application/json',
-      },
-    }
-  );
-
-  if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(
-      `Failed to complete notification: ${response.status} - ${errorText}`
-    );
-  }
-
-  const data = await response.json();
-  return data;
-}
-
-/**
- * Postpone a notification with user's reaction text and resolve all previous notifications from the same task
- */
-export async function postponeNotification(
+export async function reactToNotification(
   notificationId: number,
   reactionText: string
-): Promise<PostponeNotificationResponse> {
-  // Get the current session to access the JWT token
+): Promise<ReactNotificationResponse> {
   const {
     data: { session },
   } = await supabase.auth.getSession();
@@ -161,7 +117,7 @@ export async function postponeNotification(
   }
 
   const response = await fetch(
-    `${API_BASE_URL}/api/ai-notifications/${notificationId}/postpone`,
+    `${API_BASE_URL}/api/ai-notifications/${notificationId}/react`,
     {
       method: 'POST',
       headers: {
@@ -177,7 +133,7 @@ export async function postponeNotification(
   if (!response.ok) {
     const errorText = await response.text();
     throw new Error(
-      `Failed to postpone notification: ${response.status} - ${errorText}`
+      `Failed to react to notification: ${response.status} - ${errorText}`
     );
   }
 
