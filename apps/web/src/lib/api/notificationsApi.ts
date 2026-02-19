@@ -10,18 +10,29 @@ const supabase = createClient();
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
 /**
- * Count unread notifications (scheduled and past due date)
+ * Count unread notifications (past due, not resolved, not reacted)
  */
 export async function getUnreadNotificationCount(
   userId: string
 ): Promise<number> {
+  const { data: members, error: memberError } = await supabase
+    .from('workspace_member')
+    .select('id')
+    .eq('user_id', userId)
+    .is('removed_at', null);
+
+  if (memberError) throw memberError;
+  if (!members || members.length === 0) return 0;
+
+  const memberIds = members.map(m => m.id);
   const now = new Date().toISOString();
 
   const { data, error } = await supabase
     .from('ai_notifications')
     .select('id')
-    .eq('user_id', userId)
-    .eq('status', 'scheduled')
+    .in('workspace_member_id', memberIds)
+    .neq('status', 'resolved')
+    .is('reaction_text', null)
     .lt('due_date', now);
 
   if (error) throw error;

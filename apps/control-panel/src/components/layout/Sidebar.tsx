@@ -2,11 +2,12 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Database, Radio } from 'lucide-react';
+import { Database, Radio, GitBranch } from 'lucide-react';
 
 const navItems = [
   { href: '/tables', label: 'Tables', icon: Database },
   { href: '/realtime', label: 'Realtime', icon: Radio },
+  { href: '/pipeline', label: 'Pipeline', icon: GitBranch },
 ];
 
 export function Sidebar() {
