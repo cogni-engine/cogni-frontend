@@ -6,6 +6,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { TiptapRenderer } from '@/components/tiptap/TiptapRenderer';
 import type { WorkspaceMessage, WorkspaceMember } from '@/types/workspace';
 import type { Note } from '@/types/note';
+import { TextWithParsedMentions } from '@/components/TextWithParsedMentions';
 import {
   useChatMessageDrawer,
   useGlobalUIStore,
@@ -65,10 +66,6 @@ export default function ChatMessageDrawer({
   }) => {
     const repliedProfile = repliedMessage.workspace_member?.user_profile;
     const repliedName = repliedProfile?.name ?? 'Unknown';
-    const repliedText =
-      repliedMessage.text.slice(0, 100) +
-      (repliedMessage.text.length > 100 ? '...' : '');
-
     return (
       <div className='mb-4 p-3 bg-surface-primary border border-border-default rounded-lg'>
         <div className='flex items-start gap-2'>
@@ -86,15 +83,9 @@ export default function ChatMessageDrawer({
               Replying to {repliedName}
             </p>
             <div className='text-xs text-text-muted'>
-              <TiptapRenderer
-                content={repliedText}
-                contentType='markdown'
-                enableMemberMentions
-                enableNoteMentions
-                workspaceMembers={workspaceMembers}
-                workspaceNotes={workspaceNotes}
-                className='tiptap-reply-preview'
-                onNoteMentionClick={openNoteDrawer}
+              <TextWithParsedMentions
+                text={repliedMessage.text}
+                maxLength={100}
               />
             </div>
           </div>

@@ -11,6 +11,7 @@ import ReactionPicker from './ReactionPicker';
 import { TiptapRenderer } from '@/components/tiptap/TiptapRenderer';
 import type { WorkspaceMember } from '@/types/workspace';
 import type { Note } from '@/types/note';
+import { TextWithParsedMentions } from '@/components/TextWithParsedMentions';
 import { useGlobalUIStore } from '@/stores/useGlobalUIStore';
 import type { OptimisticMessage } from '@/features/workspace/api/useWorkspaceChat';
 
@@ -344,10 +345,6 @@ function WorkspaceMessageItem({
   }) => {
     const repliedProfile = repliedMessage.workspace_member?.user_profile;
     const repliedName = repliedProfile?.name ?? 'Unknown';
-    const repliedText =
-      repliedMessage.text.slice(0, 100) +
-      (repliedMessage.text.length > 100 ? '...' : '');
-
     // Desktop click handler
     const handleClick = (e: React.MouseEvent) => {
       e.stopPropagation();
@@ -376,15 +373,9 @@ function WorkspaceMessageItem({
           <div className='min-w-0 flex-1'>
             <p className='text-xs text-text-muted mb-1'>{repliedName}</p>
             <div className='text-xs text-text-muted'>
-              <TiptapRenderer
-                content={repliedText}
-                contentType='markdown'
-                enableMemberMentions={true}
-                enableNoteMentions={true}
-                workspaceMembers={workspaceMembers}
-                workspaceNotes={workspaceNotes}
-                className='tiptap-reply-preview'
-                onNoteMentionClick={handleNoteMentionClick}
+              <TextWithParsedMentions
+                text={repliedMessage.text}
+                maxLength={100}
               />
             </div>
           </div>

@@ -6,71 +6,7 @@ import { Building2, User } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 import { FlatList, FlatListItem } from '@/components/FlatList';
-
-/**
- * メンション記法・Markdownリンクをパースしてプレビュー用テキストに変換する。
- * - メンバーメンション [@ id="..." label="..." workspaceMemberId="..."] → @label
- * - ノートメンション   [# id="..." label="..." noteId="..."]             → #label
- * - Markdownリンク     [text](url)                                        → リンク表示
- */
-function TextWithParsedLinks({ text }: { text: string }) {
-  // 統合正規表現: メンバーメンション | ノートメンション | Markdownリンク
-  const regex =
-    /\[@\s+id="[^"]*"\s+label="([^"]*)"(?:\s+workspaceMemberId="[^"]*")?\]|\[#\s+id="[^"]*"\s+label="([^"]*)"(?:\s+noteId="[^"]*")?\]|\[([^\]]*)\]\(([^)]*)\)/g;
-
-  const parts: React.ReactNode[] = [];
-  let lastIndex = 0;
-  let match;
-  while ((match = regex.exec(text)) !== null) {
-    // テキスト部分を追加
-    if (match.index > lastIndex) {
-      parts.push(text.slice(lastIndex, match.index));
-    }
-
-    if (match[1] !== undefined) {
-      // メンバーメンション → @label
-      parts.push(
-        <span
-          key={match.index}
-          className='text-blue-600 dark:text-blue-400 font-medium'
-        >
-          @{match[1]}
-        </span>
-      );
-    } else if (match[2] !== undefined) {
-      // ノートメンション → #label
-      parts.push(
-        <span
-          key={match.index}
-          className='text-blue-600 dark:text-blue-400 font-medium'
-        >
-          #{match[2]}
-        </span>
-      );
-    } else if (match[3] !== undefined) {
-      // Markdownリンク
-      parts.push(
-        <a
-          key={match.index}
-          href={match[4]}
-          target='_blank'
-          rel='noopener noreferrer'
-          className='text-blue-600 dark:text-blue-400 underline hover:text-blue-500 dark:hover:text-blue-300'
-          onClick={e => e.stopPropagation()}
-        >
-          {match[3]}
-        </a>
-      );
-    }
-
-    lastIndex = regex.lastIndex;
-  }
-  // 残りのテキスト
-  if (lastIndex < text.length) {
-    parts.push(text.slice(lastIndex));
-  }
-  return <>{parts}</>;
-}
+import { TextWithParsedMentions } from '@/components/TextWithParsedMentions';
 
 interface WorkspaceListProps {
   workspaces: Workspace[];
@@ -200,7 +136,9 @@ function WorkspaceCard({ workspace }: WorkspaceCardProps) {
               </div>
               {workspace.latest_message_text && (
                 <div className='text-[12px] text-text-muted truncate'>
-                  <TextWithParsedLinks text={workspace.latest_message_text} />
+                  <TextWithParsedMentions
+                    text={workspace.latest_message_text}
+                  />
                 </div>
               )}
             </div>
