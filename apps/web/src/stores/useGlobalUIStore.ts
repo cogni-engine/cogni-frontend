@@ -11,6 +11,13 @@ import { useShallow } from 'zustand/react/shallow';
 import type { FilePreviewData } from '@/components/FilePreviewDrawer';
 import type { WorkspaceMessage } from '@/types/workspace';
 
+export interface UserProfileData {
+  userId: string;
+  name: string;
+  avatarUrl: string;
+  role?: string;
+}
+
 interface GlobalUIState {
   // Input tracking
   isInputActive: boolean;
@@ -30,6 +37,14 @@ interface GlobalUIState {
   chatMessageDrawerOpen: boolean;
   selectedChatMessage: WorkspaceMessage | null;
 
+  // User profile drawer
+  userProfileDrawerOpen: boolean;
+  selectedUserProfile: UserProfileData | null;
+
+  // Activity drawer
+  activityDrawerOpen: boolean;
+  activityDrawerInitialMemberIds: number[] | null;
+
   // Actions
   setInputActive: (active: boolean) => void;
   setDrawerOpen: (open: boolean) => void;
@@ -42,6 +57,12 @@ interface GlobalUIState {
 
   openChatMessageDrawer: (message: WorkspaceMessage) => void;
   closeChatMessageDrawer: () => void;
+
+  openUserProfileDrawer: (profile: UserProfileData) => void;
+  closeUserProfileDrawer: () => void;
+
+  openActivityDrawer: (initialMemberIds?: number[]) => void;
+  closeActivityDrawer: () => void;
 }
 
 export const useGlobalUIStore = create<GlobalUIState>()(
@@ -59,6 +80,12 @@ export const useGlobalUIStore = create<GlobalUIState>()(
 
       chatMessageDrawerOpen: false,
       selectedChatMessage: null,
+
+      userProfileDrawerOpen: false,
+      selectedUserProfile: null,
+
+      activityDrawerOpen: false,
+      activityDrawerInitialMemberIds: null,
 
       // Actions
       setInputActive: active => set({ isInputActive: active }),
@@ -104,6 +131,34 @@ export const useGlobalUIStore = create<GlobalUIState>()(
         set({
           chatMessageDrawerOpen: false,
           selectedChatMessage: null,
+          isDrawerOpen: false,
+        }),
+
+      openUserProfileDrawer: profile =>
+        set({
+          selectedUserProfile: profile,
+          userProfileDrawerOpen: true,
+          isDrawerOpen: true,
+        }),
+
+      closeUserProfileDrawer: () =>
+        set({
+          userProfileDrawerOpen: false,
+          selectedUserProfile: null,
+          isDrawerOpen: false,
+        }),
+
+      openActivityDrawer: initialMemberIds =>
+        set({
+          activityDrawerOpen: true,
+          activityDrawerInitialMemberIds: initialMemberIds ?? null,
+          isDrawerOpen: true,
+        }),
+
+      closeActivityDrawer: () =>
+        set({
+          activityDrawerOpen: false,
+          activityDrawerInitialMemberIds: null,
           isDrawerOpen: false,
         }),
     }),
@@ -206,3 +261,25 @@ export const useChatMessageDrawer = () =>
 
 export const useSelectedChatMessage = () =>
   useGlobalUIStore(state => state.selectedChatMessage);
+
+// User profile drawer
+export const useUserProfileDrawer = () =>
+  useGlobalUIStore(
+    useShallow(state => ({
+      isOpen: state.userProfileDrawerOpen,
+      profile: state.selectedUserProfile,
+      open: state.openUserProfileDrawer,
+      close: state.closeUserProfileDrawer,
+    }))
+  );
+
+// Activity drawer
+export const useActivityDrawer = () =>
+  useGlobalUIStore(
+    useShallow(state => ({
+      isOpen: state.activityDrawerOpen,
+      initialMemberIds: state.activityDrawerInitialMemberIds,
+      open: state.openActivityDrawer,
+      close: state.closeActivityDrawer,
+    }))
+  );

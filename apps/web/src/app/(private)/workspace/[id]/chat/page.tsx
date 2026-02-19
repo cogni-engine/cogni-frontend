@@ -21,6 +21,7 @@ import {
   isNearBottom as isNearBottomFn,
   isNearTop as isNearTopFn,
 } from '@/features/chat/utils';
+import UserProfileDrawer from '@/features/workspace/components/UserProfileDrawer';
 
 export default function WorkspaceChatPage() {
   const params = useParams();
@@ -474,6 +475,8 @@ export default function WorkspaceChatPage() {
           workspaceNotes={workspaceNotes}
         />
       </div>
+
+      <UserProfileDrawer />
     </div>
   );
 }

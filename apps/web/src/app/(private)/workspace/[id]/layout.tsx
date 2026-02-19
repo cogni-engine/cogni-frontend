@@ -21,6 +21,7 @@ import WorkspaceActivityDrawer from '@/features/workspace/components/activity/Wo
 import MemberInviteDrawer from '@/features/workspace/components/MemberInviteDrawer';
 import { WorkspaceProvider } from '@/features/workspace/contexts/WorkspaceContext';
 import GlassButton from '@/components/glass-design/GlassButton';
+import { useActivityDrawer } from '@/stores/useGlobalUIStore';
 
 type ViewType = 'chat' | 'notes' | 'members' | 'menu';
 
@@ -65,8 +66,8 @@ export default function WorkspaceLayout({
 
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);
   const menuRef = React.useRef<HTMLDivElement | null>(null);
-  const [isActivityDrawerOpen, setIsActivityDrawerOpen] = React.useState(false);
   const [isInviteDrawerOpen, setIsInviteDrawerOpen] = React.useState(false);
+  const activityDrawer = useActivityDrawer();
 
   React.useEffect(() => {
     const handleKey = (e: KeyboardEvent) => {
@@ -111,7 +112,7 @@ export default function WorkspaceLayout({
             )}
             {currentView === 'chat' && (
               <GlassButton
-                onClick={() => setIsActivityDrawerOpen(true)}
+                onClick={() => activityDrawer.open()}
                 title='Activity'
                 className='size-12'
               >
@@ -225,9 +226,10 @@ export default function WorkspaceLayout({
 
         {/* Workspace Activity Drawer */}
         <WorkspaceActivityDrawer
-          open={isActivityDrawerOpen}
-          onOpenChange={setIsActivityDrawerOpen}
+          open={activityDrawer.isOpen}
+          onOpenChange={open => !open && activityDrawer.close()}
           workspaceId={workspaceId}
+          initialSelectedMemberIds={activityDrawer.initialMemberIds}
         />
 
         {/* Member Invite Drawer */}

@@ -25,6 +25,7 @@ interface WorkspaceActivityDrawerProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   workspaceId: number;
+  initialSelectedMemberIds?: number[] | null;
 }
 
 const VIEW_TABS: { key: ViewMode; label: string }[] = [
@@ -37,6 +38,7 @@ export default function WorkspaceActivityDrawer({
   open,
   onOpenChange,
   workspaceId,
+  initialSelectedMemberIds,
 }: WorkspaceActivityDrawerProps) {
   const { activities, loading, fetchActivities } =
     useWorkspaceActivity(workspaceId);
@@ -45,6 +47,17 @@ export default function WorkspaceActivityDrawer({
     new Set()
   );
   const [viewMode, setViewMode] = useState<ViewMode>('task');
+
+  // Apply initial member selection when drawer opens with pre-selected members
+  useEffect(() => {
+    if (
+      open &&
+      initialSelectedMemberIds &&
+      initialSelectedMemberIds.length > 0
+    ) {
+      setSelectedMemberIds(new Set(initialSelectedMemberIds));
+    }
+  }, [open, initialSelectedMemberIds]);
 
   const getMemberProfile = (member: WorkspaceMember) => {
     if (member.is_agent && member.agent_profile) {
