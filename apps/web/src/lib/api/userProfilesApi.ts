@@ -130,17 +130,30 @@ export async function removeUserAvatar(
   return updateUserProfile(userId, { avatar_url: null });
 }
 
+const API_BASE_URL =
+  process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000';
+
 /**
- * Delete user account by calling the backend API
+ * Delete user account by calling the backend API directly
  * This will ban the user and set deleted_at timestamp
  */
 export async function deleteUserAccount(): Promise<void> {
-  const response = await fetch('/api/users/delete', {
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+
+  if (!session?.access_token) {
+    throw new Error('Not authenticated');
+  }
+
+  const userId = session.user.id;
+
+  const response = await fetch(`${API_BASE_URL}/api/users/${userId}`, {
     method: 'DELETE',
     headers: {
       'Content-Type': 'application/json',
+      Authorization: `Bearer ${session.access_token}`,
     },
-    credentials: 'include',
   });
 
   if (!response.ok) {
