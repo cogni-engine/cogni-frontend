@@ -34,8 +34,32 @@ import {
   Loader2,
 } from 'lucide-react';
 
-function sendMessage(data: unknown) {
-  window.parent.postMessage({ type: 'fromSandbox', data }, '*');
+// Request/response message system
+let _msgId = 0;
+const _pending = new Map<
+  number,
+  { resolve: (value: unknown) => void }
+>();
+
+function sendMessage(data: unknown): Promise<unknown> {
+  const id = ++_msgId;
+  return new Promise(resolve => {
+    _pending.set(id, { resolve });
+    window.parent.postMessage({ type: 'fromSandbox', id, data }, '*');
+  });
+}
+
+// Listen for responses from host
+if (typeof window !== 'undefined') {
+  window.addEventListener('message', (event: MessageEvent) => {
+    if (event.data?.type === 'toSandbox' && typeof event.data.id === 'number') {
+      const entry = _pending.get(event.data.id);
+      if (entry) {
+        _pending.delete(event.data.id);
+        entry.resolve(event.data.data);
+      }
+    }
+  });
 }
 
 const scope = {
@@ -105,12 +129,8 @@ export default function IframeSandboxPage() {
   // Send errors back to host for visibility
   useEffect(() => {
     if (error) {
-      const errObj =
-        error instanceof Error
-          ? { message: error.message, stack: error.stack, name: error.name }
-          : { message: String(error) };
       window.parent.postMessage(
-        { type: 'fromSandbox', data: { type: 'error', ...errObj } },
+        { type: 'fromSandbox', data: { type: 'error', message: String(error) } },
         '*'
       );
     }
@@ -124,20 +144,8 @@ export default function IframeSandboxPage() {
 
           {/* Error message */}
           <pre className='text-red-300 text-sm whitespace-pre-wrap font-mono bg-red-500/5 rounded p-3'>
-            {error instanceof Error ? error.message : String(error)}
+            {String(error)}
           </pre>
-
-          {/* Stack trace */}
-          {error instanceof Error && error.stack && (
-            <details>
-              <summary className='text-red-400/70 text-xs cursor-pointer hover:text-red-400'>
-                Stack trace
-              </summary>
-              <pre className='text-red-300/60 text-xs whitespace-pre-wrap font-mono mt-1 bg-red-500/5 rounded p-2 max-h-[200px] overflow-y-auto'>
-                {error.stack}
-              </pre>
-            </details>
-          )}
 
           {/* Raw code that failed */}
           <details>

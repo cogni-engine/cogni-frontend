@@ -3,7 +3,7 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import GlassButton from '@/components/glass-design/GlassButton';
 import GlassCard from '@/components/glass-design/GlassCard';
-import { Send, Loader2, Trash2 } from 'lucide-react';
+import { Send, Loader2, Trash2, Reply } from 'lucide-react';
 
 const COGNO_CORE_URL =
   process.env.NEXT_PUBLIC_COGNO_CORE_URL || 'http://localhost:8001';
@@ -14,8 +14,10 @@ interface ChatMessage {
 }
 
 interface PostMessageEntry {
+  id: number | null;
   timestamp: string;
   data: unknown;
+  replied: boolean;
 }
 
 export default function IframeDemoPage() {
@@ -40,6 +42,8 @@ export default function IframeDemoPage() {
     logEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [postMessages]);
 
+  const [replyInputs, setReplyInputs] = useState<Record<number, string>>({});
+
   // Listen for messages from iframe
   useEffect(() => {
     function handleMessage(event: MessageEvent) {
@@ -47,8 +51,10 @@ export default function IframeDemoPage() {
         setPostMessages(prev => [
           ...prev,
           {
+            id: event.data.id ?? null,
             timestamp: new Date().toLocaleTimeString(),
             data: event.data.data,
+            replied: false,
           },
         ]);
       }
@@ -56,6 +62,28 @@ export default function IframeDemoPage() {
     window.addEventListener('message', handleMessage);
     return () => window.removeEventListener('message', handleMessage);
   }, []);
+
+  const handleReply = useCallback(
+    (msgIndex: number, msgId: number) => {
+      const replyText = replyInputs[msgIndex]?.trim();
+      if (!replyText) return;
+
+      iframeRef.current?.contentWindow?.postMessage(
+        { type: 'toSandbox', id: msgId, data: replyText },
+        '*'
+      );
+
+      setPostMessages(prev =>
+        prev.map((m, i) => (i === msgIndex ? { ...m, replied: true } : m))
+      );
+      setReplyInputs(prev => {
+        const next = { ...prev };
+        delete next[msgIndex];
+        return next;
+      });
+    },
+    [replyInputs]
+  );
 
   const handleSubmit = useCallback(async () => {
     const trimmed = instruction.trim();
@@ -256,16 +284,71 @@ export default function IframeDemoPage() {
               Messages from the iframe will appear here.
             </p>
           ) : (
-            <div className='space-y-1'>
+            <div className='space-y-2'>
               {postMessages.map((msg, i) => (
                 <div
                   key={i}
-                  className='text-xs font-mono bg-surface-primary rounded px-2 py-1 border border-border-subtle'
+                  className='text-xs font-mono bg-surface-primary rounded px-2 py-1.5 border border-border-subtle'
                 >
-                  <span className='text-text-muted'>{msg.timestamp}</span>{' '}
-                  <span className='text-text-secondary'>
-                    {JSON.stringify(msg.data)}
-                  </span>
+                  <div className='flex items-start justify-between gap-2'>
+                    <div className='min-w-0 flex-1'>
+                      <span className='text-text-muted'>{msg.timestamp}</span>{' '}
+                      <span className='text-text-secondary break-all'>
+                        {JSON.stringify(msg.data)}
+                      </span>
+                    </div>
+                    {msg.id !== null && !msg.replied && (
+                      <button
+                        onClick={() =>
+                          setReplyInputs(prev =>
+                            prev[i] !== undefined
+                              ? (() => {
+                                  const next = { ...prev };
+                                  delete next[i];
+                                  return next;
+                                })()
+                              : { ...prev, [i]: '' }
+                          )
+                        }
+                        className='text-text-muted hover:text-purple-400 transition-colors shrink-0'
+                        title='Reply'
+                      >
+                        <Reply className='w-3 h-3' />
+                      </button>
+                    )}
+                    {msg.replied && (
+                      <span className='text-green-400/70 text-[10px] shrink-0'>
+                        replied
+                      </span>
+                    )}
+                  </div>
+                  {replyInputs[i] !== undefined && msg.id !== null && (
+                    <div className='flex gap-1 mt-1.5'>
+                      <input
+                        value={replyInputs[i]}
+                        onChange={e =>
+                          setReplyInputs(prev => ({
+                            ...prev,
+                            [i]: e.target.value,
+                          }))
+                        }
+                        onKeyDown={e => {
+                          if (e.key === 'Enter' && msg.id !== null) {
+                            handleReply(i, msg.id);
+                          }
+                        }}
+                        placeholder='Reply...'
+                        className='flex-1 bg-background border border-border-subtle rounded px-1.5 py-0.5 text-xs text-text-primary placeholder:text-text-muted focus:outline-none focus:border-purple-500/50'
+                        autoFocus
+                      />
+                      <button
+                        onClick={() => msg.id !== null && handleReply(i, msg.id)}
+                        className='text-purple-400 hover:text-purple-300 transition-colors'
+                      >
+                        <Send className='w-3 h-3' />
+                      </button>
+                    </div>
+                  )}
                 </div>
               ))}
               <div ref={logEndRef} />
