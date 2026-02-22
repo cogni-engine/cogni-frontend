@@ -64,8 +64,11 @@ export default function MessageItem({
   // assistantメッセージはTiptapRendererを使用（Markdownとメンションサポート）
   if (message.role === 'assistant') {
     const hasTimer = 'meta' in message && message.meta?.timer;
+    const hasSlideJob = 'meta' in message && message.meta?.slide_job;
     const isAIInitiated =
       'meta' in message && message.meta?.is_ai_initiated === true;
+    const webSearchSources: { title: string; uri: string }[] | undefined =
+      'meta' in message ? message.meta?.web_search?.sources : undefined;
 
     const content = message.content;
 
@@ -108,6 +111,27 @@ export default function MessageItem({
               threadId={message.thread_id}
             />
           )}
+        {/* Web検索ソース */}
+        {webSearchSources && webSearchSources.length > 0 && (
+          <div className='flex flex-wrap gap-1.5 mt-1.5'>
+            {webSearchSources.map((source, i) => (
+              <a
+                key={i}
+                href={source.uri}
+                target='_blank'
+                rel='noopener noreferrer'
+                className='inline-flex items-center gap-1 px-2 py-0.5 text-[10px] rounded-full border border-border-default/60 hover:bg-surface-secondary transition-colors text-text-muted hover:text-text-secondary'
+              >
+                <img
+                  src={`https://www.google.com/s2/favicons?sz=16&domain=${source.title}`}
+                  alt=''
+                  className='w-3 h-3'
+                />
+                <span className='truncate max-w-[100px]'>{source.title}</span>
+              </a>
+            ))}
+          </div>
+        )}
       </div>
     );
   }
