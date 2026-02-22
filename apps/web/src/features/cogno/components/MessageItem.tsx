@@ -64,7 +64,6 @@ export default function MessageItem({
   // assistantメッセージはTiptapRendererを使用（Markdownとメンションサポート）
   if (message.role === 'assistant') {
     const hasTimer = 'meta' in message && message.meta?.timer;
-    const hasSlideJob = 'meta' in message && message.meta?.slide_job;
     const isAIInitiated =
       'meta' in message && message.meta?.is_ai_initiated === true;
     const webSearchSources: { title: string; uri: string }[] | undefined =
