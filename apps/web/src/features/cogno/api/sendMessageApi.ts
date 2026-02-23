@@ -13,6 +13,11 @@ export type BackendMessage = {
   file_ids?: number[];
 };
 
+export interface ClientContext {
+  datetime: string; // ISO 8601 e.g. "2026-02-22T14:30:00+09:00"
+  timezone: string; // IANA e.g. "Asia/Tokyo"
+}
+
 export interface StreamConversationRequest {
   thread_id: number;
   messages: BackendMessage[];
@@ -20,6 +25,7 @@ export interface StreamConversationRequest {
   mentioned_note_ids?: number[];
   notification_id?: number;
   timer_completed?: boolean;
+  client_context?: ClientContext;
 }
 
 export interface StreamChunkHandler {

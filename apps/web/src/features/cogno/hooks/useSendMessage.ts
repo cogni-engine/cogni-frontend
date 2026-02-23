@@ -182,6 +182,18 @@ export function useSendMessage({
               }),
             ...(notificationId && { notification_id: notificationId }),
             ...(timerCompleted && { timer_completed: true }),
+            client_context: {
+              datetime: new Date().toLocaleString('en-US', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric',
+                weekday: 'short',
+                hour: '2-digit',
+                minute: '2-digit',
+                hour12: false,
+              }),
+              timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+            },
           },
           {
             onChunk: (content: string) => {
