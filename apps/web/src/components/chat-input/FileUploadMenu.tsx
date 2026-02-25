@@ -1,7 +1,12 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { Image as ImageIcon, File as FileIcon, Camera } from 'lucide-react';
+import {
+  Image as ImageIcon,
+  File as FileIcon,
+  Camera,
+  Plus,
+} from 'lucide-react';
 import {
   Drawer,
   DrawerContent,
@@ -116,23 +121,10 @@ export default function FileUploadMenu({
             setIsOpen(true);
           }}
           disabled={disabled}
-          className='flex h-[52px] w-[52px] items-center justify-center rounded-full bg-surface-primary dark:backdrop-blur-md text-text-secondary border border-border-default transition-all duration-300 shadow-card hover:bg-interactive-hover hover:text-text-primary hover:shadow-card-hover disabled:opacity-50 disabled:cursor-not-allowed'
+          className='size-12'
           aria-label='Add files'
         >
-          <svg
-            xmlns='http://www.w3.org/2000/svg'
-            width='20'
-            height='20'
-            viewBox='0 0 24 24'
-            fill='none'
-            stroke='currentColor'
-            strokeWidth='2'
-            strokeLinecap='round'
-            strokeLinejoin='round'
-          >
-            <line x1='12' y1='5' x2='12' y2='19'></line>
-            <line x1='5' y1='12' x2='19' y2='12'></line>
-          </svg>
+          <Plus className='w-5 h-5 text-text-primary' />
         </GlassButton>
 
         {/* Hidden file inputs */}
