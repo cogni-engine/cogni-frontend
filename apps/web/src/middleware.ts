@@ -24,6 +24,7 @@ export async function middleware(request: NextRequest) {
   // Define route types
   const privateRoutes = [
     '/cogno',
+    '/home', // legacy path, redirects to /cogno
     '/notes',
     '/workspace',
     '/personal',
