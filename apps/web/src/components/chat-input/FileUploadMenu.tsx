@@ -121,7 +121,7 @@ export default function FileUploadMenu({
             setIsOpen(true);
           }}
           disabled={disabled}
-          className='size-12'
+          className='size-13'
           aria-label='Add files'
         >
           <Plus className='w-5 h-5 text-text-primary' />

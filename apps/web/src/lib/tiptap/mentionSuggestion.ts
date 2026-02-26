@@ -14,7 +14,7 @@ export const createMentionSuggestion = (
         const name = member.user_profile?.name?.toLowerCase() || '';
         return name.includes(query.toLowerCase());
       })
-      .slice(0, 5);
+      .slice(0, 20);
   },
 
   render: () => {

@@ -17,7 +17,7 @@ export const createNoteMentionSuggestion = (
         const queryLower = query.toLowerCase();
         return title.includes(queryLower) || content.includes(queryLower);
       })
-      .slice(0, 5);
+      .slice(0, 20);
   },
 
   render: () => {

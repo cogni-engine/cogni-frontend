@@ -30,11 +30,11 @@ interface MemberListProps {
 const getRoleIcon = (role: string) => {
   switch (role) {
     case 'owner':
-      return <Crown className='w-4 h-4 text-text-secondary' />;
+      return <Crown className='w-3.5 h-3.5' />;
     case 'admin':
-      return <Shield className='w-4 h-4 text-text-secondary' />;
+      return <Shield className='w-3.5 h-3.5' />;
     default:
-      return <User className='w-4 h-4 text-text-muted' />;
+      return null;
   }
 };
 
@@ -110,8 +110,8 @@ export default function MemberList({
 
   if (loading) {
     return (
-      <div className='flex justify-center py-4'>
-        <div className='animate-spin rounded-full h-6 w-6 border-b-2 border-text-primary'></div>
+      <div className='flex justify-center py-6'>
+        <div className='animate-spin rounded-full h-6 w-6 border-b-2 border-text-primary' />
       </div>
     );
   }
@@ -120,13 +120,13 @@ export default function MemberList({
     return (
       <div className='text-center py-8'>
         <User className='w-12 h-12 text-text-muted mx-auto mb-3' />
-        <p className='text-text-muted'>No members in this workspace</p>
+        <p className='text-text-muted text-sm'>No members in this workspace</p>
       </div>
     );
   }
 
   return (
-    <div className='space-y-2'>
+    <div className='space-y-0.5'>
       {members.map(member => {
         const profile = member.user_profile ?? member.agent_profile ?? null;
         const isOtherUser =
@@ -141,52 +141,54 @@ export default function MemberList({
         const isRemoving = removingMemberId === member.id;
 
         return (
-          <div
-            key={member.id}
-            className='relative overflow-hidden rounded-xl border border-border-default bg-surface-primary hover:bg-interactive-hover transition-colors'
-          >
-            <div className='flex items-center p-4'>
-              {/* Edit mode: minus icon on left */}
+          <div key={member.id} className='overflow-hidden rounded-2xl'>
+            <div
+              className={`flex items-center gap-3 px-3 py-2.5 rounded-2xl transition-colors group ${
+                isConfirming ? 'bg-red-500/10' : 'hover:bg-interactive-hover'
+              }`}
+            >
+              {/* Edit mode: minus icon */}
               {isEditing && kickable && (
                 <button
                   onClick={() => handleMinusClick(member.id)}
-                  className='mr-3 flex-shrink-0 transition-transform'
+                  className='flex-shrink-0 transition-transform'
                 >
                   <MinusCircle className='w-5 h-5 text-red-400' />
                 </button>
               )}
 
-              {/* Avatar + info */}
-              <div className='flex items-center gap-3 flex-1 min-w-0'>
-                <Avatar className='h-10 w-10 border border-border-default bg-interactive-hover text-sm font-medium flex-shrink-0'>
-                  {profile?.avatar_url ? (
-                    <AvatarImage
-                      src={profile.avatar_url}
-                      alt={profile.name ?? 'Workspace member'}
-                    />
-                  ) : (
-                    <AvatarFallback>
-                      <User className='w-4 h-4 text-text-secondary' />
-                    </AvatarFallback>
-                  )}
-                </Avatar>
-                <div className='min-w-0'>
-                  <p className='text-text-primary font-medium truncate'>
-                    {profile?.name ?? 'Unknown'}
-                  </p>
-                  <p className='text-sm text-text-muted'>
-                    Joined {new Date(member.created_at).toLocaleDateString()}
-                  </p>
-                </div>
+              {/* Avatar */}
+              <Avatar className='h-10 w-10 border border-border-default text-sm font-medium flex-shrink-0'>
+                {profile?.avatar_url ? (
+                  <AvatarImage
+                    src={profile.avatar_url}
+                    alt={profile.name ?? 'Workspace member'}
+                  />
+                ) : (
+                  <AvatarFallback className='bg-surface-primary'>
+                    <User className='w-4 h-4 text-text-secondary' />
+                  </AvatarFallback>
+                )}
+              </Avatar>
+
+              {/* Name + join date */}
+              <div className='flex-1 min-w-0'>
+                <p className='text-sm font-medium text-text-primary truncate'>
+                  {profile?.name ?? 'Unknown'}
+                </p>
+                <p className='text-xs text-text-muted'>
+                  Joined{' '}
+                  {new Date(member.created_at).toLocaleDateString()}
+                </p>
               </div>
 
-              {/* Right side: actions + role badge */}
+              {/* Right: DM + role badge */}
               <div className='flex items-center gap-2 flex-shrink-0'>
                 {isOtherUser && !isEditing && (
                   <button
                     onClick={() => handleDmClick(member.user_id!)}
                     disabled={!!dmLoadingUserId}
-                    className='p-2 rounded-full hover:bg-interactive-hover transition-colors disabled:opacity-50'
+                    className='p-2 rounded-full hover:bg-interactive-hover transition-colors disabled:opacity-50 opacity-0 group-hover:opacity-100'
                     title='Direct Message'
                   >
                     {dmLoadingUserId === member.user_id ? (
@@ -196,19 +198,19 @@ export default function MemberList({
                     )}
                   </button>
                 )}
-                {getRoleIcon(member.role)}
                 <span
-                  className={`px-3 py-1 rounded-full text-xs font-medium ${getRoleBadgeStyles(member.role)}`}
+                  className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium ${getRoleBadgeStyles(member.role)}`}
                 >
+                  {getRoleIcon(member.role)}
                   {member.role.charAt(0).toUpperCase() + member.role.slice(1)}
                 </span>
               </div>
             </div>
 
-            {/* Confirmation bar: slides down when minus is clicked */}
+            {/* Confirmation row */}
             {isEditing && isConfirming && kickable && (
-              <div className='flex items-center justify-between px-4 py-3 bg-red-500/10 border-t border-red-500/20'>
-                <span className='text-sm text-red-600 dark:text-red-300'>
+              <div className='flex items-center justify-between px-3 py-2'>
+                <span className='text-xs text-red-600 dark:text-red-300'>
                   Remove this member?
                 </span>
                 <div className='flex items-center gap-2'>
