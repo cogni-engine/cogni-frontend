@@ -10,7 +10,7 @@ export function OrganizationInfoCard({
   organization,
 }: OrganizationInfoCardProps) {
   return (
-    <div className='mt-8 p-6 bg-surface-primary rounded-lg border border-border-default'>
+    <div className='mt-8 p-6 bg-surface-primary rounded-xl border border-border-default'>
       <div className='mb-6'>
         <h2 className='text-2xl font-semibold text-text-primary mb-2'>
           {organization.organization.name}

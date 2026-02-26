@@ -154,7 +154,7 @@ export default function ActivityItem({
               }}
               disabled={!activity.note_id}
               className={cn(
-                'flex items-center gap-1.5 px-2 py-1 text-xs text-text-secondary hover:text-text-primary hover:bg-interactive-hover rounded-md transition-colors',
+                'flex items-center gap-1.5 px-2 py-1 text-xs text-text-secondary hover:text-text-primary hover:bg-interactive-hover rounded-full transition-colors',
                 !activity.note_id && 'opacity-50 cursor-not-allowed'
               )}
               title={

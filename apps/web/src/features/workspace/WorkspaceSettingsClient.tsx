@@ -15,13 +15,8 @@ import {
   readFileAsDataUrl,
 } from '@/features/users/utils/avatar';
 import { Button } from '@/components/ui/button';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
+import GlassButton from '@/components/glass-design/GlassButton';
+import GlassCard from '@/components/glass-design/GlassCard';
 import {
   Dialog,
   DialogContent,
@@ -291,16 +286,16 @@ export default function WorkspaceSettingsClient({
       )}
 
       {workspace && (
-        <Card className='border border-red-500/30 bg-red-500/5'>
-          <CardHeader>
-            <CardTitle className='text-red-600 dark:text-red-200'>
+        <GlassCard className='rounded-2xl border border-red-500/30 p-6'>
+          <div className='space-y-1 mb-4'>
+            <h3 className='text-lg font-semibold text-red-600 dark:text-red-300'>
               Danger zone
-            </CardTitle>
-            <CardDescription>
+            </h3>
+            <p className='text-sm text-text-muted'>
               Permanently delete this workspace and all of its data.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className='flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between'>
+            </p>
+          </div>
+          <div className='flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between'>
             <div className='text-sm text-text-secondary'>
               This action is irreversible. Please make sure you really want to
               remove
@@ -315,15 +310,15 @@ export default function WorkspaceSettingsClient({
                 </span>
               )}
             </div>
-            <Button
+            <GlassButton
               variant='destructive'
               onClick={() => handleDeleteDialogOpenChange(true)}
               disabled={deletingWorkspace || !normalizedWorkspaceTitle}
             >
               {deletingWorkspace ? 'Deleting…' : 'Delete workspace'}
-            </Button>
-          </CardContent>
-        </Card>
+            </GlassButton>
+          </div>
+        </GlassCard>
       )}
 
       <WorkspaceIconCropDialog

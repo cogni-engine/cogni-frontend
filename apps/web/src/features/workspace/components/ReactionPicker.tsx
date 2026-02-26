@@ -98,7 +98,7 @@ export default function ReactionPicker({ onSelect, onClose, position }: Props) {
             key={emoji}
             type='button'
             onClick={() => handleSelect(emoji)}
-            className='w-10 h-10 flex items-center justify-center text-xl rounded-lg hover:bg-interactive-active transition-colors'
+            className='w-10 h-10 flex items-center justify-center text-xl rounded-xl hover:bg-interactive-active transition-colors'
           >
             {emoji}
           </button>
@@ -109,7 +109,7 @@ export default function ReactionPicker({ onSelect, onClose, position }: Props) {
           <button
             type='button'
             onClick={() => setShowAll(false)}
-            className='w-full py-2 text-sm text-text-secondary hover:bg-interactive-hover rounded-lg transition-colors'
+            className='w-full py-2 text-sm text-text-secondary hover:bg-interactive-hover rounded-xl transition-colors'
           >
             Close
           </button>
@@ -117,7 +117,7 @@ export default function ReactionPicker({ onSelect, onClose, position }: Props) {
           <button
             type='button'
             onClick={() => setShowAll(true)}
-            className='w-full py-2 text-sm text-text-secondary hover:bg-interactive-hover rounded-lg transition-colors'
+            className='w-full py-2 text-sm text-text-secondary hover:bg-interactive-hover rounded-xl transition-colors'
           >
             More
           </button>

@@ -53,7 +53,7 @@ export function WorkspaceIconCropDialog({
             square.
           </DialogDescription>
         </DialogHeader>
-        <div className='relative h-80 w-full overflow-hidden rounded-lg bg-dialog-overlay'>
+        <div className='relative h-80 w-full overflow-hidden rounded-xl bg-dialog-overlay'>
           {imageSrc ? (
             <Cropper
               image={imageSrc}

@@ -81,7 +81,7 @@ export function TimeWheelPicker({ value, onChange }: TimeWheelPickerProps) {
   return (
     <div className='relative flex items-center justify-center gap-1 h-[220px]'>
       {/* Selection highlight */}
-      <div className='absolute left-4 right-4 h-[44px] bg-interactive-hover rounded-lg pointer-events-none z-0' />
+      <div className='absolute left-4 right-4 h-[44px] bg-interactive-hover rounded-xl pointer-events-none z-0' />
 
       {/* Hours */}
       <div

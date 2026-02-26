@@ -226,7 +226,7 @@ export default function OrganizationsPage() {
 
         {/* Success Message */}
         {successMessage && (
-          <div className='mt-4 p-4 bg-green-500/10 border border-green-500/50 rounded-lg'>
+          <div className='mt-4 p-4 bg-green-500/10 border border-green-500/50 rounded-xl'>
             <p className='text-green-600 dark:text-green-300 text-sm'>
               {successMessage}
             </p>
@@ -235,7 +235,7 @@ export default function OrganizationsPage() {
 
         {/* Error Message */}
         {error && (
-          <div className='mt-4 p-4 bg-red-500/10 border border-red-500/50 rounded-lg'>
+          <div className='mt-4 p-4 bg-red-500/10 border border-red-500/50 rounded-xl'>
             <p className='text-red-600 dark:text-red-300 text-sm'>{error}</p>
           </div>
         )}

@@ -517,11 +517,58 @@ export default function WorkspaceNotesPage() {
   if (loading && !isSearching && notes.length === 0) {
     return (
       <div className='flex flex-col h-full text-text-primary overflow-hidden'>
-        <div className='flex-1 flex items-center justify-center'>
-          <div className='text-center'>
-            <p className='text-text-muted font-medium animate-pulse'>
-              Loading notes...
-            </p>
+        <div className='flex-1 overflow-y-auto pb-32 md:pb-24'>
+          <style>
+            {`
+              @keyframes shimmer {
+                0% { background-position: 100% 0; }
+                100% { background-position: -100% 0; }
+              }
+            `}
+          </style>
+          <div className='flex flex-col'>
+            {Array.from({ length: 6 }).map((_, i) => (
+              <div key={i}>
+                <div className='px-5 py-2'>
+                  <div className='flex justify-between items-start gap-3'>
+                    <div className='flex-1 min-w-0'>
+                      <div
+                        className='rounded h-[21px] w-3/5 mb-1'
+                        style={{
+                          background:
+                            'linear-gradient(90deg, var(--surface-primary) 25%, var(--surface-secondary) 50%, var(--surface-primary) 75%)',
+                          backgroundSize: '400% 100%',
+                          animation: 'shimmer 2s ease-in-out infinite',
+                        }}
+                      />
+                      <div className='flex items-center gap-2 mt-0.5'>
+                        <div
+                          className='rounded h-[17px] w-10 shrink-0'
+                          style={{
+                            background:
+                              'linear-gradient(90deg, var(--surface-primary) 25%, var(--surface-secondary) 50%, var(--surface-primary) 75%)',
+                            backgroundSize: '400% 100%',
+                            animation: 'shimmer 2s ease-in-out infinite',
+                          }}
+                        />
+                        <div
+                          className='rounded h-[17px] w-2/3'
+                          style={{
+                            background:
+                              'linear-gradient(90deg, var(--surface-primary) 25%, var(--surface-secondary) 50%, var(--surface-primary) 75%)',
+                            backgroundSize: '400% 100%',
+                            animation: 'shimmer 2s ease-in-out infinite',
+                          }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                {i < 5 && (
+                  <div className='mx-5 border-b border-border-default' />
+                )}
+              </div>
+            ))}
           </div>
         </div>
       </div>
@@ -532,12 +579,12 @@ export default function WorkspaceNotesPage() {
     return (
       <div className='flex flex-col h-full text-text-primary overflow-hidden'>
         <div className='flex-1 flex items-center justify-center p-4'>
-          <div className='bg-red-500/10 border border-red-500/20 rounded-lg p-4 text-red-600 dark:text-red-300 max-w-md w-full'>
+          <div className='bg-red-500/10 border border-red-500/20 rounded-xl p-4 text-red-600 dark:text-red-300 max-w-md w-full'>
             <div className='flex items-center justify-between'>
               <span>{error}</span>
               <button
                 onClick={refetch}
-                className='text-sm px-3 py-1 bg-red-600/20 hover:bg-red-600/30 rounded-md transition-colors'
+                className='text-sm px-3 py-1 bg-red-600/20 hover:bg-red-600/30 rounded-full transition-colors'
               >
                 Retry
               </button>
@@ -595,7 +642,7 @@ export default function WorkspaceNotesPage() {
               {selectedFolder === 'trash' && deletedNotes.length > 0 && (
                 <button
                   onClick={() => setShowEmptyTrashConfirm(true)}
-                  className='text-xs text-text-muted hover:text-text-primary px-3 py-1.5 rounded-lg hover:bg-interactive-hover transition-all duration-200 font-medium mr-5'
+                  className='text-xs text-text-muted hover:text-text-primary px-3 py-1.5 rounded-full hover:bg-interactive-hover transition-all duration-200 font-medium mr-5'
                 >
                   Delete All
                 </button>
@@ -781,13 +828,13 @@ export default function WorkspaceNotesPage() {
             <div className='flex gap-3'>
               <button
                 onClick={() => setShowHardDeleteConfirm(null)}
-                className='flex-1 px-4 py-2.5 bg-interactive-hover hover:bg-interactive-active text-text-primary rounded-lg transition-all duration-200 font-medium'
+                className='flex-1 px-4 py-2.5 bg-interactive-hover hover:bg-interactive-active text-text-primary rounded-xl transition-all duration-200 font-medium'
               >
                 Cancel
               </button>
               <button
                 onClick={() => handleHardDelete(showHardDeleteConfirm)}
-                className='flex-1 px-4 py-2.5 bg-red-600 hover:bg-red-700 text-text-primary rounded-lg transition-all duration-200 font-medium shadow-lg shadow-red-500/20'
+                className='flex-1 px-4 py-2.5 bg-red-600 hover:bg-red-700 text-text-primary rounded-xl transition-all duration-200 font-medium shadow-lg shadow-red-500/20'
               >
                 Delete
               </button>
@@ -812,13 +859,13 @@ export default function WorkspaceNotesPage() {
             <div className='flex gap-3'>
               <button
                 onClick={() => setShowEmptyTrashConfirm(false)}
-                className='flex-1 px-4 py-2.5 bg-interactive-hover hover:bg-interactive-active text-text-primary rounded-lg transition-all duration-200 font-medium'
+                className='flex-1 px-4 py-2.5 bg-interactive-hover hover:bg-interactive-active text-text-primary rounded-xl transition-all duration-200 font-medium'
               >
                 Cancel
               </button>
               <button
                 onClick={handleEmptyTrash}
-                className='flex-1 px-4 py-2.5 bg-red-600 hover:bg-red-700 text-text-primary rounded-lg transition-all duration-200 font-medium shadow-lg shadow-red-500/20'
+                className='flex-1 px-4 py-2.5 bg-red-600 hover:bg-red-700 text-text-primary rounded-xl transition-all duration-200 font-medium shadow-lg shadow-red-500/20'
               >
                 Delete All
               </button>

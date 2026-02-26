@@ -1,7 +1,5 @@
 'use client';
 
-import GlassCard from '@/components/glass-design/GlassCard';
-
 function SkeletonPulse({ className = '' }: { className?: string }) {
   return (
     <div
@@ -16,33 +14,35 @@ function SkeletonPulse({ className = '' }: { className?: string }) {
   );
 }
 
-function SkeletonNoteCard() {
+function SkeletonNoteRow({ showDivider = true }: { showDivider?: boolean }) {
   return (
-    <GlassCard className='rounded-[20px] px-5 py-[8px]'>
-      <div className='flex justify-between items-start gap-3 mb-1'>
-        <div className='flex-1 min-w-0'>
-          {/* Title skeleton */}
-          <SkeletonPulse className='h-[22px] w-3/4 mb-1' />
+    <>
+      <div className='px-5 py-2'>
+        <div className='flex justify-between items-start gap-3'>
+          <div className='flex-1 min-w-0'>
+            {/* Title */}
+            <SkeletonPulse className='h-[21px] w-3/5 mb-1' />
+            {/* Date + preview */}
+            <div className='flex items-center gap-2 mt-0.5'>
+              <SkeletonPulse className='h-[17px] w-10 shrink-0' />
+              <SkeletonPulse className='h-[17px] w-2/3' />
+            </div>
+          </div>
         </div>
-        {/* Date skeleton */}
-        <SkeletonPulse className='h-4 w-12 mt-0.5' />
       </div>
-      {/* Preview text skeleton - two lines */}
-      <SkeletonPulse className='h-4 w-full mb-1.5' />
-      <SkeletonPulse className='h-4 w-2/3' />
-    </GlassCard>
+      {showDivider && <div className='mx-5 border-b border-border-default' />}
+    </>
   );
 }
 
 function SkeletonGroup({ cardCount = 3 }: { cardCount?: number }) {
   return (
     <div>
-      {/* Group header skeleton */}
+      {/* Group header */}
       <SkeletonPulse className='h-4 w-16 mb-3 ml-1' />
-      {/* Cards in this group */}
-      <div className='flex flex-col gap-[14px]'>
+      <div className='flex flex-col'>
         {Array.from({ length: cardCount }).map((_, i) => (
-          <SkeletonNoteCard key={i} />
+          <SkeletonNoteRow key={i} showDivider={i < cardCount - 1} />
         ))}
       </div>
     </div>
@@ -52,7 +52,6 @@ function SkeletonGroup({ cardCount = 3 }: { cardCount?: number }) {
 export function NotesListSkeleton() {
   return (
     <div className='flex flex-col gap-6'>
-      {/* Inject keyframes once */}
       <style>
         {`
           @keyframes shimmer {
@@ -61,12 +60,8 @@ export function NotesListSkeleton() {
           }
         `}
       </style>
-
-      {/* First group - "Today" with 2 cards */}
       <SkeletonGroup cardCount={2} />
-      {/* Second group - "Yesterday" with 3 cards */}
       <SkeletonGroup cardCount={3} />
-      {/* Third group - "This week" with 2 cards */}
       <SkeletonGroup cardCount={2} />
     </div>
   );

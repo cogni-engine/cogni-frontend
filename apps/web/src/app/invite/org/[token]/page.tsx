@@ -134,7 +134,7 @@ export default function AcceptOrganizationInvitePage() {
             </div>
             <button
               onClick={() => router.push('/user/organizations')}
-              className='mt-6 px-6 py-3 bg-purple-500 hover:bg-purple-600 rounded-lg text-white font-medium transition-colors w-full'
+              className='mt-6 px-6 py-3 bg-purple-500 hover:bg-purple-600 rounded-full text-white font-medium transition-colors w-full'
             >
               Go to Organizations
             </button>

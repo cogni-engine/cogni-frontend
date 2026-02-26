@@ -11,6 +11,7 @@ import {
   DrawerBody,
 } from '@/components/ui/drawer';
 import MemberSelectionStep from './MemberSelectionStep';
+import GlassCard from '@/components/glass-design/GlassCard';
 import GlassButton from '@/components/glass-design/GlassButton';
 import { useWorkspaceInvitations } from '../hooks/useWorkspaceInvitations';
 import { useWorkspaceMembers } from '@/hooks/useWorkspace';
@@ -125,19 +126,22 @@ export default function MemberInviteDrawer({
           {step === 'initial' && (
             <>
               {/* Initial Selection Options */}
-              <div className='flex flex-col gap-3'>
+              <GlassCard className='rounded-3xl p-2 border border-border-default'>
                 <button
                   type='button'
                   onClick={handleShareLink}
                   disabled={isSharing}
-                  className='w-full flex items-center justify-center gap-2 rounded-xl bg-surface-primary border border-border-default hover:bg-interactive-hover hover:border-border-default transition-all disabled:opacity-50 disabled:cursor-not-allowed'
+                  className='w-full flex items-center gap-3 px-3 py-3 rounded-2xl hover:bg-interactive-hover transition-colors disabled:opacity-50 disabled:cursor-not-allowed'
                 >
-                  <div className='p-3 rounded-lg'>
-                    <Share className='w-6 h-6 text-text-primary' />
+                  <div className='w-10 h-10 rounded-2xl bg-surface-primary flex items-center justify-center flex-shrink-0'>
+                    <Share className='w-5 h-5 text-text-secondary' />
                   </div>
-                  <div className='text-center'>
-                    <p className='text-text-primary font-medium text-lg'>
+                  <div className='text-left'>
+                    <p className='text-sm font-medium text-text-primary'>
                       {isSharing ? 'Sharing...' : 'Share Link'}
+                    </p>
+                    <p className='text-xs text-text-muted'>
+                      Copy invite link to share
                     </p>
                   </div>
                 </button>
@@ -145,18 +149,21 @@ export default function MemberInviteDrawer({
                 <button
                   type='button'
                   onClick={handleInviteFriends}
-                  className='w-full flex items-center justify-center gap-2 rounded-xl bg-surface-primary border border-border-default hover:bg-interactive-hover hover:border-border-default transition-all'
+                  className='w-full flex items-center gap-3 px-3 py-3 rounded-2xl hover:bg-interactive-hover transition-colors'
                 >
-                  <div className='p-3 rounded-lg'>
-                    <Users className='w-6 h-6 text-text-primary' />
+                  <div className='w-10 h-10 rounded-2xl bg-surface-primary flex items-center justify-center flex-shrink-0'>
+                    <Users className='w-5 h-5 text-text-secondary' />
                   </div>
-                  <div className='text-center'>
-                    <p className='text-text-primary font-medium text-lg'>
+                  <div className='text-left'>
+                    <p className='text-sm font-medium text-text-primary'>
                       Add Friends
+                    </p>
+                    <p className='text-xs text-text-muted'>
+                      Invite from existing members
                     </p>
                   </div>
                 </button>
-              </div>
+              </GlassCard>
 
               {/* Cancel Button */}
               <div className='pt-3 border-t border-border-default'>

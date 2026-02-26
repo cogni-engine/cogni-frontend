@@ -54,7 +54,7 @@ export function RecurrenceSelector({
                 onChange(option.value);
                 onClose();
               }}
-              className={`w-full text-left px-4 py-3 rounded-lg transition-colors ${
+              className={`w-full text-left px-4 py-3 rounded-xl transition-colors ${
                 value === option.value
                   ? 'bg-interactive-hover text-text-primary'
                   : 'text-text-secondary hover:bg-surface-primary'

@@ -44,8 +44,8 @@
   --border-subtle: rgba(0, 0, 0, 0.06);
 
   --text-primary: #171717;
-  --text-secondary: rgba(0, 0, 0, 0.6);
-  --text-muted: rgba(0, 0, 0, 0.4);
+  --text-secondary: rgba(0, 0, 0, 0.8);
+  --text-muted: rgba(0, 0, 0, 0.65);
 
   --interactive-hover: rgba(0, 0, 0, 0.06);
   --interactive-active: rgba(0, 0, 0, 0.1);
@@ -102,16 +102,16 @@
   --background: #0a0a0a;
   --foreground: #ededed;
 
-  --surface-primary: rgba(255, 255, 255, 0.05);
-  --surface-secondary: rgba(255, 255, 255, 0.08);
+  --surface-primary: rgba(255, 255, 255, 0.06);
+  --surface-secondary: rgba(255, 255, 255, 0.1);
   --surface-overlay: rgba(255, 255, 255, 0.04);
 
-  --border-default: rgba(255, 255, 255, 0.1);
-  --border-subtle: rgba(255, 255, 255, 0.05);
+  --border-default: rgba(255, 255, 255, 0.15);
+  --border-subtle: rgba(255, 255, 255, 0.08);
 
   --text-primary: #ffffff;
-  --text-secondary: rgba(255, 255, 255, 0.7);
-  --text-muted: rgba(255, 255, 255, 0.4);
+  --text-secondary: rgba(255, 255, 255, 0.75);
+  --text-muted: rgba(255, 255, 255, 0.5);
 
   --interactive-hover: rgba(255, 255, 255, 0.1);
   --interactive-active: rgba(255, 255, 255, 0.2);
@@ -122,23 +122,23 @@
   --gradient-from: #000000;
   --gradient-via: rgba(0, 0, 0, 0.5);
 
-  --card-bg: rgba(255, 255, 255, 0.05);
-  --card-border: rgba(255, 255, 255, 0.1);
+  --card-bg: rgba(255, 255, 255, 0.06);
+  --card-border: rgba(255, 255, 255, 0.15);
   --card-shadow: none;
   --card-shadow-hover: none;
 
-  --input-bg: rgba(255, 255, 255, 0.05);
-  --input-border: rgba(255, 255, 255, 0.1);
-  --input-placeholder: rgba(255, 255, 255, 0.4);
+  --input-bg: rgba(255, 255, 255, 0.07);
+  --input-border: rgba(255, 255, 255, 0.15);
+  --input-placeholder: rgba(255, 255, 255, 0.45);
 
   --dropdown-bg: rgba(0, 0, 0, 0.9);
-  --dropdown-border: rgba(255, 255, 255, 0.1);
+  --dropdown-border: rgba(255, 255, 255, 0.15);
 
   --dialog-bg: #171717;
   --dialog-overlay: rgba(0, 0, 0, 0.8);
 
-  --drawer-bg: rgba(255, 255, 255, 0.04);
-  --drawer-handle: rgba(255, 255, 255, 0.2);
+  --drawer-bg: #141414;
+  --drawer-handle: rgba(255, 255, 255, 0.25);
 
   --nav-indicator: rgba(255, 255, 255, 0.1);
   --nav-text-inactive: #9ca3af;
@@ -772,7 +772,7 @@ textarea,
 
 /* Hover */
 .liquid-glass-button:hover {
-  transform: scale(1.04);
+  transform: scale(1.02);
 }
 
 .liquid-glass-button:hover .liquid-glass-button-tint {
@@ -850,7 +850,7 @@ textarea,
 /* Pressed / Active — desktop: scale down */
 @media (min-width: 768px) {
   .liquid-glass-button:active {
-    transform: scale(0.96);
+    transform: scale(0.97);
   }
 
   .liquid-glass-button:active .liquid-glass-button-tint {
@@ -929,7 +929,7 @@ textarea,
 /* Pressed / Active — mobile: scale up */
 @media (max-width: 767px) {
   .liquid-glass-button:active {
-    transform: scale(1.08);
+    transform: scale(1.04);
   }
 
   .liquid-glass-button:active .liquid-glass-button-tint {

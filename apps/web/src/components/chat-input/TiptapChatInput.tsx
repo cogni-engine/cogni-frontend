@@ -67,6 +67,8 @@ const TiptapChatInput = forwardRef<TiptapChatInputRef, TiptapChatInputProps>(
     const editorRef = useRef<HTMLDivElement>(null);
     const lastFocusTimeRef = useRef<number>(0);
     const blurTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+    const viewportResizingRef = useRef(false);
+    const viewportResizeTimerRef = useRef<NodeJS.Timeout | null>(null);
 
     // Get extensions for chat mode with member mentions and note mentions
     const extensions = useTiptapExtensions({
@@ -115,26 +117,20 @@ const TiptapChatInput = forwardRef<TiptapChatInputRef, TiptapChatInputProps>(
           onFocusChange?.(true);
         },
         onBlur: () => {
-          // On mobile, prevent blur if it happens too quickly after focus
-          // This is a common issue with contenteditable on mobile browsers where
-          // viewport changes (keyboard opening) cause immediate blur
           const isMobile = window.innerWidth < 768;
-          const timeSinceFocus = Date.now() - lastFocusTimeRef.current;
 
-          if (isMobile && timeSinceFocus < 300) {
-            // Blur happened too quickly after focus - likely due to keyboard opening
-            // Re-focus the editor to maintain focus
+          // Only prevent blur if viewport is actively resizing (keyboard opening/closing)
+          if (isMobile && viewportResizingRef.current) {
             blurTimeoutRef.current = setTimeout(() => {
               if (editor && !editor.isFocused) {
                 editor.commands.focus();
               }
             }, 50);
-            return; // Don't update state, keep it focused
+            return;
           }
 
           // Normal blur handling
           blurTimeoutRef.current = setTimeout(() => {
-            // Double-check that focus wasn't regained
             if (!editor?.isFocused) {
               setIsFocused(false);
               onFocusChange?.(false);
@@ -188,41 +184,32 @@ const TiptapChatInput = forwardRef<TiptapChatInputRef, TiptapChatInputProps>(
       }
     };
 
-    // Handle visual viewport changes (mobile keyboard) to maintain focus
+    // Track viewport resize to distinguish keyboard opening from intentional blur
     useEffect(() => {
-      if (!editor || typeof window === 'undefined' || !window.visualViewport)
-        return;
+      if (typeof window === 'undefined' || !window.visualViewport) return;
 
-      const handleViewportChange = () => {
-        const isMobile = window.innerWidth < 768;
-        if (isMobile && editor.isFocused) {
-          // When viewport changes (keyboard opens/closes), ensure editor stays focused
-          const timeSinceFocus = Date.now() - lastFocusTimeRef.current;
-          if (timeSinceFocus < 1000) {
-            // Recently focused, maintain focus
-            requestAnimationFrame(() => {
-              if (editor && !editor.isFocused) {
-                editor.commands.focus();
-              }
-            });
-          }
+      const handleViewportResize = () => {
+        viewportResizingRef.current = true;
+        if (viewportResizeTimerRef.current) {
+          clearTimeout(viewportResizeTimerRef.current);
         }
+        viewportResizeTimerRef.current = setTimeout(() => {
+          viewportResizingRef.current = false;
+        }, 500);
       };
 
-      window.visualViewport.addEventListener('resize', handleViewportChange);
-      window.visualViewport.addEventListener('scroll', handleViewportChange);
+      window.visualViewport.addEventListener('resize', handleViewportResize);
 
       return () => {
         window.visualViewport?.removeEventListener(
           'resize',
-          handleViewportChange
+          handleViewportResize
         );
-        window.visualViewport?.removeEventListener(
-          'scroll',
-          handleViewportChange
-        );
+        if (viewportResizeTimerRef.current) {
+          clearTimeout(viewportResizeTimerRef.current);
+        }
       };
-    }, [editor]);
+    }, []);
 
     // Add keyboard shortcuts and direct focus/blur listeners
     useEffect(() => {
@@ -257,78 +244,22 @@ const TiptapChatInput = forwardRef<TiptapChatInputRef, TiptapChatInputProps>(
 
       const handleDirectBlur = (e: Event) => {
         const isMobile = window.innerWidth < 768;
-        const timeSinceFocus = Date.now() - lastFocusTimeRef.current;
 
-        // On mobile, if blur happens within 1000ms of focus, it's likely a false blur
-        // caused by keyboard opening or viewport changes. Aggressively re-focus.
-        if (isMobile && timeSinceFocus < 1000) {
-          // Prevent the blur event from propagating
+        // Only prevent blur if viewport is resizing (keyboard opening/closing)
+        if (isMobile && viewportResizingRef.current) {
           e.stopImmediatePropagation();
 
-          // Re-focus using multiple strategies and timings
-          const refocus = () => {
-            if (!editor) return;
-
-            const proseMirror = editorRef.current?.querySelector(
-              '.ProseMirror'
-            ) as HTMLElement;
-
-            if (proseMirror) {
-              // Direct DOM focus - most reliable on mobile
-              proseMirror.focus();
-
-              // Also try TipTap focus command
-              requestAnimationFrame(() => {
-                if (editor && !editor.isFocused) {
-                  editor.commands.focus();
-                }
-              });
-            }
-          };
-
-          // Try immediately in current frame
-          refocus();
-
-          // Try in next animation frame
-          requestAnimationFrame(refocus);
-
-          // Try after microtask queue
-          Promise.resolve().then(refocus);
-
-          // Try after short delays to catch any async blur operations
-          setTimeout(refocus, 0);
-          setTimeout(refocus, 10);
-          setTimeout(refocus, 50);
-          setTimeout(refocus, 100);
-          setTimeout(refocus, 200);
-        }
-      };
-
-      const handleDirectTouchStart = (e: Event) => {
-        // On mobile, ensure focus happens on touch
-        const isMobile = window.innerWidth < 768;
-        if (isMobile && editor) {
-          // Prevent default to avoid any browser default behaviors
-          e.preventDefault();
-
-          // Focus immediately and aggressively
           const proseMirror = editorRef.current?.querySelector(
             '.ProseMirror'
           ) as HTMLElement;
 
           if (proseMirror) {
-            // Direct DOM focus - most reliable
             proseMirror.focus();
-
-            // Also use TipTap focus command
             requestAnimationFrame(() => {
-              if (editor) {
+              if (editor && !editor.isFocused) {
                 editor.commands.focus();
               }
             });
-
-            // Set focus time for blur detection
-            lastFocusTimeRef.current = Date.now();
           }
         }
       };
@@ -336,22 +267,11 @@ const TiptapChatInput = forwardRef<TiptapChatInputRef, TiptapChatInputProps>(
       editorElement.addEventListener('keydown', handleKeyDown);
       editorElement.addEventListener('focus', handleDirectFocus, true);
       editorElement.addEventListener('blur', handleDirectBlur, true);
-      editorElement.addEventListener(
-        'touchstart',
-        handleDirectTouchStart,
-        true
-      );
 
       return () => {
         editorElement.removeEventListener('keydown', handleKeyDown);
         editorElement.removeEventListener('focus', handleDirectFocus, true);
         editorElement.removeEventListener('blur', handleDirectBlur, true);
-        editorElement.removeEventListener(
-          'touchstart',
-          handleDirectTouchStart,
-          true
-        );
-        // Cleanup blur timeout
         if (blurTimeoutRef.current) {
           clearTimeout(blurTimeoutRef.current);
         }

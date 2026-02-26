@@ -151,7 +151,7 @@ export default function MemberSelectionStep({
       {/* Member List - scrollable */}
       <ScrollableView ref={scrollContainerRef} className='pr-2'>
         {error && (
-          <div className='bg-red-500/10 border border-red-500/20 rounded-lg p-4 text-red-600 dark:text-red-300'>
+          <div className='bg-red-500/10 border border-red-500/20 rounded-xl p-4 text-red-600 dark:text-red-300'>
             Failed to load members
           </div>
         )}

@@ -11,14 +11,12 @@ import {
   Users,
   Settings,
   GitBranch,
-  Plus,
 } from 'lucide-react';
 import GlassCard from '@/components/glass-design/GlassCard';
 import { useWorkspace, useWorkspaceMembers } from '@/hooks/useWorkspace';
 import { getCurrentUserId } from '@/lib/cookies';
 import FolderActionButton from '@/components/FolderActionButton';
 import WorkspaceActivityDrawer from '@/features/workspace/components/activity/WorkspaceActivityDrawer';
-import MemberInviteDrawer from '@/features/workspace/components/MemberInviteDrawer';
 import { WorkspaceProvider } from '@/features/workspace/contexts/WorkspaceContext';
 import GlassButton from '@/components/glass-design/GlassButton';
 import { useActivityDrawer } from '@/stores/useGlobalUIStore';
@@ -66,7 +64,6 @@ export default function WorkspaceLayout({
 
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);
   const menuRef = React.useRef<HTMLDivElement | null>(null);
-  const [isInviteDrawerOpen, setIsInviteDrawerOpen] = React.useState(false);
   const activityDrawer = useActivityDrawer();
 
   React.useEffect(() => {
@@ -117,16 +114,6 @@ export default function WorkspaceLayout({
                 className='size-12'
               >
                 <GitBranch className='w-5 h-5 text-text-primary' />
-              </GlassButton>
-            )}
-            {currentView === 'members' && (
-              <GlassButton
-                onClick={() => setIsInviteDrawerOpen(true)}
-                title='Invite'
-                className='gap-2 px-4 flex items-center'
-              >
-                <Plus className='w-5 h-5 text-text-primary' />
-                Invite
               </GlassButton>
             )}
             <div className='relative' ref={menuRef}>
@@ -230,13 +217,6 @@ export default function WorkspaceLayout({
           onOpenChange={open => !open && activityDrawer.close()}
           workspaceId={workspaceId}
           initialSelectedMemberIds={activityDrawer.initialMemberIds}
-        />
-
-        {/* Member Invite Drawer */}
-        <MemberInviteDrawer
-          isOpen={isInviteDrawerOpen}
-          onClose={() => setIsInviteDrawerOpen(false)}
-          workspaceId={workspaceId}
         />
       </div>
     </WorkspaceProvider>

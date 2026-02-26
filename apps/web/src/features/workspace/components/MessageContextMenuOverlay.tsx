@@ -360,7 +360,7 @@ export default function MessageContextMenuOverlay({
                 >
                   {copied ? (
                     <>
-                      <Check className='w-4 h-4 text-green-400' />
+                      <Check className='w-4 h-4 text-text-secondary' />
                       <span>Copied!</span>
                     </>
                   ) : (

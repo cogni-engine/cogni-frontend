@@ -118,7 +118,7 @@ export default function LoginForm() {
 
       <form onSubmit={onSubmit} className='flex flex-col gap-6'>
         {showSuccessMessage && (
-          <div className='bg-green-500/10 border border-green-500/20 text-green-400 px-4 py-3 rounded-lg text-sm'>
+          <div className='bg-green-500/10 border border-green-500/20 text-green-400 px-4 py-3 rounded-xl text-sm'>
             Password updated successfully! Please sign in with your new
             password.
           </div>

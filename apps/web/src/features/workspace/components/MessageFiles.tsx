@@ -339,7 +339,7 @@ const AudioPlayer = ({ src, filename }: { src: string; filename?: string }) => {
             >
               <button
                 onClick={toggleMute}
-                className='text-text-muted hover:text-text-primary transition-colors p-1.5 hover:bg-surface-primary rounded-lg flex-shrink-0'
+                className='text-text-muted hover:text-text-primary transition-colors p-1.5 hover:bg-surface-primary rounded-full flex-shrink-0'
               >
                 {isMuted || volume === 0 ? (
                   <VolumeX size={18} />
@@ -426,14 +426,14 @@ const AudioPlayer = ({ src, filename }: { src: string; filename?: string }) => {
             <div className='flex items-center justify-end gap-2 w-[140px]'>
               <button
                 onClick={togglePlaybackRate}
-                className='px-3 py-1.5 rounded-lg text-[11px] font-semibold text-text-muted hover:text-text-primary hover:bg-surface-primary transition-all duration-200 active:scale-95 tabular-nums min-w-[44px] text-center'
+                className='px-3 py-1.5 rounded-xl text-[11px] font-semibold text-text-muted hover:text-text-primary hover:bg-surface-primary transition-all duration-200 active:scale-95 tabular-nums min-w-[44px] text-center'
               >
                 {playbackRate}×
               </button>
 
               <button
                 onClick={handleDownload}
-                className='p-2 rounded-lg text-text-muted hover:text-text-primary hover:bg-surface-primary transition-all duration-200 active:scale-95 flex-shrink-0'
+                className='p-2 rounded-full text-text-muted hover:text-text-primary hover:bg-surface-primary transition-all duration-200 active:scale-95 flex-shrink-0'
                 title='Download'
               >
                 <Download size={16} />

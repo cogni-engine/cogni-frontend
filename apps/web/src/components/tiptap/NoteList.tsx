@@ -2,6 +2,7 @@
 
 import React, {
   forwardRef,
+  useCallback,
   useEffect,
   useImperativeHandle,
   useState,
@@ -50,6 +51,16 @@ export const NoteList = forwardRef<NoteListRef, NoteListProps>((props, ref) => {
 
   useEffect(() => setSelectedIndex(0), [props.items]);
 
+  const scrollRef = useCallback(
+    (node: HTMLButtonElement | null) => {
+      if (node) {
+        node.scrollIntoView({ block: 'nearest' });
+      }
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [selectedIndex]
+  );
+
   useImperativeHandle(ref, () => ({
     onKeyDown: ({ event }: { event: KeyboardEvent }) => {
       if (event.key === 'ArrowUp') {
@@ -72,38 +83,43 @@ export const NoteList = forwardRef<NoteListRef, NoteListProps>((props, ref) => {
   }));
 
   return (
-    <GlassCard className='rounded-xl overflow-hidden max-h-[300px] overflow-y-auto'>
-      {props.items.length ? (
-        props.items.map((item, index) => (
-          <button
-            className={`flex items-center gap-3 w-full px-4 py-2.5 text-left transition-colors ${
-              index === selectedIndex
-                ? 'bg-interactive-active'
-                : 'hover:bg-interactive-hover'
-            }`}
-            key={item.id}
-            onClick={() => selectItem(index)}
-            type='button'
-          >
-            <div className='flex items-center justify-center w-8 h-8 rounded bg-green-500/20 border border-green-500/30'>
-              <FileText className='w-4 h-4 text-green-400' />
-            </div>
-            <div className='flex-1 min-w-0'>
-              <div className='text-text-primary font-medium truncate'>
-                {item.title || 'Untitled'}
+    <GlassCard className='rounded-3xl p-2'>
+      <div className='max-h-[300px] overflow-y-auto overscroll-contain'>
+        {props.items.length ? (
+          props.items.map((item, index) => (
+            <button
+              ref={index === selectedIndex ? scrollRef : undefined}
+              className={`flex items-center gap-2 w-full rounded-xl px-3 py-2 text-left transition-colors ${
+                index === selectedIndex
+                  ? 'bg-interactive-active'
+                  : 'hover:bg-surface-primary'
+              }`}
+              key={item.id}
+              onClick={() => selectItem(index)}
+              type='button'
+            >
+              <div className='flex items-center justify-center w-8 h-8 rounded bg-interactive-hover'>
+                <FileText className='w-4 h-4 text-text-secondary' />
               </div>
-              {item.content && (
-                <div className='text-xs text-text-muted truncate'>
-                  {item.content.substring(0, 60)}
-                  {item.content.length > 60 ? '...' : ''}
+              <div className='flex-1 min-w-0'>
+                <div className='text-text-primary font-medium truncate'>
+                  {item.title || 'Untitled'}
                 </div>
-              )}
-            </div>
-          </button>
-        ))
-      ) : (
-        <div className='px-4 py-3 text-sm text-text-muted'>No notes found</div>
-      )}
+                {item.content && (
+                  <div className='text-xs text-text-muted truncate'>
+                    {item.content.substring(0, 60)}
+                    {item.content.length > 60 ? '...' : ''}
+                  </div>
+                )}
+              </div>
+            </button>
+          ))
+        ) : (
+          <div className='px-3 py-3 text-sm text-text-muted'>
+            No notes found
+          </div>
+        )}
+      </div>
     </GlassCard>
   );
 });
