@@ -202,7 +202,7 @@ const AiChatInput = forwardRef<AiChatInputRef, AiChatInputProps>(
           className={`py-2 transition-[padding] duration-300 ease-out ${isInputFocused ? 'px-2' : 'px-4 md:px-6'}`}
         >
           <div className='w-full md:max-w-7xl md:mx-auto'>
-            <div className='flex gap-2 items-end'>
+            <div className='flex gap-2 items-center'>
               {/* File Upload Menu - Plus button */}
               <div>
                 <FileUploadMenu

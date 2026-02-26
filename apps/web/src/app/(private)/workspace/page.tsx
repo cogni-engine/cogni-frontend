@@ -105,18 +105,56 @@ export default function WorkspacePage() {
       {/* スクロール可能エリア */}
       <ScrollableView className='pb-32 md:pb-24 overflow-x-hidden'>
         {/* mounted まで固定のプレースホルダーでハイドレーションエラーを回避 */}
-        {!mounted ? (
-          <div className='flex justify-center py-12'>
-            <div className='animate-spin rounded-full h-8 w-8 border-b-2 border-text-primary' />
-          </div>
+        {!mounted || (!workspaces && isLoading) ? (
+          <>
+            <style>
+              {`
+                @keyframes shimmer {
+                  0% { background-position: 100% 0; }
+                  100% { background-position: -100% 0; }
+                }
+              `}
+            </style>
+            <div className='flex flex-col py-18 px-2'>
+              {Array.from({ length: 5 }).map((_, i) => (
+                <div key={i} className='px-5 py-2'>
+                  <div className='flex items-center gap-3 py-2'>
+                    <div
+                      className='h-12 w-12 rounded-full shrink-0'
+                      style={{
+                        background:
+                          'linear-gradient(90deg, var(--surface-primary) 25%, var(--surface-secondary) 50%, var(--surface-primary) 75%)',
+                        backgroundSize: '400% 100%',
+                        animation: 'shimmer 2s ease-in-out infinite',
+                      }}
+                    />
+                    <div className='flex-1 min-w-0'>
+                      <div
+                        className='rounded h-[21px] w-2/5 mb-1.5'
+                        style={{
+                          background:
+                            'linear-gradient(90deg, var(--surface-primary) 25%, var(--surface-secondary) 50%, var(--surface-primary) 75%)',
+                          backgroundSize: '400% 100%',
+                          animation: 'shimmer 2s ease-in-out infinite',
+                        }}
+                      />
+                      <div
+                        className='rounded h-[16px] w-3/5'
+                        style={{
+                          background:
+                            'linear-gradient(90deg, var(--surface-primary) 25%, var(--surface-secondary) 50%, var(--surface-primary) 75%)',
+                          backgroundSize: '400% 100%',
+                          animation: 'shimmer 2s ease-in-out infinite',
+                        }}
+                      />
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </>
         ) : (
           <>
-            {/* Only show loading spinner when we have no data at all (no cache) */}
-            {!workspaces && isLoading && (
-              <div className='flex items-center justify-center py-12'>
-                <div className='animate-spin rounded-full h-8 w-8 border-b-2 border-text-primary'></div>
-              </div>
-            )}
 
             {/* Show workspaces immediately if we have data (from cache or fresh) */}
             {workspaces && (filteredWorkspaces.length > 0 || !isSearching) && (

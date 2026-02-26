@@ -602,7 +602,7 @@ export default function CollaborativeNoteEditor({
         }}
       >
         <div
-          className='pt-24 md:pt-36 min-h-full'
+          className='pt-22 md:pt-32 min-h-full'
           data-shepherd-target='note-editor'
         >
           {/* Info bar for other users' suggestions */}

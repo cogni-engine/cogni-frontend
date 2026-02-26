@@ -517,11 +517,58 @@ export default function WorkspaceNotesPage() {
   if (loading && !isSearching && notes.length === 0) {
     return (
       <div className='flex flex-col h-full text-text-primary overflow-hidden'>
-        <div className='flex-1 flex items-center justify-center'>
-          <div className='text-center'>
-            <p className='text-text-muted font-medium animate-pulse'>
-              Loading notes...
-            </p>
+        <div className='flex-1 overflow-y-auto pb-32 md:pb-24'>
+          <style>
+            {`
+              @keyframes shimmer {
+                0% { background-position: 100% 0; }
+                100% { background-position: -100% 0; }
+              }
+            `}
+          </style>
+          <div className='flex flex-col'>
+            {Array.from({ length: 6 }).map((_, i) => (
+              <div key={i}>
+                <div className='px-5 py-2'>
+                  <div className='flex justify-between items-start gap-3'>
+                    <div className='flex-1 min-w-0'>
+                      <div
+                        className='rounded h-[21px] w-3/5 mb-1'
+                        style={{
+                          background:
+                            'linear-gradient(90deg, var(--surface-primary) 25%, var(--surface-secondary) 50%, var(--surface-primary) 75%)',
+                          backgroundSize: '400% 100%',
+                          animation: 'shimmer 2s ease-in-out infinite',
+                        }}
+                      />
+                      <div className='flex items-center gap-2 mt-0.5'>
+                        <div
+                          className='rounded h-[17px] w-10 shrink-0'
+                          style={{
+                            background:
+                              'linear-gradient(90deg, var(--surface-primary) 25%, var(--surface-secondary) 50%, var(--surface-primary) 75%)',
+                            backgroundSize: '400% 100%',
+                            animation: 'shimmer 2s ease-in-out infinite',
+                          }}
+                        />
+                        <div
+                          className='rounded h-[17px] w-2/3'
+                          style={{
+                            background:
+                              'linear-gradient(90deg, var(--surface-primary) 25%, var(--surface-secondary) 50%, var(--surface-primary) 75%)',
+                            backgroundSize: '400% 100%',
+                            animation: 'shimmer 2s ease-in-out infinite',
+                          }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                {i < 5 && (
+                  <div className='mx-5 border-b border-border-default' />
+                )}
+              </div>
+            ))}
           </div>
         </div>
       </div>

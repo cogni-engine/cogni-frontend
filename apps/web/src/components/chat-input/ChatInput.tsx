@@ -228,7 +228,7 @@ const ChatInput = forwardRef<ChatInputRef, ChatInputProps>(function ChatInput(
       <div
         className={`py-2 transition-[padding] duration-300 ease-out ${isInputFocused ? 'px-0' : 'px-2'} md:px-6`}
       >
-        <div className='w-full md:max-w-7xl md:mx-auto flex gap-2 items-end'>
+        <div className='w-full md:max-w-7xl md:mx-auto flex gap-2 items-center'>
           {/* File Upload Menu - Plus button */}
           {workspaceId && (
             <div>

@@ -8,7 +8,6 @@ import {
   Building2,
   LogOut,
   Settings,
-  CheckSquare,
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
@@ -64,11 +63,6 @@ export function UserMenu() {
     router.push('/user/settings');
   }, [router]);
 
-  const handleSelectTasks = React.useCallback(() => {
-    setOpen(false);
-    router.push('/user/tasks');
-  }, [router]);
-
   const handleSelectOrganizations = React.useCallback(() => {
     setOpen(false);
     router.push('/user/organizations');
@@ -118,10 +112,10 @@ export function UserMenu() {
             <Button
               variant='ghost'
               size='icon'
-              className='h-10 w-10 rounded-full border border-border-default bg-surface-primary text-text-primary hover:bg-interactive-hover'
+              className='size-12 rounded-full border border-border-default bg-surface-primary text-text-primary hover:bg-interactive-hover'
               aria-label='Open user menu'
             >
-              <Avatar className='h-9 w-9'>
+              <Avatar className='size-11'>
                 {avatarUrl ? (
                   <AvatarImage
                     src={avatarUrl}
@@ -155,16 +149,6 @@ export function UserMenu() {
               >
                 <Settings className='h-4 w-4' />
                 <span>User Settings</span>
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onSelect={event => {
-                  event.preventDefault();
-                  handleSelectTasks();
-                }}
-                className='flex items-center gap-2'
-              >
-                <CheckSquare className='h-4 w-4' />
-                <span>My Tasks</span>
               </DropdownMenuItem>
               <DropdownMenuItem
                 onSelect={event => {
