@@ -60,6 +60,9 @@ export interface NotificationDetail {
   due_date: string;
   task_id: number;
   task_title: string;
+  source_type: string | null;
+  source_id: number | null;
+  source_title: string | null;
   workspace_id: number;
   member_name: string;
   reaction_text: string | null;

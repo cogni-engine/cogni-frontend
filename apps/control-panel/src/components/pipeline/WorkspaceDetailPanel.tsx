@@ -102,6 +102,22 @@ function NotificationRow({ notif }: { notif: NotificationDetail }) {
             <span className='text-foreground'>{notif.task_title}</span>
             <span className='ml-1 text-muted'>#{notif.task_id}</span>
           </div>
+          {notif.source_type && (
+            <div>
+              <span className='text-muted'>Source: </span>
+              <span className='inline-flex items-center gap-1'>
+                <span className='rounded bg-purple-500/10 px-1.5 py-0.5 text-purple-400'>
+                  {notif.source_type}
+                </span>
+                {notif.source_title && (
+                  <span className='text-foreground'>{notif.source_title}</span>
+                )}
+                {notif.source_id && (
+                  <span className='text-muted'>#{notif.source_id}</span>
+                )}
+              </span>
+            </div>
+          )}
           {notif.body && (
             <div>
               <span className='text-muted'>Body: </span>
