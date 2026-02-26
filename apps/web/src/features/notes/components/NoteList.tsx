@@ -1,7 +1,7 @@
 'use client';
 
 import Image from 'next/image';
-import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useRef, memo, useState, useMemo } from 'react';
 
 import type { NoteFolder } from '@/types/note';
@@ -33,15 +33,20 @@ function NoteCardComponent({
   inRecentlyDeleted?: boolean;
   showDivider?: boolean;
 }) {
+  const router = useRouter();
   const touchTimerRef = useRef<NodeJS.Timeout | null>(null);
   const touchStartRef = useRef<{ x: number; y: number } | null>(null);
+  // Track whether long-press context menu fired, to suppress the tap navigation
+  const contextMenuFiredRef = useRef(false);
   const isDeleted = !!note.deleted_at;
 
   const handleTouchStart = (e: React.TouchEvent) => {
     const touch = e.touches[0];
     touchStartRef.current = { x: touch.clientX, y: touch.clientY };
+    contextMenuFiredRef.current = false;
 
     touchTimerRef.current = setTimeout(() => {
+      contextMenuFiredRef.current = true;
       if (onContextMenu) {
         onContextMenu(
           {
@@ -78,13 +83,27 @@ function NoteCardComponent({
   };
 
   const handleContextMenuEvent = (e: React.MouseEvent) => {
+    e.preventDefault();
     if (onContextMenu) {
       onContextMenu(e, note.id, isDeleted);
     }
   };
 
+  const handleClick = () => {
+    // Suppress navigation if long-press context menu was triggered
+    if (contextMenuFiredRef.current) {
+      contextMenuFiredRef.current = false;
+      return;
+    }
+    router.push(`/notes/${note.id}`);
+  };
+
   return (
-    <Link href={`/notes/${note.id}`} prefetch={true} className='block'>
+    // Use div + onClick instead of <Link> to prevent iOS native link long-press menu
+    <div
+      style={{ WebkitTouchCallout: 'none' } as React.CSSProperties}
+      onClick={handleClick}
+    >
       <FlatListItem
         className={isDeleted && !inRecentlyDeleted ? 'opacity-60' : ''}
         showDivider={showDivider}
@@ -165,7 +184,7 @@ function NoteCardComponent({
           </div>
         </div>
       </FlatListItem>
-    </Link>
+    </div>
   );
 }
 
