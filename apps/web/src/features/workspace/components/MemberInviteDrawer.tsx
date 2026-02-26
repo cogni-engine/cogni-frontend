@@ -132,7 +132,7 @@ export default function MemberInviteDrawer({
                   disabled={isSharing}
                   className='w-full flex items-center justify-center gap-2 rounded-xl bg-surface-primary border border-border-default hover:bg-interactive-hover hover:border-border-default transition-all disabled:opacity-50 disabled:cursor-not-allowed'
                 >
-                  <div className='p-3 rounded-lg'>
+                  <div className='p-3 rounded-xl'>
                     <Share className='w-6 h-6 text-text-primary' />
                   </div>
                   <div className='text-center'>
@@ -147,7 +147,7 @@ export default function MemberInviteDrawer({
                   onClick={handleInviteFriends}
                   className='w-full flex items-center justify-center gap-2 rounded-xl bg-surface-primary border border-border-default hover:bg-interactive-hover hover:border-border-default transition-all'
                 >
-                  <div className='p-3 rounded-lg'>
+                  <div className='p-3 rounded-xl'>
                     <Users className='w-6 h-6 text-text-primary' />
                   </div>
                   <div className='text-center'>

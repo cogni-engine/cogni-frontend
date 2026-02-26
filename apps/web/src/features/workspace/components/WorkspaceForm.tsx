@@ -73,6 +73,7 @@ export default function WorkspaceForm({
   );
   const iconPreviewRef = useRef<string | null>(workspace?.icon_url ?? null);
 
+  const titleInputRef = useRef<HTMLInputElement | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const [cropDialogOpen, setCropDialogOpen] = useState(false);
@@ -139,6 +140,19 @@ export default function WorkspaceForm({
   useEffect(() => {
     if (!open) {
       resetState();
+    } else {
+      // Delay focus until after Drawer animation to prevent mobile scroll jump
+      const raf = requestAnimationFrame(() => {
+        const timer = setTimeout(() => {
+          titleInputRef.current?.focus({ preventScroll: true });
+        }, 300);
+        titleInputRef.current?.setAttribute('data-focus-timer', String(timer));
+      });
+      return () => {
+        cancelAnimationFrame(raf);
+        const timerId = titleInputRef.current?.getAttribute('data-focus-timer');
+        if (timerId) clearTimeout(Number(timerId));
+      };
     }
   }, [open, resetState]);
 
@@ -390,6 +404,7 @@ export default function WorkspaceForm({
                   Workspace name
                 </label>
                 <input
+                  ref={titleInputRef}
                   id='workspace-title'
                   type='text'
                   placeholder='Enter workspace name'
@@ -397,7 +412,6 @@ export default function WorkspaceForm({
                   onChange={event => handleTitleChange(event.target.value)}
                   disabled={isSubmitting}
                   autoComplete='organization'
-                  autoFocus
                   className='w-full px-4 py-3 bg-surface-primary border border-border-default rounded-xl text-text-primary placeholder-text-muted focus:outline-none focus:border-border-default transition-all'
                 />
               </div>

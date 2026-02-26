@@ -30,9 +30,9 @@ interface MemberListProps {
 const getRoleIcon = (role: string) => {
   switch (role) {
     case 'owner':
-      return <Crown className='w-4 h-4 text-yellow-400' />;
+      return <Crown className='w-4 h-4 text-text-secondary' />;
     case 'admin':
-      return <Shield className='w-4 h-4 text-blue-400' />;
+      return <Shield className='w-4 h-4 text-text-secondary' />;
     default:
       return <User className='w-4 h-4 text-text-muted' />;
   }
@@ -41,11 +41,11 @@ const getRoleIcon = (role: string) => {
 const getRoleBadgeStyles = (role: string) => {
   switch (role) {
     case 'owner':
-      return 'bg-yellow-500/20 text-yellow-300';
+      return 'bg-interactive-active text-text-primary';
     case 'admin':
-      return 'bg-blue-500/20 text-blue-300';
+      return 'bg-surface-secondary text-text-secondary';
     default:
-      return 'bg-gray-500/20 text-text-secondary';
+      return 'bg-surface-secondary text-text-muted';
   }
 };
 
@@ -143,7 +143,7 @@ export default function MemberList({
         return (
           <div
             key={member.id}
-            className='relative overflow-hidden rounded-lg border border-border-default bg-surface-primary hover:bg-interactive-hover transition-colors'
+            className='relative overflow-hidden rounded-xl border border-border-default bg-surface-primary hover:bg-interactive-hover transition-colors'
           >
             <div className='flex items-center p-4'>
               {/* Edit mode: minus icon on left */}
@@ -186,7 +186,7 @@ export default function MemberList({
                   <button
                     onClick={() => handleDmClick(member.user_id!)}
                     disabled={!!dmLoadingUserId}
-                    className='p-2 rounded-lg hover:bg-interactive-hover transition-colors disabled:opacity-50'
+                    className='p-2 rounded-full hover:bg-interactive-hover transition-colors disabled:opacity-50'
                     title='Direct Message'
                   >
                     {dmLoadingUserId === member.user_id ? (
@@ -214,14 +214,14 @@ export default function MemberList({
                 <div className='flex items-center gap-2'>
                   <button
                     onClick={() => setConfirmRemoveId(null)}
-                    className='px-3 py-1 text-xs rounded-md text-text-secondary hover:bg-interactive-hover transition-colors'
+                    className='px-3 py-1 text-xs rounded-full text-text-secondary hover:bg-interactive-hover transition-colors'
                   >
                     Cancel
                   </button>
                   <button
                     onClick={() => handleRemoveConfirm(member.id)}
                     disabled={!!removingMemberId}
-                    className='px-3 py-1 text-xs rounded-md bg-red-500/20 text-red-600 dark:text-red-300 hover:bg-red-500/30 transition-colors disabled:opacity-50'
+                    className='px-3 py-1 text-xs rounded-full bg-red-500/20 text-red-600 dark:text-red-300 hover:bg-red-500/30 transition-colors disabled:opacity-50'
                   >
                     {isRemoving ? (
                       <Loader2 className='w-3 h-3 animate-spin inline' />

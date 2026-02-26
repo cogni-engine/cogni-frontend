@@ -412,7 +412,7 @@ const DrawerClose = React.forwardRef<HTMLButtonElement, DrawerCloseProps>(
         ref={ref}
         type='button'
         className={cn(
-          'p-2 hover:bg-interactive-hover rounded-lg transition-colors',
+          'p-2 hover:bg-interactive-hover rounded-full transition-colors',
           className
         )}
         onClick={handleClick}

@@ -21,13 +21,13 @@ function AuthErrorContent() {
         <div className='space-y-3'>
           <button
             onClick={() => router.push('/login')}
-            className='w-full px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors'
+            className='w-full px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-full transition-colors'
           >
             Try Logging In
           </button>
           <button
             onClick={() => router.push('/register')}
-            className='w-full px-6 py-3 bg-gray-500 hover:bg-gray-600 dark:bg-gray-600 dark:hover:bg-gray-700 text-white rounded-lg transition-colors'
+            className='w-full px-6 py-3 bg-gray-500 hover:bg-gray-600 dark:bg-gray-600 dark:hover:bg-gray-700 text-white rounded-full transition-colors'
           >
             Sign Up Again
           </button>

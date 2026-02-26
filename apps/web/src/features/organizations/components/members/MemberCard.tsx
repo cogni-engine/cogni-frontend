@@ -34,7 +34,7 @@ export function MemberCard({
   const showActions = canManage && !isCurrentUser && !memberIsOwner;
 
   return (
-    <div className='p-4 bg-surface-primary rounded-lg border border-border-default flex items-center justify-between'>
+    <div className='p-4 bg-surface-primary rounded-xl border border-border-default flex items-center justify-between'>
       <div className='flex items-center gap-3'>
         {/* Avatar */}
         <Avatar className='h-10 w-10'>
@@ -73,7 +73,7 @@ export function MemberCard({
         {showActions && (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <button className='h-8 w-8 flex items-center justify-center rounded-lg hover:bg-interactive-hover transition-colors text-text-secondary hover:text-text-primary'>
+              <button className='h-8 w-8 flex items-center justify-center rounded-full hover:bg-interactive-hover transition-colors text-text-secondary hover:text-text-primary'>
                 <MoreVertical className='h-4 w-4' />
               </button>
             </DropdownMenuTrigger>

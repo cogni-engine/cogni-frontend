@@ -73,7 +73,7 @@ export function PaymentStatusBanner({
 
   return (
     <div
-      className={`mb-6 p-4 rounded-lg border ${config.bgColor} ${config.borderColor}`}
+      className={`mb-6 p-4 rounded-xl border ${config.bgColor} ${config.borderColor}`}
       role='alert'
       aria-live='polite'
     >
@@ -91,7 +91,7 @@ export function PaymentStatusBanner({
           </p>
           {(status === 'past_due' || status === 'restricted') && (
             <button
-              className={`mt-3 px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
+              className={`mt-3 px-4 py-2 text-sm font-medium rounded-xl transition-colors ${
                 config.urgency === 'error'
                   ? 'bg-red-500 hover:bg-red-600 text-white'
                   : 'bg-amber-500 hover:bg-amber-600 text-white'

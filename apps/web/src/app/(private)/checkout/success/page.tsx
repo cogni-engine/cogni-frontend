@@ -29,7 +29,7 @@ function CheckoutSuccessContent() {
         </div>
 
         {subscriptionPlan && (
-          <div className='rounded-lg border border-border-default bg-surface-primary p-4'>
+          <div className='rounded-xl border border-border-default bg-surface-primary p-4'>
             <p className='text-sm text-text-secondary mb-1'>Current Plan</p>
             <div className='flex items-center justify-center gap-2'>
               <p className='text-xl font-semibold text-foreground capitalize'>
