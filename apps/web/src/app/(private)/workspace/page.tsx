@@ -155,7 +155,6 @@ export default function WorkspacePage() {
           </>
         ) : (
           <>
-
             {/* Show workspaces immediately if we have data (from cache or fresh) */}
             {workspaces && (filteredWorkspaces.length > 0 || !isSearching) && (
               <WorkspaceList workspaces={filteredWorkspaces} />

@@ -177,8 +177,7 @@ export default function MemberList({
                   {profile?.name ?? 'Unknown'}
                 </p>
                 <p className='text-xs text-text-muted'>
-                  Joined{' '}
-                  {new Date(member.created_at).toLocaleDateString()}
+                  Joined {new Date(member.created_at).toLocaleDateString()}
                 </p>
               </div>
 

@@ -115,7 +115,9 @@ export const NoteList = forwardRef<NoteListRef, NoteListProps>((props, ref) => {
             </button>
           ))
         ) : (
-          <div className='px-3 py-3 text-sm text-text-muted'>No notes found</div>
+          <div className='px-3 py-3 text-sm text-text-muted'>
+            No notes found
+          </div>
         )}
       </div>
     </GlassCard>

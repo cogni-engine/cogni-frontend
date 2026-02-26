@@ -3,12 +3,7 @@
 // TODO: this needs to be moved to a feature
 
 import * as React from 'react';
-import {
-  ArrowUpCircle,
-  Building2,
-  LogOut,
-  Settings,
-} from 'lucide-react';
+import { ArrowUpCircle, Building2, LogOut, Settings } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';

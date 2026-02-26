@@ -161,7 +161,9 @@ export default function MoveFolderDrawer({
                     <div className='text-sm font-medium text-text-primary'>
                       Notes
                     </div>
-                    <div className='text-xs text-text-muted'>Default folder</div>
+                    <div className='text-xs text-text-muted'>
+                      Default folder
+                    </div>
                   </div>
                   <div className='w-5 h-5 rounded-full border-2 border-border-default group-hover:border-text-muted transition-colors' />
                 </button>

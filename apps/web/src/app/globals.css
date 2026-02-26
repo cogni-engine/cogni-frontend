@@ -103,7 +103,7 @@
   --foreground: #ededed;
 
   --surface-primary: rgba(255, 255, 255, 0.06);
-  --surface-secondary: rgba(255, 255, 255, 0.10);
+  --surface-secondary: rgba(255, 255, 255, 0.1);
   --surface-overlay: rgba(255, 255, 255, 0.04);
 
   --border-default: rgba(255, 255, 255, 0.15);
@@ -111,10 +111,10 @@
 
   --text-primary: #ffffff;
   --text-secondary: rgba(255, 255, 255, 0.75);
-  --text-muted: rgba(255, 255, 255, 0.50);
+  --text-muted: rgba(255, 255, 255, 0.5);
 
-  --interactive-hover: rgba(255, 255, 255, 0.10);
-  --interactive-active: rgba(255, 255, 255, 0.20);
+  --interactive-hover: rgba(255, 255, 255, 0.1);
+  --interactive-active: rgba(255, 255, 255, 0.2);
 
   --ring-offset: #000000;
   --ring-color: rgba(255, 255, 255, 0.3);

@@ -218,7 +218,6 @@ export default function WorkspaceLayout({
           workspaceId={workspaceId}
           initialSelectedMemberIds={activityDrawer.initialMemberIds}
         />
-
       </div>
     </WorkspaceProvider>
   );
