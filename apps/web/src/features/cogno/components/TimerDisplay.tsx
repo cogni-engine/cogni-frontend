@@ -59,10 +59,7 @@ export const TimerDisplay: React.FC<TimerDisplayProps> = ({
     const calculateRemaining = () => {
       const endsAt = getEndsAt();
       const now = new Date();
-      return Math.max(
-        0,
-        Math.floor((endsAt.getTime() - now.getTime()) / 1000)
-      );
+      return Math.max(0, Math.floor((endsAt.getTime() - now.getTime()) / 1000));
     };
 
     // Set initial value
