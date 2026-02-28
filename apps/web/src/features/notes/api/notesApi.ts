@@ -379,7 +379,7 @@ export async function getAISuggestions(
   fileContents?: string[]
 ): Promise<AISuggestion[]> {
   const apiUrl =
-    process.env.NEXT_PUBLIC_COGNO_CORE_URL || 'http://localhost:8001';
+    process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000';
 
   try {
     const response = await fetch(`${apiUrl}/api/note-ai-editor/suggest`, {
