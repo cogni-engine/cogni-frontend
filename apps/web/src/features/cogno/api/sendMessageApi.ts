@@ -1,9 +1,9 @@
 import type { AIMessage } from '@/features/cogno/domain/chat';
 import { createClient } from '@/lib/supabase/browserClient';
 
-// cogno-core API base URL - defaults to localhost:8001 for development
+// Backend API base URL - defaults to localhost:8000 for development
 const API_BASE_URL =
-  process.env.NEXT_PUBLIC_COGNO_CORE_URL || 'http://localhost:8001';
+  process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000';
 
 // Backend message format (matches SimpleMessage in backend)
 export type BackendMessage = {
