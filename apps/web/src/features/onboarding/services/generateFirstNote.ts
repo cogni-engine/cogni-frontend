@@ -1,7 +1,7 @@
 import type { Note } from '@cogni/types';
 
 const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000';
+  process.env.NEXT_PUBLIC_COGNO_CORE_URL || 'http://localhost:8001';
 
 export interface GenerateFirstNoteRequest {
   primary_role?: string[];
